@@ -1,0 +1,5 @@
+.codex-deriveddata/
+.codex-module-cache/
+.build/
+CubeFlow.xcodeproj/xcuserdata/
+CubeFlow.xcodeproj/project.xcworkspace/xcuserdata/

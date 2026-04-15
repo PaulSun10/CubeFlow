@@ -13,11 +13,16 @@ struct CubeFlowApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
+            Session.self,
+            Solve.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let localConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .none
+            )
+            return try ModelContainer(for: schema, configurations: [localConfiguration])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -25,7 +30,17 @@ struct CubeFlowApp: App {
 
     var body: some Scene {
         WindowGroup {
+            #if os(iOS)
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                IPadContentView()
+            } else {
+                IPhoneContentView()
+            }
+            #elseif os(macOS)
+            MacContentView()
+            #else
             ContentView()
+            #endif
         }
         .modelContainer(sharedModelContainer)
     }

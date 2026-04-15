@@ -1,0 +1,5889 @@
+{
+  "puzzle": "3x3",
+  "set": "CLS",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "cls_fdr00",
+      "displayName": "CLS FDR00",
+      "name": "CLS FDR00",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr00",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U' R' U2' R L U' R' U R L' y",
+      "algorithms": [
+        {
+          "id": "cls_fdr00-1",
+          "notation": "U R U2 R' U R2 D R' U R D' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr00-2",
+          "notation": "u R2 U' R' U2 R' u' F R2 F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr00-3",
+          "notation": "y' L R' U' R U L' R' U2 R U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr00-4",
+          "notation": "U R2 U' R' U2 R' D' r U2 r' D",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr00-orientation_0-1",
+              "notation": "U R U2 R' U R2 D R' U R D' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr00-orientation_0-2",
+              "notation": "u R2 U' R' U2 R' u' F R2 F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr00-orientation_0-3",
+              "notation": "y' L R' U' R U L' R' U2 R U R' U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr00-orientation_0-4",
+              "notation": "U R2 U' R' U2 R' D' r U2 r' D",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyyyyllllgggggoyllooowoolllgggggoyllooowoo"
+      }
+    },
+    {
+      "id": "cls_fdr01",
+      "displayName": "CLS FDR01",
+      "name": "CLS FDR01",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr01",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U2' R' U R U' R' U' R y",
+      "algorithms": [
+        {
+          "id": "cls_fdr01-1",
+          "notation": "U R U R' U2 R U' R' U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr01-2",
+          "notation": "y' R' U R U R' U' R U2 R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr01-3",
+          "notation": "U R U2 R U R' U R U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr01-orientation_0-1",
+              "notation": "U R U R' U2 R U' R' U R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr01-orientation_0-2",
+              "notation": "y' R' U R U R' U' R U2 R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr01-orientation_0-3",
+              "notation": "U R U2 R U R' U R U2 R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyylylllygggggolllooowoollygggggolllooowoo"
+      }
+    },
+    {
+      "id": "cls_fdr02",
+      "displayName": "CLS FDR02",
+      "name": "CLS FDR02",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr02",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U' R' U2' R U2' R' U2' R y",
+      "algorithms": [
+        {
+          "id": "cls_fdr02-1",
+          "notation": "R U' R' U R U2 R' U2 R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr02-2",
+          "notation": "y' R' U2 R U2 R' U2 R U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr02-orientation_0-1",
+              "notation": "R U' R' U R U2 R' U2 R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr02-orientation_0-2",
+              "notation": "y' R' U2 R U2 R' U2 R U R' U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylyylllgggggollyooowoolllgggggollyooowoo"
+      }
+    },
+    {
+      "id": "cls_fdr03",
+      "displayName": "CLS FDR03",
+      "name": "CLS FDR03",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr03",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U' R' U R U' R' U' R y",
+      "algorithms": [
+        {
+          "id": "cls_fdr03-1",
+          "notation": "y' R' U R U R' U' R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr03-2",
+          "notation": "U R U R' U R2 U R' U R U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr03-orientation_0-1",
+              "notation": "y' R' U R U R' U' R U R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr03-orientation_0-2",
+              "notation": "U R U R' U R2 U R' U R U2 R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyylllgggggolllooowoolllgggggolllooowoo"
+      }
+    },
+    {
+      "id": "cls_fdr04",
+      "displayName": "CLS FDR04",
+      "name": "CLS FDR04",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr04",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U' R' U2' R U' R' U R U2' y",
+      "algorithms": [
+        {
+          "id": "cls_fdr04-1",
+          "notation": "U2 R U' R' U R U2 R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr04-2",
+          "notation": "y' U2 R' U' R U R' U2 R U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr04-orientation_0-1",
+              "notation": "U2 R U' R' U R U2 R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr04-orientation_0-2",
+              "notation": "y' U2 R' U' R U R' U2 R U R' U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylyllllgggggoyllooowoolllgggggoyllooowoo"
+      }
+    },
+    {
+      "id": "cls_fdr05",
+      "displayName": "CLS FDR05",
+      "name": "CLS FDR05",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr05",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U' R U R' U' R U2' R'",
+      "algorithms": [
+        {
+          "id": "cls_fdr05-1",
+          "notation": "R U2 R' U R U' R' U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr05-2",
+          "notation": "y' U R2 U2 R U R' U R2 U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr05-orientation_0-1",
+              "notation": "R U2 R' U R U' R' U R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr05-orientation_0-2",
+              "notation": "y' U R2 U2 R U R' U R2 U R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyyyllgggggollyooowooyllgggggollyooowoo"
+      }
+    },
+    {
+      "id": "cls_fdr06",
+      "displayName": "CLS FDR06",
+      "name": "CLS FDR06",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr06",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U2 R' U' R U2 R' U' R U2 R' U' R y",
+      "algorithms": [
+        {
+          "id": "cls_fdr06-1",
+          "notation": "y' R' U R U2 R' U R U2 R' U R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr06-2",
+          "notation": "R U2 R' U R U' R' U R U' R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr06-orientation_0-1",
+              "notation": "y' R' U R U2 R' U R U2 R' U R U2 R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr06-orientation_0-2",
+              "notation": "R U2 R' U R U' R' U R U' R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyllllgggggoylyooowoolllgggggoylyooowoo"
+      }
+    },
+    {
+      "id": "cls_fdr07",
+      "displayName": "CLS FDR07",
+      "name": "CLS FDR07",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_fdr07",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U2' R' U2' R U' R' U R U2' R' U2' R y",
+      "algorithms": [
+        {
+          "id": "cls_fdr07-1",
+          "notation": "R U2 R' U2 R2 D r' U2 r D' R' U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr07-2",
+          "notation": "R U' R' U2 R U2 R' U R U' R' U2 R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fdr07-3",
+          "notation": "y' R' U2 R U2 R' U' R U R' U2 R U2 R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fdr07-orientation_0-1",
+              "notation": "R U2 R' U2 R2 D r' U2 r D' R' U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr07-orientation_0-2",
+              "notation": "R U' R' U2 R U2 R' U R U' R' U2 R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fdr07-orientation_0-3",
+              "notation": "y' R' U2 R U2 R' U' R U R' U2 R U2 R' U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylylyllgggggoyllooowooyllgggggoyllooowoo"
+      }
+    },
+    {
+      "id": "cls_fru00",
+      "displayName": "CLS FRU00",
+      "name": "CLS FRU00",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru00",
+      "recognition": "",
+      "notes": "",
+      "setup": "y R' D R U R' D' R y'",
+      "algorithms": [
+        {
+          "id": "cls_fru00-1",
+          "notation": "U D' R' D R U' R' D' R D",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru00-2",
+          "notation": "y R' D R U' R' D' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru00-3",
+          "notation": "D R D R' U' R D' R' D'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru00-4",
+          "notation": "y U R' D R U2 R' D' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru00-5",
+          "notation": "U' R' F' R U R U' R' F R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru00-6",
+          "notation": "U R U' R' F' R U R' U' R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru00-orientation_0-1",
+              "notation": "U D' R' D R U' R' D' R D",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru00-orientation_0-2",
+              "notation": "y R' D R U' R' D' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru00-orientation_0-3",
+              "notation": "D R D R' U' R D' R' D'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru00-orientation_0-4",
+              "notation": "y U R' D R U2 R' D' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru00-orientation_0-5",
+              "notation": "U' R' F' R U R U' R' F R U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru00-orientation_0-6",
+              "notation": "U R U' R' F' R U R' U' R' F R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyyyygllwgggggyolloooloollwgggggyolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru01",
+      "displayName": "CLS FRU01",
+      "name": "CLS FRU01",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru01",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U R' U2' R U R' U2' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_fru01-1",
+          "notation": "y' U R' U2 R U' R' U2 R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru01-2",
+          "notation": "D R' U2 R U' R' U2 R U' R' U2 R D'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru01-3",
+          "notation": "U' R U' R' U2 R U R' U' R U R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru01-4",
+          "notation": "R U2 R' U R' U2 R U R' U R2 U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru01-orientation_0-1",
+              "notation": "y' U R' U2 R U' R' U2 R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru01-orientation_0-2",
+              "notation": "D R' U2 R U' R' U2 R U' R' U2 R D'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru01-orientation_0-3",
+              "notation": "U' R U' R' U2 R U R' U' R U R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru01-orientation_0-4",
+              "notation": "R U2 R' U R' U2 R U R' U R2 U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyyyygllwggggglolloooloollwggggglolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru02",
+      "displayName": "CLS FRU02",
+      "name": "CLS FRU02",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru02",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U R U R' U",
+      "algorithms": [
+        {
+          "id": "cls_fru02-1",
+          "notation": "U' R U' R' U' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru02-orientation_0-1",
+              "notation": "U' R U' R' U' R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyyyygllwggggglolyoooyoollwggggglolyoooyoo"
+      }
+    },
+    {
+      "id": "cls_fru03",
+      "displayName": "CLS FRU03",
+      "name": "CLS FRU03",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru03",
+      "recognition": "",
+      "notes": "",
+      "setup": "D' L2' D R' D' L2' D R",
+      "algorithms": [
+        {
+          "id": "cls_fru03-1",
+          "notation": "U' R' F R U R U' R' F' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru03-2",
+          "notation": "y R2 D R U' R' D' R U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru03-3",
+          "notation": "U' R U' R' U L' U R U' R' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru03-4",
+          "notation": "y' U' R' U2 R U2 R' U' R U2 R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru03-5",
+          "notation": "F' r U R U' r' F R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru03-6",
+          "notation": "R' D' L2 D R D' L2 D",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru03-orientation_0-1",
+              "notation": "U' R' F R U R U' R' F' R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru03-orientation_0-2",
+              "notation": "y R2 D R U' R' D' R U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru03-orientation_0-3",
+              "notation": "U' R U' R' U L' U R U' R' L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru03-orientation_0-4",
+              "notation": "y' U' R' U2 R U2 R' U' R U2 R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru03-orientation_0-5",
+              "notation": "F' r U R U' r' F R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru03-orientation_0-6",
+              "notation": "R' D' L2 D R D' L2 D",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyyyygllwggggglolloooloollwggggglolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru04",
+      "displayName": "CLS FRU04",
+      "name": "CLS FRU04",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru04",
+      "recognition": "",
+      "notes": "",
+      "setup": "L F2' U F2' U' Lw' U2' M",
+      "algorithms": [
+        {
+          "id": "cls_fru04-1",
+          "notation": "U R' D' R U2 R' D R2 U' R' U2 R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru04-2",
+          "notation": "R U2 R' U2 R' U' R U' R' U2 R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru04-3",
+          "notation": "y' U2 R' U2 R U' R' U2 R U2 R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru04-4",
+          "notation": "M' U2 Lw U F2 U' F2 L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru04-orientation_0-1",
+              "notation": "U R' D' R U2 R' D R2 U' R' U2 R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru04-orientation_0-2",
+              "notation": "R U2 R' U2 R' U' R U' R' U2 R2 U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru04-orientation_0-3",
+              "notation": "y' U2 R' U2 R U' R' U2 R U2 R' U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru04-orientation_0-4",
+              "notation": "M' U2 Lw U F2 U' F2 L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyygllwggggglolloooyoollwggggglolloooyoo"
+      }
+    },
+    {
+      "id": "cls_fru05",
+      "displayName": "CLS FRU05",
+      "name": "CLS FRU05",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru05",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' U R' U R U2' R2' U' R U2' R'",
+      "algorithms": [
+        {
+          "id": "cls_fru05-1",
+          "notation": "y' U' R' U R U' R' U' R U R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru05-2",
+          "notation": "R U2 R' U R2 U2 R' U' R U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru05-orientation_0-1",
+              "notation": "y' U' R' U R U' R' U' R U R' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru05-orientation_0-2",
+              "notation": "R U2 R' U R2 U2 R' U' R U' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyygllwgggggyolyoooloollwgggggyolyoooloo"
+      }
+    },
+    {
+      "id": "cls_fru06",
+      "displayName": "CLS FRU06",
+      "name": "CLS FRU06",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru06",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U R' U2' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_fru06-1",
+          "notation": "U R U' R' U R' F' R U R U' R' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru06-2",
+          "notation": "D R' U2 R U' R' U' R D'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru06-3",
+          "notation": "y' U R' U2 R U' R' U' R y",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru06-orientation_0-1",
+              "notation": "U R U' R' U R' F' R U R U' R' F",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru06-orientation_0-2",
+              "notation": "D R' U2 R U' R' U' R D'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru06-orientation_0-3",
+              "notation": "y' U R' U2 R U' R' U' R y",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyyyygllwggggglolloooyoollwggggglolloooyoo"
+      }
+    },
+    {
+      "id": "cls_fru07",
+      "displayName": "CLS FRU07",
+      "name": "CLS FRU07",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru07",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R U2' R' U' R' U R2' U2' R2' U",
+      "algorithms": [
+        {
+          "id": "cls_fru07-1",
+          "notation": "U' R2 U2 R2 U' R U R U2 R' U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru07-orientation_0-1",
+              "notation": "U' R2 U2 R2 U' R U R U2 R' U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyygllwgggggyolloooloollwgggggyolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru08",
+      "displayName": "CLS FRU08",
+      "name": "CLS FRU08",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru08",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R2' U' R U' R' U2' R2' U R'",
+      "algorithms": [
+        {
+          "id": "cls_fru08-1",
+          "notation": "R U R' U R U2 R' U2 R' F R F' R' F R F' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru08-2",
+          "notation": "R U' R2 U2 R U R' U R2 U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru08-orientation_0-1",
+              "notation": "R U R' U R U2 R' U2 R' F R F' R' F R F' R' F R F'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru08-orientation_0-2",
+              "notation": "R U' R2 U2 R U R' U R2 U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyygllwggggglolyoooloollwggggglolyoooloo"
+      }
+    },
+    {
+      "id": "cls_fru09",
+      "displayName": "CLS FRU09",
+      "name": "CLS FRU09",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru09",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U' R U R' U R U' R'",
+      "algorithms": [
+        {
+          "id": "cls_fru09-1",
+          "notation": "R U R' U' R U' R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru09-orientation_0-1",
+              "notation": "R U R' U' R U' R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyylygylwggggglollooolooylwggggglolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru10",
+      "displayName": "CLS FRU10",
+      "name": "CLS FRU10",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru10",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U2' R' U R U y",
+      "algorithms": [
+        {
+          "id": "cls_fru10-1",
+          "notation": "y' U' R' U' R U2 R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru10-2",
+          "notation": "U2 R U' R' U2 R U2 R' U' R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru10-orientation_0-1",
+              "notation": "y' U' R' U' R U2 R' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru10-orientation_0-2",
+              "notation": "U2 R U' R' U2 R U2 R' U' R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylygylwggggglolloooyooylwggggglolloooyoo"
+      }
+    },
+    {
+      "id": "cls_fru11",
+      "displayName": "CLS FRU11",
+      "name": "CLS FRU11",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru11",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' F2' U R' U R U2' F2' R' U R'",
+      "algorithms": [
+        {
+          "id": "cls_fru11-1",
+          "notation": "R U' R F2 U2 R' U' R U' F2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru11-2",
+          "notation": "R' U R U' R U' R' U2 R U' R2 U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru11-orientation_0-1",
+              "notation": "R U' R F2 U2 R' U' R U' F2 R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru11-orientation_0-2",
+              "notation": "R' U R U' R U' R' U2 R U' R2 U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylygylwgggggyolyooolooylwgggggyolyoooloo"
+      }
+    },
+    {
+      "id": "cls_fru12",
+      "displayName": "CLS FRU12",
+      "name": "CLS FRU12",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru12",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U2' R U R' U",
+      "algorithms": [
+        {
+          "id": "cls_fru12-1",
+          "notation": "U' R U' R' U2 R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru12-orientation_0-1",
+              "notation": "U' R U' R' U2 R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylygylwggggglolloooyooylwggggglolloooyoo"
+      }
+    },
+    {
+      "id": "cls_fru13",
+      "displayName": "CLS FRU13",
+      "name": "CLS FRU13",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru13",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U' R U' R' U R U2' R' U'",
+      "algorithms": [
+        {
+          "id": "cls_fru13-1",
+          "notation": "U R U2 R' U' R U R' U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru13-orientation_0-1",
+              "notation": "U R U2 R' U' R U R' U R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygylwgggggyollooolooylwgggggyolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru14",
+      "displayName": "CLS FRU14",
+      "name": "CLS FRU14",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru14",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U2' R U2' R' U2' R U R' U2'",
+      "algorithms": [
+        {
+          "id": "cls_fru14-1",
+          "notation": "U2 R U' R' U2 R U2 R' U2 R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru14-orientation_0-1",
+              "notation": "U2 R U' R' U2 R U2 R' U2 R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygylwggggglolyooolooylwggggglolyoooloo"
+      }
+    },
+    {
+      "id": "cls_fru15",
+      "displayName": "CLS FRU15",
+      "name": "CLS FRU15",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru15",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' U R' U R U2' R' U R'",
+      "algorithms": [
+        {
+          "id": "cls_fru15-1",
+          "notation": "R U' R U2 R' U' R U' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru15-orientation_0-1",
+              "notation": "R U' R U2 R' U' R U' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylygylwgggggyollooolooylwgggggyolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru16",
+      "displayName": "CLS FRU16",
+      "name": "CLS FRU16",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru16",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R2' U2' R U R' U R U' R U R'",
+      "algorithms": [
+        {
+          "id": "cls_fru16-1",
+          "notation": "R U' R' U R' U' R U' R' U2 R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru16-2",
+          "notation": "U' R U' R' U2 R U' R2 U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru16-orientation_0-1",
+              "notation": "R U' R' U R' U' R U' R' U2 R2 U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru16-orientation_0-2",
+              "notation": "U' R U' R' U2 R U' R2 U' R U' R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygylwggggglollooolooylwggggglolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru17",
+      "displayName": "CLS FRU17",
+      "name": "CLS FRU17",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru17",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' L R U' R' U L' U'",
+      "algorithms": [
+        {
+          "id": "cls_fru17-1",
+          "notation": "U L U' R U R' L' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru17-2",
+          "notation": "U' R U' R' U' R U' R' U' R' F R U R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru17-3",
+          "notation": "U2 R U R' U2 R' U' R U' R' U2 R2 U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru17-orientation_0-1",
+              "notation": "U L U' R U R' L' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru17-orientation_0-2",
+              "notation": "U' R U' R' U' R U' R' U' R' F R U R U' R' F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru17-orientation_0-3",
+              "notation": "U2 R U R' U2 R' U' R U' R' U2 R2 U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygylwggggglolyoooyooylwggggglolyoooyoo"
+      }
+    },
+    {
+      "id": "cls_fru18",
+      "displayName": "CLS FRU18",
+      "name": "CLS FRU18",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru18",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U L U' R' U L' U'",
+      "algorithms": [
+        {
+          "id": "cls_fru18-1",
+          "notation": "y' U' R' U2 R U2 R' U' R U' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru18-2",
+          "notation": "U L U' R U L' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru18-3",
+          "notation": "R U' R' U' R U R U2 R' U' R U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru18-orientation_0-1",
+              "notation": "y' U' R' U2 R U2 R' U' R U' R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru18-orientation_0-2",
+              "notation": "U L U' R U L' U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru18-orientation_0-3",
+              "notation": "R U' R' U' R U R U2 R' U' R U' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyylygllwggggglolloooyoollwggggglolloooyoo"
+      }
+    },
+    {
+      "id": "cls_fru19",
+      "displayName": "CLS FRU19",
+      "name": "CLS FRU19",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru19",
+      "recognition": "",
+      "notes": "",
+      "setup": "F U2' L F' L' U2' R' F' R",
+      "algorithms": [
+        {
+          "id": "cls_fru19-1",
+          "notation": "R' F R U2 L F L' U2 F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru19-2",
+          "notation": "U R2 U R' U R U2 R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru19-3",
+          "notation": "R' F R U2 r U r' U2 F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru19-orientation_0-1",
+              "notation": "R' F R U2 L F L' U2 F'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru19-orientation_0-2",
+              "notation": "U R2 U R' U R U2 R' U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru19-orientation_0-3",
+              "notation": "R' F R U2 r U r' U2 F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylygllwgggggyolloooloollwgggggyolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru20",
+      "displayName": "CLS FRU20",
+      "name": "CLS FRU20",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru20",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' B2' U' R U' R' U2' B2' R",
+      "algorithms": [
+        {
+          "id": "cls_fru20-1",
+          "notation": "U F' R U2 F U F' U R' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru20-2",
+          "notation": "R' B2 U2 R U R' U B2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru20-3",
+          "notation": "U' R U' R U' R' U R' U R' U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru20-orientation_0-1",
+              "notation": "U F' R U2 F U F' U R' F",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru20-orientation_0-2",
+              "notation": "R' B2 U2 R U R' U B2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru20-orientation_0-3",
+              "notation": "U' R U' R U' R' U R' U R' U R' U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylygllwggggglolyoooloollwggggglolyoooloo"
+      }
+    },
+    {
+      "id": "cls_fru21",
+      "displayName": "CLS FRU21",
+      "name": "CLS FRU21",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru21",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U R' U R' U R U2' R U' R2' U2' R'",
+      "algorithms": [
+        {
+          "id": "cls_fru21-1",
+          "notation": "U' R U' R2 D' R U2 R' D R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru21-2",
+          "notation": "R U2 R2 U R' U2 R' U' R U' R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru21-3",
+          "notation": "U2 x' R2 U' R' U R U' R' U R U' R' U R' x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru21-orientation_0-1",
+              "notation": "U' R U' R2 D' R U2 R' D R2 U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru21-orientation_0-2",
+              "notation": "R U2 R2 U R' U2 R' U' R U' R U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru21-orientation_0-3",
+              "notation": "U2 x' R2 U' R' U R U' R' U R U' R' U R' x",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylygllwgggggyolloooloollwgggggyolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru22",
+      "displayName": "CLS FRU22",
+      "name": "CLS FRU22",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru22",
+      "recognition": "",
+      "notes": "",
+      "setup": "F2' U' L' U L F2' U' R U2' R' U",
+      "algorithms": [
+        {
+          "id": "cls_fru22-1",
+          "notation": "U' R U2 R' U F2 L' U' L U F2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru22-2",
+          "notation": "U' R U' R' U' R' U' R2 U' R2 U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru22-orientation_0-1",
+              "notation": "U' R U2 R' U F2 L' U' L U F2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru22-orientation_0-2",
+              "notation": "U' R U' R' U' R' U' R2 U' R2 U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygllwggggglolloooloollwggggglolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru23",
+      "displayName": "CLS FRU23",
+      "name": "CLS FRU23",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru23",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U' R' U' R U R' U2' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_fru23-1",
+          "notation": "y U R' U2 R U' R' U R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru23-orientation_0-1",
+              "notation": "y U R' U2 R U' R' U R U R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygllwggggglolyoooyoollwggggglolyoooyoo"
+      }
+    },
+    {
+      "id": "cls_fru24",
+      "displayName": "CLS FRU24",
+      "name": "CLS FRU24",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru24",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U R U' R' U2' R U R' U",
+      "algorithms": [
+        {
+          "id": "cls_fru24-1",
+          "notation": "U' R U' R' U2 R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_fru24-2",
+          "notation": "U2 F' R U2 R' U' R U' R' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru24-orientation_0-1",
+              "notation": "U' R U' R' U2 R U R' U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_fru24-orientation_0-2",
+              "notation": "U2 F' R U2 R' U' R U' R' F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylygllwggggglolloooloollwggggglolloooloo"
+      }
+    },
+    {
+      "id": "cls_fru25",
+      "displayName": "CLS FRU25",
+      "name": "CLS FRU25",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru25",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U R U' R' U' R U' R' U'",
+      "algorithms": [
+        {
+          "id": "cls_fru25-1",
+          "notation": "U R U R' U R U R' U' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru25-orientation_0-1",
+              "notation": "U R U R' U R U R' U' R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygllwggggglolloooyoollwggggglolloooyoo"
+      }
+    },
+    {
+      "id": "cls_fru26",
+      "displayName": "CLS FRU26",
+      "name": "CLS FRU26",
+      "group": null,
+      "subgroup": "Cross Color Facing Front",
+      "imageKey": "cls_cls_fru26",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U R' U R U R' U",
+      "algorithms": [
+        {
+          "id": "cls_fru26-1",
+          "notation": "U' R U' R' U' R U' R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_fru26-orientation_0-1",
+              "notation": "U' R U' R' U' R U' R' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygllwgggggyolyoooloollwgggggyolyoooloo"
+      }
+    },
+    {
+      "id": "cls_rfd00",
+      "displayName": "CLS RFD00",
+      "name": "CLS RFD00",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd00",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U R U2' R' L' U R U' R' L",
+      "algorithms": [
+        {
+          "id": "cls_rfd00-1",
+          "notation": "L' R U R' U' L R U2 R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd00-2",
+          "notation": "U' R U' R' U R U' R2 F' R U R U' R' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd00-3",
+          "notation": "U2 D' r U2 r' D R U2 R U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd00-4",
+          "notation": "U2 R2 D R' U' R D' R2 U' R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd00-orientation_0-1",
+              "notation": "L' R U R' U' L R U2 R' U' R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd00-orientation_0-2",
+              "notation": "U' R U' R' U R U' R2 F' R U R U' R' F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd00-orientation_0-3",
+              "notation": "U2 D' r U2 r' D R U2 R U R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd00-orientation_0-4",
+              "notation": "U2 R2 D R' U' R D' R2 U' R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyyyylllygggggwlllooogoollygggggwlllooogoo"
+      }
+    },
+    {
+      "id": "cls_rfd01",
+      "displayName": "CLS RFD01",
+      "name": "CLS RFD01",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd01",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U2' R U' R' U R U R'",
+      "algorithms": [
+        {
+          "id": "cls_rfd01-1",
+          "notation": "R U' R' U' R U R' U2 R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd01-2",
+          "notation": "U2 R2 U2 R' U' R U' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd01-orientation_0-1",
+              "notation": "R U' R' U' R U R' U2 R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd01-orientation_0-2",
+              "notation": "U2 R2 U2 R' U' R U' R' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyyyyllllgggggwyllooogoolllgggggwyllooogoo"
+      }
+    },
+    {
+      "id": "cls_rfd02",
+      "displayName": "CLS RFD02",
+      "name": "CLS RFD02",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd02",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U R U2' R' U2' R U2' R'",
+      "algorithms": [
+        {
+          "id": "cls_rfd02-1",
+          "notation": "R U2 R' U2 R U2 R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd02-orientation_0-1",
+              "notation": "R U2 R' U2 R U2 R' U' R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylyyyllgggggwlllooogooyllgggggwlllooogoo"
+      }
+    },
+    {
+      "id": "cls_rfd03",
+      "displayName": "CLS RFD03",
+      "name": "CLS RFD03",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd03",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U R U2' R' U R U' R' U",
+      "algorithms": [
+        {
+          "id": "cls_rfd03-1",
+          "notation": "U' R U R' U' R U2 R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd03-2",
+          "notation": "y' U' R' U R U' R' U2 R U' R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd03-orientation_0-1",
+              "notation": "U' R U R' U' R U2 R' U' R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd03-orientation_0-2",
+              "notation": "y' U' R' U R U' R' U2 R U' R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyylllgggggwllyooogoolllgggggwllyooogoo"
+      }
+    },
+    {
+      "id": "cls_rfd04",
+      "displayName": "CLS RFD04",
+      "name": "CLS RFD04",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd04",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U R U' R' U R U R'",
+      "algorithms": [
+        {
+          "id": "cls_rfd04-1",
+          "notation": "R U' R' U' R U R' U' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd04-orientation_0-1",
+              "notation": "R U' R' U' R U R' U' R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyylllgggggwlllooogoolllgggggwlllooogoo"
+      }
+    },
+    {
+      "id": "cls_rfd05",
+      "displayName": "CLS RFD05",
+      "name": "CLS RFD05",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd05",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U R' U' R U R' U2' R y",
+      "algorithms": [
+        {
+          "id": "cls_rfd05-1",
+          "notation": "y' R' U2 R U' R' U R U' R' U' R y",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd05-2",
+          "notation": "U' R2 U2 R' U' R U' R2 U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd05-orientation_0-1",
+              "notation": "y' R' U2 R U' R' U R U' R' U' R y",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd05-orientation_0-2",
+              "notation": "U' R2 U2 R' U' R U' R2 U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyyyllgggggwllyooogooyllgggggwllyooogoo"
+      }
+    },
+    {
+      "id": "cls_rfd06",
+      "displayName": "CLS RFD06",
+      "name": "CLS RFD06",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd06",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U2' R U R' U2' R U R' U2' R U R'",
+      "algorithms": [
+        {
+          "id": "cls_rfd06-1",
+          "notation": "R U' R' U2 R U' R' U2 R U' R' U2 R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd06-2",
+          "notation": "y' R' U2 R U' R' U R U' R' U R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd06-orientation_0-1",
+              "notation": "R U' R' U2 R U' R' U2 R U' R' U2 R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd06-orientation_0-2",
+              "notation": "y' R' U2 R U' R' U R U' R' U R U R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylylylygggggwlllooogooylygggggwlllooogoo"
+      }
+    },
+    {
+      "id": "cls_rfd07",
+      "displayName": "CLS RFD07",
+      "name": "CLS RFD07",
+      "group": null,
+      "subgroup": "Trapped Corner",
+      "imageKey": "cls_cls_rfd07",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U2' R U2' R' U R U' R' U2' R U2' R'",
+      "algorithms": [
+        {
+          "id": "cls_rfd07-1",
+          "notation": "R U2 R' U2 R U R' U' R U2 R' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfd07-2",
+          "notation": "y' R' U R U2 R' U2 R U' R' U R U2 R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfd07-orientation_0-1",
+              "notation": "R U2 R' U2 R U R' U' R U2 R' U2 R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfd07-orientation_0-2",
+              "notation": "y' R' U R U2 R' U2 R U' R' U R U2 R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylylllygggggwllyooogoollygggggwllyooogoo"
+      }
+    },
+    {
+      "id": "cls_rfu00",
+      "displayName": "CLS RFU00",
+      "name": "CLS RFU00",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu00",
+      "recognition": "",
+      "notes": "",
+      "setup": "L D' L' U' L D L'",
+      "algorithms": [
+        {
+          "id": "cls_rfu00-1",
+          "notation": "U R' D' R U' R' D R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu00-2",
+          "notation": "L D' L' U L D L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu00-3",
+          "notation": "U2 R' D' R U2 R' D R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu00-4",
+          "notation": "U' R' D' R U R' D R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu00-orientation_0-1",
+              "notation": "U R' D' R U' R' D R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu00-orientation_0-2",
+              "notation": "L D' L' U L D L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu00-orientation_0-3",
+              "notation": "U2 R' D' R U2 R' D R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu00-orientation_0-4",
+              "notation": "U' R' D' R U R' D R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyyyyollgggggglwlloooyoollgggggglwlloooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu01",
+      "displayName": "CLS RFU01",
+      "name": "CLS RFU01",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu01",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U2' R' U' R U2' R' U",
+      "algorithms": [
+        {
+          "id": "cls_rfu01-1",
+          "notation": "U' R U2 R' U R U2 R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu01-2",
+          "notation": "R' D R' U2 R D' R' U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu01-orientation_0-1",
+              "notation": "U' R U2 R' U R U2 R' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu01-orientation_0-2",
+              "notation": "R' D R' U2 R D' R' U2 R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyylyollgggggglwlloooloollgggggglwlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu02",
+      "displayName": "CLS RFU02",
+      "name": "CLS RFU02",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu02",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U' R' U' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu02-1",
+          "notation": "y' U R' U R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu02-2",
+          "notation": "U F' R U R' U' R' F R U' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu02-orientation_0-1",
+              "notation": "y' U R' U R U R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu02-orientation_0-2",
+              "notation": "U F' R U R' U' R' F R U' R U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyylyoylggggggywllooolooylggggggywlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu03",
+      "displayName": "CLS RFU03",
+      "name": "CLS RFU03",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu03",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' D L2' D' R D L2' D' R' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu03-1",
+          "notation": "R U R' U' R' F' R U R U' R' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu03-2",
+          "notation": "U R U2 R' U2 R U R' U2 R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu03-3",
+          "notation": "y' R D L2 D' R' D L2 D'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu03-orientation_0-1",
+              "notation": "R U R' U' R' F' R U R U' R' F",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu03-orientation_0-2",
+              "notation": "U R U2 R' U2 R U R' U2 R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu03-orientation_0-3",
+              "notation": "y' R D L2 D' R' D L2 D'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyyyyollgggggglwlloooloollgggggglwlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu04",
+      "displayName": "CLS RFU04",
+      "name": "CLS RFU04",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu04",
+      "recognition": "",
+      "notes": "",
+      "setup": "y R' F2' U' F2' U Rw U2' M y'",
+      "algorithms": [
+        {
+          "id": "cls_rfu04-1",
+          "notation": "U2 R U2 R' U R U2 R' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu04-2",
+          "notation": "U R' U R D R' U R U D' R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu04-3",
+          "notation": "y M' U2 r' U' F2 U F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu04-orientation_0-1",
+              "notation": "U2 R U2 R' U R U2 R' U2 R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu04-orientation_0-2",
+              "notation": "U R' U R D R' U R U D' R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu04-orientation_0-3",
+              "notation": "y M' U2 r' U' F2 U F2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylyollggggggywlloooloollggggggywlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu05",
+      "displayName": "CLS RFU05",
+      "name": "CLS RFU05",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu05",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R2' U' R U' R' U2' R2' U R' U2 R y",
+      "algorithms": [
+        {
+          "id": "cls_rfu05-1",
+          "notation": "U R U' R' U R U R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu05-2",
+          "notation": "y' R' U2 R U' R2 U2 R U R' U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu05-orientation_0-1",
+              "notation": "U R U' R' U R U R' U' R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu05-orientation_0-2",
+              "notation": "y' R' U2 R U' R2 U2 R U R' U R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylyoylgggggglwlloooyooylgggggglwlloooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu06",
+      "displayName": "CLS RFU06",
+      "name": "CLS RFU06",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu06",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U' R U2' R' U",
+      "algorithms": [
+        {
+          "id": "cls_rfu06-1",
+          "notation": "U' R U2 R' U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu06-orientation_0-1",
+              "notation": "U' R U2 R' U R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyyyyollggggggywlloooloollggggggywlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu07",
+      "displayName": "CLS RFU07",
+      "name": "CLS RFU07",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu07",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R' U2' R U R U' R2' U2' R2' U' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu07-1",
+          "notation": "U2 R U R' U R2 U2 R' U' R U' R' U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu07-2",
+          "notation": "y' U R2 U2 R2 U R' U' R' U2 R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu07-orientation_0-1",
+              "notation": "U2 R U R' U R2 U2 R' U' R U' R' U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu07-orientation_0-2",
+              "notation": "y' U R2 U2 R2 U R' U' R' U2 R U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylyollgggggglwlloooyoollgggggglwlloooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu08",
+      "displayName": "CLS RFU08",
+      "name": "CLS RFU08",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu08",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R2' U R' U R U2' R2' U' R y",
+      "algorithms": [
+        {
+          "id": "cls_rfu08-1",
+          "notation": "U2 R U' R2 U2 R U R' U R U' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu08-2",
+          "notation": "U' R' D' R U R' D R2 U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu08-3",
+          "notation": "y' R' U R2 U2 R' U' R U' R2 U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu08-4",
+          "notation": "R U2 R' U' R U' R' U2 R' F R F' R' F R F' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu08-orientation_0-1",
+              "notation": "U2 R U' R2 U2 R U R' U R U' R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu08-orientation_0-2",
+              "notation": "U' R' D' R U R' D R2 U2 R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu08-orientation_0-3",
+              "notation": "y' R' U R2 U2 R' U' R U' R2 U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu08-orientation_0-4",
+              "notation": "R U2 R' U' R U' R' U2 R' F R F' R' F R F' R' F R F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylyoylgggggglwllooolooylgggggglwlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu09",
+      "displayName": "CLS RFU09",
+      "name": "CLS RFU09",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu09",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U R' U' R U' R' U R y",
+      "algorithms": [
+        {
+          "id": "cls_rfu09-1",
+          "notation": "U' R U R' U' R U' R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu09-2",
+          "notation": "y' R' U' R U R' U R U' R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu09-orientation_0-1",
+              "notation": "U' R U R' U' R U' R' U' R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu09-orientation_0-2",
+              "notation": "y' R' U' R U R' U R U' R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyyyyollgggggglwlyoooloollgggggglwlyoooloo"
+      }
+    },
+    {
+      "id": "cls_rfu10",
+      "displayName": "CLS RFU10",
+      "name": "CLS RFU10",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu10",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U2' R U' R' U'",
+      "algorithms": [
+        {
+          "id": "cls_rfu10-1",
+          "notation": "U R U R' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu10-orientation_0-1",
+              "notation": "U R U R' U2 R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylyollggggggywlyoooloollggggggywlyoooloo"
+      }
+    },
+    {
+      "id": "cls_rfu11",
+      "displayName": "CLS RFU11",
+      "name": "CLS RFU11",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu11",
+      "recognition": "",
+      "notes": "",
+      "setup": "y L2' F2' U' L U' L' U2' F2' L U' L y'",
+      "algorithms": [
+        {
+          "id": "cls_rfu11-1",
+          "notation": "U' R U' R' U R U F R' U R U' F' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu11-2",
+          "notation": "y L' U L' F2 U2 L U L' U F2 L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu11-orientation_0-1",
+              "notation": "U' R U' R' U R U F R' U R U' F' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu11-orientation_0-2",
+              "notation": "y L' U L' F2 U2 L U L' U F2 L2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylyoylgggggglwlyoooyooylgggggglwlyoooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu12",
+      "displayName": "CLS RFU12",
+      "name": "CLS RFU12",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu12",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U2' R' U' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu12-1",
+          "notation": "y' U R' U R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu12-orientation_0-1",
+              "notation": "y' U R' U R U2 R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyyollggggggywlyoooloollggggggywlyoooloo"
+      }
+    },
+    {
+      "id": "cls_rfu13",
+      "displayName": "CLS RFU13",
+      "name": "CLS RFU13",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu13",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U R' U R U' R' U2' R U y",
+      "algorithms": [
+        {
+          "id": "cls_rfu13-1",
+          "notation": "y' U' R' U2 R U R' U' R U' R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu13-orientation_0-1",
+              "notation": "y' U' R' U2 R U R' U' R U' R' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyollgggggglwlyoooyoollgggggglwlyoooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu14",
+      "displayName": "CLS RFU14",
+      "name": "CLS RFU14",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu14",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U2' R' U2' R U2' R' U' R U2' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu14-1",
+          "notation": "y' U2 R' U R U2 R' U2 R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu14-orientation_0-1",
+              "notation": "y' U2 R' U R U2 R' U2 R U2 R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyoylgggggglwlyooolooylgggggglwlyoooloo"
+      }
+    },
+    {
+      "id": "cls_rfu15",
+      "displayName": "CLS RFU15",
+      "name": "CLS RFU15",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu15",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R2' U' R U' R' U2' R U' R y",
+      "algorithms": [
+        {
+          "id": "cls_rfu15-1",
+          "notation": "R' U R U2 R2 U' R U2 R' U' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu15-2",
+          "notation": "y' R' U R' U2 R U R' U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu15-orientation_0-1",
+              "notation": "R' U R U2 R2 U' R U2 R' U' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu15-orientation_0-2",
+              "notation": "y' R' U R' U2 R U R' U R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyyollgggggglwlyoooyoollgggggglwlyoooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu16",
+      "displayName": "CLS RFU16",
+      "name": "CLS RFU16",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu16",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R2' U2' R' U' R U' R' U R' U' R y",
+      "algorithms": [
+        {
+          "id": "cls_rfu16-1",
+          "notation": "U R U' L' U2 L U' R' U2 L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu16-2",
+          "notation": "y' R' U R U' R U R' U R U2 R2 U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu16-orientation_0-1",
+              "notation": "U R U' L' U2 L U' R' U2 L' U L",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu16-orientation_0-2",
+              "notation": "y' R' U R U' R U R' U R U2 R2 U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyollgggggglwlyoooloollgggggglwlyoooloo"
+      }
+    },
+    {
+      "id": "cls_rfu17",
+      "displayName": "CLS RFU17",
+      "name": "CLS RFU17",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu17",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U L' R' U R U' L U y",
+      "algorithms": [
+        {
+          "id": "cls_rfu17-1",
+          "notation": "U' R U' R' U' R U R' U R U2 R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu17-2",
+          "notation": "y' U' L' U R' U' R L U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu17-orientation_0-1",
+              "notation": "U' R U' R' U' R U R' U R U2 R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu17-orientation_0-2",
+              "notation": "y' U' L' U R' U' R L U' R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyoylggggggywlyooolooylggggggywlyoooloo"
+      }
+    },
+    {
+      "id": "cls_rfu18",
+      "displayName": "CLS RFU18",
+      "name": "CLS RFU18",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu18",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' L' U R U' L U y",
+      "algorithms": [
+        {
+          "id": "cls_rfu18-1",
+          "notation": "U R U2 R' U2 R U R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu18-2",
+          "notation": "y' U' L' U R' U' L U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu18-orientation_0-1",
+              "notation": "U R U2 R' U2 R U R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu18-orientation_0-2",
+              "notation": "y' U' L' U R' U' L U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyyyyollggggggywlloooloollggggggywlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu19",
+      "displayName": "CLS RFU19",
+      "name": "CLS RFU19",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu19",
+      "recognition": "",
+      "notes": "",
+      "setup": "y F' U2' R' F R U2' L F L' y'",
+      "algorithms": [
+        {
+          "id": "cls_rfu19-1",
+          "notation": "y' U' R2 U' R U' R' U2 R U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu19-2",
+          "notation": "y L F' L' U2 R' F' R U2 F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu19-orientation_0-1",
+              "notation": "y' U' R2 U' R U' R' U2 R U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu19-orientation_0-2",
+              "notation": "y L F' L' U2 R' F' R U2 F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylyollgggggglwlloooyoollgggggglwlloooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu20",
+      "displayName": "CLS RFU20",
+      "name": "CLS RFU20",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu20",
+      "recognition": "",
+      "notes": "",
+      "setup": "y R F2' U R' U R U2' F2' R' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu20-1",
+          "notation": "U' R' D' R U R' D U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu20-2",
+          "notation": "y' R F2 U2 R' U' R U' F2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu20-orientation_0-1",
+              "notation": "U' R' D' R U R' D U' R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu20-orientation_0-2",
+              "notation": "y' R F2 U2 R' U' R U' F2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylyrylbbbbbblwllrrrlrrylbbbbbblwllrrrlrr"
+      }
+    },
+    {
+      "id": "cls_rfu21",
+      "displayName": "CLS RFU21",
+      "name": "CLS RFU21",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu21",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R U' R U' R U' R' U2' R' U R2' U2' R y",
+      "algorithms": [
+        {
+          "id": "cls_rfu21-1",
+          "notation": "y' U R' U R2 D R' U2 R D' R2 U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu21-2",
+          "notation": "y' R' U2 R2 U' R U2 R U R' U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu21-orientation_0-1",
+              "notation": "y' U R' U R2 D R' U2 R D' R2 U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu21-orientation_0-2",
+              "notation": "y' R' U2 R2 U' R U2 R U R' U R' U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyyollgggggglwlloooyoollgggggglwlloooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu22",
+      "displayName": "CLS RFU22",
+      "name": "CLS RFU22",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu22",
+      "recognition": "",
+      "notes": "",
+      "setup": "y F2' U R U' R' F2' U L' U2' L U' y'",
+      "algorithms": [
+        {
+          "id": "cls_rfu22-1",
+          "notation": "U L U' R U R' U' R U R' L' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu22-2",
+          "notation": "y U L' U2 L U' F2 R U R' U' F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu22-orientation_0-1",
+              "notation": "U L U' R U R' U' R U R' L' U' R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu22-orientation_0-2",
+              "notation": "y U L' U2 L U' F2 R U R' U' F2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyollgggggglwlloooloollgggggglwlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu23",
+      "displayName": "CLS RFU23",
+      "name": "CLS RFU23",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu23",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U' R' U' R U R' U2' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu23-1",
+          "notation": "U R U2 R' U R U' R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu23-orientation_0-1",
+              "notation": "U R U2 R' U R U' R' U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylygllwggggglolyoooyoollwggggglolyoooyoo"
+      }
+    },
+    {
+      "id": "cls_rfu24",
+      "displayName": "CLS RFU24",
+      "name": "CLS RFU24",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu24",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U' R' U R U2' R' U' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu24-1",
+          "notation": "U2 R U' R' U2 R U R' U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu24-2",
+          "notation": "y' U R' U R U2 R' U' R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu24-orientation_0-1",
+              "notation": "U2 R U' R' U2 R U R' U R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu24-orientation_0-2",
+              "notation": "y' U R' U R U2 R' U' R U R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyyollgggggglwlloooloollgggggglwlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu25",
+      "displayName": "CLS RFU25",
+      "name": "CLS RFU25",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu25",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U' R' U R U R' U R U y",
+      "algorithms": [
+        {
+          "id": "cls_rfu25-1",
+          "notation": "U2 R U2 R' U R U2 L U' R' U L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_rfu25-2",
+          "notation": "y' U' R' U' R U' R' U' R U R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu25-orientation_0-1",
+              "notation": "U2 R U2 R' U R U2 L U' R' U L'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_rfu25-orientation_0-2",
+              "notation": "y' U' R' U' R U' R' U' R U R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyollggggggywlloooloollggggggywlloooloo"
+      }
+    },
+    {
+      "id": "cls_rfu26",
+      "displayName": "CLS RFU26",
+      "name": "CLS RFU26",
+      "group": null,
+      "subgroup": "Cross Color Facing Right",
+      "imageKey": "cls_cls_rfu26",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U R' U' R U' R' U' R U' y",
+      "algorithms": [
+        {
+          "id": "cls_rfu26-1",
+          "notation": "y' U R' U R U R' U R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_rfu26-orientation_0-1",
+              "notation": "y' U R' U R U R' U R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylyoylgggggglwlloooyooylgggggglwlloooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr00",
+      "displayName": "CLS UFR00",
+      "name": "CLS UFR00",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr00",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R2' U2' R2' U R2' U R2' y",
+      "algorithms": [
+        {
+          "id": "cls_ufr00-1",
+          "notation": "R2 U R2 U R2 U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr00-2",
+          "notation": "U' R U' R' U R U2 R' U' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr00-3",
+          "notation": "U2 R2 U2 R2 U' R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr00-4",
+          "notation": "R' F R F' R' F R F' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr00-5",
+          "notation": "y' R2 U' R2 U' R2 U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr00-orientation_0-1",
+              "notation": "R2 U R2 U R2 U2 R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr00-orientation_0-2",
+              "notation": "U' R U' R' U R U2 R' U' R U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr00-orientation_0-3",
+              "notation": "U2 R2 U2 R2 U' R2 U' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr00-orientation_0-4",
+              "notation": "R' F R F' R' F R F' R' F R F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr00-orientation_0-5",
+              "notation": "y' R2 U' R2 U' R2 U2 R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyyyywlloggggglglloooloolloggggglglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr01",
+      "displayName": "CLS UFR01",
+      "name": "CLS UFR01",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr01",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U R' U R U' R' U R U' y",
+      "algorithms": [
+        {
+          "id": "cls_ufr01-1",
+          "notation": "D R' U' R U R' U' R U' R' U R D'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr01-2",
+          "notation": "y' U R' U' R U R' U' R U' R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr01-orientation_0-1",
+              "notation": "D R' U' R U R' U' R U' R' U R D'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr01-orientation_0-2",
+              "notation": "y' U R' U' R U R' U' R U' R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyyyywlloggggglglloooyoolloggggglglloooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr02",
+      "displayName": "CLS UFR02",
+      "name": "CLS UFR02",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr02",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U' R' U2' R U' R' U2' R U y",
+      "algorithms": [
+        {
+          "id": "cls_ufr02-1",
+          "notation": "y' U' R' U2 R U R' U2 R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr02-orientation_0-1",
+              "notation": "y' U' R' U2 R U R' U2 R U R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyyyywllogggggyglyoooloollogggggyglyoooloo"
+      }
+    },
+    {
+      "id": "cls_ufr03",
+      "displayName": "CLS UFR03",
+      "name": "CLS UFR03",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr03",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U' R U' R' U' R U R' U2'",
+      "algorithms": [
+        {
+          "id": "cls_ufr03-1",
+          "notation": "U2 R U' R' U R U R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr03-2",
+          "notation": "U R U' R' U R U' R' U2 R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr03-orientation_0-1",
+              "notation": "U2 R U' R' U R U R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr03-orientation_0-2",
+              "notation": "U R U' R' U R U' R' U2 R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyyyywlloggggglglloooyoolloggggglglloooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr04",
+      "displayName": "CLS UFR04",
+      "name": "CLS UFR04",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr04",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R2' U2' R U R' U R2' U R'",
+      "algorithms": [
+        {
+          "id": "cls_ufr04-1",
+          "notation": "R U' R2 U' R U' R' U2 R2 U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr04-orientation_0-1",
+              "notation": "R U' R2 U' R U' R' U2 R2 U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyywllogggggyglloooloollogggggyglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr05",
+      "displayName": "CLS UFR05",
+      "name": "CLS UFR05",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr05",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U' R U2' R' U R U' R' U'",
+      "algorithms": [
+        {
+          "id": "cls_ufr05-1",
+          "notation": "U R U R' U' R U2 R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr05-orientation_0-1",
+              "notation": "U R U R' U' R U2 R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyywlloggggglglyoooloolloggggglglyoooloo"
+      }
+    },
+    {
+      "id": "cls_ufr06",
+      "displayName": "CLS UFR06",
+      "name": "CLS UFR06",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr06",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U R' U R U R' U' R U2' y",
+      "algorithms": [
+        {
+          "id": "cls_ufr06-1",
+          "notation": "y' U2 R' U R U' R' U' R U' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr06-2",
+          "notation": "y U2 R' U' R' D R U R' D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr06-orientation_0-1",
+              "notation": "y' U2 R' U R U' R' U' R U' R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr06-orientation_0-2",
+              "notation": "y U2 R' U' R' D R U R' D' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyyyywllogggggyglloooloollogggggyglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr07",
+      "displayName": "CLS UFR07",
+      "name": "CLS UFR07",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr07",
+      "recognition": "",
+      "notes": "",
+      "setup": "U R U' R' U R U' R' U R U' R'",
+      "algorithms": [
+        {
+          "id": "cls_ufr07-1",
+          "notation": "U R U' R' U R U' R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr07-2",
+          "notation": "R U R' U' R U R' U' R U R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr07-orientation_0-1",
+              "notation": "U R U' R' U R U' R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr07-orientation_0-2",
+              "notation": "R U R' U' R U R' U' R U R' U'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyywlloggggglglloooloolloggggglglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr08",
+      "displayName": "CLS UFR08",
+      "name": "CLS UFR08",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr08",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U2' R U R' U R U R' U2'",
+      "algorithms": [
+        {
+          "id": "cls_ufr08-1",
+          "notation": "U2 R U' R' U' R U' R' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr08-orientation_0-1",
+              "notation": "U2 R U' R' U' R U' R' U2 R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyyyywlloggggglglyoooyoolloggggglglyoooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr09",
+      "displayName": "CLS UFR09",
+      "name": "CLS UFR09",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr09",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U R U2' R' U R U2' R' U'",
+      "algorithms": [
+        {
+          "id": "cls_ufr09-1",
+          "notation": "U R U2 R' U' R U2 R' U' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr09-orientation_0-1",
+              "notation": "U R U2 R' U' R U2 R' U' R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyylywyloggggglglloooyooyloggggglglloooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr10",
+      "displayName": "CLS UFR10",
+      "name": "CLS UFR10",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr10",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U2' R U R' U' R U' R' U",
+      "algorithms": [
+        {
+          "id": "cls_ufr10-1",
+          "notation": "U' R U R' U R U' R' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr10-orientation_0-1",
+              "notation": "U' R U R' U R U' R' U2 R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylywylogggggygllooolooylogggggyglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr11",
+      "displayName": "CLS UFR11",
+      "name": "CLS UFR11",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr11",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U R' U R2' U2' R2' U R2' U R' U' R U'",
+      "algorithms": [
+        {
+          "id": "cls_ufr11-1",
+          "notation": "U R' U R U' R2 U' R2 U2 R2 U' R U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr11-orientation_0-1",
+              "notation": "U R' U R U' R2 U' R2 U2 R2 U' R U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylywyloggggglglyooolooyloggggglglyoooloo"
+      }
+    },
+    {
+      "id": "cls_ufr12",
+      "displayName": "CLS UFR12",
+      "name": "CLS UFR12",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr12",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U2' R' U' R U' R' U' R U2' y",
+      "algorithms": [
+        {
+          "id": "cls_ufr12-1",
+          "notation": "y' U2 R' U R U R' U R U2 R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr12-orientation_0-1",
+              "notation": "y' U2 R' U R U R' U R U2 R' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylywylogggggygllooolooylogggggyglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr13",
+      "displayName": "CLS UFR13",
+      "name": "CLS UFR13",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr13",
+      "recognition": "",
+      "notes": "",
+      "setup": "U' R U R' U' R U R' U2' R U2 R' U2'",
+      "algorithms": [
+        {
+          "id": "cls_ufr13-1",
+          "notation": "U2 R U2 R' U2 R U' R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr13-2",
+          "notation": "U2 R U2 R' U2 R U' R' U R U' R' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr13-orientation_0-1",
+              "notation": "U2 R U2 R' U2 R U' R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr13-orientation_0-2",
+              "notation": "U2 R U2 R' U2 R U' R' U R U' R' U",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywyloggggglgllooolooyloggggglglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr14",
+      "displayName": "CLS UFR14",
+      "name": "CLS UFR14",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr14",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R U' R2' U' R' U2' R2' U' R' U' R",
+      "algorithms": [
+        {
+          "id": "cls_ufr14-1",
+          "notation": "y' U' R' U R U' R' U R U' R' U' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr14-2",
+          "notation": "R' U R U R2 U2 R U R2 U R' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr14-orientation_0-1",
+              "notation": "y' U' R' U R U' R' U R U' R' U' R U R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr14-orientation_0-2",
+              "notation": "R' U R U R2 U2 R U R2 U R' U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywyloggggglglyoooyooyloggggglglyoooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr15",
+      "displayName": "CLS UFR15",
+      "name": "CLS UFR15",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr15",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U R' U2' R U' R' U R U y",
+      "algorithms": [
+        {
+          "id": "cls_ufr15-1",
+          "notation": "y' U' R' U' R U R' U2 R U' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr15-orientation_0-1",
+              "notation": "y' U' R' U' R U R' U2 R U' R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylywyloggggglgllooolooyloggggglglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr16",
+      "displayName": "CLS UFR16",
+      "name": "CLS UFR16",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr16",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U2' R' U2' R U2' R' U R y",
+      "algorithms": [
+        {
+          "id": "cls_ufr16-1",
+          "notation": "y' R' U' R U2 R' U2 R U2 R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr16-orientation_0-1",
+              "notation": "y' R' U' R U2 R' U2 R U2 R' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywyloggggglglloooyooyloggggglglloooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr17",
+      "displayName": "CLS UFR17",
+      "name": "CLS UFR17",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr17",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R' U R2 U R U2' R2' U R U R' y",
+      "algorithms": [
+        {
+          "id": "cls_ufr17-1",
+          "notation": "U R U' R' U R U' R' U R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr17-2",
+          "notation": "y' R U' R' U' R2 U2 R' U' R2 U' R U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr17-orientation_0-1",
+              "notation": "U R U' R' U R U' R' U R U R' U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr17-orientation_0-2",
+              "notation": "y' R U' R' U' R2 U2 R' U' R2 U' R U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywylogggggyglyooolooylogggggyglyoooloo"
+      }
+    },
+    {
+      "id": "cls_ufr18",
+      "displayName": "CLS UFR18",
+      "name": "CLS UFR18",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr18",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U' R U' R' U R U' R' U",
+      "algorithms": [
+        {
+          "id": "cls_ufr18-1",
+          "notation": "U' R U R' U' R U R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr18-orientation_0-1",
+              "notation": "U' R U R' U' R U R' U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yyyyyylywllogggggyglloooloollogggggyglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr19",
+      "displayName": "CLS UFR19",
+      "name": "CLS UFR19",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr19",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U2' R U2' R' U2' R U' R' U R U y",
+      "algorithms": [
+        {
+          "id": "cls_ufr19-1",
+          "notation": "U R U R' U' R U2 R' U2 R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr19-2",
+          "notation": "y' U' R' U' R U R' U2 R U2 R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr19-orientation_0-1",
+              "notation": "U R U R' U' R U2 R' U2 R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr19-orientation_0-2",
+              "notation": "y' U' R' U' R U R' U2 R U2 R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylywlloggggglglloooloolloggggglglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr20",
+      "displayName": "CLS UFR20",
+      "name": "CLS UFR20",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr20",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R U2' R' U' R U R' U R U' y",
+      "algorithms": [
+        {
+          "id": "cls_ufr20-1",
+          "notation": "y' U R' U' R U' R' U R U2 R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr20-orientation_0-1",
+              "notation": "y' U R' U' R U' R' U R U2 R' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "yylyyylywlloggggglglyoooyoolloggggglglyoooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr21",
+      "displayName": "CLS UFR21",
+      "name": "CLS UFR21",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr21",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' U' R' U R U' R' U R U' R' U R y",
+      "algorithms": [
+        {
+          "id": "cls_ufr21-1",
+          "notation": "y' R' U' R U R' U' R U R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr21-2",
+          "notation": "y' R' U' R U R' U' R U R' U' R U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr21-orientation_0-1",
+              "notation": "y' R' U' R U R' U' R U R' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr21-orientation_0-2",
+              "notation": "y' R' U' R U R' U' R U R' U' R U",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylywlloggggglglloooloolloggggglglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr22",
+      "displayName": "CLS UFR22",
+      "name": "CLS UFR22",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr22",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U2' R U2' R' U R U2' R' U'",
+      "algorithms": [
+        {
+          "id": "cls_ufr22-1",
+          "notation": "U R U2 R' U' R U2 R' U2 R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr22-orientation_0-1",
+              "notation": "U R U2 R' U' R U2 R' U2 R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywlloggggglglloooyoolloggggglglloooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr23",
+      "displayName": "CLS UFR23",
+      "name": "CLS UFR23",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr23",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U2' R U2' R' U2' R U' R'",
+      "algorithms": [
+        {
+          "id": "cls_ufr23-1",
+          "notation": "R U R' U2 R U2 R' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr23-orientation_0-1",
+              "notation": "R U R' U2 R U2 R' U2 R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywllogggggyglyoooloollogggggyglyoooloo"
+      }
+    },
+    {
+      "id": "cls_ufr24",
+      "displayName": "CLS UFR24",
+      "name": "CLS UFR24",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr24",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U R2' U2' R' U' R U' R2 U' R y",
+      "algorithms": [
+        {
+          "id": "cls_ufr24-1",
+          "notation": "y' R' U R2 U R' U R U2 R2 U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr24-orientation_0-1",
+              "notation": "y' R' U R2 U R' U R U2 R2 U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lyyyyylywlloggggglglloooyoolloggggglglloooyoo"
+      }
+    },
+    {
+      "id": "cls_ufr25",
+      "displayName": "CLS UFR25",
+      "name": "CLS UFR25",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr25",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' R' U' R U2' R' U2' R U' R' U2' R U y",
+      "algorithms": [
+        {
+          "id": "cls_ufr25-1",
+          "notation": "y' U' R' U2 R U R' U2 R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr25-orientation_0-1",
+              "notation": "y' U' R' U2 R U R' U2 R U2 R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywllogggggyglloooloollogggggyglloooloo"
+      }
+    },
+    {
+      "id": "cls_ufr26",
+      "displayName": "CLS UFR26",
+      "name": "CLS UFR26",
+      "group": null,
+      "subgroup": "Cross Color Facing Up",
+      "imageKey": "cls_cls_ufr26",
+      "recognition": "",
+      "notes": "",
+      "setup": "y' U R' U' R U R' U' R U2' R' U2' R U2' y",
+      "algorithms": [
+        {
+          "id": "cls_ufr26-1",
+          "notation": "y' U2 R' U2 R U2 R' U R U' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "cls_ufr26-2",
+          "notation": "y' U2 R' U2 R U2 R' U R U' R' U R U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "cls_ufr26-orientation_0-1",
+              "notation": "y' U2 R' U2 R U2 R' U R U' R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "cls_ufr26-orientation_0-2",
+              "notation": "y' U2 R' U2 R U2 R' U R U' R' U R U'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "fl": "lylyyylywlloggggglglyoooloolloggggglglyoooloo"
+      }
+    }
+  ]
+}

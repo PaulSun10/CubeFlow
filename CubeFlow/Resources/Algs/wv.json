@@ -1,0 +1,3644 @@
+{
+  "puzzle": "3x3",
+  "set": "WV",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "wv_1",
+      "displayName": "WV 1",
+      "name": "WV 1",
+      "subgroup": "",
+      "imageKey": "wv_wv_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "L' U2' R U' R' U2' L U'",
+      "algorithms": [
+        {
+          "id": "wv_1-1",
+          "notation": "U L' U2 R U R' U2 L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-2",
+          "notation": "L' U2 R U2 R' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-3",
+          "notation": "f' L U L' U' L' f",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-4",
+          "notation": "U R' D' R U R' D R U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-5",
+          "notation": "U' L' U2 R U' R' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-6",
+          "notation": "y' U' r D r' U r D' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-7",
+          "notation": "y' U r D r' U' r D' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-8",
+          "notation": "y U l D l' U' l D' l'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-9",
+          "notation": "U R U' R' F' r U R' U' r' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-10",
+          "notation": "y U R F R' U' R F' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-11",
+          "notation": "U R U R2 D' R U' R' D R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-12",
+          "notation": "R' F2 R F2 L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-13",
+          "notation": "U2 R U' R' U R U2 R2 U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-14",
+          "notation": "y U' R F R' U R F' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-15",
+          "notation": "U F' U' L' U2 L U F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-16",
+          "notation": "l' U2 R U2 r' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-17",
+          "notation": "x R' U2 R U2 x' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-18",
+          "notation": "U R U' R' U' R' F R B' R' F' R B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-19",
+          "notation": "B' U R U' R' U' B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-20",
+          "notation": "y U' l D l' U l D' l'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-21",
+          "notation": "U R U' R D R' U R D' R' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-22",
+          "notation": "y' U R' U' F' U2 F U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-23",
+          "notation": "y R' U F U' F' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-24",
+          "notation": "y' L' U' L B L' U L B'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-25",
+          "notation": "y2 F' U L U' L' U' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-26",
+          "notation": "U' x' U R U' F U R' U' x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_1-27",
+          "notation": "R2 D R' U R D' R2 U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_1-orientation_0-1",
+              "notation": "U L' U2 R U R' U2 L",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-2",
+              "notation": "L' U2 R U2 R' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-3",
+              "notation": "f' L U L' U' L' f",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-4",
+              "notation": "U R' D' R U R' D R U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-5",
+              "notation": "U' L' U2 R U' R' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-6",
+              "notation": "y' U' r D r' U r D' r'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-7",
+              "notation": "y' U r D r' U' r D' r'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-8",
+              "notation": "y U l D l' U' l D' l'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-9",
+              "notation": "U R U' R' F' r U R' U' r' F R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-10",
+              "notation": "y U R F R' U' R F' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-11",
+              "notation": "U R U R2 D' R U' R' D R2 U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-12",
+              "notation": "R' F2 R F2 L' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-13",
+              "notation": "U2 R U' R' U R U2 R2 U' R U' R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-14",
+              "notation": "y U' R F R' U R F' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-15",
+              "notation": "U F' U' L' U2 L U F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-16",
+              "notation": "l' U2 R U2 r' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-17",
+              "notation": "x R' U2 R U2 x' L' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-18",
+              "notation": "U R U' R' U' R' F R B' R' F' R B",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-19",
+              "notation": "B' U R U' R' U' B",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-20",
+              "notation": "y U' l D l' U l D' l'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-21",
+              "notation": "U R U' R D R' U R D' R' U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-22",
+              "notation": "y' U R' U' F' U2 F U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-23",
+              "notation": "y R' U F U' F' U' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-24",
+              "notation": "y' L' U' L B L' U L B'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-25",
+              "notation": "y2 F' U L U' L' U' F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-26",
+              "notation": "U' x' U R U' F U R' U' x",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_1-orientation_0-27",
+              "notation": "R2 D R' U R D' R2 U R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yyyyygyyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_2",
+      "displayName": "WV 2",
+      "name": "WV 2",
+      "subgroup": "",
+      "imageKey": "wv_wv_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U'",
+      "algorithms": [
+        {
+          "id": "wv_2-1",
+          "notation": "U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-2",
+          "notation": "R U R' U' R U R' U' R U R' U' R U R' U' R U R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-3",
+          "notation": "U l F' l'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-4",
+          "notation": "R' U2 R U R U' R2 U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-5",
+          "notation": "U F' U F U' R' F R F' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-6",
+          "notation": "U L' U2 R L U R' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-7",
+          "notation": "R B U' B' U R B' R' B R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-8",
+          "notation": "U R U R2 S2 R2 U2 R2 S2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-9",
+          "notation": "U R' E R2 U' R2 E' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-10",
+          "notation": "U' M' U2 R U2 M U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-11",
+          "notation": "D' R2 U D R' U' D' R2 D R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-12",
+          "notation": "M' U R U R' U2 r' F R F' U2 R U R' U R' F R F' R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_2-13",
+          "notation": "U R U' R2 U' R U' R' U' R U' R' U' R U' R' U' R U' R' U' R U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_2-orientation_0-1",
+              "notation": "U R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-2",
+              "notation": "R U R' U' R U R' U' R U R' U' R U R' U' R U R' U'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-3",
+              "notation": "U l F' l'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-4",
+              "notation": "R' U2 R U R U' R2 U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-5",
+              "notation": "U F' U F U' R' F R F' U'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-6",
+              "notation": "U L' U2 R L U R' L' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-7",
+              "notation": "R B U' B' U R B' R' B R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-8",
+              "notation": "U R U R2 S2 R2 U2 R2 S2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-9",
+              "notation": "U R' E R2 U' R2 E' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-10",
+              "notation": "U' M' U2 R U2 M U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-11",
+              "notation": "D' R2 U D R' U' D' R2 D R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-12",
+              "notation": "M' U R U R' U2 r' F R F' U2 R U R' U R' F R F' R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_2-orientation_0-13",
+              "notation": "U R U' R2 U' R U' R' U' R U' R' U' R U' R' U' R U' R' U' R U'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yylyygyyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "ooylooyoo"
+      }
+    },
+    {
+      "id": "wv_3",
+      "displayName": "WV 3",
+      "name": "WV 3",
+      "subgroup": "",
+      "imageKey": "wv_wv_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "F R U R' U' R' F' R",
+      "algorithms": [
+        {
+          "id": "wv_3-1",
+          "notation": "R' F R U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_3-2",
+          "notation": "U' L U' R U L' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_3-3",
+          "notation": "U R U' R' U F R' F' r U R U' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_3-4",
+          "notation": "R' F R F' U L U F U' F' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_3-orientation_0-1",
+              "notation": "R' F R U R U' R' F'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_3-orientation_0-2",
+              "notation": "U' L U' R U L' U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_3-orientation_0-3",
+              "notation": "U R U' R' U F R' F' r U R U' r'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_3-orientation_0-4",
+              "notation": "R' F R F' U L U F U' F' L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yylyygyyg",
+        "ub": "yllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_4",
+      "displayName": "WV 4",
+      "name": "WV 4",
+      "subgroup": "",
+      "imageKey": "wv_wv_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' D R' U R D' R2' U'",
+      "algorithms": [
+        {
+          "id": "wv_4-1",
+          "notation": "U R2 D R' U' R D' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_4-2",
+          "notation": "U2 R' D' R U' R' D R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_4-3",
+          "notation": "U2 R U' R' L' U2 R U R' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_4-4",
+          "notation": "U R U' R' U' r U R' U' r' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_4-orientation_0-1",
+              "notation": "U R2 D R' U' R D' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_4-orientation_0-2",
+              "notation": "U2 R' D' R U' R' D R2 U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_4-orientation_0-3",
+              "notation": "U2 R U' R' L' U2 R U R' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_4-orientation_0-4",
+              "notation": "U R U' R' U' r U R' U' r' F R F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lyyyygyyg",
+        "ub": "llybbbbbb",
+        "uf": "llwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "oollooyoo"
+      }
+    },
+    {
+      "id": "wv_5",
+      "displayName": "WV 5",
+      "name": "WV 5",
+      "subgroup": "",
+      "imageKey": "wv_wv_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R U R' U R U' R U R' U'",
+      "algorithms": [
+        {
+          "id": "wv_5-1",
+          "notation": "U R U' R' U R' U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-2",
+          "notation": "y' U2 S R2 F R F' R S'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-3",
+          "notation": "U R U' R' U2 R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-4",
+          "notation": "U R U R' U' R U R D R' U2 R D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-5",
+          "notation": "U l F' M' U2 L' U' L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-6",
+          "notation": "U R U' R' L U2 L' U' L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-7",
+          "notation": "U R U' R' U' L' U' L U' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-8",
+          "notation": "U' r' B2 r U r' B2 r U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-9",
+          "notation": "U2 R U2 R' U2 R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-10",
+          "notation": "U2 R2 B R' U' R' U R B' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_5-11",
+          "notation": "U R U' R' U R' U L U' R U L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_5-orientation_0-1",
+              "notation": "U R U' R' U R' U' R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-2",
+              "notation": "y' U2 S R2 F R F' R S'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-3",
+              "notation": "U R U' R' U2 R U2 R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-4",
+              "notation": "U R U R' U' R U R D R' U2 R D' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-5",
+              "notation": "U l F' M' U2 L' U' L U' L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-6",
+              "notation": "U R U' R' L U2 L' U' L U' L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-7",
+              "notation": "U R U' R' U' L' U' L U' L' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-8",
+              "notation": "U' r' B2 r U r' B2 r U R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-9",
+              "notation": "U2 R U2 R' U2 R U R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-10",
+              "notation": "U2 R2 B R' U' R' U R B' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_5-orientation_0-11",
+              "notation": "U R U' R' U R' U L U' R U L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lyyyygyyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_6",
+      "displayName": "WV 6",
+      "name": "WV 6",
+      "subgroup": "",
+      "imageKey": "wv_wv_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R' U2' R U R' U2' R U R'",
+      "algorithms": [
+        {
+          "id": "wv_6-1",
+          "notation": "R U' R' U2 R U' R' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_6-2",
+          "notation": "U' R' D' R U2 R' D R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_6-3",
+          "notation": "U R U' R' U' R2 D R' U2 R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_6-orientation_0-1",
+              "notation": "R U' R' U2 R U' R' U2 R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_6-orientation_0-2",
+              "notation": "U' R' D' R U2 R' D R2 U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_6-orientation_0-3",
+              "notation": "U R U' R' U' R2 D R' U2 R D' R' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yyyyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "oollooyoo"
+      }
+    },
+    {
+      "id": "wv_7",
+      "displayName": "WV 7",
+      "name": "WV 7",
+      "subgroup": "",
+      "imageKey": "wv_wv_7",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U R U' R' U'",
+      "algorithms": [
+        {
+          "id": "wv_7-1",
+          "notation": "U R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_7-2",
+          "notation": "R' U' R U R U' R' U' R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_7-orientation_0-1",
+              "notation": "U R U R' U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_7-orientation_0-2",
+              "notation": "R' U' R U R U' R' U' R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yyyyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "ylwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_8",
+      "displayName": "WV 8",
+      "name": "WV 8",
+      "subgroup": "",
+      "imageKey": "wv_wv_8",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U R' U2'",
+      "algorithms": [
+        {
+          "id": "wv_8-1",
+          "notation": "U2 R U' R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_8-2",
+          "notation": "U2 R U L' U R' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_8-orientation_0-1",
+              "notation": "U2 R U' R' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_8-orientation_0-2",
+              "notation": "U2 R U L' U R' U' L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lyyyyglyg",
+        "ub": "llybbbbbb",
+        "uf": "llwggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_9",
+      "displayName": "WV 9",
+      "name": "WV 9",
+      "subgroup": "",
+      "imageKey": "wv_wv_9",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' F' R U2' R U2' R' F U2'",
+      "algorithms": [
+        {
+          "id": "wv_9-1",
+          "notation": "U2 F' R U2 R' U2 R' F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_9-2",
+          "notation": "y2 U2 r B2 U R' U' r' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_9-3",
+          "notation": "U2 F2 R U2 R' U2 R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_9-4",
+          "notation": "U2 L' R U R' U' R U R' U' L U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_9-5",
+          "notation": "U R U' R' U R U2 R2 U' R2 U' R2 U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_9-6",
+          "notation": "U2 R U2 R' U R' U' R' D' R U R' D R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_9-7",
+          "notation": "U L' U2 R U L U' L' U R' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_9-orientation_0-1",
+              "notation": "U2 F' R U2 R' U2 R' F R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_9-orientation_0-2",
+              "notation": "y2 U2 r B2 U R' U' r' F R F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_9-orientation_0-3",
+              "notation": "U2 F2 R U2 R' U2 R' F2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_9-orientation_0-4",
+              "notation": "U2 L' R U R' U' R U R' U' L U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_9-orientation_0-5",
+              "notation": "U R U' R' U R U2 R2 U' R2 U' R2 U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_9-orientation_0-6",
+              "notation": "U2 R U2 R' U R' U' R' D' R U R' D R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_9-orientation_0-7",
+              "notation": "U L' U2 R U L U' L' U R' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lyyyyglyg",
+        "ub": "llybbbbbb",
+        "uf": "ylwggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_10",
+      "displayName": "WV 10",
+      "name": "WV 10",
+      "subgroup": "",
+      "imageKey": "wv_wv_10",
+      "recognition": "",
+      "notes": "",
+      "setup": "F U R U' R' U R U' R2' F' R",
+      "algorithms": [
+        {
+          "id": "wv_10-1",
+          "notation": "U R U R2 U' R2 U' R2 U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_10-2",
+          "notation": "R' U2 R U R' U R2 U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_10-3",
+          "notation": "R' F R2 U R' U' R U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_10-4",
+          "notation": "U2 F2 L' U L U L' U' L F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_10-orientation_0-1",
+              "notation": "U R U R2 U' R2 U' R2 U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_10-orientation_0-2",
+              "notation": "R' U2 R U R' U R2 U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_10-orientation_0-3",
+              "notation": "R' F R2 U R' U' R U R' U' F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_10-orientation_0-4",
+              "notation": "U2 F2 L' U L U L' U' L F2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lyyyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggy",
+        "ul": "ylyrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_11",
+      "displayName": "WV 11",
+      "name": "WV 11",
+      "subgroup": "",
+      "imageKey": "wv_wv_11",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R2' U R2' U R U2'",
+      "algorithms": [
+        {
+          "id": "wv_11-1",
+          "notation": "U2 R' U' R2 U' R2 U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_11-2",
+          "notation": "U R U' R' L' U' L U' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_11-3",
+          "notation": "U R U' R' U' R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_11-4",
+          "notation": "U R U R' U' R U R' U2 R' F R U R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_11-orientation_0-1",
+              "notation": "U2 R' U' R2 U' R2 U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_11-orientation_0-2",
+              "notation": "U R U' R' L' U' L U' L' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_11-orientation_0-3",
+              "notation": "U R U' R' U' R U2 R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_11-orientation_0-4",
+              "notation": "U R U R' U' R U R' U2 R' F R U R U' R' F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lyyyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "ylwggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "oollooyoo"
+      }
+    },
+    {
+      "id": "wv_12",
+      "displayName": "WV 12",
+      "name": "WV 12",
+      "subgroup": "",
+      "imageKey": "wv_wv_12",
+      "recognition": "",
+      "notes": "",
+      "setup": "L' U' L U' F2' R' F2' R",
+      "algorithms": [
+        {
+          "id": "wv_12-1",
+          "notation": "Lw' U2 Lw F2 U L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-2",
+          "notation": "R' F2 R F2 U L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-3",
+          "notation": "U R U' R2 U' R' D' R U R' D R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-4",
+          "notation": "U R U' R' U' l' U' L U R U' r' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-5",
+          "notation": "R' F2 R F2 U r' F r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-6",
+          "notation": "l' U2 l F2 U L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-7",
+          "notation": "U R U2 R' U2 L R U' R' U L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-8",
+          "notation": "U R U' R' U r U R' U' r' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-9",
+          "notation": "d R' U' R U R2 F R F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-10",
+          "notation": "y' U R' U' R U R2 F R F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_12-11",
+          "notation": "U R U2 L U L' R' U2 L U L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_12-orientation_0-1",
+              "notation": "Lw' U2 Lw F2 U L' U L",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-2",
+              "notation": "R' F2 R F2 U L' U L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-3",
+              "notation": "U R U' R2 U' R' D' R U R' D R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-4",
+              "notation": "U R U' R' U' l' U' L U R U' r' F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-5",
+              "notation": "R' F2 R F2 U r' F r",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-6",
+              "notation": "l' U2 l F2 U L' U L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-7",
+              "notation": "U R U2 R' U2 L R U' R' U L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-8",
+              "notation": "U R U' R' U r U R' U' r' F R F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-9",
+              "notation": "d R' U' R U R2 F R F' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-10",
+              "notation": "y' U R' U' R U R2 F R F' R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_12-orientation_0-11",
+              "notation": "U R U2 L U L' R' U2 L U L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yylyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "ooylooloo"
+      }
+    },
+    {
+      "id": "wv_13",
+      "displayName": "WV 13",
+      "name": "WV 13",
+      "subgroup": "",
+      "imageKey": "wv_wv_13",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R U R' U R2' U2' R' U2'",
+      "algorithms": [
+        {
+          "id": "wv_13-1",
+          "notation": "U2 R U2 R2 U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-2",
+          "notation": "R' F R F' R' U' F' U F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-3",
+          "notation": "U R U' R D R' U2 R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-4",
+          "notation": "R2 D R' U' R D' R2 U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-5",
+          "notation": "U R U R' U' L' U2 R U R' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-6",
+          "notation": "U2 R U2 R' U R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-7",
+          "notation": "M' U R U' r' R' U' F' U F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-8",
+          "notation": "M' U R U' R' M R' U' F' U F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-9",
+          "notation": "U R U' R' U2 R2 D' R U2 R' D R U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_13-10",
+          "notation": "U' F2 L' U L U' L' U' L F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_13-orientation_0-1",
+              "notation": "U2 R U2 R2 U' R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-2",
+              "notation": "R' F R F' R' U' F' U F R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-3",
+              "notation": "U R U' R D R' U2 R D' R' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-4",
+              "notation": "R2 D R' U' R D' R2 U R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-5",
+              "notation": "U R U R' U' L' U2 R U R' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-6",
+              "notation": "U2 R U2 R' U R U2 R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-7",
+              "notation": "M' U R U' r' R' U' F' U F R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-8",
+              "notation": "M' U R U' R' M R' U' F' U F R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-9",
+              "notation": "U R U' R' U2 R2 D' R U2 R' D R U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_13-orientation_0-10",
+              "notation": "U' F2 L' U L U' L' U' L F2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yylyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "ylwggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "ooylooloo"
+      }
+    },
+    {
+      "id": "wv_14",
+      "displayName": "WV 14",
+      "name": "WV 14",
+      "subgroup": "",
+      "imageKey": "wv_wv_14",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' D R' U2' R D' R2' U2'",
+      "algorithms": [
+        {
+          "id": "wv_14-1",
+          "notation": "U2 R2 D R' U2 R D' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_14-2",
+          "notation": "M' U2 R' F R F' R U2 r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_14-3",
+          "notation": "U2 L' U R U' L U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_14-4",
+          "notation": "U R U' R' U2 R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_14-orientation_0-1",
+              "notation": "U2 R2 D R' U2 R D' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_14-orientation_0-2",
+              "notation": "M' U2 R' F R F' R U2 r'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_14-orientation_0-3",
+              "notation": "U2 L' U R U' L U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_14-orientation_0-4",
+              "notation": "U R U' R' U2 R U R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yylyyglyg",
+        "ub": "yllbbbbbb",
+        "uf": "llwggyggy",
+        "ul": "llyrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_15",
+      "displayName": "WV 15",
+      "name": "WV 15",
+      "subgroup": "",
+      "imageKey": "wv_wv_15",
+      "recognition": "",
+      "notes": "",
+      "setup": "L' R U R' U' L",
+      "algorithms": [
+        {
+          "id": "wv_15-1",
+          "notation": "L' U R U' R' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_15-2",
+          "notation": "r' F R F' M'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_15-3",
+          "notation": "L' U R U' M' x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_15-orientation_0-1",
+              "notation": "L' U R U' R' L",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_15-orientation_0-2",
+              "notation": "r' F R F' M'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_15-orientation_0-3",
+              "notation": "L' U R U' M' x'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yylyyglyg",
+        "ub": "yllbbbbbb",
+        "uf": "ylwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "oollooyoo"
+      }
+    },
+    {
+      "id": "wv_16",
+      "displayName": "WV 16",
+      "name": "WV 16",
+      "subgroup": "",
+      "imageKey": "wv_wv_16",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R2' D' R U' R' D R U'",
+      "algorithms": [
+        {
+          "id": "wv_16-1",
+          "notation": "U R' D' R U R' D R2 U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_16-2",
+          "notation": "U2 R U' R' U' R' F R U R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_16-3",
+          "notation": "U R U' R' U' R2 D' R U2 R' D R U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_16-4",
+          "notation": "U2 L' R U R' U' L R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_16-5",
+          "notation": "U R U' R' U R2 D R' U2 R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_16-6",
+          "notation": "U2 M x U R' U' L R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_16-orientation_0-1",
+              "notation": "U R' D' R U R' D R2 U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_16-orientation_0-2",
+              "notation": "U2 R U' R' U' R' F R U R U' R' F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_16-orientation_0-3",
+              "notation": "U R U' R' U' R2 D' R U2 R' D R U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_16-orientation_0-4",
+              "notation": "U2 L' R U R' U' L R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_16-orientation_0-5",
+              "notation": "U R U' R' U R2 D R' U2 R D' R' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_16-orientation_0-6",
+              "notation": "U2 M x U R' U' L R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyygyyg",
+        "ub": "llybbbbbb",
+        "uf": "llwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "ooylooloo"
+      }
+    },
+    {
+      "id": "wv_17",
+      "displayName": "WV 17",
+      "name": "WV 17",
+      "subgroup": "",
+      "imageKey": "wv_wv_17",
+      "recognition": "",
+      "notes": "",
+      "setup": "F' R U2' R' U2' R' F R",
+      "algorithms": [
+        {
+          "id": "wv_17-1",
+          "notation": "R' F' R U2 R U2 R' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_17-2",
+          "notation": "y2 U L U' F l' U' r' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_17-3",
+          "notation": "U R U' R' l' U' L U l F' L' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_17-4",
+          "notation": "U L' U2 R U' R' U2 L U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_17-orientation_0-1",
+              "notation": "R' F' R U2 R U2 R' F",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_17-orientation_0-2",
+              "notation": "y2 U L U' F l' U' r' F R F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_17-orientation_0-3",
+              "notation": "U R U' R' l' U' L U l F' L' F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_17-orientation_0-4",
+              "notation": "U L' U2 R U' R' U2 L U R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyygyyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggy",
+        "ul": "yllrrrrrr",
+        "ur": "ooylooloo"
+      }
+    },
+    {
+      "id": "wv_18",
+      "displayName": "WV 18",
+      "name": "WV 18",
+      "subgroup": "",
+      "imageKey": "wv_wv_18",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U2'",
+      "algorithms": [
+        {
+          "id": "wv_18-1",
+          "notation": "U2 R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_18-2",
+          "notation": "U2 l F2 l'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_18-3",
+          "notation": "U R U' U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_18-orientation_0-1",
+              "notation": "U2 R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_18-orientation_0-2",
+              "notation": "U2 l F2 l'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_18-orientation_0-3",
+              "notation": "U R U' U R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyygyyg",
+        "ub": "ylybbbbbb",
+        "uf": "llwggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_19",
+      "displayName": "WV 19",
+      "name": "WV 19",
+      "subgroup": "",
+      "imageKey": "wv_wv_19",
+      "recognition": "",
+      "notes": "",
+      "setup": "F2' R U' R' U R U R2' F2' R",
+      "algorithms": [
+        {
+          "id": "wv_19-1",
+          "notation": "R' F2 R2 U' R' U' R U R' F2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_19-2",
+          "notation": "U L' U2 R U' R' U' R U' R' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_19-3",
+          "notation": "U2 L' U R U' R' L U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_19-4",
+          "notation": "U R U' R D' R U2 R' D R U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_19-5",
+          "notation": "R U' R' U2 R U' R' U2 R U' R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_19-6",
+          "notation": "U R U' R' U2 R2 D R' U2 R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_19-orientation_0-1",
+              "notation": "R' F2 R2 U' R' U' R U R' F2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_19-orientation_0-2",
+              "notation": "U L' U2 R U' R' U' R U' R' L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_19-orientation_0-3",
+              "notation": "U2 L' U R U' R' L U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_19-orientation_0-4",
+              "notation": "U R U' R D' R U2 R' D R U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_19-orientation_0-5",
+              "notation": "R U' R' U2 R U' R' U2 R U' R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_19-orientation_0-6",
+              "notation": "U R U' R' U2 R2 D R' U2 R D' R' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyygyyg",
+        "ub": "yllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "oollooyoo"
+      }
+    },
+    {
+      "id": "wv_20",
+      "displayName": "WV 20",
+      "name": "WV 20",
+      "subgroup": "",
+      "imageKey": "wv_wv_20",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U' R' U R U R' U'",
+      "algorithms": [
+        {
+          "id": "wv_20-1",
+          "notation": "U R U' R' U' R U R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_20-2",
+          "notation": "U2 R U' R' U R U' R' U' R' F R U R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_20-3",
+          "notation": "U L' U2 L R U R' U L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_20-4",
+          "notation": "U R U R' U' R U R2 U' R2 U' R2 U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_20-orientation_0-1",
+              "notation": "U R U' R' U' R U R' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_20-orientation_0-2",
+              "notation": "U2 R U' R' U R U' R' U' R' F R U R U' R' F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_20-orientation_0-3",
+              "notation": "U L' U2 L R U R' U L' U L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_20-orientation_0-4",
+              "notation": "U R U R' U' R U R2 U' R2 U' R2 U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "llybbbbbb",
+        "uf": "llwggyggy",
+        "ul": "llyrrrrrr",
+        "ur": "ooylooloo"
+      }
+    },
+    {
+      "id": "wv_21",
+      "displayName": "WV 21",
+      "name": "WV 21",
+      "subgroup": "",
+      "imageKey": "wv_wv_21",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U' R U' R' U2' R2' U R' U'",
+      "algorithms": [
+        {
+          "id": "wv_21-1",
+          "notation": "U R U' R2 U2 R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_21-2",
+          "notation": "U2 R U' R D R' U' R D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_21-3",
+          "notation": "U R U' R' U R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_21-orientation_0-1",
+              "notation": "U R U' R2 U2 R U R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_21-orientation_0-2",
+              "notation": "U2 R U' R D R' U' R D' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_21-orientation_0-3",
+              "notation": "U R U' R' U R U R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "ylybbbbbb",
+        "uf": "llwggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "oollooyoo"
+      }
+    },
+    {
+      "id": "wv_22",
+      "displayName": "WV 22",
+      "name": "WV 22",
+      "subgroup": "",
+      "imageKey": "wv_wv_22",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' D R' U2' R D' R' U' R' U'",
+      "algorithms": [
+        {
+          "id": "wv_22-1",
+          "notation": "U R U R D R' U2 R D' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_22-2",
+          "notation": "U R2 D R' U R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_22-3",
+          "notation": "U R U' R' F R' F' r U R U' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_22-4",
+          "notation": "U2 R U2 R' U R' U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_22-orientation_0-1",
+              "notation": "U R U R D R' U2 R D' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_22-orientation_0-2",
+              "notation": "U R2 D R' U R D' R' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_22-orientation_0-3",
+              "notation": "U R U' R' F R' F' r U R U' r'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_22-orientation_0-4",
+              "notation": "U2 R U2 R' U R' U' R U' R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "llybbbbbb",
+        "uf": "ylwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "ooylooyoo"
+      }
+    },
+    {
+      "id": "wv_23",
+      "displayName": "WV 23",
+      "name": "WV 23",
+      "subgroup": "",
+      "imageKey": "wv_wv_23",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' U2' R' U' R' U R U' R U' R2'",
+      "algorithms": [
+        {
+          "id": "wv_23-1",
+          "notation": "R2 U R' U R' U' R U R U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_23-2",
+          "notation": "U2 R U2 R D' R U2 R' D R U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_23-3",
+          "notation": "U F' L U2 L2 U' L2 U' L' U F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_23-4",
+          "notation": "U2 R' D' R U' R' D R2 U' R2 U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_23-5",
+          "notation": "U R U' R' U2 R U2 R2 U' R2 U' R2 U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_23-6",
+          "notation": "U R U R' F R' F r U r' F2 R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_23-7",
+          "notation": "U2 R U R' U' R U R D R' U R D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_23-orientation_0-1",
+              "notation": "R2 U R' U R' U' R U R U2 R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_23-orientation_0-2",
+              "notation": "U2 R U2 R D' R U2 R' D R U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_23-orientation_0-3",
+              "notation": "U F' L U2 L2 U' L2 U' L' U F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_23-orientation_0-4",
+              "notation": "U2 R' D' R U' R' D R2 U' R2 U' R U' R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_23-orientation_0-5",
+              "notation": "U R U' R' U2 R U2 R2 U' R2 U' R2 U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_23-orientation_0-6",
+              "notation": "U R U R' F R' F r U r' F2 R F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_23-orientation_0-7",
+              "notation": "U2 R U R' U' R U R D R' U R D' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "ylybbbbbb",
+        "uf": "ylwggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_24",
+      "displayName": "WV 24",
+      "name": "WV 24",
+      "subgroup": "",
+      "imageKey": "wv_wv_24",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U R' U' R U R' U2'",
+      "algorithms": [
+        {
+          "id": "wv_24-1",
+          "notation": "U2 R U' R' U R U' R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_24-2",
+          "notation": "U R U' R' U' F' r U R' U' r' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_24-orientation_0-1",
+              "notation": "U2 R U' R' U R U' R' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_24-orientation_0-2",
+              "notation": "U R U' R' U' F' r U R' U' r' F R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "ylyrrrrrr",
+        "ur": "ooylooyoo"
+      }
+    },
+    {
+      "id": "wv_25",
+      "displayName": "WV 25",
+      "name": "WV 25",
+      "subgroup": "",
+      "imageKey": "wv_wv_25",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U' R U' R' U2' R2' U2' R' U2'",
+      "algorithms": [
+        {
+          "id": "wv_25-1",
+          "notation": "U2 R U2 R2 U2 R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_25-2",
+          "notation": "U2 R U2 R' U R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_25-3",
+          "notation": "U2 R U' R' U R U' R D R' U' R D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_25-4",
+          "notation": "U R U' R' U' R' U2 R2 U R2 U R2 U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_25-orientation_0-1",
+              "notation": "U2 R U2 R2 U2 R U R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_25-orientation_0-2",
+              "notation": "U2 R U2 R' U R U R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_25-orientation_0-3",
+              "notation": "U2 R U' R' U R U' R D R' U' R D' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_25-orientation_0-4",
+              "notation": "U R U' R' U' R' U2 R2 U R2 U R2 U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "yllbbbbbb",
+        "uf": "llwggyggl",
+        "ul": "ylyrrrrrr",
+        "ur": "oollooloo"
+      }
+    },
+    {
+      "id": "wv_26",
+      "displayName": "WV 26",
+      "name": "WV 26",
+      "subgroup": "",
+      "imageKey": "wv_wv_26",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R U R' U R2' U R' U'",
+      "algorithms": [
+        {
+          "id": "wv_26-1",
+          "notation": "U R U' R2 U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_26-2",
+          "notation": "U R U R' U F2 L' U L U' L' U' L F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_26-3",
+          "notation": "U R' D' R U' R' D R2 U' r' l' U R U' R' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_26-4",
+          "notation": "U R U' R' U R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_26-orientation_0-1",
+              "notation": "U R U' R2 U' R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_26-orientation_0-2",
+              "notation": "U R U R' U F2 L' U L U' L' U' L F2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_26-orientation_0-3",
+              "notation": "U R' D' R U' R' D R2 U' r' l' U R U' R' L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_26-orientation_0-4",
+              "notation": "U R U' R' U R U2 R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "lllbbbbbb",
+        "uf": "ylwggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "ooylooloo"
+      }
+    },
+    {
+      "id": "wv_27",
+      "displayName": "WV 27",
+      "name": "WV 27",
+      "subgroup": "",
+      "imageKey": "wv_wv_27",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U R U' R' U R U' R' U'",
+      "algorithms": [
+        {
+          "id": "wv_27-1",
+          "notation": "U R U R' U' R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_27-2",
+          "notation": "U R U' R' F R U R' U' R U R' U' R U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_27-3",
+          "notation": "U R U' R' U' R U R' U R U' R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "wv_27-4",
+          "notation": "U R U' R' U R' U' R U' R' U R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "wv_27-orientation_0-1",
+              "notation": "U R U R' U' R U R' U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_27-orientation_0-2",
+              "notation": "U R U' R' F R U R' U' R U R' U' R U R' U' F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_27-orientation_0-3",
+              "notation": "U R U' R' U' R U R' U R U' R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "wv_27-orientation_0-4",
+              "notation": "U R U' R' U R' U' R U' R' U R U' R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lylyyglyg",
+        "ub": "yllbbbbbb",
+        "uf": "ylwggyggy",
+        "ul": "yllrrrrrr",
+        "ur": "oollooloo"
+      }
+    }
+  ]
+}

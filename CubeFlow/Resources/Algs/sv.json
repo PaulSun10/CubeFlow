@@ -1,0 +1,1952 @@
+{
+  "puzzle": "3x3",
+  "set": "SV",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "sv_1",
+      "displayName": "SV 1",
+      "name": "SV 1",
+      "subgroup": "",
+      "imageKey": "sv_sv_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U2' L U' R U R' L'",
+      "algorithms": [
+        {
+          "id": "sv_1-1",
+          "notation": "U2 R' D' r U2 r' D R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_1-2",
+          "notation": "L R U' R' U L' U2 R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_1-3",
+          "notation": "U2 R U R' U2 L U' R U R' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_1-4",
+          "notation": "R U R D R' U2 R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_1-5",
+          "notation": "R U' R' U' L' U2 R U R' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_1-orientation_0-1",
+              "notation": "U2 R' D' r U2 r' D R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_1-orientation_0-2",
+              "notation": "L R U' R' U L' U2 R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_1-orientation_0-3",
+              "notation": "U2 R U R' U2 L U' R U R' L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_1-orientation_0-4",
+              "notation": "R U R D R' U2 R D' R' U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_1-orientation_0-5",
+              "notation": "R U' R' U' L' U2 R U R' U2 L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "ygyyyyyyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooyoo"
+      }
+    },
+    {
+      "id": "sv_2",
+      "displayName": "SV 2",
+      "name": "SV 2",
+      "subgroup": "",
+      "imageKey": "sv_sv_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U' R U' R' U2' R U' R U' R'",
+      "algorithms": [
+        {
+          "id": "sv_2-1",
+          "notation": "U2 R' D' R U R' D R U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_2-2",
+          "notation": "L' R U R' U L U R U2 L' U' L U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_2-3",
+          "notation": "R U R' U2 R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_2-4",
+          "notation": "R U R' U R' U2 R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_2-5",
+          "notation": "R U r U R' U' r' F R F' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_2-orientation_0-1",
+              "notation": "U2 R' D' R U R' D R U R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_2-orientation_0-2",
+              "notation": "L' R U R' U L U R U2 L' U' L U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_2-orientation_0-3",
+              "notation": "R U R' U2 R U R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_2-orientation_0-4",
+              "notation": "R U R' U R' U2 R U R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_2-orientation_0-5",
+              "notation": "R U r U R' U' r' F R F' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "ygyyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_3",
+      "displayName": "SV 3",
+      "name": "SV 3",
+      "subgroup": "",
+      "imageKey": "sv_sv_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R D R' U' R D' R' U' R'",
+      "algorithms": [
+        {
+          "id": "sv_3-1",
+          "notation": "R U R D R' U R D' R' U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_3-2",
+          "notation": "U2 R L U' R' U' L' U' L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_3-3",
+          "notation": "R U' R' U' R2 D R' U' R D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_3-4",
+          "notation": "M x D L U L' D' L R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_3-orientation_0-1",
+              "notation": "R U R D R' U R D' R' U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_3-orientation_0-2",
+              "notation": "U2 R L U' R' U' L' U' L U' L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_3-orientation_0-3",
+              "notation": "R U' R' U' R2 D R' U' R D' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_3-orientation_0-4",
+              "notation": "M x D L U L' D' L R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "ygyyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "ylgggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_4",
+      "displayName": "SV 4",
+      "name": "SV 4",
+      "subgroup": "",
+      "imageKey": "sv_sv_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "L U' R U R' L' U2'",
+      "algorithms": [
+        {
+          "id": "sv_4-1",
+          "notation": "U2 L R U' R' U L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_4-orientation_0-1",
+              "notation": "U2 L R U' R' U L'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lgyyyyyyo",
+        "ub": "loybbbbbb",
+        "uf": "llgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_5",
+      "displayName": "SV 5",
+      "name": "SV 5",
+      "subgroup": "",
+      "imageKey": "sv_sv_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "L' U' L R U2' L' U' L U R'",
+      "algorithms": [
+        {
+          "id": "sv_5-1",
+          "notation": "R U2 R' U' R' F R U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_5-2",
+          "notation": "L' U2 L U L' U L R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_5-3",
+          "notation": "R U' L' U L U2 R' L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_5-4",
+          "notation": "U2 L U F2 r U2 r' U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_5-orientation_0-1",
+              "notation": "R U2 R' U' R' F R U R U' R' F'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_5-orientation_0-2",
+              "notation": "L' U2 L U L' U L R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_5-orientation_0-3",
+              "notation": "R U' L' U L U2 R' L' U L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_5-orientation_0-4",
+              "notation": "U2 L U F2 r U2 r' U' L'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lgyyyylyo",
+        "ub": "loybbbbbb",
+        "uf": "llgggyggy",
+        "ul": "llyrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_6",
+      "displayName": "SV 6",
+      "name": "SV 6",
+      "subgroup": "",
+      "imageKey": "sv_sv_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U R U R'",
+      "algorithms": [
+        {
+          "id": "sv_6-1",
+          "notation": "R U' R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_6-orientation_0-1",
+              "notation": "R U' R' U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lgyyyylyo",
+        "ub": "loybbbbbb",
+        "uf": "ylgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooyoo"
+      }
+    },
+    {
+      "id": "sv_7",
+      "displayName": "SV 7",
+      "name": "SV 7",
+      "subgroup": "",
+      "imageKey": "sv_sv_7",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U' R'",
+      "algorithms": [
+        {
+          "id": "sv_7-1",
+          "notation": "R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_7-2",
+          "notation": "R U2 R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_7-3",
+          "notation": "R U' U' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_7-4",
+          "notation": "B' D' B2 R' U' B U B2 R D R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_7-5",
+          "notation": "R U R' U' R U R' U' R U R' U' R U R' U' R U R' U' R U R' U' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_7-6",
+          "notation": "y F U F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_7-7",
+          "notation": "B3 R3' U3' R3' B3 R2 B3' R3' U3' R2 U3 R3' B3'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_7-orientation_0-1",
+              "notation": "R U R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_7-orientation_0-2",
+              "notation": "R U2 R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_7-orientation_0-3",
+              "notation": "R U' U' U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_7-orientation_0-4",
+              "notation": "B' D' B2 R' U' B U B2 R D R U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_7-orientation_0-5",
+              "notation": "R U R' U' R U R' U' R U R' U' R U R' U' R U R' U' R U R' U' R U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_7-orientation_0-6",
+              "notation": "y F U F'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_7-orientation_0-7",
+              "notation": "B3 R3' U3' R3' B3 R2 B3' R3' U3' R2 U3 R3' B3'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lgyyyyyyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggy",
+        "ul": "yllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_8",
+      "displayName": "SV 8",
+      "name": "SV 8",
+      "subgroup": "",
+      "imageKey": "sv_sv_8",
+      "recognition": "",
+      "notes": "",
+      "setup": "L' R U R' U' L U R U2' R'",
+      "algorithms": [
+        {
+          "id": "sv_8-1",
+          "notation": "R U M' U R' U' r' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_8-2",
+          "notation": "U2 M' F' U2 F M",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_8-3",
+          "notation": "R U2 R' U' L' U R U' R' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_8-4",
+          "notation": "R U2 R' U' r' F R F' M'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_8-orientation_0-1",
+              "notation": "R U M' U R' U' r' F R F'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_8-orientation_0-2",
+              "notation": "U2 M' F' U2 F M",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_8-orientation_0-3",
+              "notation": "R U2 R' U' L' U R U' R' L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_8-orientation_0-4",
+              "notation": "R U2 R' U' r' F R F' M'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lgyyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "ylyrrrrrr",
+        "ur": "wlllooyoo"
+      }
+    },
+    {
+      "id": "sv_9",
+      "displayName": "SV 9",
+      "name": "SV 9",
+      "subgroup": "",
+      "imageKey": "sv_sv_9",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U L' R U R' U' L R U R'",
+      "algorithms": [
+        {
+          "id": "sv_9-1",
+          "notation": "R U' R' L' U R U' R' L U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_9-orientation_0-1",
+              "notation": "R U' R' L' U R U' R' L U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lgyyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "ylgggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_10",
+      "displayName": "SV 10",
+      "name": "SV 10",
+      "subgroup": "",
+      "imageKey": "sv_sv_10",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U' R' U R U' R'",
+      "algorithms": [
+        {
+          "id": "sv_10-1",
+          "notation": "R U R' U' R U R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_10-2",
+          "notation": "U2 R' D' R U' R' D R U' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_10-orientation_0-1",
+              "notation": "R U R' U' R U R' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_10-orientation_0-2",
+              "notation": "U2 R' D' R U' R' D R U' R U R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yglyyyyyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlylooloo"
+      }
+    },
+    {
+      "id": "sv_11",
+      "displayName": "SV 11",
+      "name": "SV 11",
+      "subgroup": "",
+      "imageKey": "sv_sv_11",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U2' R'",
+      "algorithms": [
+        {
+          "id": "sv_11-1",
+          "notation": "M F R' F' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_11-2",
+          "notation": "L' R U R' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_11-3",
+          "notation": "R U2 R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_11-orientation_0-1",
+              "notation": "M F R' F' r",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_11-orientation_0-2",
+              "notation": "L' R U R' U' L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_11-orientation_0-3",
+              "notation": "R U2 R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yglyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggy",
+        "ul": "llyrrrrrr",
+        "ur": "wlylooloo"
+      }
+    },
+    {
+      "id": "sv_12",
+      "displayName": "SV 12",
+      "name": "SV 12",
+      "subgroup": "",
+      "imageKey": "sv_sv_12",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' U R' U R U' R2' U R U' R U' R2'",
+      "algorithms": [
+        {
+          "id": "sv_12-1",
+          "notation": "R U2 R' U F' R U2 R' U2 R' F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_12-2",
+          "notation": "R2 U R' U R' U' R2 U R' U' R U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_12-3",
+          "notation": "R U R' U R U2 R2 U' R2 U' R2 U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_12-orientation_0-1",
+              "notation": "R U2 R' U F' R U2 R' U2 R' F R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_12-orientation_0-2",
+              "notation": "R2 U R' U R' U' R2 U R' U' R U' R2",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_12-orientation_0-3",
+              "notation": "R U R' U R U2 R2 U' R2 U' R2 U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yglyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "ylgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlylooyoo"
+      }
+    },
+    {
+      "id": "sv_13",
+      "displayName": "SV 13",
+      "name": "SV 13",
+      "subgroup": "",
+      "imageKey": "sv_sv_13",
+      "recognition": "",
+      "notes": "",
+      "setup": "L' U2' R U R' U' R U' R' L U'",
+      "algorithms": [
+        {
+          "id": "sv_13-1",
+          "notation": "U L' R U R' U R U' R' U2 L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_13-2",
+          "notation": "R U2 R2 D' R U R' D R2 U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_13-3",
+          "notation": "R U' R' U' R U' R' U' R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_13-orientation_0-1",
+              "notation": "U L' R U R' U R U' R' U2 L",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_13-orientation_0-2",
+              "notation": "R U2 R2 D' R U R' D R2 U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_13-orientation_0-3",
+              "notation": "R U' R' U' R U' R' U' R U R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyyyyo",
+        "ub": "loybbbbbb",
+        "uf": "llgggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "wlylooloo"
+      }
+    },
+    {
+      "id": "sv_14",
+      "displayName": "SV 14",
+      "name": "SV 14",
+      "subgroup": "",
+      "imageKey": "sv_sv_14",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U L U' R2' U R' L' U2'",
+      "algorithms": [
+        {
+          "id": "sv_14-1",
+          "notation": "U2 L R U' R2 U L' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_14-orientation_0-1",
+              "notation": "U2 L R U' R2 U L' U' R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "loybbbbbb",
+        "uf": "llgggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "wlylooyoo"
+      }
+    },
+    {
+      "id": "sv_15",
+      "displayName": "SV 15",
+      "name": "SV 15",
+      "subgroup": "",
+      "imageKey": "sv_sv_15",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U2' R' U' R U R' U' R U2' R'",
+      "algorithms": [
+        {
+          "id": "sv_15-1",
+          "notation": "R U2 R' U R U' R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_15-orientation_0-1",
+              "notation": "R U2 R' U R U' R' U R U2 R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "loybbbbbb",
+        "uf": "ylgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlylooloo"
+      }
+    },
+    {
+      "id": "sv_16",
+      "displayName": "SV 16",
+      "name": "SV 16",
+      "subgroup": "",
+      "imageKey": "sv_sv_16",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' D R' U2' R D' R' U R'",
+      "algorithms": [
+        {
+          "id": "sv_16-1",
+          "notation": "R U' R D R' U2 R D' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_16-orientation_0-1",
+              "notation": "R U' R D R' U2 R D' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyyyyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "wlylooyoo"
+      }
+    },
+    {
+      "id": "sv_17",
+      "displayName": "SV 17",
+      "name": "SV 17",
+      "subgroup": "",
+      "imageKey": "sv_sv_17",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U' R U' R' U2' R2' U' R'",
+      "algorithms": [
+        {
+          "id": "sv_17-1",
+          "notation": "R U R2 U2 R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_17-orientation_0-1",
+              "notation": "R U R2 U2 R U R' U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "ylyrrrrrr",
+        "ur": "wlylooloo"
+      }
+    },
+    {
+      "id": "sv_18",
+      "displayName": "SV 18",
+      "name": "SV 18",
+      "subgroup": "",
+      "imageKey": "sv_sv_18",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' D R' U R D' R' U2' R'",
+      "algorithms": [
+        {
+          "id": "sv_18-1",
+          "notation": "R U2 R D R' U' R D' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_18-2",
+          "notation": "R U2 R' U R' D' R U' R' D R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_18-orientation_0-1",
+              "notation": "R U2 R D R' U' R D' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_18-orientation_0-2",
+              "notation": "R U2 R' U R' D' R U' R' D R2 U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "lolbbbbbb",
+        "uf": "ylgggyggy",
+        "ul": "yllrrrrrr",
+        "ur": "wlylooloo"
+      }
+    },
+    {
+      "id": "sv_19",
+      "displayName": "SV 19",
+      "name": "SV 19",
+      "subgroup": "",
+      "imageKey": "sv_sv_19",
+      "recognition": "",
+      "notes": "",
+      "setup": "L' U' L' U R U' L U L U' R'",
+      "algorithms": [
+        {
+          "id": "sv_19-1",
+          "notation": "R U R2 F' r U R U' r' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_19-2",
+          "notation": "R U L' U' L' U R' U' L U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_19-3",
+          "notation": "R U' R' F' R U2 R' U2 R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_19-4",
+          "notation": "R U2 R' U' R' F' R U2 R U2 R' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_19-orientation_0-1",
+              "notation": "R U R2 F' r U R U' r' F",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_19-orientation_0-2",
+              "notation": "R U L' U' L' U R' U' L U L",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_19-orientation_0-3",
+              "notation": "R U' R' F' R U2 R' U2 R' F R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_19-orientation_0-4",
+              "notation": "R U2 R' U' R' F' R U2 R U2 R' F",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yglyyyyyo",
+        "ub": "yolbbbbbb",
+        "uf": "llgggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_20",
+      "displayName": "SV 20",
+      "name": "SV 20",
+      "subgroup": "",
+      "imageKey": "sv_sv_20",
+      "recognition": "",
+      "notes": "",
+      "setup": "R U R' U R U' R' U R U R'",
+      "algorithms": [
+        {
+          "id": "sv_20-1",
+          "notation": "R U' R' U' R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_20-orientation_0-1",
+              "notation": "R U' R' U' R U R' U' R U' R'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yglyyylyo",
+        "ub": "yolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "wlllooyoo"
+      }
+    },
+    {
+      "id": "sv_21",
+      "displayName": "SV 21",
+      "name": "SV 21",
+      "subgroup": "",
+      "imageKey": "sv_sv_21",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R2' U R2' U R2' U R'",
+      "algorithms": [
+        {
+          "id": "sv_21-1",
+          "notation": "R U' R2 U' R2 U' R2 U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_21-orientation_0-1",
+              "notation": "R U' R2 U' R2 U' R2 U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "yglyyylyo",
+        "ub": "yolbbbbbb",
+        "uf": "ylgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_22",
+      "displayName": "SV 22",
+      "name": "SV 22",
+      "subgroup": "",
+      "imageKey": "sv_sv_22",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R U R' U R2' U' R'",
+      "algorithms": [
+        {
+          "id": "sv_22-1",
+          "notation": "R U R2 U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_22-orientation_0-1",
+              "notation": "R U R2 U' R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyyyyo",
+        "ub": "yoybbbbbb",
+        "uf": "llgggyggl",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooyoo"
+      }
+    },
+    {
+      "id": "sv_23",
+      "displayName": "SV 23",
+      "name": "SV 23",
+      "subgroup": "",
+      "imageKey": "sv_sv_23",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R U R' U R2' U R' U R U R'",
+      "algorithms": [
+        {
+          "id": "sv_23-1",
+          "notation": "R U' R' U' R U' R2 U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_23-2",
+          "notation": "R U2 R' U R U2 R2 U2 R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_23-orientation_0-1",
+              "notation": "R U' R' U' R U' R2 U' R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_23-orientation_0-2",
+              "notation": "R U2 R' U R U2 R2 U2 R U R' U R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "yoybbbbbb",
+        "uf": "llgggyggl",
+        "ul": "llyrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_24",
+      "displayName": "SV 24",
+      "name": "SV 24",
+      "subgroup": "",
+      "imageKey": "sv_sv_24",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U2' R U R' U R U' R U' R'",
+      "algorithms": [
+        {
+          "id": "sv_24-1",
+          "notation": "R U R' U R' U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_24-orientation_0-1",
+              "notation": "R U R' U R' U' R U' R' U2 R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "yoybbbbbb",
+        "uf": "ylgggyggy",
+        "ul": "lllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_25",
+      "displayName": "SV 25",
+      "name": "SV 25",
+      "subgroup": "",
+      "imageKey": "sv_sv_25",
+      "recognition": "",
+      "notes": "",
+      "setup": "R' U' R' D' R U R' D R' U' R'",
+      "algorithms": [
+        {
+          "id": "sv_25-1",
+          "notation": "R U R D' R U' R' D R U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_25-2",
+          "notation": "R U2 R' U R U' R' U R U' R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_25-3",
+          "notation": "R U' R' U' R U R' U' R U R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_25-orientation_0-1",
+              "notation": "R U R D' R U' R' D R U R",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_25-orientation_0-2",
+              "notation": "R U2 R' U R U' R' U R U' R' U R U2 R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_25-orientation_0-3",
+              "notation": "R U' R' U' R U R' U' R U R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyyyyo",
+        "ub": "yolbbbbbb",
+        "uf": "llgggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_26",
+      "displayName": "SV 26",
+      "name": "SV 26",
+      "subgroup": "",
+      "imageKey": "sv_sv_26",
+      "recognition": "",
+      "notes": "",
+      "setup": "R2' D R' U' R D' R' U' R' U",
+      "algorithms": [
+        {
+          "id": "sv_26-1",
+          "notation": "U' R U R D R' U R D' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_26-orientation_0-1",
+              "notation": "U' R U R D R' U R D' R2",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "yolbbbbbb",
+        "uf": "llgggyggy",
+        "ul": "ylyrrrrrr",
+        "ur": "wlllooloo"
+      }
+    },
+    {
+      "id": "sv_27",
+      "displayName": "SV 27",
+      "name": "SV 27",
+      "subgroup": "",
+      "imageKey": "sv_sv_27",
+      "recognition": "",
+      "notes": "",
+      "setup": "L R U' R2' U L' U' R",
+      "algorithms": [
+        {
+          "id": "sv_27-1",
+          "notation": "R' U L U' R2 U R' L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_27-2",
+          "notation": "R U R' U' R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        },
+        {
+          "id": "sv_27-3",
+          "notation": "R U R' U2 R' U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": [
+
+          ]
+        }
+      ],
+      "algorithmGroups": [
+        {
+          "id": "orientation_0",
+          "title": "Orientation 0",
+          "setup": "",
+          "algorithms": [
+            {
+              "id": "sv_27-orientation_0-1",
+              "notation": "R' U L U' R2 U R' L'",
+              "isPrimary": true,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_27-orientation_0-2",
+              "notation": "R U R' U' R U2 R' U' R U' R'",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            },
+            {
+              "id": "sv_27-orientation_0-3",
+              "notation": "R U R' U2 R' U' R U' R' U2 R",
+              "isPrimary": false,
+              "source": "SpeedCubeDB",
+              "tags": [
+
+              ]
+            }
+          ]
+        }
+      ],
+      "stickers": {
+        "us": "lglyyylyo",
+        "ub": "yolbbbbbb",
+        "uf": "ylgggyggl",
+        "ul": "yllrrrrrr",
+        "ur": "wlllooyoo"
+      }
+    }
+  ]
+}

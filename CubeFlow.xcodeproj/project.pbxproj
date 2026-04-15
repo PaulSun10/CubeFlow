@@ -23,10 +23,24 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		B53000032F7A000000000001 /* Embed TNoodle Runtime */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed TNoodle Runtime";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		905DBA372F54AEB0001095EF /* CubeFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CubeFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		905DBA462F54AEB2001095EF /* CubeFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CubeFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		905DBA502F54AEB2001095EF /* CubeFlowUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CubeFlowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B53000052F7A000000000001 /* Vendor/TNoodleLibNative.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/TNoodleLibNative.xcframework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +89,7 @@
 		905DBA2E2F54AEB0001095EF = {
 			isa = PBXGroup;
 			children = (
+				B53000052F7A000000000001 /* Vendor/TNoodleLibNative.xcframework */,
 				905DBA392F54AEB0001095EF /* CubeFlow */,
 				905DBA492F54AEB2001095EF /* CubeFlowTests */,
 				905DBA532F54AEB2001095EF /* CubeFlowUITests */,
@@ -101,6 +116,8 @@
 			buildPhases = (
 				905DBA332F54AEB0001095EF /* Sources */,
 				905DBA342F54AEB0001095EF /* Frameworks */,
+				B53000032F7A000000000001 /* Embed TNoodle Runtime */,
+				B53000062F7A000000000001 /* Sign TNoodle Runtime */,
 				905DBA352F54AEB0001095EF /* Resources */,
 			);
 			buildRules = (
@@ -192,6 +209,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 905DBA2E2F54AEB0001095EF;
 			minimizedProjectReferenceProxies = 1;
@@ -230,6 +248,30 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B53000062F7A000000000001 /* Sign TNoodle Runtime */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(PROJECT_DIR)/Vendor/TNoodleLibNative.xcframework/ios-arm64/lib-scrambles.dylib",
+			);
+			name = "Sign TNoodle Runtime";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/lib-scrambles.dylib",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\nif [ $PLATFORM_NAME != iphoneos ]; then\n  exit 0\nfi\nAPP_DYLIB_PATH=${TARGET_BUILD_DIR}/${WRAPPER_NAME}/lib-scrambles.dylib\nSOURCE_DYLIB=${PROJECT_DIR}/Vendor/TNoodleLibNative.xcframework/ios-arm64/lib-scrambles.dylib\nif [ ! -f $SOURCE_DYLIB ]; then\n  echo Missing TNoodle runtime: $SOURCE_DYLIB >&2\n  exit 1\nfi\nmkdir -p ${TARGET_BUILD_DIR}/${WRAPPER_NAME}\n/bin/cp -f $SOURCE_DYLIB $APP_DYLIB_PATH\nif [ -z ${EXPANDED_CODE_SIGN_IDENTITY:-} ] || [ ${CODE_SIGNING_ALLOWED:-NO} = NO ]; then\n  exit 0\nfi\n/usr/bin/codesign --force --sign $EXPANDED_CODE_SIGN_IDENTITY --preserve-metadata=identifier,entitlements $APP_DYLIB_PATH";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		905DBA332F54AEB0001095EF /* Sources */ = {
@@ -307,7 +349,7 @@
 				DEVELOPMENT_TEAM = 77MH3C9VGW;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -369,7 +411,7 @@
 				DEVELOPMENT_TEAM = 77MH3C9VGW;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -388,8 +430,10 @@
 		905DBA5B2F54AEB2001095EF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "CubeflowBlack CubeflowBlue CubeflowCyan CubeflowDarkGray CubeflowGray CubeflowGreen CubeflowIndigo CubeflowLightGray CubeflowAmber CubeflowPurple CubeflowTeal CubeflowTurquoise CubeflowGold";
+				ASSETCATALOG_COMPILER_APPICON_NAME = CubeflowRed;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 77MH3C9VGW;
@@ -397,7 +441,14 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/CubeFlow/Vendor/min2phaseCXX/include",
+					"$(PROJECT_DIR)/Vendor/TNoodleLibNative.xcframework/ios-arm64/Headers",
+				);
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Used to show your current location on the competitions map.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -422,6 +473,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = CubeFlow/BridgingHeader.h;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
@@ -432,8 +484,10 @@
 		905DBA5C2F54AEB2001095EF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "CubeflowBlack CubeflowBlue CubeflowCyan CubeflowDarkGray CubeflowGray CubeflowGreen CubeflowIndigo CubeflowLightGray CubeflowAmber CubeflowPurple CubeflowTeal CubeflowTurquoise CubeflowGold";
+				ASSETCATALOG_COMPILER_APPICON_NAME = CubeflowRed;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 77MH3C9VGW;
@@ -441,7 +495,14 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/CubeFlow/Vendor/min2phaseCXX/include",
+					"$(PROJECT_DIR)/Vendor/TNoodleLibNative.xcframework/ios-arm64/Headers",
+				);
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Used to show your current location on the competitions map.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -466,6 +527,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = CubeFlow/BridgingHeader.h;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
