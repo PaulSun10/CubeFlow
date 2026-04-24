@@ -88,7 +88,7 @@ struct AlgsTabView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             Group {
                 if sections.isEmpty || overviewBrowseViewMode == .list {
                     overviewListContent
@@ -103,75 +103,85 @@ struct AlgsTabView: View {
                         .padding(.bottom, 8)
                 }
             }
-            .navigationDestination(isPresented: $isShowingRecentPractice) {
+            .compatibleNavigationDestination(isPresented: $isShowingRecentPractice) {
                 if let context = recentPracticeNavigationContext {
                     recentPracticeDestinationView(for: context)
                 }
             }
-            .navigationDestination(isPresented: $isShowingSearch) {
+            .compatibleNavigationDestination(isPresented: $isShowingSearch) {
                 AlgSearchView(items: overviewSearchItems, languageCode: appLanguage)
             }
-            .toolbar(.hidden, for: .navigationBar)
+            .navigationTitle(Text("tab.algs"))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    puzzlePickerMenu
+                }
+            }
         }
     }
 
     private var overviewListContent: some View {
-        List {
-            topHeader
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: -4, trailing: 16))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-
-            if let recentPracticeContext, recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
-                recentPracticeCard(recentPracticeContext)
-                .listRowInsets(EdgeInsets(top: 14, leading: 16, bottom: 6, trailing: 16))
-                .listRowSeparator(.hidden)
-            }
-
-            if !weakPracticeItems.isEmpty {
-                NavigationLink {
-                    AlgTrainerWeakReviewView(items: weakPracticeItems, languageCode: appLanguage)
-                } label: {
-                    weakPracticeCard
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                if let recentPracticeContext, recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
+                    recentPracticeCard(recentPracticeContext)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 14)
+                        .padding(.bottom, 6)
                 }
-                .buttonStyle(.plain)
-                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 4, trailing: 16))
-                .listRowSeparator(.hidden)
-            }
 
-            if sections.isEmpty {
-                Text("algs.coming_soon")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(sections) { section in
-                    Section {
-                        ForEach(section.items) { item in
-                            NavigationLink {
-                                destinationView(for: item)
-                            } label: {
-                                algRow(item)
-                            }
-                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 2, trailing: 16))
-                        }
-                    } header: {
-                        sectionHeader(section.localizedTitleKey)
+                if !weakPracticeItems.isEmpty {
+                    NavigationLink {
+                        AlgTrainerWeakReviewView(items: weakPracticeItems, languageCode: appLanguage)
+                    } label: {
+                        weakPracticeCard
                     }
-                    .textCase(nil)
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 4)
+                }
+
+                if sections.isEmpty {
+                    Text("algs.coming_soon")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                } else {
+                    ForEach(sections) { section in
+                        VStack(alignment: .leading, spacing: 0) {
+                            sectionHeader(section.localizedTitleKey)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 6)
+                                .padding(.bottom, 6)
+
+                            ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
+                                NavigationLink {
+                                    destinationView(for: item)
+                                } label: {
+                                    algRow(item)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 2)
+                                }
+                                .buttonStyle(.plain)
+
+                                if index < section.items.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 84)
+                                        .padding(.trailing, 16)
+                                }
+                            }
+                        }
+                    }
                 }
             }
+            .padding(.bottom, 88)
         }
-        .listStyle(.plain)
-        .listSectionSpacing(6)
     }
 
     private var overviewGridContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                topHeader
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-
                 if let recentPracticeContext, recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
                     recentPracticeCard(recentPracticeContext)
                     .padding(.top, 10)
@@ -242,7 +252,7 @@ struct AlgsTabView: View {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(.clear)
         )
-        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .compatibleGlass(in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
     private var overviewBrowseInlineButton: some View {
@@ -266,20 +276,11 @@ struct AlgsTabView: View {
         .buttonStyle(.plain)
     }
 
-    private var topHeader: some View {
-        HStack {
-            Text("tab.algs")
-                .font(.system(size: 40, weight: .bold))
-            Spacer()
-            puzzlePickerMenu
-        }
-    }
-
     private func sectionHeader(_ titleKey: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(titleKey)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(.primary.opacity(0.82))
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(.secondary)
 
             Divider()
         }
@@ -311,11 +312,7 @@ struct AlgsTabView: View {
                     .font(.system(size: 12, weight: .semibold))
             }
             .foregroundStyle(.primary)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .contentShape(.capsule)
-            .clipShape(.capsule)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
     }
@@ -337,7 +334,7 @@ struct AlgsTabView: View {
                 .padding(14)
                 .contentShape(.circle)
                 .clipShape(.circle)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatibleGlass(in: Circle())
         }
         .buttonStyle(.plain)
     }
@@ -369,6 +366,10 @@ struct AlgsTabView: View {
             Spacer()
 
             progressIndicator(for: item)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.tertiary)
         }
         .padding(.vertical, 4)
     }
@@ -1728,7 +1729,7 @@ private struct AlgCaseListView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
         }
-        .navigationDestination(isPresented: $isShowingTrainer) {
+        .compatibleNavigationDestination(isPresented: $isShowingTrainer) {
             trainerDestination
         }
         .sheet(isPresented: $isShowingInfoSheet) {
@@ -1739,8 +1740,7 @@ private struct AlgCaseListView: View {
                 sourceURL: sourceURL,
                 languageCode: appLanguage
             )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+            .compatibleMediumLargeSheet()
         }
     }
 
@@ -2391,7 +2391,7 @@ private struct AlgCaseListView: View {
                 .padding(14)
                 .contentShape(.circle)
                 .clipShape(.circle)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatibleGlass(in: Circle())
         }
         .buttonStyle(.plain)
     }
@@ -2595,8 +2595,7 @@ private struct AlgSubsetGroupListView: View {
                 sourceURL: sourceURL,
                 languageCode: appLanguage
             )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+            .compatibleMediumLargeSheet()
         }
     }
 
@@ -2853,7 +2852,7 @@ private struct AlgSubsetGroupListView: View {
                 .padding(14)
                 .contentShape(.circle)
                 .clipShape(.circle)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatibleGlass(in: Circle())
         }
         .buttonStyle(.plain)
     }
@@ -2925,8 +2924,7 @@ private struct AlgCaseGroupListView: View {
                 sourceURL: sourceURL,
                 languageCode: appLanguage
             )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+            .compatibleMediumLargeSheet()
         }
     }
 
@@ -3294,7 +3292,7 @@ private struct AlgCaseGroupListView: View {
                 .padding(14)
                 .contentShape(.circle)
                 .clipShape(.circle)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatibleGlass(in: Circle())
         }
         .buttonStyle(.plain)
     }
@@ -3359,7 +3357,7 @@ private struct AlgSubsetCaseListView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
         }
-        .navigationDestination(isPresented: $isShowingTrainer) {
+        .compatibleNavigationDestination(isPresented: $isShowingTrainer) {
             trainerDestination
         }
         .sheet(isPresented: $isShowingInfoSheet) {
@@ -3370,8 +3368,7 @@ private struct AlgSubsetCaseListView: View {
                 sourceURL: sourceURL,
                 languageCode: appLanguage
             )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+            .compatibleMediumLargeSheet()
         }
     }
 
@@ -3673,7 +3670,7 @@ private struct AlgSubsetCaseListView: View {
                 .padding(14)
                 .contentShape(.circle)
                 .clipShape(.circle)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatibleGlass(in: Circle())
         }
         .buttonStyle(.plain)
     }
@@ -3701,7 +3698,7 @@ private struct AlgSetInfoSheet: View {
     @State private var isShowingReportCopiedAlert = false
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     Divider()
@@ -3778,7 +3775,7 @@ private struct AlgSetInfoSheet: View {
             }
             .contentShape(Rectangle())
                 .navigationTitle(displayTitle)
-                .navigationSubtitle(displaySubtitle)
+                .compatibleNavigationSubtitle(Text(displaySubtitle))
                 .navigationBarTitleDisplayMode(.large)
                 .background(AlgInfoNavigationBarFontConfigurator(largeSubtitle: displaySubtitle))
                 .toolbar {
@@ -3818,8 +3815,19 @@ private struct AlgSetInfoSheet: View {
                             Label(likeButtonText, systemImage: isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
                         }
 
-                        ShareLink(item: shareText, subject: Text(displayTitle)) {
-                            Label(shareButtonText, systemImage: "square.and.arrow.up")
+                        if #available(iOS 16.0, *) {
+                            ShareLink(item: shareText, subject: Text(displayTitle)) {
+                                Label(shareButtonText, systemImage: "square.and.arrow.up")
+                            }
+                        } else {
+                            Button {
+                                #if os(iOS)
+                                UIPasteboard.general.string = shareText
+                                #endif
+                                isShowingReportCopiedAlert = true
+                            } label: {
+                                Label(shareButtonText, systemImage: "square.and.arrow.up")
+                            }
                         }
                     }
                 }
@@ -4198,7 +4206,7 @@ private struct AlgRecognitionTrainerView: View {
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $isShowingSummary) {
-            NavigationStack {
+            CompatibleNavigationContainer {
                 AlgTrainerSummaryView(
                     summary: AlgTrainerSessionSummary(
                         title: title,
@@ -4238,7 +4246,7 @@ private struct AlgRecognitionTrainerView: View {
                 .font(.system(size: 15, weight: .semibold))
             }
         }
-        .toolbar(.hidden, for: .tabBar)
+        .compatibleTabBarHidden()
         .onAppear {
             if currentQuestion == nil {
                 sessionStartDate = Date()
@@ -4818,7 +4826,7 @@ private struct AlgTrainerSummaryView: View {
         .navigationTitle(summary.title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar)
+        .compatibleTabBarHidden()
     }
 
     private var accuracyText: String {
@@ -4897,12 +4905,16 @@ private final class AlgInfoNavigationBarFontConfiguratorController: UIViewContro
 
             let standardAppearance = navigationBar.standardAppearance.copy()
             standardAppearance.titleTextAttributes[.font] = inlineTitleFont
-            standardAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            if #available(iOS 26.0, *) {
+                standardAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            }
 
             let scrollEdgeAppearance = navigationBar.scrollEdgeAppearance?.copy() ?? standardAppearance.copy()
             scrollEdgeAppearance.largeTitleTextAttributes[.font] = largeTitleFont
             scrollEdgeAppearance.titleTextAttributes[.font] = inlineTitleFont
-            scrollEdgeAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            if #available(iOS 26.0, *) {
+                scrollEdgeAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            }
 
             navigationBar.standardAppearance = standardAppearance
             navigationBar.compactAppearance = standardAppearance
@@ -4916,10 +4928,12 @@ private final class AlgInfoNavigationBarFontConfiguratorController: UIViewContro
             if #available(iOS 16.0, *) {
                 targetNavigationItem.style = .browser
             }
-            targetNavigationItem.largeSubtitleView = LargeSubtitleContainerView(
-                text: largeSubtitle,
-                topInset: 4
-            )
+            if #available(iOS 26.0, *) {
+                targetNavigationItem.largeSubtitleView = LargeSubtitleContainerView(
+                    text: largeSubtitle,
+                    topInset: 4
+                )
+            }
         }
     }
 
@@ -4947,7 +4961,10 @@ private final class AlgInfoNavigationBarFontConfiguratorController: UIViewContro
         var current: UIViewController? = parent
         while let controller = current {
             let item = controller.navigationItem
-            if item.title != nil || item.subtitle != nil || item.largeSubtitle != nil {
+            if item.title != nil {
+                return item
+            }
+            if #available(iOS 26.0, *), item.subtitle != nil || item.largeSubtitle != nil {
                 return item
             }
             current = controller.parent
@@ -6548,10 +6565,26 @@ private struct LearnedProgressCircle: View {
     }
 
     var body: some View {
-        Image(systemName: "circle", variableValue: clampedProgress)
-            .font(.system(size: 16, weight: .medium))
-            .symbolVariableValueMode(.draw)
-            .foregroundStyle(.blue)
+        if #available(iOS 26.0, *) {
+            Image(systemName: "circle", variableValue: clampedProgress)
+                .font(.system(size: 16, weight: .medium))
+                .symbolVariableValueMode(.draw)
+                .foregroundStyle(.blue)
+        } else if #available(iOS 16.0, *) {
+            Image(systemName: "circle", variableValue: clampedProgress)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(.blue)
+        } else {
+            ZStack {
+                Circle()
+                    .stroke(Color.blue.opacity(0.18), lineWidth: 2)
+                Circle()
+                    .trim(from: 0, to: clampedProgress)
+                    .stroke(Color.blue, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
+            .frame(width: 16, height: 16)
+        }
     }
 }
 #endif

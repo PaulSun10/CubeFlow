@@ -153,7 +153,7 @@ struct WCAMyResultsView: View {
         .task(id: wcaId) {
             await viewModel.load(wcaId: wcaId, appLanguageCode: appLanguage)
         }
-        .onChange(of: appLanguage) { _, newValue in
+        .onChange(of: appLanguage) { newValue in
             Task {
                 await viewModel.load(wcaId: wcaId, appLanguageCode: newValue, forceRefresh: true)
             }
@@ -682,8 +682,7 @@ struct WCAMyResultsView: View {
             "zh_Hans_CN"
         ]
 
-        for candidate in Locale.Region.isoRegions {
-            let code = candidate.identifier
+        for code in Locale.isoRegionCodes {
             guard code.count == 2 else {
                 continue
             }

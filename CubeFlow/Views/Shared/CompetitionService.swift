@@ -86,6 +86,23 @@ enum CompetitionContinent: String, CaseIterable, Identifiable, Hashable, Sendabl
         }
     }
 
+    fileprivate var countryCodes: Set<String> {
+        switch self {
+        case .asia:
+            return asiaCountryCodes
+        case .northAmerica:
+            return northAmericaCountryCodes
+        case .southAmerica:
+            return southAmericaCountryCodes
+        case .oceania:
+            return oceaniaCountryCodes
+        case .europe:
+            return europeCountryCodes
+        case .africa:
+            return africaCountryCodes
+        }
+    }
+
     func localizedTitle(languageCode: String) -> String {
         switch self {
         case .asia:
@@ -400,6 +417,24 @@ struct CompetitionCompetitorPsychPreview: Identifiable, Hashable, Sendable {
     let items: [CompetitionPsychItem]
 }
 
+enum CompetitionTopCuberTier: String, Hashable, Sendable, Codable {
+    case wr
+    case cr
+    case nr
+}
+
+struct CompetitionTopCuberBadge: Identifiable, Hashable, Sendable, Codable {
+    let id: String
+    let eventID: String
+    let tier: CompetitionTopCuberTier
+}
+
+struct CompetitionTopCuberPreview: Identifiable, Hashable, Sendable, Codable {
+    let id: String
+    let name: String
+    let badges: [CompetitionTopCuberBadge]
+}
+
 struct CompetitionLiveFilterOption: Identifiable, Hashable, Sendable {
     let id: String
     let label: String
@@ -631,12 +666,122 @@ enum CompetitionService {
         )
     }
 
+    static func fetchCompetitionTopCuberPreviews(
+        for competition: CompetitionSummary,
+        languageCode: String
+    ) async -> [CompetitionTopCuberPreview]? {
+        if let cached = await CompetitionTopCuberStore.shared.previews(for: cacheKeyForTopCubers(competitionID: competition.id)) {
+            return cached
+        }
+
+        guard let fetched = await fetchWCATopCuberPreviews(for: competition, languageCode: languageCode) else {
+            return nil
+        }
+        await CompetitionTopCuberStore.shared.store(
+            fetched,
+            for: cacheKeyForTopCubers(competitionID: competition.id)
+        )
+        return fetched
+    }
+
+    static func cachedCompetitionTopCuberPreviews(
+        for competitionID: String
+    ) async -> [CompetitionTopCuberPreview]? {
+        await CompetitionTopCuberStore.shared.previews(for: cacheKeyForTopCubers(competitionID: competitionID))
+    }
+
     static func fetchCompetitionWCALiveContent(
         for competition: CompetitionSummary,
         languageCode: String
     ) async -> CompetitionWCALiveContent? {
         guard competition.countryISO2.uppercased() != "CN" else { return nil }
         return await fetchWCALiveContent(for: competition, languageCode: languageCode, liveURL: nil)
+    }
+
+    private static func fetchWCATopCuberPreviews(
+        for competition: CompetitionSummary,
+        languageCode: String
+    ) async -> [CompetitionTopCuberPreview]? {
+        guard let url = URL(string: "https://www.worldcubeassociation.org/api/v0/competitions/\(competition.id)/wcif/public") else {
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 30
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue(appAcceptLanguageHeader(for: languageCode), forHTTPHeaderField: "Accept-Language")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let httpResponse = response as? HTTPURLResponse,
+              200 ..< 300 ~= httpResponse.statusCode else {
+            return nil
+        }
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        guard let wcif = try? decoder.decode(WCAPublicWCIF.self, from: data) else {
+            return nil
+        }
+
+        let acceptedPeople = wcif.persons.filter { person in
+            guard let registration = person.registration else { return false }
+            if let isCompeting = registration.isCompeting {
+                return isCompeting
+            }
+            return registration.status?.lowercased() == "accepted"
+        }
+
+        var badgesByPersonID: [String: [CompetitionTopCuberBadge]] = [:]
+        var namesByPersonID: [String: String] = [:]
+
+        for person in acceptedPeople {
+            guard let wcaId = person.wcaId, !wcaId.isEmpty else { continue }
+            let relevantPersonalBests = (person.personalBests ?? []).filter { personalBest in
+                competition.eventIDs.contains(personalBest.eventId)
+            }
+
+            let badges = relevantPersonalBests.compactMap { personalBest -> CompetitionTopCuberBadge? in
+                guard let tier = topCuberTier(for: personalBest) else { return nil }
+                return CompetitionTopCuberBadge(
+                    id: "\(wcaId)-\(personalBest.eventId)-\(tier.rawValue)",
+                    eventID: personalBest.eventId,
+                    tier: tier
+                )
+            }
+
+            guard !badges.isEmpty else { continue }
+
+            namesByPersonID[wcaId] = person.name
+            badgesByPersonID[wcaId] = mergeTopCuberBadges(
+                existing: badgesByPersonID[wcaId] ?? [],
+                incoming: badges
+            )
+        }
+
+        let eventOrder = competitionSelectableEventIDs()
+
+        let unsortedPreviews: [CompetitionTopCuberPreview] = badgesByPersonID.compactMap { (personID: String, badges: [CompetitionTopCuberBadge]) in
+            guard let name = namesByPersonID[personID], !badges.isEmpty else { return nil }
+            let sortedBadges = badges.sorted { lhs, rhs in
+                if lhs.tier != rhs.tier {
+                    return topCuberTierPriority(lhs.tier) < topCuberTierPriority(rhs.tier)
+                }
+                return (eventOrder.firstIndex(of: lhs.eventID) ?? .max) < (eventOrder.firstIndex(of: rhs.eventID) ?? .max)
+            }
+            return CompetitionTopCuberPreview(id: personID, name: name, badges: sortedBadges)
+        }
+        let previews = unsortedPreviews.sorted { lhs, rhs in
+            let lhsPriority = lhs.badges.map(\.tier).map { topCuberTierPriority($0) }.min() ?? .max
+            let rhsPriority = rhs.badges.map(\.tier).map { topCuberTierPriority($0) }.min() ?? .max
+            if lhsPriority != rhsPriority {
+                return lhsPriority < rhsPriority
+            }
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        }
+
+        return previews
     }
 
     static func cachedCompetitions(for query: CompetitionQuery) async -> CompetitionCacheSnapshot? {
@@ -662,11 +807,24 @@ enum CompetitionService {
                 let lhsStatus = availabilityStatus(for: lhs, now: now)
                 let rhsStatus = availabilityStatus(for: rhs, now: now)
 
-                if lhsStatus == .ended || rhsStatus == .ended {
-                    return lhs.endDate > rhs.endDate
+                if lhsStatus == .ended && rhsStatus == .ended {
+                    if lhs.endDate != rhs.endDate {
+                        return lhs.endDate > rhs.endDate
+                    }
+                } else if lhsStatus == .ended {
+                    return false
+                } else if rhsStatus == .ended {
+                    return true
+                } else if lhs.startDate != rhs.startDate {
+                    return lhs.startDate < rhs.startDate
                 }
 
-                return lhs.startDate < rhs.startDate
+                let nameComparison = lhs.name.localizedCaseInsensitiveCompare(rhs.name)
+                if nameComparison != .orderedSame {
+                    return nameComparison == .orderedAscending
+                }
+
+                return lhs.id < rhs.id
             }
     }
 
@@ -1030,23 +1188,7 @@ enum CompetitionService {
         case .country(let code):
             return competition.countryISO2 == code
         case .continent(let continent):
-            let region = Locale.Region(competition.countryISO2)
-            let continentID = region.continent?.identifier
-            let target = continent.matches
-
-            if target.continent != continentID {
-                return false
-            }
-
-            if target.subcontinent == nil {
-                return true
-            }
-
-            if target.subcontinent == "northAmerica" {
-                return !southAmericaCountryCodes.contains(competition.countryISO2)
-            }
-
-            return southAmericaCountryCodes.contains(competition.countryISO2)
+            return continent.countryCodes.contains(competition.countryISO2)
         }
     }
 
@@ -1586,6 +1728,9 @@ enum CompetitionService {
                 let eventId: String
                 let best: Int
                 let type: String
+                let worldRanking: Int?
+                let continentalRanking: Int?
+                let nationalRanking: Int?
             }
 
             let name: String
@@ -2842,12 +2987,18 @@ enum CompetitionService {
         competitorID: String
     ) -> CompetitionPsychItem? {
         let cleaned = cleanedCompetitionHTMLText(cellHTML)
-        guard let match = cleaned.firstMatch(of: #/\[(\d+)\]\s*(.+)/#),
-              let rank = Int(match.1) else {
+        let nsCleaned = cleaned as NSString
+        let range = NSRange(location: 0, length: nsCleaned.length)
+        guard
+            let regex = try? NSRegularExpression(pattern: #"^\[(\d+)\]\s*(.+)$"#),
+            let match = regex.firstMatch(in: cleaned, options: [], range: range),
+            match.numberOfRanges == 3,
+            let rank = Int(nsCleaned.substring(with: match.range(at: 1)))
+        else {
             return nil
         }
 
-        let resultText = match.2.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resultText = nsCleaned.substring(with: match.range(at: 2)).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !resultText.isEmpty else { return nil }
 
         return CompetitionPsychItem(
@@ -2915,6 +3066,49 @@ enum CompetitionService {
                 return lhsBestRank < rhsBestRank
             }
             return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        }
+    }
+
+    private static func topCuberTier(for personalBest: WCAPublicWCIF.Person.PersonalBest) -> CompetitionTopCuberTier? {
+        if personalBest.worldRanking == 1 {
+            return .wr
+        }
+        if personalBest.continentalRanking == 1 {
+            return .cr
+        }
+        if personalBest.nationalRanking == 1 {
+            return .nr
+        }
+        return nil
+    }
+
+    private static func topCuberTierPriority(_ tier: CompetitionTopCuberTier) -> Int {
+        switch tier {
+        case .wr: return 0
+        case .cr: return 1
+        case .nr: return 2
+        }
+    }
+
+    private static func mergeTopCuberBadges(
+        existing: [CompetitionTopCuberBadge],
+        incoming: [CompetitionTopCuberBadge]
+    ) -> [CompetitionTopCuberBadge] {
+        var bestTierByEvent: [String: CompetitionTopCuberTier] = [:]
+
+        for badge in existing + incoming {
+            let current = bestTierByEvent[badge.eventID]
+            if let current {
+                if topCuberTierPriority(badge.tier) < topCuberTierPriority(current) {
+                    bestTierByEvent[badge.eventID] = badge.tier
+                }
+            } else {
+                bestTierByEvent[badge.eventID] = badge.tier
+            }
+        }
+
+        return bestTierByEvent.map { eventID, tier in
+            CompetitionTopCuberBadge(id: "\(eventID)-\(tier.rawValue)", eventID: eventID, tier: tier)
         }
     }
 
@@ -3094,6 +3288,10 @@ enum CompetitionService {
             query.year.rawValue,
             query.status.rawValue
         ].joined(separator: "|")
+    }
+
+    private static func cacheKeyForTopCubers(competitionID: String) -> String {
+        "top-cubers|v2|\(competitionID)"
     }
 }
 
@@ -3275,6 +3473,58 @@ private actor CompetitionQueryCacheStore {
     }
 }
 
+private actor CompetitionTopCuberStore {
+    static let shared = CompetitionTopCuberStore()
+
+    private var previewsByKey: [String: [CompetitionTopCuberPreview]] = [:]
+    private var hasLoadedFromDisk = false
+
+    private func cacheFileURL() -> URL {
+        let baseDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        return baseDirectory
+            .appendingPathComponent("CubeFlow", isDirectory: true)
+            .appendingPathComponent("competition-top-cubers-cache-v1.json")
+    }
+
+    func previews(for key: String) -> [CompetitionTopCuberPreview]? {
+        loadFromDiskIfNeeded()
+        return previewsByKey[key]
+    }
+
+    func store(_ previews: [CompetitionTopCuberPreview], for key: String) {
+        loadFromDiskIfNeeded()
+        previewsByKey[key] = previews
+        saveToDisk()
+    }
+
+    private func loadFromDiskIfNeeded() {
+        guard !hasLoadedFromDisk else { return }
+        hasLoadedFromDisk = true
+
+        guard let data = try? Data(contentsOf: cacheFileURL()) else { return }
+        let decoder = JSONDecoder()
+        guard let stored = try? decoder.decode([String: [CompetitionTopCuberPreview]].self, from: data) else {
+            return
+        }
+        previewsByKey = stored
+    }
+
+    private func saveToDisk() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let cacheFileURL = cacheFileURL()
+
+        guard let data = try? encoder.encode(previewsByKey) else { return }
+
+        try? FileManager.default.createDirectory(
+            at: cacheFileURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try? data.write(to: cacheFileURL, options: [.atomic])
+    }
+}
+
 private let competitionISO8601Formatter: ISO8601DateFormatter = {
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -3301,6 +3551,38 @@ private let cubingCompetitionDateTimeFormatter: DateFormatter = {
 
 private let southAmericaCountryCodes: Set<String> = [
     "AR", "BO", "BR", "CL", "CO", "EC", "FK", "GF", "GY", "PE", "PY", "SR", "UY", "VE"
+]
+
+private let northAmericaCountryCodes: Set<String> = [
+    "AG", "AI", "AW", "BB", "BL", "BM", "BQ", "BS", "BZ", "CA", "CR", "CU", "CW", "DM",
+    "DO", "GD", "GL", "GP", "GT", "HN", "HT", "JM", "KN", "KY", "LC", "MF", "MQ", "MS",
+    "MX", "NI", "PA", "PM", "PR", "SV", "SX", "TC", "TT", "US", "VC", "VG", "VI"
+]
+
+private let europeCountryCodes: Set<String> = [
+    "AD", "AL", "AT", "AX", "BA", "BE", "BG", "BY", "CH", "CY", "CZ", "DE", "DK", "EE",
+    "ES", "FI", "FO", "FR", "GB", "GG", "GI", "GR", "HR", "HU", "IE", "IM", "IS", "IT",
+    "JE", "LI", "LT", "LU", "LV", "MC", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT",
+    "RO", "RS", "RU", "SE", "SI", "SJ", "SK", "SM", "UA", "VA", "XK"
+]
+
+private let asiaCountryCodes: Set<String> = [
+    "AE", "AF", "AM", "AZ", "BD", "BH", "BN", "BT", "CN", "GE", "HK", "ID", "IL", "IN",
+    "IQ", "IR", "JO", "JP", "KG", "KH", "KP", "KR", "KW", "KZ", "LA", "LB", "LK", "MM",
+    "MN", "MO", "MV", "MY", "NP", "OM", "PH", "PK", "PS", "QA", "SA", "SG", "SY", "TH",
+    "TJ", "TM", "TR", "TW", "UZ", "VN", "YE"
+]
+
+private let africaCountryCodes: Set<String> = [
+    "AO", "BF", "BI", "BJ", "BW", "CD", "CF", "CG", "CI", "CM", "CV", "DJ", "DZ", "EG",
+    "EH", "ER", "ET", "GA", "GH", "GM", "GN", "GQ", "GW", "KE", "KM", "LR", "LS", "LY",
+    "MA", "MG", "ML", "MR", "MU", "MW", "MZ", "NA", "NE", "NG", "RW", "SC", "SD", "SL",
+    "SN", "SO", "SS", "ST", "SZ", "TD", "TG", "TN", "TZ", "UG", "ZA", "ZM", "ZW"
+]
+
+private let oceaniaCountryCodes: Set<String> = [
+    "AS", "AU", "CK", "FJ", "FM", "GU", "KI", "MH", "MP", "NC", "NF", "NR", "NU", "NZ",
+    "PF", "PG", "PN", "PW", "SB", "TK", "TO", "TV", "UM", "VU", "WF", "WS"
 ]
 
 private struct LocalizedCompetitionInfo: Sendable, Codable {
@@ -3350,8 +3632,7 @@ private func countryCode(forRecognizedCountryName name: String) -> String? {
     let target = normalizedRecognizedCountryName(name)
     let englishLocale = Locale(identifier: "en_US")
 
-    for region in Locale.Region.isoRegions {
-        let code = region.identifier
+    for code in Locale.isoRegionCodes {
         guard code.count == 2,
               let localized = englishLocale.localizedString(forRegionCode: code) else {
             continue

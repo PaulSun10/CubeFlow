@@ -1,15 +1,23 @@
+import CoreData
 import Foundation
-import SwiftData
 
-@Model
-final class Session {
-    var id: UUID = UUID()
-    var name: String = ""
-    var createdAt: Date = Date.now
-    var selectedEventRawValue: String = "3x3"
-    @Relationship(deleteRule: .cascade, inverse: \Solve.session) var solves: [Solve]? = []
+final class Session: NSManagedObject, Identifiable {
+    static let entityName = "Session"
 
-    init(name: String, createdAt: Date = .now, selectedEventRawValue: String = "3x3") {
+    @NSManaged var id: UUID
+    @NSManaged var name: String
+    @NSManaged var createdAt: Date
+    @NSManaged var selectedEventRawValue: String
+    @NSManaged var solves: Set<Solve>?
+
+    convenience init(
+        name: String,
+        createdAt: Date = .now,
+        selectedEventRawValue: String = "3x3",
+        context: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+    ) {
+        self.init(context: context)
+        self.id = UUID()
         self.name = name
         self.createdAt = createdAt
         self.selectedEventRawValue = selectedEventRawValue
@@ -17,10 +25,16 @@ final class Session {
     }
 
     var solveList: [Solve] {
-        solves ?? []
+        (solves ?? []).sorted { $0.date > $1.date }
     }
 
     var solveCount: Int {
-        solveList.count
+        solves?.count ?? 0
+    }
+}
+
+extension Session {
+    @nonobjc nonisolated class func fetchRequest() -> NSFetchRequest<Session> {
+        NSFetchRequest<Session>(entityName: entityName)
     }
 }

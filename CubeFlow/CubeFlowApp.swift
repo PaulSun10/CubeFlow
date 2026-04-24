@@ -6,27 +6,90 @@
 //
 
 import SwiftUI
-import SwiftData
+import CoreData
+
+#if os(iOS)
+final class CubeFlowAppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        AppOrientationManager.supportedOrientations
+    }
+}
+
+enum AppOrientationManager {
+    static var supportedOrientations: UIInterfaceOrientationMask = defaultSupportedOrientations
+    private static var orientationResetGeneration = 0
+
+    static var defaultSupportedOrientations: UIInterfaceOrientationMask {
+        UIDevice.current.userInterfaceIdiom == .pad ? .all : .allButUpsideDown
+    }
+
+    static func reset() {
+        resetToPortrait()
+    }
+
+    static func resetToPortrait() {
+        guard UIDevice.current.userInterfaceIdiom == .phone else {
+            supportedOrientations = defaultSupportedOrientations
+            return
+        }
+
+        orientationResetGeneration += 1
+        let generation = orientationResetGeneration
+
+        apply(.portrait, preferredOrientation: .portrait)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            guard generation == orientationResetGeneration else { return }
+            apply(defaultSupportedOrientations, preferredOrientation: .portrait)
+        }
+    }
+
+    static func set(_ orientations: UIInterfaceOrientationMask, preferredOrientation: UIInterfaceOrientation) {
+        orientationResetGeneration += 1
+        apply(orientations, preferredOrientation: preferredOrientation)
+    }
+
+    private static func apply(_ orientations: UIInterfaceOrientationMask, preferredOrientation: UIInterfaceOrientation) {
+        supportedOrientations = orientations
+
+        guard UIDevice.current.userInterfaceIdiom == .phone else { return }
+
+        if #available(iOS 16.0, *) {
+            let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: orientations)
+            let windowScene = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first
+            windowScene?.windows.first?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+            windowScene?.requestGeometryUpdate(geometryPreferences)
+        } else {
+            UIDevice.current.setValue(preferredOrientation.rawValue, forKey: "orientation")
+            UIViewController.attemptRotationToDeviceOrientation()
+        }
+    }
+
+    private static func refreshSupportedOrientations() {
+        if #available(iOS 16.0, *) {
+            UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first?
+                .windows
+                .first?
+                .rootViewController?
+                .setNeedsUpdateOfSupportedInterfaceOrientations()
+        } else {
+            UIViewController.attemptRotationToDeviceOrientation()
+        }
+    }
+}
+#endif
 
 @main
 struct CubeFlowApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-            Session.self,
-            Solve.self,
-        ])
-        do {
-            let localConfiguration = ModelConfiguration(
-                schema: schema,
-                isStoredInMemoryOnly: false,
-                cloudKitDatabase: .none
-            )
-            return try ModelContainer(for: schema, configurations: [localConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(CubeFlowAppDelegate.self) private var appDelegate
+    #endif
+
+    private let persistenceController = PersistenceController.shared
 
     var body: some Scene {
         WindowGroup {
@@ -42,6 +105,6 @@ struct CubeFlowApp: App {
             ContentView()
             #endif
         }
-        .modelContainer(sharedModelContainer)
+        .environment(\.managedObjectContext, persistenceController.container.viewContext)
     }
 }

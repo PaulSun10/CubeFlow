@@ -38,7 +38,7 @@ private struct CompetitionCardSurfaceModifier: ViewModifier {
     func body(content: Content) -> some View {
         if isGlass {
             content
-                .glassEffect(.regular.interactive(), in: shape)
+                .compatibleGlass(in: shape)
         } else {
             content
         }
@@ -69,6 +69,226 @@ private extension ShapeStyle where Self == Color {
     }
 }
 
+#if DEBUG
+private struct CompetitionSizeDebugModifier: ViewModifier {
+    let label: String
+    let color: Color
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .stroke(color.opacity(0.75), lineWidth: 0.75)
+                    .allowsHitTesting(false)
+            )
+            .overlay(alignment: .topTrailing) {
+                GeometryReader { proxy in
+                    Text("\(label) \(Int(proxy.size.width))")
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .foregroundStyle(color)
+                        .padding(.horizontal, 3)
+                        .padding(.vertical, 1)
+                        .background(.regularMaterial, in: Capsule())
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                        .allowsHitTesting(false)
+                }
+            }
+    }
+}
+#endif
+
+private extension View {
+    @ViewBuilder
+    func competitionSizeDebug(_ label: String, color: Color) -> some View {
+        #if DEBUG
+        modifier(CompetitionSizeDebugModifier(label: label, color: color))
+        #else
+        self
+        #endif
+    }
+}
+
+private extension String {
+    func competitionSingleLineWidth(using font: UIFont) -> CGFloat {
+        ceil((self as NSString).size(withAttributes: [.font: font]).width)
+    }
+}
+
+@available(iOS 16.0, *)
+private struct CompetitionWrappingLayout: Layout {
+    var horizontalSpacing: CGFloat = 8
+    var verticalSpacing: CGFloat = 8
+
+    private func measuredSize(for subview: LayoutSubview, maxWidth: CGFloat) -> CGSize {
+        if maxWidth.isFinite,
+           let preferredWidth = subview[CompetitionWrappingPreferredWidthKey.self] {
+            let proposedWidth = min(preferredWidth, maxWidth)
+            return subview.sizeThatFits(ProposedViewSize(width: proposedWidth, height: nil))
+        }
+
+        let naturalSize = subview.sizeThatFits(.unspecified)
+        guard naturalSize.width > maxWidth else { return naturalSize }
+        return subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
+    }
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var currentRowWidth: CGFloat = 0
+        var currentRowHeight: CGFloat = 0
+        var totalWidth: CGFloat = 0
+        var totalHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = measuredSize(for: subview, maxWidth: maxWidth)
+            let startsNewRow = currentRowWidth > 0 && currentRowWidth + horizontalSpacing + size.width > maxWidth
+
+            if startsNewRow {
+                totalWidth = max(totalWidth, currentRowWidth)
+                totalHeight += currentRowHeight + verticalSpacing
+                currentRowWidth = size.width
+                currentRowHeight = size.height
+            } else {
+                currentRowWidth += (currentRowWidth > 0 ? horizontalSpacing : 0) + size.width
+                currentRowHeight = max(currentRowHeight, size.height)
+            }
+        }
+
+        totalWidth = max(totalWidth, currentRowWidth)
+        totalHeight += currentRowHeight
+
+        return CGSize(
+            width: proposal.width ?? totalWidth,
+            height: totalHeight
+        )
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) {
+        let maxWidth = bounds.width
+        var x = bounds.minX
+        var y = bounds.minY
+        var currentRowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = measuredSize(for: subview, maxWidth: maxWidth)
+            if x > bounds.minX && x + size.width > bounds.maxX {
+                x = bounds.minX
+                y += currentRowHeight + verticalSpacing
+                currentRowHeight = 0
+            }
+
+            subview.place(
+                at: CGPoint(x: x, y: y),
+                proposal: ProposedViewSize(size)
+            )
+            x += size.width + horizontalSpacing
+            currentRowHeight = max(currentRowHeight, size.height)
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+private struct CompetitionWrappingPreferredWidthKey: LayoutValueKey {
+    nonisolated static let defaultValue: CGFloat? = nil
+}
+
+@available(iOS 16.0, *)
+private struct CompetitionTopCuberChipLayout: Layout {
+    var spacing: CGFloat = 8
+    var minimumNameWidth: CGFloat = 96
+
+    private func badgeSizes(for subviews: Subviews) -> [CGSize] {
+        guard subviews.count > 1 else { return [] }
+        return subviews.dropFirst().map { $0.sizeThatFits(.unspecified) }
+    }
+
+    private func badgeWidth(from sizes: [CGSize]) -> CGFloat {
+        guard !sizes.isEmpty else { return 0 }
+        return sizes.map(\.width).reduce(0, +) + CGFloat(sizes.count) * spacing
+    }
+
+    private func measuredNameSize(
+        for subviews: Subviews,
+        badgeWidth: CGFloat,
+        maxWidth: CGFloat
+    ) -> CGSize {
+        guard let name = subviews.first else { return .zero }
+
+        let naturalNameSize = name.sizeThatFits(.unspecified)
+        let naturalWidth = naturalNameSize.width + badgeWidth
+        guard maxWidth.isFinite, naturalWidth > maxWidth else {
+            return naturalNameSize
+        }
+
+        let proposedNameWidth = max(minimumNameWidth, maxWidth - badgeWidth)
+        return name.sizeThatFits(ProposedViewSize(width: proposedNameWidth, height: nil))
+    }
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        let badgeSizes = badgeSizes(for: subviews)
+        let badgesWidth = badgeWidth(from: badgeSizes)
+        let nameSize = measuredNameSize(for: subviews, badgeWidth: badgesWidth, maxWidth: maxWidth)
+        let contentWidth = nameSize.width + badgesWidth
+        let contentHeight = max(nameSize.height, badgeSizes.map(\.height).max() ?? 0)
+
+        return CGSize(
+            width: maxWidth.isFinite ? min(contentWidth, maxWidth) : contentWidth,
+            height: contentHeight
+        )
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) {
+        guard let name = subviews.first else { return }
+
+        let badgeSizes = badgeSizes(for: subviews)
+        let badgesWidth = badgeWidth(from: badgeSizes)
+        let nameSize = measuredNameSize(for: subviews, badgeWidth: badgesWidth, maxWidth: bounds.width)
+        let nameY = bounds.minY + (bounds.height - nameSize.height) / 2
+
+        name.place(
+            at: CGPoint(x: bounds.minX, y: nameY),
+            proposal: ProposedViewSize(nameSize)
+        )
+
+        var badgeX = bounds.minX + nameSize.width + spacing
+        for (index, badge) in subviews.dropFirst().enumerated() {
+            let size = badgeSizes[index]
+            let badgeY = bounds.minY + (bounds.height - size.height) / 2
+            badge.place(
+                at: CGPoint(x: badgeX, y: badgeY),
+                proposal: ProposedViewSize(size)
+            )
+            badgeX += size.width + spacing
+        }
+    }
+}
+
+private enum CompetitionTopCuberLoadState: Equatable {
+    case idle
+    case loading
+    case loaded([CompetitionTopCuberPreview])
+    case empty
+    case failed
+}
+
 enum CompetitionCardStyleOption: String, CaseIterable, Identifiable {
     case list
     case glass
@@ -86,6 +306,10 @@ enum CompetitionCardStyleOption: String, CaseIterable, Identifiable {
 }
 
 struct CompetitionTabView: View {
+    private static let initialTopCuberPreloadCount = 8
+    private static let nextTopCuberPrefetchCount = 16
+    private static let topCuberLoadConcurrency = 3
+
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("competitionCardStyle") private var competitionCardStyle: String = CompetitionCardStyleOption.list.rawValue
@@ -98,6 +322,7 @@ struct CompetitionTabView: View {
         .joined(separator: ",")
     @AppStorage("competition_filter_year") private var storedYearRawValue: String = CompetitionYearFilter.all.rawValue
     @AppStorage("competition_filter_status") private var storedStatusRawValue: String = CompetitionStatusFilter.upcoming.rawValue
+    @AppStorage("competition_show_top_cubers") private var showsTopCubers: Bool = false
     @State private var showsFilterPopover = false
     @State private var competitions: [CompetitionSummary] = []
     @State private var visibleCompetitionsSnapshot: [CompetitionSummary] = []
@@ -111,9 +336,12 @@ struct CompetitionTabView: View {
     @State private var selectedCompetitionForDetail: CompetitionSummary?
     @State private var cubingRowClassesByKey: [String: String] = [:]
     @State private var showsRefreshSuccessBanner = false
+    @State private var topCuberStatesByCompetitionID: [String: CompetitionTopCuberLoadState] = [:]
+    @State private var topCuberRefreshingIDs: Set<String> = []
+    @State private var areCompetitionEventIconsReady = CompetitionEventIconFont.isAvailable
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             List {
                 if showsRefreshSuccessBanner {
                     refreshSuccessRow
@@ -148,7 +376,7 @@ struct CompetitionTabView: View {
                 }
             }
             .listStyle(.plain)
-            .scrollContentBackground(.hidden)
+            .compatibleScrollContentBackgroundHidden()
             .background(competitionsTabBackgroundView.ignoresSafeArea())
             .safeAreaInset(edge: .bottom) {
                 if !publishedVisibleCompetitions.isEmpty {
@@ -158,9 +386,12 @@ struct CompetitionTabView: View {
                 }
             }
             .navigationTitle(Text(localizedCompetitionStringInView(key: "tab.competitions", languageCode: appLanguage)))
-            .navigationSubtitle(Text(competitionNavigationSubtitle))
+            .compatibleNavigationSubtitle(Text(competitionNavigationSubtitle))
             .navigationBarTitleDisplayMode(.large)
             .background(CompetitionNavigationBarFontConfigurator(largeSubtitle: competitionNavigationSubtitle))
+            .task {
+                areCompetitionEventIconsReady = CompetitionEventIconFont.ensureRegistered()
+            }
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     mapButton
@@ -175,26 +406,26 @@ struct CompetitionTabView: View {
                 await CompetitionService.warmCompetitionLocalizedNamesCache(languageCode: appLanguage)
                 cubingRowClassesByKey = await fetchCubingRowClasses(languageCode: appLanguage)
             }
-            .onChange(of: cubingRowClassesByKey) { _, _ in
+            .onChange(of: cubingRowClassesByKey) { _ in
                 syncVisibleCompetitionsSnapshot(query: competitionQuery)
                 publishVisibleCompetitionsSnapshot()
             }
             .task(id: filterSignature) {
                 await loadCompetitions()
             }
-            .navigationDestination(isPresented: $showsMapView) {
-                CompetitionMapView(
-                    query: competitionQuery,
-                    appLanguage: appLanguage
-                )
+            .task(id: topCubersTaskSignature) {
+                await loadVisibleTopCuberPreviewsIfNeeded()
             }
-            .navigationDestination(isPresented: $isShowingSearch) {
+            .compatibleNavigationDestination(isPresented: $showsMapView) {
+                competitionMapDestination
+            }
+            .compatibleNavigationDestination(isPresented: $isShowingSearch) {
                 CompetitionSearchView(
                     competitions: publishedVisibleCompetitions,
                     appLanguage: appLanguage
                 )
             }
-            .navigationDestination(item: $selectedCompetitionForDetail) { competition in
+            .compatibleNavigationDestination(item: $selectedCompetitionForDetail) { competition in
                 CompetitionDetailView(
                     competition: competition,
                     appLanguage: appLanguage
@@ -314,11 +545,12 @@ struct CompetitionTabView: View {
                     get: { selectedStatus },
                     set: { selectedStatus = $0 }
                 ),
+                showsTopCubers: $showsTopCubers,
                 appLanguage: appLanguage,
                 showsFilterPopover: $showsFilterPopover
             )
-            .presentationBackground(.clear)
-            .presentationCompactAdaptation(.popover)
+            .compatibleClearPresentationBackground()
+            .compatiblePopoverCompactAdaptation()
         }
     }
 
@@ -327,6 +559,28 @@ struct CompetitionTabView: View {
             showsMapView = true
         } label: {
             Image(systemName: "map")
+        }
+    }
+
+    @ViewBuilder
+    private var competitionMapDestination: some View {
+        if #available(iOS 17.0, *) {
+            CompetitionMapView(
+                query: competitionQuery,
+                appLanguage: appLanguage
+            )
+        } else {
+            VStack(spacing: 12) {
+                Image(systemName: "map")
+                    .font(.system(size: 34, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text(localizedCompetitionStringInView(key: "competitions.map_title", languageCode: appLanguage))
+                    .font(.system(size: 18, weight: .semibold))
+                Text("iOS 17+")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
@@ -354,6 +608,20 @@ struct CompetitionTabView: View {
             selectedYear.rawValue,
             selectedStatus.rawValue,
             appLanguage
+        ].joined(separator: "|")
+    }
+
+    private var topCubersTaskSignature: String {
+        let preloadLimit = Self.initialTopCuberPreloadCount + Self.nextTopCuberPrefetchCount
+        let preloadedCompetitionIDs = publishedVisibleCompetitions
+            .prefix(preloadLimit)
+            .map(\.id)
+            .joined(separator: ",")
+
+        return [
+            showsTopCubers ? "on" : "off",
+            appLanguage,
+            preloadedCompetitionIDs
         ].joined(separator: "|")
     }
 
@@ -394,7 +662,7 @@ struct CompetitionTabView: View {
                 .fill(.black.opacity(0.001))
         )
         .contentShape(shape)
-        .glassEffect(.regular.interactive(), in: shape)
+        .compatibleGlass(in: shape)
     }
 
     private var competitionLoadingSkeletonRows: some View {
@@ -558,14 +826,22 @@ struct CompetitionTabView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            if showsTopCubers {
+                competitionTopCubersContent(for: competition)
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
+        .task(id: showsTopCubers ? "\(competition.id)|\(appLanguage)" : "off") {
+            await loadTopCuberPreviewIfNeeded(for: competition)
+        }
     }
 
     private func glassCompetitionRow(_ competition: CompetitionSummary) -> some View {
         let shape = RoundedRectangle(cornerRadius: 18, style: .continuous)
 
-        return HStack(alignment: .top, spacing: 12) {
+        return ZStack(alignment: .topTrailing) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -600,9 +876,10 @@ struct CompetitionTabView: View {
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.trailing)
-                        }
+                            }
                     }
                 }
+                .padding(.trailing, 18)
 
                 if !competition.venueLine.isEmpty {
                     Text(competition.venueLine)
@@ -610,8 +887,13 @@ struct CompetitionTabView: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
+                if showsTopCubers {
+                    competitionTopCubersContent(for: competition)
+                }
             }
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.tertiary)
@@ -621,6 +903,220 @@ struct CompetitionTabView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .modifier(CompetitionCardSurfaceModifier(isGlass: true, shape: shape))
         .modifier(CompetitionListRowBackgroundModifier(isGlass: true, shape: shape))
+        .task(id: showsTopCubers ? "\(competition.id)|\(appLanguage)" : "off") {
+            await loadTopCuberPreviewIfNeeded(for: competition)
+        }
+    }
+
+    @ViewBuilder
+    private func competitionTopCubersContent(for competition: CompetitionSummary) -> some View {
+        if let state = topCuberStatesByCompetitionID[competition.id] {
+            switch state {
+            case .loading:
+                Divider()
+                competitionTopCubersSkeletonSection
+            case .loaded(let previews):
+                if !previews.isEmpty {
+                    Divider()
+                    competitionTopCubersSection(previews: previews)
+                }
+            case .idle, .empty, .failed:
+                EmptyView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func competitionTopCubersSection(previews: [CompetitionTopCuberPreview]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizedCompetitionStringInView(key: "competitions.top_cubers", languageCode: appLanguage))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            if #available(iOS 16.0, *) {
+                CompetitionWrappingLayout(horizontalSpacing: 8, verticalSpacing: 8) {
+                    ForEach(previews) { preview in
+                        topCuberChip(for: preview)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .competitionSizeDebug("section", color: .blue)
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 112), spacing: 8, alignment: .leading)], alignment: .leading, spacing: 8) {
+                    ForEach(previews) { preview in
+                        topCuberChip(for: preview)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func topCuberChip(for preview: CompetitionTopCuberPreview) -> some View {
+        if #available(iOS 16.0, *) {
+            topCuberChipSurface {
+                CompetitionTopCuberChipLayout(spacing: 8) {
+                    topCuberChipName(preview.name)
+                    topCuberChipBadges(preview.badges)
+                }
+            }
+            .competitionSizeDebug("chip", color: .red)
+            .layoutValue(
+                key: CompetitionWrappingPreferredWidthKey.self,
+                value: topCuberChipPreferredWidth(for: preview)
+            )
+        } else {
+            topCuberChipSurface {
+                HStack(spacing: 8) {
+                    topCuberChipName(preview.name)
+                    topCuberChipBadges(preview.badges)
+                }
+            }
+        }
+    }
+
+    private func topCuberChipName(_ name: String) -> some View {
+        Text(name)
+            .lineLimit(nil)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func topCuberChipBadges(_ badges: [CompetitionTopCuberBadge]) -> some View {
+        ForEach(badges) { badge in
+            topCuberEventBadge(for: badge)
+        }
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    private func topCuberChipPreferredWidth(for preview: CompetitionTopCuberPreview) -> CGFloat {
+        let nameFont = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        let nameWidth = preview.name.competitionSingleLineWidth(using: nameFont)
+        let badgesWidth = preview.badges.reduce(CGFloat.zero) { partialWidth, badge in
+            partialWidth + topCuberBadgePreferredWidth(for: badge)
+        }
+        let gapsWidth = CGFloat(preview.badges.count) * 8
+        let chipHorizontalPadding: CGFloat = 20
+
+        return ceil(nameWidth + badgesWidth + gapsWidth + chipHorizontalPadding)
+    }
+
+    private func topCuberBadgePreferredWidth(for badge: CompetitionTopCuberBadge) -> CGFloat {
+        let horizontalPadding: CGFloat = 12
+
+        if areCompetitionEventIconsReady,
+           let glyph = CompetitionEventIconFont.glyph(for: badge.eventID) {
+            let font = UIFont(name: CompetitionEventIconFont.fontName, size: 13)
+                ?? .systemFont(ofSize: 13, weight: .regular)
+            return glyph.competitionSingleLineWidth(using: font) + horizontalPadding
+        }
+
+        let label = localizedEventShortName(for: badge.eventID)
+        let font = UIFont.systemFont(ofSize: 11, weight: .bold)
+        return label.competitionSingleLineWidth(using: font) + horizontalPadding
+    }
+
+    private func topCuberChipSurface<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        content()
+            .font(.system(size: 13, weight: .semibold))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(.secondary.opacity(0.08), in: Capsule())
+    }
+
+    private var competitionTopCubersSkeletonSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizedCompetitionStringInView(key: "competitions.top_cubers", languageCode: appLanguage))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(0..<2, id: \.self) { index in
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.competitionSkeletonFill)
+                        .frame(width: index == 0 ? 188 : 172, height: 34)
+                        .competitionSkeletonBreathing()
+                }
+            }
+        }
+    }
+
+    private func topCuberColor(for tier: CompetitionTopCuberTier) -> Color {
+        switch tier {
+        case .wr:
+            return .red
+        case .cr:
+            return .orange
+        case .nr:
+            return .yellow
+        }
+    }
+
+    @ViewBuilder
+    private func topCuberEventBadge(for badge: CompetitionTopCuberBadge) -> some View {
+        let color = topCuberColor(for: badge.tier)
+
+        if areCompetitionEventIconsReady,
+           let glyph = CompetitionEventIconFont.glyph(for: badge.eventID) {
+            Text(glyph)
+                .font(.custom(CompetitionEventIconFont.fontName, size: 13))
+                .foregroundStyle(color)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .background(color.opacity(0.14), in: Capsule())
+                .accessibilityLabel(localizedEventShortName(for: badge.eventID))
+        } else {
+            Text(localizedEventShortName(for: badge.eventID))
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(color)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .background(color.opacity(0.14), in: Capsule())
+        }
+    }
+
+    private func localizedEventShortName(for eventID: String) -> String {
+        switch eventID {
+        case "222":
+            return localizedCompetitionStringInView(key: "wca.event.short.2x2", languageCode: appLanguage)
+        case "333":
+            return localizedCompetitionStringInView(key: "wca.event.short.3x3", languageCode: appLanguage)
+        case "444":
+            return localizedCompetitionStringInView(key: "wca.event.short.4x4", languageCode: appLanguage)
+        case "555":
+            return localizedCompetitionStringInView(key: "wca.event.short.5x5", languageCode: appLanguage)
+        case "666":
+            return localizedCompetitionStringInView(key: "wca.event.short.6x6", languageCode: appLanguage)
+        case "777":
+            return localizedCompetitionStringInView(key: "wca.event.short.7x7", languageCode: appLanguage)
+        case "333oh":
+            return localizedCompetitionStringInView(key: "wca.event.short.oh", languageCode: appLanguage)
+        case "333bf":
+            return localizedCompetitionStringInView(key: "wca.event.short.bf", languageCode: appLanguage)
+        case "333fm":
+            return localizedCompetitionStringInView(key: "wca.event.short.fm", languageCode: appLanguage)
+        case "clock":
+            return localizedCompetitionStringInView(key: "wca.event.short.clock", languageCode: appLanguage)
+        case "minx":
+            return localizedCompetitionStringInView(key: "wca.event.short.megaminx", languageCode: appLanguage)
+        case "pyram":
+            return localizedCompetitionStringInView(key: "wca.event.short.pyraminx", languageCode: appLanguage)
+        case "skewb":
+            return localizedCompetitionStringInView(key: "wca.event.short.skewb", languageCode: appLanguage)
+        case "sq1":
+            return localizedCompetitionStringInView(key: "wca.event.short.square1", languageCode: appLanguage)
+        case "444bf":
+            return localizedCompetitionStringInView(key: "wca.event.short.444bf", languageCode: appLanguage)
+        case "555bf":
+            return localizedCompetitionStringInView(key: "wca.event.short.555bf", languageCode: appLanguage)
+        case "333mbf":
+            return localizedCompetitionStringInView(key: "wca.event.short.mbf", languageCode: appLanguage)
+        default:
+            return eventID
+        }
     }
 
     private func competitionListRow(_ competition: CompetitionSummary) -> some View {
@@ -1061,7 +1557,7 @@ struct CompetitionTabView: View {
         }
 
         Task {
-            try? await Task.sleep(for: .seconds(1.8))
+            try? await Task.sleep(nanoseconds: 1_800_000_000)
             await MainActor.run {
                 withAnimation(.snappy(duration: 0.22)) {
                     showsRefreshSuccessBanner = false
@@ -1135,6 +1631,143 @@ struct CompetitionTabView: View {
     private func publishVisibleCompetitionsSnapshot() {
         publishedVisibleCompetitions = visibleCompetitionsSnapshot
     }
+
+    @MainActor
+    private func loadTopCuberPreviewIfNeeded(for competition: CompetitionSummary) async {
+        guard showsTopCubers else {
+            topCuberStatesByCompetitionID = [:]
+            topCuberRefreshingIDs = []
+            return
+        }
+
+        switch topCuberStatesByCompetitionID[competition.id] ?? .idle {
+        case .loading, .loaded, .empty:
+            return
+        case .idle, .failed:
+            break
+        }
+
+        if let cached = await CompetitionService.cachedCompetitionTopCuberPreviews(for: competition.id) {
+            topCuberStatesByCompetitionID[competition.id] = cached.isEmpty ? .empty : .loaded(cached)
+            await refreshTopCuberPreview(for: competition, usesLoadingPlaceholder: false)
+            return
+        }
+
+        await refreshTopCuberPreview(for: competition, usesLoadingPlaceholder: true)
+    }
+
+    @MainActor
+    private func loadVisibleTopCuberPreviewsIfNeeded() async {
+        guard showsTopCubers else {
+            topCuberStatesByCompetitionID = [:]
+            topCuberRefreshingIDs = []
+            return
+        }
+
+        for competition in publishedVisibleCompetitions {
+            if let cached = await CompetitionService.cachedCompetitionTopCuberPreviews(for: competition.id) {
+                topCuberStatesByCompetitionID[competition.id] = cached.isEmpty ? .empty : .loaded(cached)
+            }
+        }
+
+        let preloadTargets = publishedVisibleCompetitions
+            .prefix(Self.initialTopCuberPreloadCount)
+            .filter { competition in !topCuberRefreshingIDs.contains(competition.id) }
+
+        let prefetchTargets = publishedVisibleCompetitions
+            .dropFirst(Self.initialTopCuberPreloadCount)
+            .prefix(Self.nextTopCuberPrefetchCount)
+            .filter { competition in
+                topCuberStatesByCompetitionID[competition.id] == nil &&
+                !topCuberRefreshingIDs.contains(competition.id)
+            }
+
+        let jobs: [(competition: CompetitionSummary, usesLoadingPlaceholder: Bool)] =
+            preloadTargets.map { competition in
+                (
+                    competition,
+                    topCuberStatesByCompetitionID[competition.id] == nil
+                )
+            } +
+            prefetchTargets.map { competition in
+                (competition, false)
+            }
+
+        guard !jobs.isEmpty else { return }
+
+        for job in jobs where job.usesLoadingPlaceholder {
+            topCuberStatesByCompetitionID[job.competition.id] = .loading
+        }
+        for job in jobs {
+            topCuberRefreshingIDs.insert(job.competition.id)
+        }
+
+        var nextIndex = 0
+        await withTaskGroup(of: (String, [CompetitionTopCuberPreview]?, Bool).self) { group in
+            let initialCount = min(Self.topCuberLoadConcurrency, jobs.count)
+
+            func enqueueJob(_ job: (competition: CompetitionSummary, usesLoadingPlaceholder: Bool)) {
+                group.addTask {
+                    let previews = await CompetitionService.fetchCompetitionTopCuberPreviews(
+                        for: job.competition,
+                        languageCode: appLanguage
+                    )
+                    return (job.competition.id, previews, job.usesLoadingPlaceholder)
+                }
+            }
+
+            while nextIndex < initialCount {
+                enqueueJob(jobs[nextIndex])
+                nextIndex += 1
+            }
+
+            while let (competitionID, previews, usesLoadingPlaceholder) = await group.next() {
+                topCuberRefreshingIDs.remove(competitionID)
+
+                if let previews {
+                    topCuberStatesByCompetitionID[competitionID] = previews.isEmpty ? .empty : .loaded(previews)
+                } else if usesLoadingPlaceholder {
+                    topCuberStatesByCompetitionID[competitionID] = .failed
+                }
+
+                if nextIndex < jobs.count {
+                    enqueueJob(jobs[nextIndex])
+                    nextIndex += 1
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func refreshTopCuberPreview(
+        for competition: CompetitionSummary,
+        usesLoadingPlaceholder: Bool
+    ) async {
+        guard showsTopCubers else { return }
+        guard !topCuberRefreshingIDs.contains(competition.id) else { return }
+
+        topCuberRefreshingIDs.insert(competition.id)
+        if usesLoadingPlaceholder {
+            topCuberStatesByCompetitionID[competition.id] = .loading
+        }
+
+        defer {
+            topCuberRefreshingIDs.remove(competition.id)
+        }
+
+        guard let previews = await CompetitionService.fetchCompetitionTopCuberPreviews(
+            for: competition,
+            languageCode: appLanguage
+        ) else {
+            if usesLoadingPlaceholder {
+                topCuberStatesByCompetitionID[competition.id] = .failed
+            }
+            return
+        }
+
+        topCuberStatesByCompetitionID[competition.id] = previews.isEmpty ? .empty : .loaded(previews)
+    }
+
 
     private func filterCompetitionsForVisibleStatus(
         _ competitions: [CompetitionSummary],
@@ -1438,7 +2071,7 @@ private final class CompetitionCubingLiveSession: ObservableObject {
 
         Task { [weak self] in
             guard let self else { return }
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(nanoseconds: 150_000_000)
             await self.sendCompetitionSubscription()
             await self.fetchResults()
             await self.fetchMessagesIfNeeded(force: true)
@@ -1969,24 +2602,24 @@ private struct CompetitionCubingLiveSection: View {
             session.configure(with: content)
             session.start()
         }
-        .onChange(of: content.competitionID) { _, _ in
+        .onChange(of: content.competitionID) { _ in
             session.configure(with: content)
             session.start()
         }
-        .onChange(of: session.selectedRoundOptionID) { _, _ in
+        .onChange(of: session.selectedRoundOptionID) { _ in
             session.selectionDidChange()
         }
-        .onChange(of: session.selectedFilterValue) { _, _ in
+        .onChange(of: session.selectedFilterValue) { _ in
             session.selectionDidChange()
         }
-        .onChange(of: session.showsMessagesInChat) { _, _ in
+        .onChange(of: session.showsMessagesInChat) { _ in
             session.messagesPreferenceDidChange()
         }
         .onDisappear {
             session.stop()
         }
         .sheet(isPresented: $showsSettings) {
-            NavigationStack {
+            CompatibleNavigationContainer {
                 Form {
                     Toggle(
                         localizedCompetitionStringInView(key: "competitions.detail.live.settings.show_messages", languageCode: appLanguage),
@@ -2009,7 +2642,7 @@ private struct CompetitionCubingLiveSection: View {
             }
         }
         .sheet(isPresented: $showsSumOfRanks) {
-            NavigationStack {
+            CompatibleNavigationContainer {
                 CompetitionLiveSumOfRanksSheet(
                     content: content.sumOfRanksContent,
                     appLanguage: appLanguage,
@@ -2018,7 +2651,7 @@ private struct CompetitionCubingLiveSection: View {
             }
         }
         .sheet(isPresented: $showsPodiums) {
-            NavigationStack {
+            CompatibleNavigationContainer {
                 CompetitionLivePodiumsSheet(
                     sections: content.podiumSections,
                     appLanguage: appLanguage
@@ -2307,7 +2940,7 @@ private struct CompetitionCubingLiveSection: View {
                             .onAppear {
                                 scrollChatToBottom(using: proxy, animated: false)
                             }
-                            .onChange(of: recentChatEntryIDs) { _, _ in
+                            .onChange(of: recentChatEntryIDs) { _ in
                                 scrollChatToBottom(using: proxy, animated: true)
                             }
                         }
@@ -2916,8 +3549,8 @@ private struct CompetitionDetailView: View {
             await loadWCALiveContentIfNeeded()
         }
         .toolbar {
-            if isMainlandChinaCompetition {
-                ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
+                if isMainlandChinaCompetition {
                     if isRefreshingDetail {
                         ProgressView()
                             .controlSize(.small)
@@ -2931,6 +3564,8 @@ private struct CompetitionDetailView: View {
                         }
                         .tint(.primary)
                     }
+                } else {
+                    EmptyView()
                 }
             }
         }
@@ -4489,6 +5124,7 @@ private enum CompetitionEventIconFont {
     }
 }
 
+@available(iOS 17.0, *)
 private struct CompetitionMapView: View {
     let query: CompetitionQuery
     let appLanguage: String
@@ -4614,7 +5250,7 @@ private struct CompetitionMapView: View {
                 _ = await (weatherLoad, cityLoad)
             }
         }
-        .onChange(of: locationManager.authorizationStatus) { _, newValue in
+        .onChange(of: locationManager.authorizationStatus) { newValue in
             if newValue == .authorizedAlways || newValue == .authorizedWhenInUse {
                 locationManager.requestCurrentLocation()
                 if isFollowingUserLocation {
@@ -4622,7 +5258,7 @@ private struct CompetitionMapView: View {
                 }
             }
         }
-        .onChange(of: locationManager.currentLocation) { _, newLocation in
+        .onChange(of: locationManager.currentLocation) { newLocation in
             guard let newLocation else { return }
             if shouldRefocusToUserLocation {
                 focusOnUserLocation(using: newLocation)
@@ -4634,13 +5270,13 @@ private struct CompetitionMapView: View {
                 _ = await (weatherLoad, cityLoad)
             }
         }
-        .onChange(of: cameraPosition.positionedByUser) { _, positionedByUser in
+        .onChange(of: cameraPosition.positionedByUser) { positionedByUser in
             if positionedByUser {
                 isFollowingUserLocation = false
                 shouldRefocusToUserLocation = false
             }
         }
-        .onChange(of: selectedMapItemID) { _, newValue in
+        .onChange(of: selectedMapItemID) { newValue in
             guard let newValue,
                   let item = mapDisplayItems.first(where: { $0.id == newValue }) else {
                 return
@@ -5597,6 +6233,7 @@ private struct CompetitionMapView: View {
     }
 }
 
+@available(iOS 17.0, *)
 private enum CompetitionMapMode: String, CaseIterable {
     case satellite
     case explore
@@ -5611,6 +6248,7 @@ private enum CompetitionMapMode: String, CaseIterable {
     }
 }
 
+@available(iOS 17.0, *)
 private enum CompetitionMapLook: String, CaseIterable {
     case globe
     case flat
@@ -5682,6 +6320,7 @@ private final class CompetitionLocationManager: NSObject, ObservableObject, CLLo
     }
 }
 
+@available(iOS 16.0, *)
 private struct CompetitionWeatherSnapshot {
     let symbolName: String
     let temperatureText: String
@@ -5787,6 +6426,7 @@ private struct CompetitionFiltersPopover: View {
     @Binding var selectedEvents: Set<CompetitionEventFilter>
     @Binding var selectedYear: CompetitionYearFilter
     @Binding var selectedStatus: CompetitionStatusFilter
+    @Binding var showsTopCubers: Bool
     let appLanguage: String
     @Binding var showsFilterPopover: Bool
     @State private var showsRegionPicker = false
@@ -5853,6 +6493,12 @@ private struct CompetitionFiltersPopover: View {
                     }
                 }
             }
+
+            Toggle(isOn: $showsTopCubers) {
+                Text(localizedCompetitionStringInView(key: "competitions.filter.show_top_cubers", languageCode: appLanguage))
+                    .font(.system(size: 16, weight: .medium))
+            }
+            .toggleStyle(.switch)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 18)
@@ -5959,7 +6605,7 @@ private struct CompetitionEventMultiSelectSection: View {
                 .padding(.vertical, 11)
             }
             .buttonStyle(.plain)
-            .menuActionDismissBehavior(.disabled)
+            .compatibleMenuActionDismissBehaviorDisabled()
         }
     }
 
@@ -6092,7 +6738,7 @@ private struct CompetitionRegionPickerView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             List {
                 allRegionsSection
                 continentSection
@@ -6137,7 +6783,7 @@ private struct CompetitionRegionPickerView: View {
                 isLoading = false
             }
         }
-        .presentationDetents([.medium, .large])
+        .compatibleMediumLargeSheet()
     }
 
     private var allRegionsSection: some View {
@@ -6347,7 +6993,7 @@ private struct CompetitionSearchView: View {
             }
         }
         .listStyle(.plain)
-        .scrollContentBackground(.hidden)
+        .compatibleScrollContentBackgroundHidden()
         .navigationTitle(Text(localizedCompetitionStringInView(key: "competitions.search_title", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.inline)
         .searchable(
@@ -6385,12 +7031,16 @@ private final class CompetitionNavigationBarFontConfiguratorController: UIViewCo
 
             let standardAppearance = navigationBar.standardAppearance.copy()
             standardAppearance.titleTextAttributes[.font] = inlineTitleFont
-            standardAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            if #available(iOS 26.0, *) {
+                standardAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            }
 
             let scrollEdgeAppearance = navigationBar.scrollEdgeAppearance?.copy() ?? standardAppearance.copy()
             scrollEdgeAppearance.largeTitleTextAttributes[.font] = largeTitleFont
             scrollEdgeAppearance.titleTextAttributes[.font] = inlineTitleFont
-            scrollEdgeAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            if #available(iOS 26.0, *) {
+                scrollEdgeAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+            }
 
             navigationBar.standardAppearance = standardAppearance
             navigationBar.compactAppearance = standardAppearance
@@ -6404,10 +7054,12 @@ private final class CompetitionNavigationBarFontConfiguratorController: UIViewCo
             if #available(iOS 16.0, *) {
                 targetNavigationItem.style = .browser
             }
-            targetNavigationItem.largeSubtitleView = CompetitionLargeSubtitleContainerView(
-                text: largeSubtitle,
-                topInset: 4
-            )
+            if #available(iOS 26.0, *) {
+                targetNavigationItem.largeSubtitleView = CompetitionLargeSubtitleContainerView(
+                    text: largeSubtitle,
+                    topInset: 4
+                )
+            }
         }
     }
 
@@ -6435,7 +7087,10 @@ private final class CompetitionNavigationBarFontConfiguratorController: UIViewCo
         var current: UIViewController? = parent
         while let controller = current {
             let item = controller.navigationItem
-            if item.title != nil || item.subtitle != nil || item.largeSubtitle != nil {
+            if item.title != nil {
+                return item
+            }
+            if #available(iOS 26.0, *), item.subtitle != nil || item.largeSubtitle != nil {
                 return item
             }
             current = controller.parent

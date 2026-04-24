@@ -1,6 +1,6 @@
 import SwiftUI
 import PhotosUI
-import SwiftData
+import CoreData
 import UniformTypeIdentifiers
 
 #if os(iOS)
@@ -22,11 +22,14 @@ struct SettingsTabView: View {
         case average
     }
 
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.colorScheme) private var currentColorScheme
     @ObservedObject private var ganTimer = GANTimerBluetoothManager.shared
-    @Query(sort: [SortDescriptor(\Session.createdAt, order: .forward)])
-    private var sessions: [Session]
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
+        animation: .default
+    )
+    private var sessions: FetchedResults<Session>
 
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("timerBackgroundAppearanceData") private var timerBackgroundAppearanceData: Data?
@@ -60,8 +63,6 @@ struct SettingsTabView: View {
     @AppStorage("selectedAppIcon") private var selectedAppIcon: String = AppIconOption.red.rawValue
     @AppStorage("competitionCardStyle") private var competitionCardStyle: String = CompetitionCardStyleOption.list.rawValue
 
-    @State private var timerBackgroundPhotoItem: PhotosPickerItem?
-    @State private var competitionsBackgroundPhotoItem: PhotosPickerItem?
     @State private var timerBackgroundAppearance = AppearanceConfiguration.defaultBackground
     @State private var competitionsBackgroundAppearance = AppearanceConfiguration.defaultBackground
     @State private var timerTextAppearance = AppearanceConfiguration.defaultTimerText
@@ -86,6 +87,7 @@ struct SettingsTabView: View {
     @State private var wcaDestination: WCASettingsDestination?
     @State private var appearanceSelectionTarget: AppearanceSelectionTarget?
     @State private var showingGANDevicePicker = false
+    @State private var showingCompetitionCalculator = false
     @StateObject private var wcaAuth = WCAAuthManager.shared
 
     private func languageDisplayKey(for languageCode: String) -> String {
@@ -103,13 +105,23 @@ struct SettingsTabView: View {
         LocalizedStringKey(languageDisplayKey(for: appLanguage))
     }
 
+    private var settingsCardBackgroundFillColor: Color {
+        currentColorScheme == .dark
+            ? Color(.secondarySystemGroupedBackground)
+            : Color(.systemBackground)
+    }
+
     private var settingsCardBackground: some View {
         RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .fill(Color(.systemBackground))
+            .fill(settingsCardBackgroundFillColor)
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color(.separator).opacity(currentColorScheme == .dark ? 0.28 : 0.12), lineWidth: 0.5)
+            }
     }
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             ScrollView {
                 VStack(spacing: 14) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -165,7 +177,7 @@ struct SettingsTabView: View {
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 14)
                                     .contentShape(Rectangle())
-                                    .glassEffect(.regular.interactive(), in: .capsule)
+                                    .compatibleGlassFromIOS16(in: Capsule())
                                 }
                                 .buttonStyle(.plain)
                                 .disabled(wcaAuth.isSigningIn)
@@ -213,7 +225,7 @@ struct SettingsTabView: View {
                                     }
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
-                                    .glassEffect(.regular.interactive(), in: .capsule)
+                                    .compatibleGlassFromIOS16(in: Capsule())
                                 }
                                 .tint(.primary)
                             }
@@ -244,7 +256,6 @@ struct SettingsTabView: View {
                                 titleKey: "settings.timer_bg_label",
                                 configuration: $timerBackgroundAppearance,
                                 photoData: $timerBackgroundImageData,
-                                photoItem: $timerBackgroundPhotoItem,
                                 allowsPhoto: true
                             )
 
@@ -253,7 +264,6 @@ struct SettingsTabView: View {
                                     titleKey: "settings.competitions_bg_label",
                                     configuration: $competitionsBackgroundAppearance,
                                     photoData: $competitionsBackgroundImageData,
-                                    photoItem: $competitionsBackgroundPhotoItem,
                                     allowsPhoto: true
                                 )
                                 .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .opacity))
@@ -426,7 +436,7 @@ struct SettingsTabView: View {
                                         }
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 6)
-                                        .glassEffect(.regular.interactive(), in: .capsule)
+                                        .compatibleGlassFromIOS16(in: Capsule())
                                     }
                                     .buttonStyle(.plain)
                                     .tint(.primary)
@@ -558,11 +568,24 @@ struct SettingsTabView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle(Text("tab.settings"))
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingCompetitionCalculator = true
+                    } label: {
+                        Image(systemName: "function")
+                    }
+                    .accessibilityLabel(Text("settings.competition_calculator_title"))
+                }
+            }
             .sheet(item: $appearanceSelectionTarget) { target in
                 appearanceSelectionSheet(for: target)
             }
             .sheet(isPresented: $showingGANDevicePicker) {
                 ganDevicePickerSheet
+            }
+            .sheet(isPresented: $showingCompetitionCalculator) {
+                CompetitionCalculatorSheet(appLanguage: appLanguage)
             }
             .onAppear {
                 if enteringTimesWith == TimeEntryMode.gan.rawValue {
@@ -590,19 +613,19 @@ struct SettingsTabView: View {
                 )
                 selectedAppIcon = AppIconOption.fromCurrentSystemIcon()?.rawValue ?? AppIconOption.red.rawValue
             }
-            .onChange(of: timerBackgroundAppearance) { _, newValue in
+            .onChange(of: timerBackgroundAppearance) { newValue in
                 timerBackgroundAppearanceData = try? JSONEncoder().encode(newValue)
             }
-            .onChange(of: competitionsBackgroundAppearance) { _, newValue in
+            .onChange(of: competitionsBackgroundAppearance) { newValue in
                 competitionsBackgroundAppearanceData = try? JSONEncoder().encode(newValue)
             }
-            .onChange(of: timerTextAppearance) { _, newValue in
+            .onChange(of: timerTextAppearance) { newValue in
                 timerTextAppearanceData = try? JSONEncoder().encode(newValue)
             }
-            .onChange(of: scrambleTextAppearance) { _, newValue in
+            .onChange(of: scrambleTextAppearance) { newValue in
                 scrambleTextAppearanceData = try? JSONEncoder().encode(newValue)
             }
-            .onChange(of: averageTextAppearance) { _, newValue in
+            .onChange(of: averageTextAppearance) { newValue in
                 averageTextAppearanceData = try? JSONEncoder().encode(newValue)
             }
             .fileImporter(
@@ -679,7 +702,7 @@ struct SettingsTabView: View {
             } message: {
                 Text(importConflictMessage)
             }
-            .navigationDestination(item: $wcaDestination) { destination in
+            .compatibleNavigationDestination(item: $wcaDestination) { destination in
                 switch destination {
                 case .myCompetitions:
                     WCAMyCompetitionsPlaceholderView()
@@ -714,7 +737,7 @@ struct SettingsTabView: View {
                         .padding(.horizontal, 18)
                         .padding(.vertical, 16)
                         .frame(maxWidth: 280)
-                        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .compatibleGlass(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                     }
                     .transition(.opacity)
                 }
@@ -725,7 +748,7 @@ struct SettingsTabView: View {
 
 private extension SettingsTabView {
     var ganDevicePickerSheet: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             List {
                 if ganTimer.discoveredDevices.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
@@ -793,7 +816,7 @@ private extension SettingsTabView {
                 ganTimer.startDeviceDiscovery()
             }
         }
-        .presentationDetents([.medium, .large])
+        .compatibleMediumLargeSheet()
     }
 
     var wcaStatusCard: some View {
@@ -845,7 +868,6 @@ private extension SettingsTabView {
                     .foregroundStyle(.primary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .glassEffect(.regular.interactive(), in: .capsule)
                 }
                 .tint(.primary)
             }
@@ -881,7 +903,7 @@ private extension SettingsTabView {
                         .padding(.horizontal, 22)
                         .padding(.vertical, appLayoutLanguageCategory(for: appLanguage) == .widerCJK ? 22 : 30)
                         .frame(maxWidth: 260, alignment: .leading)
-                        .presentationCompactAdaptation(.popover)
+                        .compatiblePopoverCompactAdaptation()
                     }
                 }
 
@@ -932,7 +954,7 @@ private extension SettingsTabView {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 16)
-                        .glassEffect(.regular.tint(.secondary.opacity(0.22)).interactive(), in: .capsule)
+                        .compatibleTintedGlassFromIOS16(.blue, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .buttonStyle(.plain)
 
@@ -945,13 +967,13 @@ private extension SettingsTabView {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 16)
-                        .glassEffect(.regular.tint(.secondary.opacity(0.22)).interactive(), in: .capsule)
+                        .compatibleTintedGlassFromIOS16(.blue, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
             .padding(18)
             .frame(width: 248, alignment: .leading)
-            .presentationCompactAdaptation(.popover)
+            .compatiblePopoverCompactAdaptation()
         }
         .fileExporter(
             isPresented: $showingExportPicker,
@@ -1031,7 +1053,7 @@ private extension SettingsTabView {
             let solves = try fetchAllSolves()
             let package = try DataTransferManager.prepareExport(
                 format: format,
-                sessions: sessions,
+                sessions: Array(sessions),
                 solves: solves
             )
             exportDocument = package.document
@@ -1139,10 +1161,7 @@ private extension SettingsTabView {
     }
 
     func fetchAllSolves() throws -> [Solve] {
-        let descriptor = FetchDescriptor<Solve>(
-            sortBy: [SortDescriptor(\Solve.date, order: .reverse)]
-        )
-        return try modelContext.fetch(descriptor)
+        try modelContext.fetchSolvesSortedByDateDescending()
     }
 
     func beginImportProgress(label: String, total: Int) {
@@ -1220,7 +1239,6 @@ private extension SettingsTabView {
         defaultFontWeight: String? = nil,
         previewKind: TextAppearancePreviewKind? = nil,
         photoData: Binding<Data?>? = nil,
-        photoItem: Binding<PhotosPickerItem?>? = nil,
         allowsPhoto: Bool = false
     ) -> AnyView {
         AnyView(
@@ -1248,10 +1266,9 @@ private extension SettingsTabView {
 
                 if allowsPhoto,
                    configuration.wrappedValue.style == .photo,
-                   let photoData,
-                   let photoItem {
+                   let photoData {
                     Divider()
-                    appearancePhotoRow(photoData: photoData, photoItem: photoItem)
+                    appearancePhotoRow(photoData: photoData)
                 }
 
                 if let fontSize, let fontSizeTitleKey, let defaultFontSize {
@@ -1287,7 +1304,7 @@ private extension SettingsTabView {
                         kind: previewKind,
                         configuration: configuration.wrappedValue,
                         fontSize: fontSize.wrappedValue,
-                        fontDesign: TimerFontDesignOption(rawValue: fontDesign.wrappedValue) ?? .default,
+                        fontDesign: resolvedFontDesignOption(fontDesign.wrappedValue),
                         fontWeight: TimerFontWeightOption(rawValue: fontWeight.wrappedValue) ?? .medium
                     )
                 }
@@ -1354,45 +1371,22 @@ private extension SettingsTabView {
     }
 
     private func appearancePhotoRow(
-        photoData: Binding<Data?>,
-        photoItem: Binding<PhotosPickerItem?>
+        photoData: Binding<Data?>
     ) -> some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("settings.timer_bg_photo")
-                    .font(.system(size: 16, weight: .medium))
-                Spacer()
-                PhotosPicker(
-                    selection: photoItem,
-                    matching: .images
-                ) {
-                    Text("settings.timer_bg_photo_button")
-                        .font(.system(size: 15, weight: .medium))
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .onChange(of: photoItem.wrappedValue) { _, newItem in
-                guard let newItem else { return }
-                Task {
-                    if let data = try? await newItem.loadTransferable(type: Data.self) {
-                        photoData.wrappedValue = data
-                    }
-                }
-            }
-
-            if photoData.wrappedValue != nil {
-                Divider()
+        Group {
+            if #available(iOS 16.0, *) {
+                AppearancePhotoPickerRow(photoData: photoData)
+            } else {
                 HStack {
+                    Text("settings.timer_bg_photo")
+                        .font(.system(size: 16, weight: .medium))
                     Spacer()
-                    Button("settings.timer_bg_photo_clear") {
-                        photoData.wrappedValue = nil
-                        photoItem.wrappedValue = nil
-                    }
-                    .font(.system(size: 14, weight: .medium))
+                    Text("iOS 16+")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .padding(.vertical, 12)
             }
         }
     }
@@ -1417,7 +1411,7 @@ private extension SettingsTabView {
                     .foregroundStyle(.blue)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .glassEffect(.regular.tint(.blue).interactive(), in: .capsule)
+                    .compatibleTintedGlassFromIOS16(.blue, in: Capsule())
                     .buttonStyle(.plain)
                     .disabled(abs(value.wrappedValue - defaultValue) < 0.5)
                     .opacity(abs(value.wrappedValue - defaultValue) < 0.5 ? 0.45 : 1)
@@ -1448,7 +1442,7 @@ private extension SettingsTabView {
                     Text("settings.font_design_label")
                         .font(.system(size: 16, weight: .medium))
                     Spacer()
-                    fontDesignMenuLabel(TimerFontDesignOption(rawValue: value.wrappedValue) ?? .default)
+                    fontDesignMenuLabel(resolvedFontDesignOption(value.wrappedValue))
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.tertiary)
@@ -1489,19 +1483,35 @@ private extension SettingsTabView {
     func fontDesignMenuLabel(_ option: TimerFontDesignOption) -> some View {
         Text(option.localizedKey)
             .font(.system(size: 15, weight: .medium, design: option.fontDesign))
-            .fontWidth(option.fontWidth)
+            .compatibleFontWidth(option)
     }
 
     var orderedFontDesignOptions: [TimerFontDesignOption] {
-        [
+        var options: [TimerFontDesignOption] = [
             .default,
             .rounded,
             .serif,
-            .monospaced,
-            .expanded,
-            .condensed,
-            .compressed
+            .monospaced
         ]
+
+        if #available(iOS 16.0, *) {
+            options.append(contentsOf: [
+                .expanded,
+                .condensed,
+                .compressed
+            ])
+        }
+
+        return options
+    }
+
+    func resolvedFontDesignOption(_ rawValue: String) -> TimerFontDesignOption {
+        let option = TimerFontDesignOption(rawValue: rawValue) ?? .default
+        if #unavailable(iOS 16.0),
+           option == .expanded || option == .condensed || option == .compressed {
+            return .default
+        }
+        return option
     }
 
     @ViewBuilder
@@ -1551,7 +1561,7 @@ private extension SettingsTabView {
     func appearanceSelectionSheet(for target: AppearanceSelectionTarget) -> some View {
         switch target {
         case .timerFontDesign, .scrambleFontDesign, .averageFontDesign:
-            NavigationStack {
+            CompatibleNavigationContainer {
                 List {
                     ForEach(orderedFontDesignOptions) { option in
                         Button {
@@ -1580,10 +1590,10 @@ private extension SettingsTabView {
                 .navigationTitle("settings.font_design_label")
                 .navigationBarTitleDisplayMode(.inline)
             }
-            .presentationDetents([.medium, .large])
+            .compatibleMediumLargeSheet()
 
         case .timerFontWeight, .scrambleFontWeight, .averageFontWeight:
-            NavigationStack {
+            CompatibleNavigationContainer {
                 List {
                     ForEach(TimerFontWeightOption.allCases) { option in
                         Button {
@@ -1612,7 +1622,7 @@ private extension SettingsTabView {
                 .navigationTitle("settings.font_weight_label")
                 .navigationBarTitleDisplayMode(.inline)
             }
-            .presentationDetents([.medium])
+            .compatibleMediumSheet()
         }
     }
 
@@ -1672,7 +1682,7 @@ private extension SettingsTabView {
     ) -> some View {
         let base = text
             .font(.system(size: fontSize, weight: fontWeight.fontWeight, design: fontDesign.fontDesign))
-            .fontWidth(fontDesign.fontWidth)
+            .compatibleFontWidth(fontDesign)
 
         switch configuration.style {
         case .system, .photo:
@@ -1720,8 +1730,8 @@ private extension SettingsTabView {
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .glassEffect(.regular.interactive(), in: .capsule)
-                }
+                    .compatibleGlassFromIOS16(in: Capsule())
+        }
                 .tint(.primary)
             }
             .padding(.horizontal, 14)
@@ -1787,7 +1797,7 @@ private extension SettingsTabView {
     }
 }
 
-private enum WCASettingsDestination: String, Identifiable {
+private enum WCASettingsDestination: String, Identifiable, Hashable {
     case myCompetitions
     case myResults
 
@@ -1899,6 +1909,265 @@ private enum TimeEntryMode: String, CaseIterable, Identifiable {
         case .timer: "settings.entering_times_timer"
         case .typing: "settings.entering_times_typing"
         case .gan: "settings.entering_times_gan"
+        }
+    }
+}
+
+private struct CompetitionCalculatorAttempt: Identifiable {
+    let id = UUID()
+    var timeText: String = ""
+    var result: SolveResult = .solved
+
+    var parsedBaseTime: Double? {
+        guard result != .dnf else { return 0 }
+        return Double(timeText)
+    }
+
+    var isComplete: Bool {
+        switch result {
+        case .dnf:
+            return true
+        case .solved, .plusTwo:
+            return parsedBaseTime != nil
+        }
+    }
+}
+
+private enum CompetitionCalculatorMetrics {
+    static func averageOfFive(for attempts: [CompetitionCalculatorAttempt]) -> Double? {
+        guard attempts.count == 5 else { return nil }
+
+        let adjustedTimes = attempts.map { attempt -> Double? in
+            switch attempt.result {
+            case .solved:
+                return attempt.parsedBaseTime
+            case .plusTwo:
+                return attempt.parsedBaseTime.map { $0 + 2 }
+            case .dnf:
+                return nil
+            }
+        }
+
+        return averageValue(adjustedTimes: adjustedTimes, trimmingCount: 1)
+    }
+
+    private static func averageValue(adjustedTimes: [Double?], trimmingCount: Int) -> Double? {
+        guard !adjustedTimes.isEmpty else { return nil }
+        guard trimmingCount >= 0, trimmingCount * 2 < adjustedTimes.count else { return nil }
+
+        let ranked = adjustedTimes
+            .map { adjusted -> (Double, Bool) in
+                if let adjusted {
+                    return (adjusted, false)
+                }
+                return (Double.greatestFiniteMagnitude, true)
+            }
+            .sorted { $0.0 < $1.0 }
+
+        let trimmed = ranked.dropFirst(trimmingCount).dropLast(trimmingCount)
+        guard !trimmed.isEmpty else { return nil }
+
+        if trimmed.contains(where: \.1) {
+            return .nan
+        }
+
+        let total = trimmed.reduce(0) { $0 + $1.0 }
+        return total / Double(trimmed.count)
+    }
+}
+
+private struct CompetitionCalculatorSheet: View {
+    let appLanguage: String
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focusedAttemptID: UUID?
+    @State private var attempts = Self.makeEmptyAttempts()
+
+    private var enteredAttempts: [CompetitionCalculatorAttempt] {
+        attempts.filter(\.isComplete)
+    }
+
+    private var currentAverageText: String {
+        guard enteredAttempts.count == 5 else {
+            return appLocalizedString("settings.competition_calculator_waiting", languageCode: appLanguage)
+        }
+        return SolveMetrics.formatAverage(CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts))
+    }
+
+    private var bestPossibleAverageText: String? {
+        guard enteredAttempts.count == 4 else { return nil }
+        let bestAttempt = CompetitionCalculatorAttempt(timeText: "0.001", result: .solved)
+        return SolveMetrics.formatAverage(CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts + [bestAttempt]))
+    }
+
+    private var worstPossibleAverageText: String? {
+        guard enteredAttempts.count == 4 else { return nil }
+        let worstAttempt = CompetitionCalculatorAttempt(timeText: "", result: .dnf)
+        return SolveMetrics.formatAverage(CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts + [worstAttempt]))
+    }
+
+    var body: some View {
+        CompatibleNavigationContainer {
+            List {
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("settings.competition_calculator_intro")
+                            .font(.system(size: 15, weight: .medium))
+
+                        Text("settings.competition_calculator_help")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                Section("settings.competition_calculator_attempts") {
+                    ForEach($attempts) { $attempt in
+                        HStack(spacing: 12) {
+                            Text("\(attemptIndex(for: attempt.id) + 1).")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 24, alignment: .leading)
+
+                            TextField(
+                                appLocalizedString("settings.competition_calculator_time_placeholder", languageCode: appLanguage),
+                                text: $attempt.timeText
+                            )
+                            .keyboardType(.decimalPad)
+                            .textInputAutocapitalization(.never)
+                            .disableAutocorrection(true)
+                            .focused($focusedAttemptID, equals: attempt.id)
+                            .disabled(attempt.result == .dnf)
+                            .onChange(of: attempt.timeText) { newValue in
+                                attempt.timeText = sanitizeTimeInput(newValue)
+                            }
+
+                            Picker("", selection: $attempt.result) {
+                                Text("common.solved").tag(SolveResult.solved)
+                                Text("+2").tag(SolveResult.plusTwo)
+                                Text("common.dnf").tag(SolveResult.dnf)
+                            }
+                            .labelsHidden()
+                            .pickerStyle(.menu)
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+
+                Section("settings.competition_calculator_results") {
+                    metricRow(
+                        title: appLocalizedString("settings.competition_calculator_current_average", languageCode: appLanguage),
+                        value: currentAverageText
+                    )
+
+                    if let bestPossibleAverageText, let worstPossibleAverageText {
+                        metricRow(
+                            title: appLocalizedString("settings.competition_calculator_bpa", languageCode: appLanguage),
+                            value: bestPossibleAverageText
+                        )
+
+                        metricRow(
+                            title: appLocalizedString("settings.competition_calculator_wpa", languageCode: appLanguage),
+                            value: worstPossibleAverageText
+                        )
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle("settings.competition_calculator_title")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("common.done") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("common.reset") {
+                        attempts = Self.makeEmptyAttempts()
+                        focusedAttemptID = nil
+                    }
+                }
+            }
+        }
+    }
+
+    private func attemptIndex(for id: UUID) -> Int {
+        attempts.firstIndex { $0.id == id } ?? 0
+    }
+
+    private func sanitizeTimeInput(_ text: String) -> String {
+        let filtered = text.filter { $0.isNumber || $0 == "." }
+        let components = filtered.split(separator: ".", omittingEmptySubsequences: false)
+        guard components.count > 2 else { return filtered }
+        return components.prefix(2).joined(separator: ".")
+    }
+
+    private static func makeEmptyAttempts() -> [CompetitionCalculatorAttempt] {
+        (0..<5).map { _ in CompetitionCalculatorAttempt() }
+    }
+
+    @ViewBuilder
+    private func metricRow(title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 16, weight: .medium))
+
+            Spacer()
+
+            Text(value)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+@available(iOS 16.0, *)
+private struct AppearancePhotoPickerRow: View {
+    @Binding var photoData: Data?
+    @State private var photoItem: PhotosPickerItem?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("settings.timer_bg_photo")
+                    .font(.system(size: 16, weight: .medium))
+                Spacer()
+                PhotosPicker(
+                    selection: $photoItem,
+                    matching: .images
+                ) {
+                    Text("settings.timer_bg_photo_button")
+                        .font(.system(size: 15, weight: .medium))
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .onChange(of: photoItem) { newItem in
+                guard let newItem else { return }
+                Task {
+                    if let data = try? await newItem.loadTransferable(type: Data.self) {
+                        photoData = data
+                    }
+                }
+            }
+
+            if photoData != nil {
+                Divider()
+                HStack {
+                    Spacer()
+                    Button("settings.timer_bg_photo_clear") {
+                        photoData = nil
+                        photoItem = nil
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+            }
         }
     }
 }

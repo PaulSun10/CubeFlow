@@ -1,5 +1,5 @@
 import SwiftUI
-import SwiftData
+import CoreData
 import Charts
 
 #if os(iOS)
@@ -8,10 +8,13 @@ private let solvesDidChangeNotification = Notification.Name("CubeFlowSolvesDidCh
 
 @MainActor
 struct DataTabView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.managedObjectContext) private var modelContext
 
-    @Query(sort: [SortDescriptor(\Session.createdAt, order: .forward)])
-    private var sessions: [Session]
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
+        animation: .default
+    )
+    private var sessions: FetchedResults<Session>
 
     @AppStorage("selectedSessionID") private var selectedSessionID: String = ""
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -21,7 +24,7 @@ struct DataTabView: View {
     @State private var isSelecting = false
     @State private var selectedSolveIDs: Set<UUID> = []
     @State private var showingSessionSheet = false
-    @State private var solveToEdit: Solve?
+    @State private var solveDetailSample: SessionSolveSample?
     @State private var showingTrendSheet = false
     @State private var selectedAverageType: AverageListType = .mo3
     @State private var recordSnapshot = RecordSnapshot.empty
@@ -61,7 +64,7 @@ struct DataTabView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             ZStack {
                 switch selectedSegment {
                 case .time:
@@ -85,17 +88,15 @@ struct DataTabView: View {
         }
         .sheet(isPresented: $showingSessionSheet) {
             SessionManagementSheet(selectedSessionID: $selectedSessionID)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+                .compatibleLargeSheet()
         }
-        .sheet(item: $solveToEdit) { solve in
-            SolveDetailSheet(solve: solve)
-                .presentationDetents([.medium])
+        .sheet(item: $solveDetailSample) { sample in
+            SolveDetailSheet(sample: sample)
+                .compatibleMediumSheet()
         }
         .sheet(isPresented: $showingTrendSheet) {
             TimeTrendSheet(solves: sessionSolves, appLanguage: appLanguage)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+                .compatibleLargeSheet()
         }
         .safeAreaInset(edge: .bottom) {
             if selectedSegment == .time && isSelecting && !selectedSolveIDs.isEmpty {
@@ -108,7 +109,7 @@ struct DataTabView: View {
             ensureSessionExists()
             refreshFilteredSessionSolves()
         }
-        .onChange(of: selectedSegment) { _, newValue in
+        .onChange(of: selectedSegment) { newValue in
             if newValue != .time {
                 isSelecting = false
                 selectedSolveIDs.removeAll()
@@ -120,23 +121,23 @@ struct DataTabView: View {
                 refreshRecordSnapshot()
             }
         }
-        .onChange(of: selectedSessionID) { _, _ in
+        .onChange(of: selectedSessionID) { _ in
             isSelecting = false
             selectedSolveIDs.removeAll()
             refreshFilteredSessionSolves()
         }
-        .onChange(of: selectedSessionSolveCount) { _, _ in
+        .onChange(of: selectedSessionSolveCount) { _ in
             refreshFilteredSessionSolves()
         }
         .onReceive(NotificationCenter.default.publisher(for: solvesDidChangeNotification)) { _ in
             refreshFilteredSessionSolves()
         }
-        .onChange(of: selectedAverageType) { _, _ in
+        .onChange(of: selectedAverageType) { _ in
             if selectedSegment == .average && !isLoadingSessionSnapshot {
                 refreshAverageEntries()
             }
         }
-        .onChange(of: appLanguage) { _, _ in
+        .onChange(of: appLanguage) { _ in
             recordSnapshotKey = nil
             if selectedSegment == .record {
                 refreshRecordSnapshot()
@@ -145,27 +146,18 @@ struct DataTabView: View {
     }
 
     private var topBarControls: some View {
-        GlassEffectContainer(spacing: 6) {
-            HStack(spacing: 6) {
-                sessionButton
-                segmentedControl
-                trailingButton
-            }
+        HStack(spacing: 6) {
+            sessionButton
+            segmentedControl
+            trailingButton
         }
     }
 
     private var sessionButton: some View {
-        Text("common.session")
-            .lineLimit(1)
-            .padding(.horizontal, sessionButtonHorizontalPadding)
-            .padding(.vertical, 12)
-            .glassEffect(.regular.interactive(), in: .capsule)
-            .font(.system(size: 16, weight: .medium))
-            .layoutPriority(2)
-            .contentShape(.capsule)
-            .onTapGesture {
-                showingSessionSheet = true
-            }
+        toolbarCapsuleButton(title: Text("common.session"), minWidth: toolbarTextButtonMinWidth) {
+            showingSessionSheet = true
+        }
+        .layoutPriority(2)
     }
 
     private var segmentedControl: some View {
@@ -176,41 +168,29 @@ struct DataTabView: View {
         }
         .pickerStyle(.segmented)
         .frame(width: segmentedWidth)
-        .glassEffect(.regular.interactive())
     }
 
     private var selectButton: some View {
-        Text(isSelecting ? LocalizedStringKey("common.done") : LocalizedStringKey("common.select"))
-            .lineLimit(1)
-            .padding(.horizontal, selectButtonHorizontalPadding)
-            .padding(.vertical, 12)
-            .glassEffect(.regular.interactive(), in: .capsule)
-            .font(.system(size: 16, weight: .medium))
+        toolbarCapsuleButton(
+            title: Text(isSelecting ? LocalizedStringKey("common.done") : LocalizedStringKey("common.select")),
+            minWidth: toolbarTextButtonMinWidth
+        ) {
+            withAnimation(.snappy(duration: 0.2, extraBounce: 0)) {
+                isSelecting.toggle()
+                if !isSelecting {
+                    selectedSolveIDs.removeAll()
+                }
+            }
+        }
             .id(isSelecting)
             .transition(.opacity)
             .layoutPriority(2)
-            .contentShape(.capsule)
-            .onTapGesture {
-                withAnimation(.snappy(duration: 0.2, extraBounce: 0)) {
-                    isSelecting.toggle()
-                    if !isSelecting {
-                        selectedSolveIDs.removeAll()
-                    }
-                }
-            }
     }
 
     private var graphButton: some View {
-        Image(systemName: "chart.line.uptrend.xyaxis")
-            .font(.system(size: 16, weight: .medium))
-            .padding(.horizontal, graphButtonHorizontalPadding)
-            .padding(.vertical, 11)
-            .foregroundStyle(.primary)
-            .glassEffect(.regular.interactive(), in: .capsule)
-            .contentShape(.capsule)
-            .onTapGesture {
-                showingTrendSheet = true
-            }
+        toolbarCapsuleButton(iconName: "chart.line.uptrend.xyaxis", minWidth: toolbarIconButtonMinWidth) {
+            showingTrendSheet = true
+        }
     }
 
     private var timeContent: some View {
@@ -268,16 +248,12 @@ struct DataTabView: View {
         200
     }
 
-    private var sessionButtonHorizontalPadding: CGFloat {
-        appLayoutLanguageCategory(for: appLanguage) == .widerCJK ? 15 : 10
+    private var toolbarTextButtonMinWidth: CGFloat {
+        appLayoutLanguageCategory(for: appLanguage) == .widerCJK ? 66 : 76
     }
 
-    private var selectButtonHorizontalPadding: CGFloat {
-        appLayoutLanguageCategory(for: appLanguage) == .widerCJK ? 20 : 10
-    }
-
-    private var graphButtonHorizontalPadding: CGFloat {
-        18
+    private var toolbarIconButtonMinWidth: CGFloat {
+        toolbarTextButtonMinWidth
     }
 
     private var trailingButton: some View {
@@ -288,6 +264,41 @@ struct DataTabView: View {
                 graphButton
             }
         }
+    }
+
+    private func toolbarCapsuleButton(
+        title: Text,
+        minWidth: CGFloat,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            title
+                .lineLimit(1)
+                .font(.system(size: 16, weight: .medium))
+                .frame(minWidth: minWidth)
+                .padding(.vertical, 12)
+                .contentShape(.capsule)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.primary)
+        .compatibleGlassFromIOS16(in: Capsule())
+    }
+
+    private func toolbarCapsuleButton(
+        iconName: String,
+        minWidth: CGFloat,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: iconName)
+                .font(.system(size: 16, weight: .medium))
+                .frame(minWidth: minWidth)
+                .padding(.vertical, 11)
+                .contentShape(.capsule)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.primary)
+        .compatibleGlassFromIOS16(in: Capsule())
     }
 
     private var averageContent: some View {
@@ -422,7 +433,7 @@ struct DataTabView: View {
             if isSelecting {
                 toggleSelection(for: solve)
             } else {
-                solveToEdit = fetchSolve(with: solve.id)
+                solveDetailSample = solve
             }
         } label: {
             HStack(spacing: 12) {
@@ -482,7 +493,7 @@ struct DataTabView: View {
             .foregroundStyle(.primary)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .compatibleGlassFromIOS16(in: Capsule())
 
             Spacer()
 
@@ -494,7 +505,7 @@ struct DataTabView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                 }
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .compatibleGlassFromIOS16(in: Capsule())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -511,7 +522,7 @@ struct DataTabView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 10)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .compatibleGlass(in: Capsule())
     }
 
     private func toggleSelection(for solve: SessionSolveSample) {
@@ -536,12 +547,7 @@ struct DataTabView: View {
     }
 
     private func fetchSolve(with id: UUID) -> Solve? {
-        let descriptor = FetchDescriptor<Solve>(
-            predicate: #Predicate<Solve> { solve in
-                solve.id == id
-            }
-        )
-        return try? modelContext.fetch(descriptor).first
+        try? modelContext.fetchSolve(with: id)
     }
 
     private func localizedRecordLabel(_ key: String) -> String {
@@ -550,8 +556,7 @@ struct DataTabView: View {
 
     private func ensureSessionExists() {
         if sessions.isEmpty {
-            let newSession = Session(name: "Session")
-            modelContext.insert(newSession)
+            let newSession = Session(name: "Session", context: modelContext)
             selectedSessionID = newSession.id.uuidString
             return
         }
@@ -569,20 +574,15 @@ struct DataTabView: View {
             return
         }
 
-        let container = modelContext.container
+        let persistenceController = PersistenceController.shared
         let sessionID = selectedSession.id
         let generation = sessionSnapshotGeneration + 1
         sessionSnapshotGeneration = generation
         isLoadingSessionSnapshot = true
 
         Task.detached(priority: .userInitiated) {
-            let context = ModelContext(container)
-            let sessionDescriptor = FetchDescriptor<Session>(
-                predicate: #Predicate<Session> { session in
-                    session.id == sessionID
-                }
-            )
-            let solves = ((try? context.fetch(sessionDescriptor).first?.solveList) ?? []).sorted { $0.date > $1.date }
+            let context = persistenceController.newBackgroundContext()
+            let solves = (try? context.fetchSolves(forSessionID: sessionID, ascending: false)) ?? []
             let snapshots = solves.map { solve in
                 SessionSolveSample(
                     id: solve.id,
@@ -695,23 +695,27 @@ struct DataTabView: View {
 
 private struct SolveDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
-    @Bindable var solve: Solve
+    @Environment(\.managedObjectContext) private var modelContext
+    private let sample: SessionSolveSample
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @State private var showingScrambleDetail = false
 
+    init(sample: SessionSolveSample) {
+        self.sample = sample
+    }
+ 
     private var shouldShowScrambleDetail: Bool {
-        let scramble = solve.scramble
+        let scramble = sample.scramble
         return !scramble.isEmpty && (scramble.count > 90 || scramble.contains("\n"))
     }
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             VStack(alignment: .leading, spacing: 14) {
-                detailRow(titleKey: "common.time_score", value: SolveMetrics.displayTime(for: solve))
+                detailRow(titleKey: "common.time_score", value: SolveMetrics.displayTime(for: sample))
                 detailRow(
                     titleKey: "common.date",
-                    value: SolveMetrics.displayDate(solve.date, languageCode: appLanguage)
+                    value: SolveMetrics.displayDate(sample.date, languageCode: appLanguage)
                 )
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
@@ -724,7 +728,7 @@ private struct SolveDetailSheet: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    Text(solve.scramble.isEmpty ? "-" : solve.scramble)
+                    Text(sample.scramble.isEmpty ? "-" : sample.scramble)
                         .font(.system(size: 18, weight: .semibold))
                         .monospacedDigit()
                         .lineLimit(shouldShowScrambleDetail ? 2 : nil)
@@ -745,50 +749,34 @@ private struct SolveDetailSheet: View {
                 VStack(spacing: 10) {
                     HStack(spacing: 10) {
                         Button("common.solved") {
-                            solve.result = .solved
-                            try? modelContext.save()
-                            NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
-                            dismiss()
+                            updateResult(.solved)
                         }
                         .foregroundStyle(.blue)
-                        .buttonStyle(.glassProminent)
-                        .tint(.blue.opacity(0.8))
+                        .compatibleProminentButtonFromIOS16(tint: .blue)
 
                         Button("+2") {
-                            solve.result = .plusTwo
-                            try? modelContext.save()
-                            NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
-                            dismiss()
+                            updateResult(.plusTwo)
                         }
                         .foregroundStyle(.blue)
-                        .buttonStyle(.glassProminent)
-                        .tint(.blue.opacity(0.8))
+                        .compatibleProminentButtonFromIOS16(tint: .blue)
 
                         Button("common.dnf") {
-                            solve.result = .dnf
-                            try? modelContext.save()
-                            NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
-                            dismiss()
+                            updateResult(.dnf)
                         }
                         .foregroundStyle(.blue)
-                        .buttonStyle(.glassProminent)
-                        .tint(.blue.opacity(0.8))
+                        .compatibleProminentButtonFromIOS16(tint: .blue)
 
                         Spacer(minLength: 0)
                     }
                     .controlSize(.large)
 
                     Button {
-                        modelContext.delete(solve)
-                        try? modelContext.save()
-                        NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
-                        dismiss()
+                        deleteSolve()
                     } label: {
                         Text("common.delete")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(.red.opacity(0.8))
+                    .compatibleProminentButtonFromIOS16(tint: .red)
                     .foregroundStyle(.red)
                     .controlSize(.large)
                 }
@@ -805,9 +793,9 @@ private struct SolveDetailSheet: View {
                 }
             }
             .sheet(isPresented: $showingScrambleDetail) {
-                NavigationStack {
+                CompatibleNavigationContainer {
                     ScrollView {
-                        Text(solve.scramble)
+                        Text(sample.scramble)
                             .font(.system(size: 17, weight: .medium))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(24)
@@ -822,10 +810,30 @@ private struct SolveDetailSheet: View {
                         }
                     }
                 }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+                .compatibleLargeSheet()
             }
         }
+    }
+
+    private func updateResult(_ result: SolveResult) {
+        guard let solve = try? modelContext.fetchSolve(with: sample.id) else {
+            dismiss()
+            return
+        }
+
+        solve.result = result
+        try? modelContext.save()
+        NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
+        dismiss()
+    }
+
+    private func deleteSolve() {
+        if let solve = try? modelContext.fetchSolve(with: sample.id) {
+            modelContext.delete(solve)
+            try? modelContext.save()
+            NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
+        }
+        dismiss()
     }
 
     private func detailRow(titleKey: LocalizedStringKey, value: String) -> some View {
@@ -842,11 +850,14 @@ private struct SolveDetailSheet: View {
 
 private struct SessionManagementSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.managedObjectContext) private var modelContext
     @AppStorage("appLanguage") private var appLanguage: String = "en"
 
-    @Query(sort: [SortDescriptor(\Session.createdAt, order: .forward)])
-    private var sessions: [Session]
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
+        animation: .default
+    )
+    private var sessions: FetchedResults<Session>
 
     @Binding var selectedSessionID: String
     @State private var isEditing = false
@@ -863,7 +874,7 @@ private struct SessionManagementSheet: View {
     private let animation = Animation.spring(response: 0.3, dampingFraction: 0.86)
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             Group {
                 if isDeletingSessions {
                     Color.clear
@@ -931,7 +942,6 @@ private struct SessionManagementSheet: View {
                         .font(.system(size: 17, weight: .semibold))
                         .frame(maxWidth: .infinity, alignment: isEditing ? .leading : .center)
                         .padding(.leading, isEditing ? 8 : 0)
-                        .contentTransition(.opacity)
                         .animation(animation, value: isEditing)
                 }
 
@@ -959,8 +969,6 @@ private struct SessionManagementSheet: View {
                     }
                 }
 
-                ToolbarSpacer(.fixed, placement: .topBarTrailing)
-
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         withAnimation(animation) {
@@ -974,9 +982,7 @@ private struct SessionManagementSheet: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(.blue)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .tint(.blue)
+                    .compatibleProminentButtonFromIOS16(tint: .blue)
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -1009,7 +1015,7 @@ private struct SessionManagementSheet: View {
                         .padding(.horizontal, 18)
                         .padding(.vertical, 16)
                         .frame(maxWidth: 280, alignment: .leading)
-                        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .compatibleGlass(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                         .animation(.easeInOut(duration: 0.16), value: deleteProgressCurrent)
                     }
                     .transition(.opacity)
@@ -1019,7 +1025,7 @@ private struct SessionManagementSheet: View {
                 isShowingDeselectAllLabel = allSessionsSelected
                 selectAllButtonTextOpacity = 1
             }
-            .onChange(of: allSessionsSelected) { _, newValue in
+            .onChange(of: allSessionsSelected) { newValue in
                 animateSelectAllButtonLabel(to: newValue)
             }
             .alert("common.rename", isPresented: renameAlertBinding) {
@@ -1035,8 +1041,7 @@ private struct SessionManagementSheet: View {
     }
 
     private func addSession() {
-        let newSession = Session(name: "Session \(sessions.count + 1)")
-        modelContext.insert(newSession)
+        let newSession = Session(name: "Session \(sessions.count + 1)", context: modelContext)
         try? modelContext.save()
         selectedSessionID = newSession.id.uuidString
     }
@@ -1085,7 +1090,6 @@ private struct SessionManagementSheet: View {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(isSelected ? .blue : .secondary)
-                .contentTransition(.symbolEffect(.replace))
                 .animation(animation, value: isSelected)
                 .transition(
                     .asymmetric(
@@ -1122,7 +1126,7 @@ private struct SessionManagementSheet: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .contentShape(.capsule)
-                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .compatibleGlassFromIOS16(in: Capsule())
                     .animation(.easeInOut(duration: 0.22), value: isShowingDeselectAllLabel)
             }
             .buttonStyle(.plain)
@@ -1136,7 +1140,7 @@ private struct SessionManagementSheet: View {
                     .font(.system(size: 17, weight: .semibold))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .glassEffect(.regular.tint(.red).interactive(), in: .capsule)
+                    .compatibleTintedGlassFromIOS16(.red, in: Capsule())
             }
             .tint(.red)
             .buttonStyle(.plain)
@@ -1254,68 +1258,38 @@ private struct SessionManagementSheet: View {
         }
         NotificationCenter.default.post(name: sessionsWillDeleteNotification, object: nil)
 
-        Task {
-            await deleteSessions(
-                sessionIDsToDelete,
-                nextSelectedSessionID: deletingSelected ? nextSelectedSessionID : UUID(uuidString: selectedSessionID)
-            )
-        }
+        deleteSessions(
+            sessionIDsToDelete,
+            nextSelectedSessionID: deletingSelected ? nextSelectedSessionID : UUID(uuidString: selectedSessionID)
+        )
     }
 
-    private func deleteSessions(_ sessionIDsToDelete: Set<UUID>, nextSelectedSessionID: UUID?) async {
-        let container = modelContext.container
+    private func deleteSessions(_ sessionIDsToDelete: Set<UUID>, nextSelectedSessionID: UUID?) {
+        let sessionsToDelete = sessions
+            .filter { sessionIDsToDelete.contains($0.id) }
+            .sorted { $0.createdAt < $1.createdAt }
 
-        let resolvedSelectedSessionID = await Task.detached(priority: .userInitiated) { () -> UUID? in
-            let context = ModelContext(container)
-            let allSessions = (try? context.fetch(FetchDescriptor<Session>())) ?? []
-            let sessionsToDelete = allSessions
-                .filter { sessionIDsToDelete.contains($0.id) }
-                .sorted { $0.createdAt < $1.createdAt }
+        let total = max(sessionsToDelete.count + (nextSelectedSessionID == nil ? 1 : 0) + 1, 1)
+        deleteProgressCurrent = 0
+        deleteProgressTotal = total
 
-            let total = max(sessionsToDelete.count + (nextSelectedSessionID == nil ? 1 : 0) + 1, 1)
-            var processed = 0
-
-            await MainActor.run {
-                deleteProgressCurrent = 0
-                deleteProgressTotal = total
-            }
-
-            for session in sessionsToDelete {
-                context.delete(session)
-                processed += 1
-                try? context.save()
-                let currentProcessed = min(processed, total - 1)
-                await MainActor.run {
-                    deleteProgressCurrent = currentProcessed
-                }
-            }
-
-            let finalSelectedSessionID: UUID?
-            if let nextSelectedSessionID {
-                finalSelectedSessionID = nextSelectedSessionID
-            } else {
-                let fallbackSession = Session(name: "Session")
-                context.insert(fallbackSession)
-                finalSelectedSessionID = fallbackSession.id
-                processed += 1
-                let currentProcessed = min(processed, total - 1)
-                await MainActor.run {
-                    deleteProgressCurrent = currentProcessed
-                }
-            }
-
-            try? context.save()
-            processed += 1
-            let currentProcessed = min(processed, total)
-            await MainActor.run {
-                deleteProgressCurrent = currentProcessed
-            }
-            return finalSelectedSessionID
-        }.value
-
-        if let resolvedSelectedSessionID {
-            selectedSessionID = resolvedSelectedSessionID.uuidString
+        for session in sessionsToDelete {
+            modelContext.delete(session)
+            deleteProgressCurrent = min(deleteProgressCurrent + 1, total - 1)
         }
+
+        let resolvedSelectedSessionID: UUID
+        if let nextSelectedSessionID {
+            resolvedSelectedSessionID = nextSelectedSessionID
+        } else {
+            let fallbackSession = Session(name: "Session", context: modelContext)
+            resolvedSelectedSessionID = fallbackSession.id
+            deleteProgressCurrent = min(deleteProgressCurrent + 1, total - 1)
+        }
+
+        try? modelContext.save()
+        selectedSessionID = resolvedSelectedSessionID.uuidString
+        deleteProgressCurrent = total
         isDeletingSessions = false
         deleteProgressCurrent = 0
         deleteProgressTotal = 1
@@ -1336,14 +1310,14 @@ private struct AnimatedSessionCheckmark: View {
 
             if showsAnimatedCheckmark {
                 checkmark
-                    .transition(.symbolEffect(.drawOn))
+                    .transition(.opacity.combined(with: .scale))
             }
         }
         .allowsHitTesting(false)
         .onAppear {
             syncState(for: isSelected, animate: false)
         }
-        .onChange(of: isSelected) { _, newValue in
+        .onChange(of: isSelected) { newValue in
             syncState(for: newValue, animate: true)
         }
     }
@@ -1469,7 +1443,7 @@ private struct TimeTrendSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             VStack(spacing: 14) {
                 Picker("data.trend.mode", selection: $trendMode) {
                     Text("data.trend.histogram").tag(TrendMode.histogram)
@@ -1501,7 +1475,22 @@ private struct TimeTrendSheet: View {
         }
     }
 
+    @ViewBuilder
     private var lineChart: some View {
+        if #available(iOS 16.0, *) {
+            if #available(iOS 17.0, *) {
+                lineChartContent
+                    .chartXSelection(value: $selectedDate)
+            } else {
+                lineChartContent
+            }
+        } else {
+            chartUnavailableView
+        }
+    }
+
+    @available(iOS 16.0, *)
+    private var lineChartContent: some View {
         Chart(solvePoints) { point in
             LineMark(
                 x: .value("Date", point.date),
@@ -1531,11 +1520,25 @@ private struct TimeTrendSheet: View {
                     }
             }
         }
-        .chartXSelection(value: $selectedDate)
         .frame(height: 330)
     }
 
+    @ViewBuilder
     private var histogramChart: some View {
+        if #available(iOS 16.0, *) {
+            if #available(iOS 17.0, *) {
+                histogramChartContent
+                    .chartXSelection(value: $selectedHistogramX)
+            } else {
+                histogramChartContent
+            }
+        } else {
+            chartUnavailableView
+        }
+    }
+
+    @available(iOS 16.0, *)
+    private var histogramChartContent: some View {
         Chart(histogramBins) { bin in
             RectangleMark(
                 xStart: .value("Start", bin.lower),
@@ -1561,8 +1564,21 @@ private struct TimeTrendSheet: View {
                     }
             }
         }
-        .chartXSelection(value: $selectedHistogramX)
         .frame(height: 330)
+    }
+
+    private var chartUnavailableView: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "chart.xyaxis.line")
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            Text("Charts require iOS 16 or newer.")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.secondary)
+        }
+        .frame(height: 330)
+        .frame(maxWidth: .infinity)
     }
 }
 

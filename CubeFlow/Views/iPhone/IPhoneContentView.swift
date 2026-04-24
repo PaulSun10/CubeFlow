@@ -31,7 +31,7 @@ struct IPhoneContentView: View {
 
             CompetitionTabView()
                 .tabItem {
-                    Label("tab.competitions", systemImage: "trophy.fill")
+                    Label("tab.competitions", systemImage: competitionsTabSystemImage)
                 }
                 .tag(IPhoneTab.competitions)
 
@@ -41,9 +41,15 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.settings)
         }
-        .toolbarBackground(.visible, for: .tabBar)
-        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .compatibleTabBarBackground()
         .environment(\.locale, contentLocale)
+    }
+
+    private var competitionsTabSystemImage: String {
+        if #available(iOS 16.0, *) {
+            return "trophy.fill"
+        }
+        return "flag.2.crossed.fill"
     }
 }
 #endif

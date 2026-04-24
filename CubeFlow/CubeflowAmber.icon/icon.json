@@ -23,7 +23,15 @@
       "hidden" : false,
       "layers" : [
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -33,7 +41,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -49,7 +57,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -59,7 +75,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -75,7 +91,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -85,7 +109,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -100,7 +124,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -110,7 +142,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -125,7 +157,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -135,7 +175,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -150,7 +190,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -160,7 +208,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -175,7 +223,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -185,7 +241,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -200,7 +256,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -210,7 +274,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],
@@ -225,7 +289,15 @@
           }
         },
         {
-          "blend-mode" : "normal",
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill-specializations" : [
             {
               "value" : {
@@ -235,7 +307,7 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:1.00000,0.30000,0.31407,1.00000"
+                "solid" : "extended-srgb:1.00000,0.55294,0.15686,1.00000"
               }
             }
           ],

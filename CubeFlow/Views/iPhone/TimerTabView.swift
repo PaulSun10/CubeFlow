@@ -1,5 +1,5 @@
 import SwiftUI
-import SwiftData
+import CoreData
 #if os(iOS)
 import UIKit
 #endif
@@ -7,214 +7,23 @@ import UIKit
 #if os(iOS)
 private let solvesDidChangeNotification = Notification.Name("CubeFlowSolvesDidChange")
 
-enum DrawScramblePlacement: String, CaseIterable, Identifiable {
-    case inline
-    case bottomLeft
-    case bottomRight
-    case bottomCenter
-    case off
-
-    var id: String { rawValue }
-
-    var isFloating: Bool {
-        switch self {
-        case .bottomLeft, .bottomRight, .bottomCenter:
-            return true
-        case .inline, .off:
-            return false
-        }
-    }
-
-    var localizedKey: LocalizedStringKey {
-        switch self {
-        case .inline:
-            return "settings.draw_scramble_position_inline"
-        case .bottomLeft:
-            return "settings.draw_scramble_position_bottom_left"
-        case .bottomRight:
-            return "settings.draw_scramble_position_bottom_right"
-        case .bottomCenter:
-            return "settings.draw_scramble_position_bottom_center"
-        case .off:
-            return "settings.draw_scramble_position_off"
-        }
-    }
-}
-
-enum TimerFontDesignOption: String, CaseIterable, Identifiable {
-    case `default`
-    case expanded
-    case compressed
-    case condensed
-    case monospaced
-    case rounded
-    case serif
-
-    var id: String { rawValue }
-
-    var localizedKey: LocalizedStringKey {
-        switch self {
-        case .default:
-            return "settings.font_design_default"
-        case .expanded:
-            return "settings.font_design_expanded"
-        case .compressed:
-            return "settings.font_design_compressed"
-        case .condensed:
-            return "settings.font_design_condensed"
-        case .monospaced:
-            return "settings.font_design_monospaced"
-        case .rounded:
-            return "settings.font_design_rounded"
-        case .serif:
-            return "settings.font_design_serif"
-        }
-    }
-
-    var fontDesign: Font.Design {
-        switch self {
-        case .default, .expanded, .compressed, .condensed:
-            return .default
-        case .monospaced:
-            return .monospaced
-        case .rounded:
-            return .rounded
-        case .serif:
-            return .serif
-        }
-    }
-
-    var fontWidth: Font.Width? {
-        switch self {
-        case .default, .monospaced, .rounded, .serif:
-            return nil
-        case .expanded:
-            return .expanded
-        case .compressed:
-            return .compressed
-        case .condensed:
-            return .condensed
-        }
-    }
-}
-
-enum TimerFontWeightOption: String, CaseIterable, Identifiable {
-    case ultraLight
-    case thin
-    case light
-    case regular
-    case medium
-    case semibold
-    case bold
-    case heavy
-    case black
-
-    var id: String { rawValue }
-
-    var localizedKey: LocalizedStringKey {
-        switch self {
-        case .ultraLight:
-            return "settings.font_weight_ultralight"
-        case .thin:
-            return "settings.font_weight_thin"
-        case .light:
-            return "settings.font_weight_light"
-        case .regular:
-            return "settings.font_weight_regular"
-        case .medium:
-            return "settings.font_weight_medium"
-        case .semibold:
-            return "settings.font_weight_semibold"
-        case .bold:
-            return "settings.font_weight_bold"
-        case .heavy:
-            return "settings.font_weight_heavy"
-        case .black:
-            return "settings.font_weight_black"
-        }
-    }
-
-    var fontWeight: Font.Weight {
-        switch self {
-        case .ultraLight:
-            return .ultraLight
-        case .thin:
-            return .thin
-        case .light:
-            return .light
-        case .regular:
-            return .regular
-        case .medium:
-            return .medium
-        case .semibold:
-            return .semibold
-        case .bold:
-            return .bold
-        case .heavy:
-            return .heavy
-        case .black:
-            return .black
-        }
-    }
-}
-
-enum AverageDisplayOption: String, CaseIterable, Identifiable {
-    case none
-    case ao5
-    case ao12
-    case ao5AndAo12
-
-    var id: String { rawValue }
-
-    var localizedKey: LocalizedStringKey {
-        switch self {
-        case .none:
-            return "settings.average_display_none"
-        case .ao5:
-            return "settings.average_display_ao5"
-        case .ao12:
-            return "settings.average_display_ao12"
-        case .ao5AndAo12:
-            return "settings.average_display_ao5_ao12"
-        }
-    }
-}
-
-enum GANResultInputMode: String, CaseIterable, Identifiable {
-    case manual
-    case cycle
-
-    var id: String { rawValue }
-
-    var localizedKey: LocalizedStringKey {
-        switch self {
-        case .manual:
-            return "settings.gan_result_mode_manual"
-        case .cycle:
-            return "settings.gan_result_mode_cycle"
-        }
-    }
-
-    var helpLocalizedKey: LocalizedStringKey {
-        switch self {
-        case .manual:
-            return "settings.gan_result_mode_manual_help"
-        case .cycle:
-            return "settings.gan_result_mode_cycle_help"
-        }
-    }
-}
-
 struct TimerTabView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var ganTimer = GANTimerBluetoothManager.shared
+    @StateObject private var nearbyBattleManager = NearbyBattleManager()
     @FocusState private var isTypingFieldFocused: Bool
 
-    @Query(sort: [SortDescriptor(\Session.createdAt, order: .forward)])
-    private var sessions: [Session]
-    @Query(sort: [SortDescriptor(\Solve.date, order: .reverse)])
-    private var solves: [Solve]
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
+        animation: .default
+    )
+    private var sessions: FetchedResults<Session>
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Solve.date, ascending: false)],
+        animation: .default
+    )
+    private var solves: FetchedResults<Solve>
 
     @AppStorage("selectedSessionID") private var selectedSessionID: String = ""
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -283,6 +92,28 @@ struct TimerTabView: View {
     @State private var longestStreakSnapshot: Int = 0
     @State private var isTodaySolvedSnapshot: Bool = false
     @State private var keepOverlayTimerVisible = false
+    @State private var localBattleMode: LocalBattleMode = .solo
+    @State private var localBattleFirstEvent: PuzzleEvent = .threeByThree
+    @State private var localBattleSecondEvent: PuzzleEvent = .threeByThree
+    @State private var localBattleScrambleCache: [PuzzleEvent: String] = [:]
+    @State private var localBattleFirstElapsed: Double = 0
+    @State private var localBattleSecondElapsed: Double = 0
+    @State private var localBattleFirstStartDate: Date?
+    @State private var localBattleSecondStartDate: Date?
+    @State private var isLocalBattleFirstRunning = false
+    @State private var isLocalBattleSecondRunning = false
+    @State private var isLocalBattleFirstPressing = false
+    @State private var isLocalBattleSecondPressing = false
+    @State private var localBattleDisplayTimer: Timer?
+    @State private var localBattleFirstScore = 0
+    @State private var localBattleSecondScore = 0
+    @State private var localBattleFirstHandicapSeconds = 0
+    @State private var localBattleSecondHandicapSeconds = 0
+    @State private var localBattleFirstRoundTime: Double?
+    @State private var localBattleSecondRoundTime: Double?
+    @State private var localBattleFirstDisplayTime: Double?
+    @State private var localBattleSecondDisplayTime: Double?
+    @State private var didScoreCurrentLocalBattleRound = false
 
     private let hiddenTimerVerticalOffset: CGFloat = 18
     private let ganResultChoices: [SolveResult] = [.solved, .plusTwo, .dnf]
@@ -307,7 +138,7 @@ struct TimerTabView: View {
     }
 
     private var mblindScrambleSheet: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(indexedMblindScrambles, id: \.index) { item in
@@ -328,12 +159,11 @@ struct TimerTabView: View {
                 }
             }
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
+        .compatibleLargeSheet()
     }
 
     private var mblindCountPickerSheet: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             VStack(spacing: 16) {
                 Picker("", selection: $mblindCountSelection) {
                     ForEach(1...50, id: \.self) { count in
@@ -357,8 +187,7 @@ struct TimerTabView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
+        .compatibleMediumSheet()
     }
 
     private var mblindCountFormat: String {
@@ -405,99 +234,17 @@ struct TimerTabView: View {
             && resolvedGANResultInputMode == .cycle
     }
 
-    private func localizedResultTitle(for result: SolveResult) -> LocalizedStringKey {
-        switch result {
-        case .solved:
-            return "common.solved"
-        case .plusTwo:
-            return "inspection.speech.plus_two"
-        case .dnf:
-            return "common.dnf"
-        }
-    }
-
     private var ganResultPopup: some View {
-        VStack(spacing: 16) {
-            Text("timer.solve_result.title")
-                .font(.system(size: 17, weight: .semibold))
-
-            Text(SolveMetrics.formatTime(pendingSolveTime ?? 0, decimals: 3))
-                .font(.system(size: 34, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .frame(maxWidth: .infinity, alignment: .center)
-
-            Text(resolvedGANResultInputMode.helpLocalizedKey)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-
-            VStack(spacing: 10) {
-                ForEach(ganResultChoices, id: \.rawValue) { result in
-                    Button {
-                        savePendingSolve(as: result)
-                    } label: {
-                        HStack(spacing: 12) {
-                            Text(localizedResultTitle(for: result))
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.primary)
-
-                            Spacer()
-
-                            if ganPendingResultSelection == result {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 15, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .padding(6)
-                                    .background(Circle().fill(Color.accentColor))
-                            }
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 14)
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color(.secondarySystemBackground).opacity(0.78))
-
-                                if ganPendingResultSelection == result {
-                                    GeometryReader { proxy in
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .fill(Color.accentColor.opacity(0.18))
-                                            .frame(width: proxy.size.width * ganResultCommitProgress)
-                                    }
-                                    .animation(.linear(duration: ganResultAutoCommitDelay), value: ganResultCommitProgress)
-                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                                }
-                            }
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(ganPendingResultSelection == result ? Color.accentColor : Color.clear, lineWidth: 2)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-
-            Button(role: .cancel) {
-                discardPendingSolve()
-            } label: {
-                Text("common.cancel")
-                    .font(.system(size: 17, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            }
-            .buttonStyle(.plain)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color(.secondarySystemBackground).opacity(0.78))
-            )
-        }
-        .padding(20)
-        .frame(maxWidth: 320)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: .black.opacity(0.18), radius: 24, y: 10)
+        TimerGANResultPopup(
+            pendingSolveTime: pendingSolveTime,
+            inputMode: resolvedGANResultInputMode,
+            choices: ganResultChoices,
+            selectedResult: ganPendingResultSelection,
+            commitProgress: ganResultCommitProgress,
+            autoCommitDelay: ganResultAutoCommitDelay,
+            onSave: savePendingSolve,
+            onCancel: discardPendingSolve
+        )
     }
 
     private func circularGlassIconButton(systemName: String, action: @escaping () -> Void) -> some View {
@@ -506,7 +253,7 @@ struct TimerTabView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 10)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatibleGlassFromIOS16(in: Circle())
         }
         .buttonStyle(.plain)
     }
@@ -683,14 +430,9 @@ struct TimerTabView: View {
         design: TimerFontDesignOption,
         weight: TimerFontWeightOption
     ) -> some View {
-        if let fontWidth = design.fontWidth {
-            text
-                .font(configuredFont(size: size, design: design, weight: weight))
-                .fontWidth(fontWidth)
-        } else {
-            text
-                .font(configuredFont(size: size, design: design, weight: weight))
-        }
+        text
+            .font(configuredFont(size: size, design: design, weight: weight))
+            .compatibleFontWidth(design)
     }
 
     private var timerTickInterval: TimeInterval {
@@ -703,6 +445,10 @@ struct TimerTabView: View {
 
     private var showsOverlayTimer: Bool {
         shouldHideNonTimerContent || keepOverlayTimerVisible
+    }
+
+    private var shouldHideTabBar: Bool {
+        shouldHideNonTimerContent || localBattleMode != .solo
     }
 
     private var runningDisplayText: String {
@@ -732,92 +478,153 @@ struct TimerTabView: View {
         }
     }
 
+    private var soloTimerContent: some View {
+        VStack(spacing: 0) {
+            if !shouldHideNonTimerContent {
+                ZStack {
+                    HStack {
+                        localBattleModeMenu
+                            .zIndex(10)
+
+                        Spacer()
+
+                        StreakButton(
+                            isTodaySolved: isTodaySolved,
+                            streakCount: streakCount,
+                            longestStreak: longestStreak,
+                            solvedDayCounts: solvedDayCounts,
+                            fireRedImageName: "streak_fire_red",
+                            fireGrayImageName: "streak_fire_gray"
+                        )
+                    }
+
+                    eventMenu
+                }
+                .padding(.top, 8)
+
+                HStack(alignment: .top, spacing: 10) {
+                    ZStack {
+                        if selectedEvent == .threeByThreeMBLD, mblindScrambles.count > 3 {
+                            Button {
+                                showingMblindSheet = true
+                            } label: {
+                                scrambleDisplayLabel
+                            }
+                            .buttonStyle(.plain)
+                        } else {
+                            scrambleDisplayLabel
+                        }
+                    }
+                    .animation(.snappy(duration: 0.22, extraBounce: 0), value: scrambleDisplayText)
+
+                    VStack(spacing: 6) {
+                        if canShowScrambleDiagram && resolvedDrawScramblePlacement == .inline {
+                            circularGlassIconButton(systemName: "eye") {
+                                showingScrambleDiagram = true
+                            }
+                        }
+
+                        circularGlassIconButton(systemName: "arrow.clockwise") {
+                            generateNewScramble()
+                        }
+
+                        if selectedEvent == .threeByThreeMBLD {
+                            circularGlassIconButton(systemName: "gearshape") {
+                                mblindCountSelection = mblindScrambleCount
+                                showingMblindCountPicker = true
+                            }
+                        }
+                    }
+                }
+                .padding(.top, 10)
+                .padding(.bottom, 6)
+            }
+
+            Spacer()
+
+            if showsOverlayTimer {
+                Color.clear
+                    .frame(height: max(timerTextFontSize * 1.25, 96))
+            } else {
+                timerDisplayView
+            }
+
+            averageDisplayView
+                .opacity(shouldHideNonTimerContent ? 0 : 1)
+
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+        .simultaneousGesture(dismissTypingKeyboardGesture)
+    }
+
+    private var dismissTypingKeyboardGesture: some Gesture {
+        TapGesture().onEnded {
+            guard enteringTimesWith == "typing", isTypingFieldFocused else { return }
+            isTypingFieldFocused = false
+        }
+    }
+
+    private var localBattleModeMenu: some View {
+        LocalBattleModeMenu(mode: localBattleMode, onSelectMode: setLocalBattleMode)
+    }
+
+    private var localBattleContent: some View {
+        Group {
+            if localBattleMode == .nearby {
+                NearbyBattleView(
+                    manager: nearbyBattleManager,
+                    selectedEvent: selectedEvent,
+                    timerTextStyle: timerTextStyle,
+                    scrambleTextStyle: scrambleTextStyle,
+                    formatDisplayedTime: formatDisplayedTime,
+                    generateScramble: { preferredScramble(for: selectedEvent) },
+                    onExit: { setLocalBattleMode(.solo) }
+                )
+            } else {
+                LocalBattleContent(
+                    mode: localBattleMode,
+                    firstEvent: localBattleFirstEvent,
+                    secondEvent: localBattleSecondEvent,
+                    firstScramble: localBattleScramble(for: .first),
+                    secondScramble: localBattleScramble(for: .second),
+                    firstElapsed: localBattleElapsed(for: .first),
+                    secondElapsed: localBattleElapsed(for: .second),
+                    isFirstRunning: isLocalBattleFirstRunning,
+                    isSecondRunning: isLocalBattleSecondRunning,
+                    isFirstPressing: isLocalBattleFirstPressing,
+                    isSecondPressing: isLocalBattleSecondPressing,
+                    firstScore: localBattleFirstScore,
+                    secondScore: localBattleSecondScore,
+                    firstHandicapSeconds: localBattleFirstHandicapSeconds,
+                    secondHandicapSeconds: localBattleSecondHandicapSeconds,
+                    firstFinishedTime: localBattleFirstDisplayTime,
+                    secondFinishedTime: localBattleSecondDisplayTime,
+                    timerTextStyle: timerTextStyle,
+                    scrambleTextStyle: scrambleTextStyle,
+                    formatDisplayedTime: formatDisplayedTime,
+                    onExit: { setLocalBattleMode(.solo) },
+                    onSelectEvent: setLocalBattleEvent,
+                    onSelectHandicap: setLocalBattleHandicap,
+                    onPressPlayer: pressLocalBattleTimer,
+                    onReleasePlayer: releaseLocalBattleTimer
+                )
+            }
+        }
+    }
+
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             ZStack {
                 timerBackgroundView.ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    if !shouldHideNonTimerContent {
-                        ZStack {
-                            HStack {
-                                Spacer()
-                                StreakButton(
-                                    isTodaySolved: isTodaySolved,
-                                    streakCount: streakCount,
-                                    longestStreak: longestStreak,
-                                    solvedDayCounts: solvedDayCounts,
-                                    fireRedImageName: "streak_fire_red",
-                                    fireGrayImageName: "streak_fire_gray"
-                                )
-                            }
-
-                            eventMenu
-                        }
-                        .padding(.top, 8)
-
-                        HStack(alignment: .top, spacing: 10) {
-                            ZStack {
-                                if selectedEvent == .threeByThreeMBLD, mblindScrambles.count > 3 {
-                                    Button {
-                                        showingMblindSheet = true
-                                    } label: {
-                                        scrambleDisplayLabel
-                                    }
-                                    .buttonStyle(.plain)
-                                } else {
-                                    scrambleDisplayLabel
-                                }
-                            }
-                            .animation(.snappy(duration: 0.22, extraBounce: 0), value: scrambleDisplayText)
-
-                            VStack(spacing: 6) {
-                                if canShowScrambleDiagram && resolvedDrawScramblePlacement == .inline {
-                                    circularGlassIconButton(systemName: "eye") {
-                                        showingScrambleDiagram = true
-                                    }
-                                }
-
-                                circularGlassIconButton(systemName: "arrow.clockwise") {
-                                    generateNewScramble()
-                                }
-
-                                if selectedEvent == .threeByThreeMBLD {
-                                    circularGlassIconButton(systemName: "gearshape") {
-                                        mblindCountSelection = mblindScrambleCount
-                                        showingMblindCountPicker = true
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.top, 10)
-                        .padding(.bottom, 6)
-
-                    }
-
-                    Spacer()
-
-                    if showsOverlayTimer {
-                        Color.clear
-                            .frame(height: max(timerTextFontSize * 1.25, 96))
-                    } else {
-                        timerDisplayView
-                    }
-
-                    averageDisplayView
-                        .opacity(shouldHideNonTimerContent ? 0 : 1)
-
-                    Spacer()
-                }
-                .padding(.horizontal, 24)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if enteringTimesWith == "typing" && isTypingFieldFocused {
-                        isTypingFieldFocused = false
-                    }
+                if localBattleMode == .solo {
+                    soloTimerContent
+                } else {
+                    localBattleContent
                 }
 
-                if showsOverlayTimer {
+                if localBattleMode == .solo && showsOverlayTimer {
                     GeometryReader { proxy in
                         timerDisplayView
                             .position(
@@ -832,6 +639,7 @@ struct TimerTabView: View {
 
                 if let floatingPlacement = floatingDrawScramblePlacement,
                    canShowScrambleDiagram,
+                   localBattleMode == .solo,
                    !shouldHideNonTimerContent {
                     VStack {
                         Spacer()
@@ -853,7 +661,7 @@ struct TimerTabView: View {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
 
-                if showsGANResultPopup {
+                if localBattleMode == .solo && showsGANResultPopup {
                     Color.black.opacity(0.18)
                         .ignoresSafeArea()
                         .transition(.opacity)
@@ -865,12 +673,12 @@ struct TimerTabView: View {
             }
             .animation(.easeInOut(duration: 0.18), value: showsGANResultPopup)
             .overlay {
-                if enteringTimesWith == "timer" {
+                if localBattleMode == .solo && enteringTimesWith == "timer" {
                     GeometryReader { _ in
                         VStack(spacing: 0) {
                             // Reserve top area for event menu so menu taps don't start/stop timer.
                             Color.clear
-                                .frame(height: 132)
+                                .frame(height: 146)
                                 .allowsHitTesting(false)
 
                             Color.clear
@@ -882,9 +690,9 @@ struct TimerTabView: View {
                     }
                 }
             }
-            .toolbar(.hidden, for: .navigationBar)
+            .compatibleNavigationBarHidden()
         }
-        .toolbar(shouldHideNonTimerContent ? .hidden : .visible, for: .tabBar)
+        .compatibleTabBarVisibility(hidden: shouldHideTabBar)
     .task {
         ensureSessionExists()
         restoreSelectedEventFromSession()
@@ -897,37 +705,40 @@ struct TimerTabView: View {
     }
         .onDisappear {
             invalidateTimer()
+            invalidateLocalBattleTimer()
+            nearbyBattleManager.stop()
         }
-        .onChange(of: enteringTimesWith) { _, newValue in
+        .onChange(of: enteringTimesWith) { newValue in
             if newValue == "gan" {
                 ganTimer.prepareIfNeeded()
             }
         }
-        .onChange(of: ganTimer.connectionState) { _, newValue in
+        .onChange(of: ganTimer.connectionState) { newValue in
             handleGANTimerStateChange(newValue)
         }
-        .onChange(of: ganTimer.completedSolve) { _, solve in
+        .onChange(of: ganTimer.completedSolve) { solve in
             guard enteringTimesWith == "gan", let solve else { return }
             handleGANCompletedSolve(seconds: solve.seconds)
         }
-        .onChange(of: ganTimer.clearButtonEventID) { _, eventID in
+        .onChange(of: ganTimer.clearButtonEventID) { eventID in
             guard enteringTimesWith == "gan", eventID != nil else { return }
             handleGANResultSelectionButtonPress()
         }
-        .onChange(of: ganTimer.inspectionToggleEventID) { _, eventID in
+        .onChange(of: ganTimer.inspectionToggleEventID) { eventID in
             guard enteringTimesWith == "gan", ganInspectionStartsOnPress, eventID != nil else { return }
             handleGANInspectionToggle()
         }
-        .onChange(of: selectedEvent) { _, _ in
+        .onChange(of: selectedEvent) { _ in
             persistSelectedEventToSession()
             refreshSolveSnapshots()
             generateNewScramble()
+            resetLocalBattleScrambles()
         }
-        .onChange(of: selectedSessionID) { _, _ in
+        .onChange(of: selectedSessionID) { _ in
             restoreSelectedEventFromSession()
             refreshSolveSnapshots()
         }
-        .onChange(of: solves.count) { _, _ in
+        .onChange(of: solves.count) { _ in
             refreshSolveSnapshots()
             refreshStreakSnapshots()
         }
@@ -935,7 +746,7 @@ struct TimerTabView: View {
             filteredSolvesSnapshot = []
             sessionSolvesSnapshot = []
         }
-        .onChange(of: shouldHideNonTimerContent) { _, newValue in
+        .onChange(of: shouldHideNonTimerContent) { newValue in
             if newValue {
                 keepOverlayTimerVisible = true
             } else {
@@ -979,9 +790,11 @@ struct TimerTabView: View {
         .background(
             SpacebarKeyCommandHandler(
                 onSpaceDown: {
+                    guard localBattleMode == .solo else { return }
                     armForStartIfNeeded()
                 },
                 onSpaceUp: {
+                    guard localBattleMode == .solo else { return }
                     if isRunning {
                         stopTimerAndSave()
                     } else {
@@ -989,21 +802,12 @@ struct TimerTabView: View {
                     }
                 },
                 onSpaceTap: {
+                    guard localBattleMode == .solo else { return }
                     handleSpacebarTrigger()
                 }
             )
             .frame(width: 0, height: 0)
         )
-        .toolbar {
-            if enteringTimesWith == "typing" && isTypingFieldFocused {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("timer.typing_save") {
-                        saveTypedTime()
-                    }
-                }
-            }
-        }
     }
 // Event selection
     private var eventMenu: some View {
@@ -1033,7 +837,7 @@ struct TimerTabView: View {
             .padding(.vertical, 10)
             .contentShape(.capsule)
             .clipShape(.capsule)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .compatibleGlassFromIOS16(in: Capsule())
         }
         .tint(.primary)
         .buttonStyle(.plain)
@@ -1243,15 +1047,15 @@ struct TimerTabView: View {
             finalResult = result
         }
 
-        let solve = Solve(
+        _ = Solve(
             time: pendingSolveTime,
             date: .now,
             scramble: scrambleToSave,
             event: selectedEvent.rawValue,
             result: finalResult,
-            session: selectedSession
+            session: selectedSession,
+            context: modelContext
         )
-        modelContext.insert(solve)
         persistSolveChangesAndRefresh()
         generateNewScramble()
         discardPendingSolve()
@@ -1295,6 +1099,333 @@ struct TimerTabView: View {
         }
         RunLoop.main.add(timer, forMode: .common)
         displayTimer = timer
+    }
+
+    private func setLocalBattleMode(_ mode: LocalBattleMode) {
+        guard localBattleMode != mode else { return }
+
+        updateOrientation(for: mode)
+
+        if localBattleMode == .nearby, mode != .nearby {
+            nearbyBattleManager.stop()
+        }
+
+        if mode == .solo {
+            resetLocalBattleTimers()
+            resetLocalBattleScores()
+        } else {
+            if localBattleMode == .solo {
+                isTypingFieldFocused = false
+                isPressingToArm = false
+                isReadyToStart = false
+            }
+            resetLocalBattleTimers()
+            resetLocalBattleScores()
+            if mode == .nearby {
+                nearbyBattleManager.stop()
+            } else {
+                resetLocalBattleEvents()
+                resetLocalBattleScrambles()
+            }
+        }
+
+        withAnimation(.snappy(duration: 0.24, extraBounce: 0)) {
+            localBattleMode = mode
+        }
+    }
+
+    private func updateOrientation(for mode: LocalBattleMode) {
+        switch mode {
+        case .headToHead:
+            AppOrientationManager.set(.portrait, preferredOrientation: .portrait)
+        case .sideBySide:
+            AppOrientationManager.set(.landscape, preferredOrientation: .landscapeRight)
+        case .solo, .nearby:
+            AppOrientationManager.reset()
+        }
+    }
+
+    private func resetLocalBattleScrambles() {
+        localBattleScrambleCache.removeAll()
+        _ = localBattleScramble(for: .first)
+        _ = localBattleScramble(for: .second)
+    }
+
+    private func resetLocalBattleEvents() {
+        localBattleFirstEvent = selectedEvent
+        localBattleSecondEvent = selectedEvent
+    }
+
+    private func localBattleScramble(for player: LocalBattlePlayer) -> String {
+        localBattleScramble(for: localBattleEvent(for: player))
+    }
+
+    private func localBattleScramble(for event: PuzzleEvent) -> String {
+        if let scramble = localBattleScrambleCache[event] {
+            return scramble
+        }
+
+        let scramble = preferredScramble(for: event)
+        localBattleScrambleCache[event] = scramble
+        return scramble
+    }
+
+    private func localBattleEvent(for player: LocalBattlePlayer) -> PuzzleEvent {
+        switch player {
+        case .first:
+            return localBattleFirstEvent
+        case .second:
+            return localBattleSecondEvent
+        }
+    }
+
+    private func setLocalBattleEvent(for player: LocalBattlePlayer, event: PuzzleEvent) {
+        guard !localBattleIsRunning(player),
+              !localBattleIsPressing(player)
+        else { return }
+
+        if didScoreCurrentLocalBattleRound {
+            localBattleScrambleCache.removeAll()
+        }
+
+        switch player {
+        case .first:
+            localBattleFirstEvent = event
+        case .second:
+            localBattleSecondEvent = event
+        }
+        _ = localBattleScramble(for: event)
+    }
+
+    private func setLocalBattleHandicap(for player: LocalBattlePlayer, seconds: Int) {
+        guard !localBattleIsRunning(player),
+              !localBattleIsPressing(player)
+        else { return }
+
+        let clampedSeconds = min(max(seconds, 0), 10)
+        switch player {
+        case .first:
+            localBattleFirstHandicapSeconds = clampedSeconds
+        case .second:
+            localBattleSecondHandicapSeconds = clampedSeconds
+        }
+    }
+
+    private func localBattleElapsed(for player: LocalBattlePlayer) -> Double {
+        switch player {
+        case .first:
+            return localBattleFirstElapsed
+        case .second:
+            return localBattleSecondElapsed
+        }
+    }
+
+    private func localBattleIsRunning(_ player: LocalBattlePlayer) -> Bool {
+        switch player {
+        case .first:
+            return isLocalBattleFirstRunning
+        case .second:
+            return isLocalBattleSecondRunning
+        }
+    }
+
+    private func localBattleIsPressing(_ player: LocalBattlePlayer) -> Bool {
+        switch player {
+        case .first:
+            return isLocalBattleFirstPressing
+        case .second:
+            return isLocalBattleSecondPressing
+        }
+    }
+
+    private func setLocalBattlePressing(_ isPressing: Bool, for player: LocalBattlePlayer) {
+        switch player {
+        case .first:
+            isLocalBattleFirstPressing = isPressing
+        case .second:
+            isLocalBattleSecondPressing = isPressing
+        }
+    }
+
+    private func localBattleRoundTime(for player: LocalBattlePlayer) -> Double? {
+        switch player {
+        case .first:
+            return localBattleFirstRoundTime
+        case .second:
+            return localBattleSecondRoundTime
+        }
+    }
+
+    private func localBattleHandicapSeconds(for player: LocalBattlePlayer) -> Int {
+        switch player {
+        case .first:
+            return localBattleFirstHandicapSeconds
+        case .second:
+            return localBattleSecondHandicapSeconds
+        }
+    }
+
+    private func localBattleOpponent(of player: LocalBattlePlayer) -> LocalBattlePlayer {
+        switch player {
+        case .first:
+            return .second
+        case .second:
+            return .first
+        }
+    }
+
+    private func toggleLocalBattleTimer(for player: LocalBattlePlayer) {
+        if localBattleIsRunning(player) {
+            stopLocalBattleTimer(for: player)
+        } else {
+            startLocalBattleTimer(for: player)
+        }
+    }
+
+    private func pressLocalBattleTimer(for player: LocalBattlePlayer) {
+        prepareNextLocalBattleRoundIfNeeded()
+        guard !localBattleIsRunning(player), localBattleRoundTime(for: player) == nil else { return }
+        setLocalBattlePressing(true, for: player)
+        triggerReadyHaptic()
+    }
+
+    private func releaseLocalBattleTimer(for player: LocalBattlePlayer) {
+        if localBattleIsRunning(player) {
+            stopLocalBattleTimer(for: player)
+            return
+        }
+
+        guard localBattleIsPressing(player), localBattleRoundTime(for: player) == nil else { return }
+        let opponentPlayer = localBattleOpponent(of: player)
+        let opponentCanStart = localBattleIsPressing(opponentPlayer)
+            || localBattleIsRunning(opponentPlayer)
+            || localBattleRoundTime(for: opponentPlayer) != nil
+
+        setLocalBattlePressing(false, for: player)
+        guard opponentCanStart else { return }
+        startLocalBattleTimer(for: player)
+    }
+
+    private func startLocalBattleTimer(for player: LocalBattlePlayer) {
+        prepareNextLocalBattleRoundIfNeeded()
+        localBattleFirstDisplayTime = nil
+        localBattleSecondDisplayTime = nil
+
+        switch player {
+        case .first:
+            localBattleFirstElapsed = 0
+            localBattleFirstStartDate = .now
+            isLocalBattleFirstRunning = true
+            localBattleFirstRoundTime = nil
+        case .second:
+            localBattleSecondElapsed = 0
+            localBattleSecondStartDate = .now
+            isLocalBattleSecondRunning = true
+            localBattleSecondRoundTime = nil
+        }
+        startLocalBattleDisplayTimerIfNeeded()
+    }
+
+    private func stopLocalBattleTimer(for player: LocalBattlePlayer) {
+        switch player {
+        case .first:
+            if let localBattleFirstStartDate {
+                localBattleFirstElapsed = Date().timeIntervalSince(localBattleFirstStartDate)
+            }
+            localBattleFirstRoundTime = localBattleFirstElapsed
+            localBattleFirstDisplayTime = localBattleFirstElapsed
+            localBattleFirstStartDate = nil
+            isLocalBattleFirstRunning = false
+            isLocalBattleFirstPressing = false
+        case .second:
+            if let localBattleSecondStartDate {
+                localBattleSecondElapsed = Date().timeIntervalSince(localBattleSecondStartDate)
+            }
+            localBattleSecondRoundTime = localBattleSecondElapsed
+            localBattleSecondDisplayTime = localBattleSecondElapsed
+            localBattleSecondStartDate = nil
+            isLocalBattleSecondRunning = false
+            isLocalBattleSecondPressing = false
+        }
+
+        scoreLocalBattleRoundIfReady()
+
+        if !isLocalBattleFirstRunning && !isLocalBattleSecondRunning {
+            invalidateLocalBattleTimer()
+        }
+    }
+
+    private func resetLocalBattleTimers() {
+        localBattleFirstElapsed = 0
+        localBattleSecondElapsed = 0
+        localBattleFirstStartDate = nil
+        localBattleSecondStartDate = nil
+        isLocalBattleFirstRunning = false
+        isLocalBattleSecondRunning = false
+        isLocalBattleFirstPressing = false
+        isLocalBattleSecondPressing = false
+        localBattleFirstRoundTime = nil
+        localBattleSecondRoundTime = nil
+        localBattleFirstDisplayTime = nil
+        localBattleSecondDisplayTime = nil
+        didScoreCurrentLocalBattleRound = false
+        invalidateLocalBattleTimer()
+    }
+
+    private func resetLocalBattleScores() {
+        localBattleFirstScore = 0
+        localBattleSecondScore = 0
+    }
+
+    private func prepareNextLocalBattleRoundIfNeeded() {
+        guard didScoreCurrentLocalBattleRound else { return }
+        localBattleFirstRoundTime = nil
+        localBattleSecondRoundTime = nil
+        isLocalBattleFirstPressing = false
+        isLocalBattleSecondPressing = false
+        resetLocalBattleScrambles()
+        didScoreCurrentLocalBattleRound = false
+    }
+
+    private func scoreLocalBattleRoundIfReady() {
+        guard !didScoreCurrentLocalBattleRound,
+              let firstTime = localBattleFirstRoundTime,
+              let secondTime = localBattleSecondRoundTime
+        else { return }
+
+        let adjustedFirstTime = max(0, firstTime - Double(localBattleHandicapSeconds(for: .second)))
+        let adjustedSecondTime = max(0, secondTime - Double(localBattleHandicapSeconds(for: .first)))
+
+        if adjustedFirstTime < adjustedSecondTime {
+            localBattleFirstScore += 1
+        } else if adjustedSecondTime < adjustedFirstTime {
+            localBattleSecondScore += 1
+        }
+        didScoreCurrentLocalBattleRound = true
+    }
+
+    private func startLocalBattleDisplayTimerIfNeeded() {
+        guard localBattleDisplayTimer == nil else { return }
+
+        let timer = Timer.scheduledTimer(withTimeInterval: timerTickInterval, repeats: true) { _ in
+            if let localBattleFirstStartDate, isLocalBattleFirstRunning {
+                localBattleFirstElapsed = Date().timeIntervalSince(localBattleFirstStartDate)
+            }
+            if let localBattleSecondStartDate, isLocalBattleSecondRunning {
+                localBattleSecondElapsed = Date().timeIntervalSince(localBattleSecondStartDate)
+            }
+            if !isLocalBattleFirstRunning && !isLocalBattleSecondRunning {
+                localBattleDisplayTimer?.invalidate()
+                localBattleDisplayTimer = nil
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        localBattleDisplayTimer = timer
+    }
+
+    private func invalidateLocalBattleTimer() {
+        localBattleDisplayTimer?.invalidate()
+        localBattleDisplayTimer = nil
     }
 
     private func inspectionPenalty(for elapsed: Double) -> SolveResult? {
@@ -1413,7 +1544,7 @@ struct TimerTabView: View {
                 Button("timer.typing_save") {
                     saveTypedTime()
                 }
-                .buttonStyle(.glassProminent)
+                .compatibleProminentButtonFromIOS16(tint: .blue)
                 .disabled(parseTypedTime(typedTimeInput) == nil)
             }
         } else {
@@ -1434,15 +1565,15 @@ struct TimerTabView: View {
               let selectedSession,
               parsed > 0 else { return }
 
-        let solve = Solve(
+        _ = Solve(
             time: parsed,
             date: .now,
             scramble: scrambleToSave,
             event: selectedEvent.rawValue,
             result: .solved,
-            session: selectedSession
+            session: selectedSession,
+            context: modelContext
         )
-        modelContext.insert(solve)
         persistSolveChangesAndRefresh()
         typedTimeInput = ""
         isTypingFieldFocused = false
@@ -1458,8 +1589,7 @@ struct TimerTabView: View {
 
     private func ensureSessionExists() {
         if sessions.isEmpty {
-            let newSession = Session(name: "Session")
-            modelContext.insert(newSession)
+            let newSession = Session(name: "Session", context: modelContext)
             selectedSessionID = newSession.id.uuidString
             return
         }
@@ -1956,7 +2086,7 @@ struct TimerTabView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 10)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .compatibleGlassFromIOS16(in: Circle())
         }
         .buttonStyle(.plain)
     }
@@ -1989,166 +2119,4 @@ struct TimerTabView: View {
     }
 }
 
-private struct SpacebarKeyCommandHandler: UIViewControllerRepresentable {
-    let onSpaceDown: () -> Void
-    let onSpaceUp: () -> Void
-    let onSpaceTap: () -> Void
-
-    func makeUIViewController(context: Context) -> SpacebarKeyCommandViewController {
-        let controller = SpacebarKeyCommandViewController()
-        controller.onSpaceDown = onSpaceDown
-        controller.onSpaceUp = onSpaceUp
-        controller.onSpaceTap = onSpaceTap
-        return controller
-    }
-
-    func updateUIViewController(_ uiViewController: SpacebarKeyCommandViewController, context: Context) {
-        uiViewController.onSpaceDown = onSpaceDown
-        uiViewController.onSpaceUp = onSpaceUp
-        uiViewController.onSpaceTap = onSpaceTap
-    }
-}
-
-private final class SpacebarKeyCommandViewController: UIViewController {
-    var onSpaceDown: (() -> Void)?
-    var onSpaceUp: (() -> Void)?
-    var onSpaceTap: (() -> Void)?
-
-    override var canBecomeFirstResponder: Bool {
-        true
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        becomeFirstResponder()
-    }
-
-    override var keyCommands: [UIKeyCommand]? {
-        let command = UIKeyCommand(
-            input: " ",
-            modifierFlags: [],
-            action: #selector(spacePressed)
-        )
-        command.discoverabilityTitle = "Start/Stop Timer"
-        return [command]
-    }
-
-    @objc private func spacePressed() {
-        onSpaceTap?()
-    }
-
-    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        if presses.contains(where: { $0.key?.charactersIgnoringModifiers == " " }) {
-            onSpaceDown?()
-            return
-        }
-        super.pressesBegan(presses, with: event)
-    }
-
-    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        if presses.contains(where: { $0.key?.charactersIgnoringModifiers == " " }) {
-            onSpaceUp?()
-            return
-        }
-        super.pressesEnded(presses, with: event)
-    }
-}
-
-private enum PuzzleEvent: String, CaseIterable {
-    case twoByTwo = "2x2"
-    case threeByThree = "3x3"
-    case fourByFour = "4x4"
-    case fiveByFive = "5x5"
-    case sixBySix = "6x6"
-    case sevenBySeven = "7x7"
-    case megaminx = "Megaminx"
-    case pyraminx = "pyraminx"
-    case square1 = "square-1"
-    case clock = "clock"
-    case skewb = "skewb"
-    case threeByThreeOH = "3x3 oh"
-    case threeByThreeFM = "3x3 fm"
-    case threeByThreeBLD = "3x3 bld"
-    case fourByFourBLD = "4x4 bld"
-    case fiveByFiveBLD = "5x5 bld"
-    case threeByThreeMBLD = "3x3 mbld"
-
-    var localizationKey: String {
-        switch self {
-        case .twoByTwo: return "event.2x2"
-        case .threeByThree: return "event.3x3"
-        case .fourByFour: return "event.4x4"
-        case .fiveByFive: return "event.5x5"
-        case .sixBySix: return "event.6x6"
-        case .sevenBySeven: return "event.7x7"
-        case .megaminx: return "event.megaminx"
-        case .pyraminx: return "event.pyraminx"
-        case .square1: return "event.square1"
-        case .clock: return "event.clock"
-        case .skewb: return "event.skewb"
-        case .threeByThreeOH: return "event.3x3oh"
-        case .threeByThreeFM: return "event.3x3fm"
-        case .threeByThreeBLD: return "event.3x3bld"
-        case .fourByFourBLD: return "event.4x4bld"
-        case .fiveByFiveBLD: return "event.5x5bld"
-        case .threeByThreeMBLD: return "event.3x3mbld"
-        }
-    }
-
-    static var regularCases: [PuzzleEvent] {
-        [
-            .twoByTwo,
-            .threeByThree,
-            .fourByFour,
-            .fiveByFive,
-            .sixBySix,
-            .sevenBySeven,
-            .megaminx,
-            .pyraminx,
-            .square1,
-            .clock,
-            .skewb,
-            .threeByThreeOH,
-            .threeByThreeFM
-        ]
-    }
-
-    static var blindfoldedCases: [PuzzleEvent] {
-        [
-            .threeByThreeBLD,
-            .fourByFourBLD,
-            .fiveByFiveBLD,
-            .threeByThreeMBLD
-        ]
-    }
-
-    var scrambleDiagramPuzzleKey: String? {
-        switch self {
-        case .twoByTwo:
-            return "222"
-        case .threeByThree, .threeByThreeOH, .threeByThreeFM, .threeByThreeBLD:
-            return "333"
-        case .fourByFour, .fourByFourBLD:
-            return "444"
-        case .fiveByFive, .fiveByFiveBLD:
-            return "555"
-        case .sixBySix:
-            return "666"
-        case .sevenBySeven:
-            return "777"
-        case .megaminx:
-            return "megaminx"
-        case .pyraminx:
-            return "pyraminx"
-        case .square1:
-            return "squareone"
-        case .clock:
-            return "clk"
-        case .skewb:
-            return "skewb"
-        case .threeByThreeMBLD:
-            return nil
-        }
-    }
-}
 #endif

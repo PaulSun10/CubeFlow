@@ -21,23 +21,49 @@ struct ScrambleDiagramSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                ScrambleDiagramView(puzzleKey: puzzleKey, scramble: scramble)
+        sheetContent
+    }
+
+    @ViewBuilder
+    private var sheetContent: some View {
+        if #available(iOS 16.0, *) {
+            navigationContent
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        } else {
+            navigationContent
+        }
+    }
+
+    @ViewBuilder
+    private var navigationContent: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content
             }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("common.done") {
-                        dismiss()
-                    }
+        } else {
+            NavigationView {
+                content
+            }
+            .navigationViewStyle(.stack)
+        }
+    }
+
+    private var content: some View {
+        VStack(spacing: 0) {
+            ScrambleDiagramView(puzzleKey: puzzleKey, scramble: scramble)
+        }
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("common.done") {
+                    dismiss()
                 }
             }
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
     }
+
 }
 
 private struct ScrambleDiagramWebView: UIViewRepresentable {

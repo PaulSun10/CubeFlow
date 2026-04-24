@@ -31,7 +31,7 @@ struct StreakButton: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 10)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .compatibleGlass(in: Capsule())
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $showingSheet) {
@@ -41,8 +41,7 @@ struct StreakButton: View {
                 longestStreak: longestStreak,
                 solvedDayCounts: solvedDayCounts
             )
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
+            .compatibleLargeSheet()
         }
     }
 }
@@ -56,59 +55,75 @@ private struct StreakDetailSheet: View {
     @AppStorage("appLanguage") private var appLanguage: String = "en"
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 8) {
-                            Image(isTodaySolved ? "streak_fire_red" : "streak_fire_gray")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 32, height: 32)
-                                .scaleEffect(streakCount > 0 ? 1.05 : 1.0)
-                                .animation(.snappy(duration: 0.25, extraBounce: 0.2), value: streakCount)
-                            Text(streakDaysText)
-                                .font(.system(size: 32, weight: .semibold))
-                                .contentTransition(.numericText())
-                        }
-                        .animation(.snappy(duration: 0.25, extraBounce: 0.1), value: streakCount)
+        navigationContent
+    }
 
-                        Text(streakSubtitleKey)
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    HStack(spacing: 16) {
-                        Text(bestStreakText)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    StreakCalendarView(
-                        solvedDayCounts: solvedDayCounts
-                    )
-                    .frame(height: 590)
-                    .padding(.top, -100)
-
-                    if !isTodaySolved {
-                        Text("streak.tip")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+    @ViewBuilder
+    private var navigationContent: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content
             }
-            .navigationTitle(Text("streak.title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+        } else {
+            NavigationView {
+                content
+            }
+            .navigationViewStyle(.stack)
+        }
+    }
+
+    private var content: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        Image(isTodaySolved ? "streak_fire_red" : "streak_fire_gray")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 32, height: 32)
+                            .scaleEffect(streakCount > 0 ? 1.05 : 1.0)
+                            .animation(.snappy(duration: 0.25, extraBounce: 0.2), value: streakCount)
+                        Text(streakDaysText)
+                            .font(.system(size: 32, weight: .semibold))
+                            .compatibleNumericTextTransition()
                     }
+                    .animation(.snappy(duration: 0.25, extraBounce: 0.1), value: streakCount)
+
+                    Text(streakSubtitleKey)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 16) {
+                    Text(bestStreakText)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+
+                StreakCalendarView(
+                    solvedDayCounts: solvedDayCounts
+                )
+                .frame(height: 590)
+                .padding(.top, -100)
+
+                if !isTodaySolved {
+                    Text("streak.tip")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+        }
+        .navigationTitle(Text("streak.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .semibold))
                 }
             }
         }
@@ -215,7 +230,7 @@ private struct StreakCalendarView: View {
         .onAppear {
             displayedMonth = startOfMonth(Date())
         }
-        .onChange(of: bubbleDate) { _, _ in
+        .onChange(of: bubbleDate) { _ in
             showBubble = true
         }
     }
@@ -232,7 +247,7 @@ private struct StreakCalendarView: View {
             if isSolved {
                 Circle()
                     .frame(width: circleSize, height: circleSize)
-                    .glassEffect(.regular.tint(Color(red: 1.0, green: 0.522, blue: 0.0)).interactive(), in: .circle)
+                    .compatibleTintedGlass(Color(red: 1.0, green: 0.522, blue: 0.0), in: Circle())
                     .environment(\.colorScheme, .light)
             }
 
@@ -279,7 +294,7 @@ private struct StreakCalendarView: View {
         .padding(.horizontal, 20)
         .padding(.top, 8)
         .padding(.bottom, 14)
-        .glassEffect(.regular.interactive(), in: SpeechBubbleShape(cornerRadius: 14, tailWidth: 14, tailHeight: 8))
+        .compatibleGlass(in: SpeechBubbleShape(cornerRadius: 14, tailWidth: 14, tailHeight: 8))
         .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
     }
 

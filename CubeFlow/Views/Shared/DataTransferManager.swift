@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-import SwiftData
+import CoreData
 import UniformTypeIdentifiers
 
 enum DataTransferExportFormat: String, CaseIterable, Identifiable, Sendable {
@@ -181,17 +181,13 @@ enum DataTransferManager {
     static func importPreparedImport(
         _ preparedImport: DataTransferPreparedImport,
         conflictResolution: DataTransferSessionConflictResolution = .rename,
-        modelContext: ModelContext,
+        modelContext: NSManagedObjectContext,
         progress: @escaping @Sendable @MainActor (DataTransferProgress) -> Void
     ) async throws {
-        let container = modelContext.container
+        _ = modelContext
         try await Task.detached(priority: .userInitiated) {
-            let backgroundContext = ModelContext(container)
-            let backgroundExistingSessions = try backgroundContext.fetch(
-                FetchDescriptor<Session>(
-                    sortBy: [SortDescriptor(\Session.createdAt, order: .forward)]
-                )
-            )
+            let backgroundContext = PersistenceController.shared.newBackgroundContext()
+            let backgroundExistingSessions = try backgroundContext.fetchSessionsSortedByCreationDate()
 
             switch preparedImport.plan {
             case .cubeFlow(let plan):
@@ -217,7 +213,7 @@ enum DataTransferManager {
     @MainActor
     static func importDataFile(
         _ data: Data,
-        modelContext: ModelContext,
+        modelContext: NSManagedObjectContext,
         existingSessions: [Session],
         progress: @escaping @Sendable @MainActor (DataTransferProgress) -> Void
     ) async throws {
@@ -410,7 +406,7 @@ enum DataTransferManager {
     private static func importBackup(
         _ plan: CubeFlowImportPlan,
         conflictResolution: DataTransferSessionConflictResolution,
-        modelContext: ModelContext,
+        modelContext: NSManagedObjectContext,
         existingSessions: [Session],
         progress: @escaping @Sendable @MainActor (DataTransferProgress) -> Void
     ) async throws {
@@ -421,7 +417,7 @@ enum DataTransferManager {
         await MainActor.run {
             progress(DataTransferProgress(stage: .importing, current: 0, total: total))
         }
-        let existingSolves = try modelContext.fetch(FetchDescriptor<Solve>())
+        let existingSolves = try modelContext.fetchSolvesSortedByDateDescending()
 
         var sessionResolver = SessionImportResolver(
             existingSessions: existingSessions,
@@ -484,10 +480,10 @@ enum DataTransferManager {
                     scramble: solveItem.scramble,
                     event: solveItem.event,
                     result: SolveResult(rawValue: solveItem.resultRaw) ?? .solved,
-                    session: targetSession
+                    session: targetSession,
+                    context: modelContext
                 )
                 newSolve.id = solveItem.id
-                modelContext.insert(newSolve)
                 solveByID[newSolve.id] = newSolve
                 existingSolveFingerprints.insert(fingerprint)
                 unsavedChanges += 1
@@ -515,7 +511,7 @@ enum DataTransferManager {
     private static func importCSTimer(
         _ plan: CSTimerImportPlan,
         conflictResolution: DataTransferSessionConflictResolution,
-        modelContext: ModelContext,
+        modelContext: NSManagedObjectContext,
         existingSessions: [Session],
         progress: @escaping @Sendable @MainActor (DataTransferProgress) -> Void
     ) async throws {
@@ -531,7 +527,7 @@ enum DataTransferManager {
             conflictResolution: conflictResolution
         )
         let existingSessionIDs = Set(existingSessions.map(\.id))
-        var targetSessions: [(session: CSTimerImportSession, targetSessionID: UUID, targetPersistentID: PersistentIdentifier)] = []
+        var targetSessions: [(session: CSTimerImportSession, targetSessionID: UUID)] = []
         var processed = 0
 
         for session in plan.sessions {
@@ -541,7 +537,7 @@ enum DataTransferManager {
                 preferredID: nil,
                 modelContext: modelContext
             )
-            targetSessions.append((session, targetSession.id, targetSession.persistentModelID))
+            targetSessions.append((session, targetSession.id))
 
             processed += 1
             if processed.isMultiple(of: progressStep) || processed == total {
@@ -557,10 +553,10 @@ enum DataTransferManager {
             try modelContext.save()
         }
 
-        for (session, targetSessionID, targetPersistentID) in targetSessions {
+        for (session, targetSessionID) in targetSessions {
             let existingFingerprints: Set<SolveFingerprint>
             if existingSessionIDs.contains(targetSessionID) {
-                let fingerprintContext = ModelContext(modelContext.container)
+                let fingerprintContext = PersistenceController.shared.newBackgroundContext()
                 existingFingerprints = try fetchSolveFingerprints(
                     forSessionID: targetSessionID,
                     modelContext: fingerprintContext
@@ -574,8 +570,8 @@ enum DataTransferManager {
             var chunkStart = 0
             while chunkStart < session.solves.count {
                 let chunkEnd = min(chunkStart + solveChunkSize, session.solves.count)
-                let chunkContext = ModelContext(modelContext.container)
-                guard let targetSession = chunkContext.model(for: targetPersistentID) as? Session else {
+                let chunkContext = PersistenceController.shared.newBackgroundContext()
+                guard let targetSession = try chunkContext.fetchSession(with: targetSessionID) else {
                     throw DataTransferError.importSessionResolutionFailed
                 }
 
@@ -592,15 +588,15 @@ enum DataTransferManager {
                     )
 
                     if sessionFingerprints.insert(fingerprint).inserted {
-                        let solve = Solve(
+                        _ = Solve(
                             time: importedSolve.time,
                             date: importedSolve.date,
                             scramble: importedSolve.scramble,
                             event: importedSolve.event,
                             result: importedSolve.result,
-                            session: targetSession
+                            session: targetSession,
+                            context: chunkContext
                         )
-                        chunkContext.insert(solve)
                         insertedInChunk += 1
                     }
 
@@ -725,14 +721,9 @@ enum DataTransferManager {
 
     private static func fetchSolveFingerprints(
         forSessionID sessionID: UUID,
-        modelContext: ModelContext
+        modelContext: NSManagedObjectContext
     ) throws -> Set<SolveFingerprint> {
-        let descriptor = FetchDescriptor<Solve>(
-            predicate: #Predicate<Solve> { solve in
-                solve.session?.id == sessionID
-            }
-        )
-        let solves = try modelContext.fetch(descriptor)
+        let solves = try modelContext.fetchSolves(forSessionID: sessionID)
         return buildExistingSolveFingerprints(from: solves)
     }
 
@@ -957,7 +948,7 @@ private struct SessionImportResolver {
         importedSessionID: UUID,
         importedName: String,
         createdAt: Date,
-        modelContext: ModelContext
+        modelContext: NSManagedObjectContext
     ) -> Session {
         if let existing = sessionsByID[importedSessionID] {
             existing.name = importedName
@@ -978,7 +969,7 @@ private struct SessionImportResolver {
         importedName: String,
         createdAt: Date,
         preferredID: UUID?,
-        modelContext: ModelContext
+        modelContext: NSManagedObjectContext
     ) -> Session {
         let trimmedName = importedName.trimmingCharacters(in: .whitespacesAndNewlines)
         let baseName = trimmedName.isEmpty ? "Session" : trimmedName
@@ -990,21 +981,19 @@ private struct SessionImportResolver {
                 return existing
             }
 
-            let newSession = Session(name: baseName, createdAt: createdAt)
+            let newSession = Session(name: baseName, createdAt: createdAt, context: modelContext)
             if let preferredID {
                 newSession.id = preferredID
             }
-            modelContext.insert(newSession)
             register(session: newSession)
             return newSession
 
         case .rename:
             let finalName = uniqueSessionName(for: baseName)
-            let newSession = Session(name: finalName, createdAt: createdAt)
+            let newSession = Session(name: finalName, createdAt: createdAt, context: modelContext)
             if let preferredID {
                 newSession.id = preferredID
             }
-            modelContext.insert(newSession)
             register(session: newSession)
             return newSession
         }
