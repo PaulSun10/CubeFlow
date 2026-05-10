@@ -1,0 +1,2791 @@
+{
+  "puzzle": "2x2",
+  "set": "CLL",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "cll_as_1",
+      "displayName": "CLL AS 1",
+      "name": "CLL AS 1",
+      "subgroup": "AS",
+      "imageKey": "cll_cll_as_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_as_1-1",
+          "notation": "y R U2 R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_1-2",
+          "notation": "d2 L' U' L U' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_1-3",
+          "notation": "y2 R' F' R U' R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_1-4",
+          "notation": "y' L U2 L' U' L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_1-5",
+          "notation": "y' R B2 R' U' R B' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_1-6",
+          "notation": "U R U2 R' U' R U' R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_as_2",
+      "displayName": "CLL AS 2",
+      "name": "CLL AS 2",
+      "subgroup": "AS",
+      "imageKey": "cll_cll_as_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_as_2-1",
+          "notation": "R U2 R' F R' F' R U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-2",
+          "notation": "y' R' F R F' R U R' F R' F' R U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-3",
+          "notation": "U2 L' U' L U L F' L' F L' U L F' L F L' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-4",
+          "notation": "y R U' R' U F' U' R' F R U' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-5",
+          "notation": "R U R' F' R U2 R' U' R U' R' F R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-6",
+          "notation": "y' R' U' R U' R' U R' F R F' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-7",
+          "notation": "U2 F L' U2 L U2 L F2 L' U' L' U L F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-8",
+          "notation": "y U2 R U' R2 U R U F R2 F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-9",
+          "notation": "y2 L U2 R' U L' U' R U' L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-10",
+          "notation": "y' L F' L2 F U L U L2 U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-11",
+          "notation": "y' R U' R2 U F' U2 F U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-12",
+          "notation": "L' U' L U' R U' L' U R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-13",
+          "notation": "y' R2 U R U2 R' F R2 F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_2-14",
+          "notation": "y' R U' R2 U R U F R2 F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_as_3",
+      "displayName": "CLL AS 3",
+      "name": "CLL AS 3",
+      "subgroup": "AS",
+      "imageKey": "cll_cll_as_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_as_3-1",
+          "notation": "y2 F' L F L' U2 L' U2 L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_3-2",
+          "notation": "y2 F' R U R' U2 R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_3-3",
+          "notation": "B' R B R' U2 R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_3-4",
+          "notation": "y' x' R' F R U' R U2 R' F' R' F R U' x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_as_4",
+      "displayName": "CLL AS 4",
+      "name": "CLL AS 4",
+      "subgroup": "AS",
+      "imageKey": "cll_cll_as_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_as_4-1",
+          "notation": "y2 R' F R F' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_4-2",
+          "notation": "y F' U F R' y R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_4-3",
+          "notation": "y' F' R U R' y' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_4-4",
+          "notation": "y2 L' U L F' L F L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_4-5",
+          "notation": "y2 L' U R U' L U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_as_5",
+      "displayName": "CLL AS 5",
+      "name": "CLL AS 5",
+      "subgroup": "AS",
+      "imageKey": "cll_cll_as_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_as_5-1",
+          "notation": "y2 R U2 R' U2 R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_5-2",
+          "notation": "y F R2 F' U' R' U' R F R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_5-3",
+          "notation": "y2 R U2 R' U2 L' U R U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_5-4",
+          "notation": "L U2 L' U2 x' L' U L U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_as_6",
+      "displayName": "CLL AS 6",
+      "name": "CLL AS 6",
+      "subgroup": "AS",
+      "imageKey": "cll_cll_as_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_as_6-1",
+          "notation": "y' R U2 R' U' R U' R' F R' F' R U R U' R' U'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-2",
+          "notation": "y2 L' U' L U L F' L' F L' U' L U' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-3",
+          "notation": "F R F' U R U' R U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-4",
+          "notation": "y2 R' F2 R F' R' F2 R U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-5",
+          "notation": "y R U R' U y' R U' R U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-6",
+          "notation": "y F' R U R' U' R U2 R' F' R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-7",
+          "notation": "y2 R' F U2 F' R F R' U2 R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-8",
+          "notation": "y R U R' D R U' R U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-9",
+          "notation": "y R U2 R' U' R U' R F2 R U R' F2 R F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-10",
+          "notation": "y2 R' F' R U R U' R' F R' F' R U' R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-11",
+          "notation": "L' U L' U L U' L U F' L F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-12",
+          "notation": "y2 L' U2 L F' L' U2 L U' L' U L F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-13",
+          "notation": "F U R' F' R U' F' U R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-14",
+          "notation": "y R' F2 R2 U2 R' F' R U2 R2 F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-15",
+          "notation": "L' U L' U L U' L U y' L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_as_6-16",
+          "notation": "y2 L' U2 L F' R' F2 R U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_h_1",
+      "displayName": "CLL H 1",
+      "name": "CLL H 1",
+      "subgroup": "H",
+      "imageKey": "cll_cll_h_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_h_1-1",
+          "notation": "F R2 U' R2 U' R2 U R2 F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_1-2",
+          "notation": "R U2 R2 F R F' U2 R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_1-3",
+          "notation": "y2 F R U R' U' R F' R U R' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_1-4",
+          "notation": "y R B2 R' y R U' R U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_1-5",
+          "notation": "y2 F R' F' R U' R U' R' U R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_1-6",
+          "notation": "y2 F R2 F' R U' R U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_h_2",
+      "displayName": "CLL H 2",
+      "name": "CLL H 2",
+      "subgroup": "H",
+      "imageKey": "cll_cll_h_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_h_2-1",
+          "notation": "R U R' U R U R' F R' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_2-2",
+          "notation": "R' F' R U2 R U2 R' F U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_2-3",
+          "notation": "F R' F' R U2 F2 R U R' F U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_2-4",
+          "notation": "y' R U' R2 D' R U' R' D R2 U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_2-5",
+          "notation": "y R' F U R U' R2 F' R2 U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_2-6",
+          "notation": "y R U' R' F U2 R2 F R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_h_3",
+      "displayName": "CLL H 3",
+      "name": "CLL H 3",
+      "subgroup": "H",
+      "imageKey": "cll_cll_h_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_h_3-1",
+          "notation": "y F R U R' U' R U R' U' R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-2",
+          "notation": "R' F R F' R U R2 F R F' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-3",
+          "notation": "y F U R U' R' U R U' R' U R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-4",
+          "notation": "U F R U R' U' R U R' U' R U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-5",
+          "notation": "U' F U R U' R' U R U' R' U R U' R' F' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-6",
+          "notation": "y x' U2 R' F2 R2 U2 R' U2 x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-7",
+          "notation": "y F2 R' F2 R2 U2 R' F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-8",
+          "notation": "U2 y' x' U2 R U2 R2 F2 R U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-9",
+          "notation": "R U' R' F L' U' L2 F' L' F L' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-10",
+          "notation": "U2 x R2 U' B2 U2 R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-11",
+          "notation": "y R' F R2 F' U R' U R' U2 R U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_3-12",
+          "notation": "x R2 U' B2 U2 R2 U' R2 x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_h_4",
+      "displayName": "CLL H 4",
+      "name": "CLL H 4",
+      "subgroup": "H",
+      "imageKey": "cll_cll_h_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_h_4-1",
+          "notation": "y R2 U2 R' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_4-2",
+          "notation": "y' R U2 R' U' R U R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_4-3",
+          "notation": "y L2 U2 L U2 L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_4-4",
+          "notation": "d R2 U2 R U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_4-5",
+          "notation": "U R2 U2 R' U2 R2 U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_h_4-6",
+          "notation": "U R2 U2 R U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_l_1",
+      "displayName": "CLL L 1",
+      "name": "CLL L 1",
+      "subgroup": "L",
+      "imageKey": "cll_cll_l_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_l_1-1",
+          "notation": "y R U2 R' F' R U2 R' U R' F2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-2",
+          "notation": "y2 L' U2 L U y' R2 U R U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-3",
+          "notation": "U' L' U L U' L' U L F' L F L2 U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-4",
+          "notation": "y R' U' R U2 R' U' R U' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-5",
+          "notation": "y R U R2 F' R U R U' R2 F' R F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-6",
+          "notation": "y R U2 R D R' U2 R D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-7",
+          "notation": "y' L' U L U' L' U L F' L F L2 U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-8",
+          "notation": "U' R' F R U' R' F R F' R U R2 F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-9",
+          "notation": "y L' U2 L2 F2 L' U' L F2 L' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-10",
+          "notation": "y R U' R' F U2 F U' R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_1-11",
+          "notation": "y2 F R' F' R U R U R' U' R U R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_l_2",
+      "displayName": "CLL L 2",
+      "name": "CLL L 2",
+      "subgroup": "L",
+      "imageKey": "cll_cll_l_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_l_2-1",
+          "notation": "y2 R U2 R2 F2 R U R' F2 R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-2",
+          "notation": "y R U2 R' U' y' R2 U' R' U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-3",
+          "notation": "y F U' R U2 R' F2 R U R' L' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-4",
+          "notation": "y R U R' U' R' F R2 F' U' R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-5",
+          "notation": "y' x' R F R' F' R U R U' R2 F R U2 R' x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-6",
+          "notation": "y2 L U L' U2 L U L' U F' L' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-7",
+          "notation": "R U R' U2 R U R' U F' U' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-8",
+          "notation": "F R' U R F R' F' R U' R2 F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-9",
+          "notation": "y2 R' U' F2 R U R' U F U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-10",
+          "notation": "y R U R' U' R' F R2 U' R' U R U R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_2-11",
+          "notation": "y2 x' R' U2 R' U' R U2 R' F R2 x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_l_3",
+      "displayName": "CLL L 3",
+      "name": "CLL L 3",
+      "subgroup": "L",
+      "imageKey": "cll_cll_l_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_l_3-1",
+          "notation": "y2 R' U R' U2 R U' R' U R U' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-2",
+          "notation": "y R U' R U' R U2 R' U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-3",
+          "notation": "x2 D R U R' U' R U R' U' D2 U R U' R' U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-4",
+          "notation": "F U' R U' R' U R' F R F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-5",
+          "notation": "y' R U' R' U2 R2 U R' U R' U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-6",
+          "notation": "y R U' R U' R U2 R' U R' U R' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-7",
+          "notation": "y2 R' U2 R U R' U' R U R' U' R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-8",
+          "notation": "R' F' R U' R' F R U' R' F R U' R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-9",
+          "notation": "R U' R' L' U2 L U L' U L R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-10",
+          "notation": "y2 R' D R' D R' U R D' R D' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-11",
+          "notation": "R U' R' L' U2 L U L' U L R U2 R' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-12",
+          "notation": "y R U R' U L F2 U2 L' U' L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-13",
+          "notation": "U R U R' U R U2 R' U2 R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-14",
+          "notation": "y' R2 U R' U' R U R' U2 R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_3-15",
+          "notation": "y' F' U2 R' F' R U' F R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_l_4",
+      "displayName": "CLL L 4",
+      "name": "CLL L 4",
+      "subgroup": "L",
+      "imageKey": "cll_cll_l_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_l_4-1",
+          "notation": "y R U2 R2 F R F' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_4-2",
+          "notation": "y' F R U R' U' R' F R2 U' R' U' R U R' F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_4-3",
+          "notation": "y' R' F2 R F' R' F2 R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_4-4",
+          "notation": "y' L' U2 L F' R' F2 R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_4-5",
+          "notation": "y' R' F2 R F' R U R2 F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_4-6",
+          "notation": "y' R' U' R U R' F' R U R' U' R' F R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_l_5",
+      "displayName": "CLL L 5",
+      "name": "CLL L 5",
+      "subgroup": "L",
+      "imageKey": "cll_cll_l_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_l_5-1",
+          "notation": "y F R' F' R U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_5-2",
+          "notation": "R B' R' U' y R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_5-3",
+          "notation": "y' x R' U' R' F R F' R U x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_5-4",
+          "notation": "y x U R' U' L U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_5-5",
+          "notation": "y' R' F' L' F R F' L F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_5-6",
+          "notation": "y F' U R U' R' F2 R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_l_6",
+      "displayName": "CLL L 6",
+      "name": "CLL L 6",
+      "subgroup": "L",
+      "imageKey": "cll_cll_l_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_l_6-1",
+          "notation": "y2 F' R U R' U' R' F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_6-2",
+          "notation": "y2 F' L F L' U' L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_6-3",
+          "notation": "U x R' U R D' R' U' R D x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_6-4",
+          "notation": "R U R U' L' U R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_l_6-5",
+          "notation": "y' F R F U' R' U F' R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_pi_1",
+      "displayName": "CLL Pi 1",
+      "name": "CLL Pi 1",
+      "subgroup": "Pi",
+      "imageKey": "cll_cll_pi_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_pi_1-1",
+          "notation": "y F R' F' R U2 R U' R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_1-2",
+          "notation": "R' F2 R F' U2 R U' R' D' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_1-3",
+          "notation": "y F U R U' R' U R U' R2 F' R U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_1-4",
+          "notation": "y' L U2 L' U' L U' L2 U R U' L U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_1-5",
+          "notation": "F U' R' F2 R U' F2 R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_1-6",
+          "notation": "L' U2 L F' U2 L F' L' U' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_1-7",
+          "notation": "y F U R U' R2 F' R U2 R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_1-8",
+          "notation": "R' F2 R U2 R U2 R' F2 U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_pi_2",
+      "displayName": "CLL Pi 2",
+      "name": "CLL Pi 2",
+      "subgroup": "Pi",
+      "imageKey": "cll_cll_pi_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_pi_2-1",
+          "notation": "R U2 R' U' R U R' U2 R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_2-2",
+          "notation": "R2 U' R' U' F R2 U2 F' R2 F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_2-3",
+          "notation": "R U R' U' R' F R2 U R' U' R U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_2-4",
+          "notation": "y' R' U2 R U R' U R2 U' R' F R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_2-5",
+          "notation": "y F' U' L' U L2 F L' U2 L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_2-6",
+          "notation": "y2 L F2 L' U2 L' U2 L F2 U L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_2-7",
+          "notation": "R U2 R' U2 R' F R2 U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_pi_3",
+      "displayName": "CLL Pi 3",
+      "name": "CLL Pi 3",
+      "subgroup": "Pi",
+      "imageKey": "cll_cll_pi_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_pi_3-1",
+          "notation": "y F R2 U' R2 U R2 U R2 F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_3-2",
+          "notation": "R' U' F' R U R' U' R' F R2 U2 R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_3-3",
+          "notation": "F' R U R' U2 F' R U R2 F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_3-4",
+          "notation": "y R' U R' U R U' R y' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_3-5",
+          "notation": "y' R' F R U F U' R U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_pi_4",
+      "displayName": "CLL Pi 4",
+      "name": "CLL Pi 4",
+      "subgroup": "Pi",
+      "imageKey": "cll_cll_pi_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_pi_4-1",
+          "notation": "y2 R' F R F' R U' R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_4-2",
+          "notation": "R U' R' F L' U L U R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_4-3",
+          "notation": "R U' L' U R' U L U L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_pi_5",
+      "displayName": "CLL Pi 5",
+      "name": "CLL Pi 5",
+      "subgroup": "Pi",
+      "imageKey": "cll_cll_pi_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_pi_5-1",
+          "notation": "y' R' U' R' F R F' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-2",
+          "notation": "y2 F R U R' U' F' R2 U2 R' U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-3",
+          "notation": "y2 R U R' U R U' B U' B' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-4",
+          "notation": "y R' U2 R U R' F R' F' R U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-5",
+          "notation": "y F R U R' U' F' U' R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-6",
+          "notation": "R U' R' U2 R' F R F' U2 R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-7",
+          "notation": "y2 R U R' U R U' F R' F' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-8",
+          "notation": "y2 R U R' U R U' y R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-9",
+          "notation": "y2 R U R' U R D' R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_5-10",
+          "notation": "R' F' U' F U' R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_pi_6",
+      "displayName": "CLL Pi 6",
+      "name": "CLL Pi 6",
+      "subgroup": "Pi",
+      "imageKey": "cll_cll_pi_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_pi_6-1",
+          "notation": "F R U R' U' R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_6-2",
+          "notation": "R U2 R2 U' R2 U' R2 U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_6-3",
+          "notation": "R' U2 R2 U R2 U R2 U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_6-4",
+          "notation": "y' R' U' R U2 R' U2 R U2 R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_6-5",
+          "notation": "y2 R B' R2 F R2 B R2 F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_pi_6-6",
+          "notation": "y R U R' U2 R U2 R' U2 R U' R' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_sune_1",
+      "displayName": "CLL Sune 1",
+      "name": "CLL Sune 1",
+      "subgroup": "Sune",
+      "imageKey": "cll_cll_sune_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_sune_1-1",
+          "notation": "L' U2 L U2 L F' L' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_1-2",
+          "notation": "R' F2 R U2 L F' R' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_1-3",
+          "notation": "F U R U2 R' U' R U R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_1-4",
+          "notation": "L' U2 L U2 R U' R' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_sune_2",
+      "displayName": "CLL Sune 2",
+      "name": "CLL Sune 2",
+      "subgroup": "Sune",
+      "imageKey": "cll_cll_sune_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_sune_2-1",
+          "notation": "R U R' U' R' F R F' R U R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_2-2",
+          "notation": "R2 F' U' R2 F R2 U F R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_2-3",
+          "notation": "y R' F' R2 U R' F' R' F R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_2-4",
+          "notation": "y2 R U' R U' R' U R' U' F R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_2-5",
+          "notation": "y2 R F' U' F' R2 U R U' R B2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_2-6",
+          "notation": "y' R' U' R D' R' U R' U' R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_sune_3",
+      "displayName": "CLL Sune 3",
+      "name": "CLL Sune 3",
+      "subgroup": "Sune",
+      "imageKey": "cll_cll_sune_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_sune_3-1",
+          "notation": "R U' R' F R' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_3-2",
+          "notation": "U2 R2 U R' U' R' F R F' R' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_3-3",
+          "notation": "y' x' U F' U' R x y' R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_3-4",
+          "notation": "y F U' F' R x' y R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_3-5",
+          "notation": "y2 x' R U' R' U R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_3-6",
+          "notation": "L F' L' F R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_3-7",
+          "notation": "y2 L U' R' U L' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_sune_4",
+      "displayName": "CLL Sune 4",
+      "name": "CLL Sune 4",
+      "subgroup": "Sune",
+      "imageKey": "cll_cll_sune_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_sune_4-1",
+          "notation": "F R' F' R U2 R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_4-2",
+          "notation": "F L' U' L U2 L F2 L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_sune_5",
+      "displayName": "CLL Sune 5",
+      "name": "CLL Sune 5",
+      "subgroup": "Sune",
+      "imageKey": "cll_cll_sune_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_sune_5-1",
+          "notation": "y2 R U R' U R' F R F' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-2",
+          "notation": "x' R' F2 R U' R U R' x U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-3",
+          "notation": "y' R' F R2 F' R U2 R' U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-4",
+          "notation": "y R' U' F R' F' R U' R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-5",
+          "notation": "L U' L' U L2 F' L' F L' U' L U L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-6",
+          "notation": "y2 R U R' F' R U R' U R U2 R' F R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-7",
+          "notation": "y R' F R U' F U R U' R' U F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-8",
+          "notation": "y2 R' U R U' R' F R' F' R2 U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_5-9",
+          "notation": "R' F R F' U R U R' U2 F R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_sune_6",
+      "displayName": "CLL Sune 6",
+      "name": "CLL Sune 6",
+      "subgroup": "Sune",
+      "imageKey": "cll_cll_sune_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_sune_6-1",
+          "notation": "R U R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_6-2",
+          "notation": "y2 R B R' U R B2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_sune_6-3",
+          "notation": "y L' U2 L U L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_t_1",
+      "displayName": "CLL T 1",
+      "name": "CLL T 1",
+      "subgroup": "T",
+      "imageKey": "cll_cll_t_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_t_1-1",
+          "notation": "y' R U R' U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_1-2",
+          "notation": "U' x L U R' U' L' U R U' x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_t_2",
+      "displayName": "CLL T 2",
+      "name": "CLL T 2",
+      "subgroup": "T",
+      "imageKey": "cll_cll_t_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_t_2-1",
+          "notation": "y L' U' L U L F' L' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_2-2",
+          "notation": "y2 R B R' U' y R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_2-3",
+          "notation": "R U R' U' y' R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_2-4",
+          "notation": "y' F R F' U' R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_2-5",
+          "notation": "y L' U' L U R U' R' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_2-6",
+          "notation": "y' F R F' R U R' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_t_3",
+      "displayName": "CLL T 3",
+      "name": "CLL T 3",
+      "subgroup": "T",
+      "imageKey": "cll_cll_t_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_t_3-1",
+          "notation": "F U' R U2 R' U' F2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_3-2",
+          "notation": "y' R U R' U' R U' R2 F R F' R U R' U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_3-3",
+          "notation": "y' L' U2 L2 F' L' F L' U L U' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_3-4",
+          "notation": "y R' U' R' U R' F R F' R U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_3-5",
+          "notation": "y2 R' U' R U' R' U R U R' F' R U R' U' R' F R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_3-6",
+          "notation": "R U' R' F2 U R U2 R' U F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_3-7",
+          "notation": "R' U R2 D R' U2 R D' R2 U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_t_4",
+      "displayName": "CLL T 4",
+      "name": "CLL T 4",
+      "subgroup": "T",
+      "imageKey": "cll_cll_t_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_t_4-1",
+          "notation": "R' U R U2 R2 F' R U' R' F2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-2",
+          "notation": "y R' U2 F2 R U R' F U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-3",
+          "notation": "y2 R' U R' U2 R U2 R' U R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-4",
+          "notation": "R U2 R' U' R U' R2 U2 R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-5",
+          "notation": "y' R U R' U R U2 R' L' U' L U' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-6",
+          "notation": "F R' F R2 U' R' U' R U R' F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-7",
+          "notation": "R U' R U' R U R' U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-8",
+          "notation": "U' R U R' U R U2 R' U' R U2 R' U' R U' R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-9",
+          "notation": "U' R U R' U R U2 R' U' R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-10",
+          "notation": "L' U2 L U L' U L U' L' U' L U' L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-11",
+          "notation": "y L' U' L U' L' U2 L R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-12",
+          "notation": "y D' R' D R D' R' D R U R' D' R D R' D' R D",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_4-13",
+          "notation": "y' R U R' U R U2 R' U2 R' U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_t_5",
+      "displayName": "CLL T 5",
+      "name": "CLL T 5",
+      "subgroup": "T",
+      "imageKey": "cll_cll_t_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_t_5-1",
+          "notation": "y2 F R U R' U' R U' R' U' R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-2",
+          "notation": "y R2 F' R U' R' F2 R F R' F' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-3",
+          "notation": "R U2 R' U R U2 R' U R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-4",
+          "notation": "F R' U' R F' R' U F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-5",
+          "notation": "y R' U2 R' F2 R F2 R' F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-6",
+          "notation": "y R U2 R' F2 R U2 R' U2 R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-7",
+          "notation": "y' R U R' F' U' R U R' U' R' F R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-8",
+          "notation": "y L F' z' R' U R' U' R U' R B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_5-9",
+          "notation": "y R U' x U' R U' R' U R' U x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_t_6",
+      "displayName": "CLL T 6",
+      "name": "CLL T 6",
+      "subgroup": "T",
+      "imageKey": "cll_cll_t_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_t_6-1",
+          "notation": "R' U R U2 R2 F R F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_6-2",
+          "notation": "R' U R U2 L' R' U R U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_6-3",
+          "notation": "y2 R U' R U2 R' F R U2 R2 F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_6-4",
+          "notation": "F R F' U R2 U' R U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_6-5",
+          "notation": "y2 R U' R' U' F R' F' R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_6-6",
+          "notation": "y' U' F U F' U L2 U' L U L2 U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_t_6-7",
+          "notation": "y2 R' F R' F' R2 U2 R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_u_1",
+      "displayName": "CLL U 1",
+      "name": "CLL U 1",
+      "subgroup": "U",
+      "imageKey": "cll_cll_u_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_u_1-1",
+          "notation": "y' F R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_1-2",
+          "notation": "d F R U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_1-3",
+          "notation": "y2 F R U' R' U2 R U R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_1-4",
+          "notation": "y F' L' U' L U F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_1-5",
+          "notation": "y R' U' R' F R F' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_u_2",
+      "displayName": "CLL U 2",
+      "name": "CLL U 2",
+      "subgroup": "U",
+      "imageKey": "cll_cll_u_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_u_2-1",
+          "notation": "R' U' R2 U R' U2 R U2 R' U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-2",
+          "notation": "y2 R2 F2 R U R' F U' R U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-3",
+          "notation": "y' R2 F2 R U R U2 R2 F' R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-4",
+          "notation": "y R U2 R' U' R U' R' U2 R' U2 R U R' U R U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-5",
+          "notation": "y' R U R' U' R U' R' U2 R U' R' U2 R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-6",
+          "notation": "y R U' R U' R U' R' U R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-7",
+          "notation": "y2 R U R2 U' R U2 R' U2 R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-8",
+          "notation": "y2 R U R' U R U2 R2 U' R U' R' U2 R U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-9",
+          "notation": "y' F2 R U' R' U R U R2 F' R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-10",
+          "notation": "y' R' F R F' R' F R F' R U R' U' R U R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-11",
+          "notation": "y R' U R' U R' U R U' R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-12",
+          "notation": "y2 U' R' U R' U R' U R U' R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-13",
+          "notation": "y R U' R U' R U' R' U R' U R' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-14",
+          "notation": "y R U2 R' U' R U' R' L' U2 L U L' U L U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-15",
+          "notation": "y2 R U R' U R U2 R2 U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-16",
+          "notation": "y' L' U2 L U L' U L R U2 R' U' R U' R' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-17",
+          "notation": "U' R U R' U' R U R' U' R' F R F' R' F R F' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-18",
+          "notation": "y F U' R U R' U F' U R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-19",
+          "notation": "y F U' R U R2 F R F' U F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_2-20",
+          "notation": "R U' R' F' L F' L' F2 U' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_u_3",
+      "displayName": "CLL U 3",
+      "name": "CLL U 3",
+      "subgroup": "U",
+      "imageKey": "cll_cll_u_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_u_3-1",
+          "notation": "y2 F R U R' U2 F' R U' R' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-2",
+          "notation": "y' z' U2 R' U' R2 U' R' U' R U' R' U' x2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-3",
+          "notation": "y' R' U' F2 U' R U R' U F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-4",
+          "notation": "y' R' U' F2 U' R U R' D R2 B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-5",
+          "notation": "F R U R' U' F R U R' U' F R U R' U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-6",
+          "notation": "y2 F R U R' U2 F' L F' L' F U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-7",
+          "notation": "y' R U R' U' R' F R2 U' R' U' R U2 R' U' F' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-8",
+          "notation": "y' F2 R U' R' U' R U R' F' R U R' U' R' F R F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-9",
+          "notation": "y2 F R U R' U2 F' L F' L' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-10",
+          "notation": "y2 F R U R' U2 y' R' F L' U' L U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-11",
+          "notation": "y x R U R U' B2 R' U R' U' R x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-12",
+          "notation": "y' F R U' R' U' F2 U' R U R' U F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-13",
+          "notation": "F' R U R' F U2 R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-14",
+          "notation": "U' y' R F R' F' R U R U' R' F R F' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-15",
+          "notation": "U2 F R U R' U' R' U R U' F' U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-16",
+          "notation": "y' R2 F2 R U R U2 R2 F R F' R' F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-17",
+          "notation": "y2 R' U2 F' R U' R' F U2 F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-18",
+          "notation": "y' F R U' R' U' F2 U' R U R' D R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-19",
+          "notation": "y2 F' R' F' R U2 F R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_3-20",
+          "notation": "y' R' F R F' R U2 B U' B' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_u_4",
+      "displayName": "CLL U 4",
+      "name": "CLL U 4",
+      "subgroup": "U",
+      "imageKey": "cll_cll_u_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_u_4-1",
+          "notation": "y' F R' F' R U' R U' R' U2 R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-2",
+          "notation": "y F' R U R' U' R' F R2 U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-3",
+          "notation": "x R U' R U' R' U R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-4",
+          "notation": "y2 R' F U' x' R D R' F R D' x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-5",
+          "notation": "y R U' R' F' U F R U R' U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-6",
+          "notation": "x R U' R U' R' U L' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-7",
+          "notation": "y2 F R' U' R U' R U R' U R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-8",
+          "notation": "y2 R' F U' R F R' U R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-9",
+          "notation": "y' x U' R U' R U R' U x' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-10",
+          "notation": "y2 R' F2 R U2 R U2 R' F2 R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_4-11",
+          "notation": "y' F U' R U R' U' y' R' U2 R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_u_5",
+      "displayName": "CLL U 5",
+      "name": "CLL U 5",
+      "subgroup": "U",
+      "imageKey": "cll_cll_u_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_u_5-1",
+          "notation": "R U' R2 F R F' R U R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-2",
+          "notation": "U2 R2 U R2 F' R U R U' R' F R U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-3",
+          "notation": "R' U2 F R2 F' R2 F R2 F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-4",
+          "notation": "R' F R U' F U2 R U' R' U F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-5",
+          "notation": "F U2 R U' R' U F' U' R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-6",
+          "notation": "y R' F U' F' R U' R' U2 F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-7",
+          "notation": "y' R U R2 U R U2 R' F R2 F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-8",
+          "notation": "R' F R F' R U R' F U R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-9",
+          "notation": "R2 U' F R2 F' U R U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_5-10",
+          "notation": "L U' L F' L' F L' U2 L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cll_u_6",
+      "displayName": "CLL U 6",
+      "name": "CLL U 6",
+      "subgroup": "U",
+      "imageKey": "cll_cll_u_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cll_u_6-1",
+          "notation": "R' U R' F R F' R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-2",
+          "notation": "y2 x R2 F R' F2 R U' R' F2 R' x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-3",
+          "notation": "R' F R2 U' R' F R' F' R U R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-4",
+          "notation": "y2 R2 U R' U' R' F R2 F' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-5",
+          "notation": "R' U2 R U R2 F' R U R U' R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-6",
+          "notation": "y R' F' R2 B' R' U2 R U' R2 U y' x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-7",
+          "notation": "y2 L' U2 L U' L F2 L' F L F2 L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-8",
+          "notation": "y' L F' U F L' U L U2 F' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-9",
+          "notation": "y2 R U' R' F R2 F' R2 F R2 F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-10",
+          "notation": "y2 R' U' F R2 F' U R' U R' U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-11",
+          "notation": "R U' R' U F' U2 R' F R U' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-12",
+          "notation": "y2 F' R U2 R' U R U2 R2 F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-13",
+          "notation": "L2 D L' U2 L D' L' U2 L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-14",
+          "notation": "U2 R2 D R' U2 R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-15",
+          "notation": "y2 R2 U R' U' R2 U' y L' U2 L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cll_u_6-16",
+          "notation": "y2 R2 D R' U2 R D' R' U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

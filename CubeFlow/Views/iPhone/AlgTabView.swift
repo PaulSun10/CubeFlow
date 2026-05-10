@@ -5,6 +5,8 @@ import UIKit
 #endif
 
 #if os(iOS)
+private let showsAlgTrainingEntrypoints = false
+
 struct AlgsTabView: View {
     @State private var selectedPuzzle: AlgPuzzle = .threeByThree
     @State private var isShowingRecentPractice = false
@@ -12,17 +14,16 @@ struct AlgsTabView: View {
     @State private var recentPracticeNavigationContext: AlgRecentPracticeContext?
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("algLearnedCasesStore") private var learnedCasesStore: String = "{}"
-    @AppStorage("algOverviewBrowseViewMode") private var overviewBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
+    @AppStorage("algBrowseViewModeStore") private var overviewBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
     @AppStorage("algTrainerAttemptStore") private var trainerAttemptStore: String = "[]"
     @AppStorage("algDismissedRecentPracticeRecordID") private var dismissedRecentPracticeRecordID: String = ""
 
     private var sections: [AlgSectionData] {
-        guard selectedPuzzle == .threeByThree else { return [] }
-        return AlgSectionData.threeByThreeSections
+        AlgSectionData.sections(for: selectedPuzzle)
     }
 
     private var overviewBrowseViewMode: AlgBrowseViewMode {
-        AlgBrowseViewMode(rawValue: overviewBrowseViewModeStore) ?? .list
+        algBrowseViewMode(setID: "global", storage: overviewBrowseViewModeStore)
     }
 
     private var overviewGridColumns: [GridItem] {
@@ -30,8 +31,6 @@ struct AlgsTabView: View {
     }
 
     private var recentPracticeContext: AlgRecentPracticeContext? {
-        guard selectedPuzzle == .threeByThree else { return nil }
-
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
@@ -52,7 +51,7 @@ struct AlgsTabView: View {
         )
 
         if latestRecord.scopeID == latestRecord.setID {
-            let title = AlgSectionData.threeByThreeSections
+            let title = AlgSectionData.allSections
                 .flatMap(\.items)
                 .first { $0.id.caseInsensitiveCompare(payload.set) == .orderedSame }
                 .map { appLocalizedString("algs.item.\($0.id).title", languageCode: appLanguage, defaultValue: payload.set) } ?? payload.set
@@ -80,8 +79,7 @@ struct AlgsTabView: View {
     }
 
     private var weakPracticeItems: [AlgTrainerWeakReviewItem] {
-        guard selectedPuzzle == .threeByThree else { return [] }
-        return makeAlgTrainerWeakReviewItems(
+        makeAlgTrainerWeakReviewItems(
             from: decodeAlgTrainerAttempts(from: trainerAttemptStore),
             languageCode: appLanguage
         )
@@ -123,14 +121,16 @@ struct AlgsTabView: View {
     private var overviewListContent: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                if let recentPracticeContext, recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
+                if showsAlgTrainingEntrypoints,
+                   let recentPracticeContext,
+                   recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
                     recentPracticeCard(recentPracticeContext)
                         .padding(.horizontal, 16)
                         .padding(.top, 14)
                         .padding(.bottom, 6)
                 }
 
-                if !weakPracticeItems.isEmpty {
+                if showsAlgTrainingEntrypoints && !weakPracticeItems.isEmpty {
                     NavigationLink {
                         AlgTrainerWeakReviewView(items: weakPracticeItems, languageCode: appLanguage)
                     } label: {
@@ -173,6 +173,10 @@ struct AlgsTabView: View {
                             }
                         }
                     }
+
+                    overviewSourceFooter
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
                 }
             }
             .padding(.bottom, 88)
@@ -182,13 +186,15 @@ struct AlgsTabView: View {
     private var overviewGridContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if let recentPracticeContext, recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
+                if showsAlgTrainingEntrypoints,
+                   let recentPracticeContext,
+                   recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
                     recentPracticeCard(recentPracticeContext)
                     .padding(.top, 10)
                     .padding(.horizontal, 16)
                 }
 
-                if !weakPracticeItems.isEmpty {
+                if showsAlgTrainingEntrypoints && !weakPracticeItems.isEmpty {
                     NavigationLink {
                         AlgTrainerWeakReviewView(items: weakPracticeItems, languageCode: appLanguage)
                     } label: {
@@ -217,6 +223,10 @@ struct AlgsTabView: View {
                         .padding(.horizontal, 16)
                     }
                 }
+
+                overviewSourceFooter
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
             }
             .padding(.bottom, 88)
         }
@@ -295,14 +305,6 @@ struct AlgsTabView: View {
                     selectedPuzzle = puzzle
                 }
             }
-
-            Menu(appLocalizedString("timer.menu.bld", languageCode: appLanguage)) {
-                ForEach(AlgPuzzle.blindfoldedCases) { puzzle in
-                    Button(appLocalizedString(puzzle.localizedTitleKey, languageCode: appLanguage)) {
-                        selectedPuzzle = puzzle
-                    }
-                }
-            }
         } label: {
             HStack(spacing: 6) {
                 Text(LocalizedStringKey(selectedPuzzle.localizedTitleKey))
@@ -344,8 +346,24 @@ struct AlgsTabView: View {
             get: { overviewBrowseViewMode.rawValue },
             set: { newValue in
                 guard let mode = AlgBrowseViewMode(rawValue: newValue) else { return }
-                overviewBrowseViewModeStore = mode.rawValue
+                overviewBrowseViewModeStore = updatedAlgBrowseViewModeStorage(storage: overviewBrowseViewModeStore, setID: "global", mode: mode)
             }
+        )
+    }
+
+    @ViewBuilder
+    private var overviewSourceFooter: some View {
+        if let sourceURL = algPuzzleSourceURL(puzzle: selectedPuzzle.rawValue) {
+            Text(sourceFooterText(for: sourceURL))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func sourceFooterText(for url: URL) -> String {
+        String(
+            format: localizedAlgString(key: "algs.source_format", languageCode: appLanguage),
+            url.absoluteString
         )
     }
 
@@ -375,8 +393,6 @@ struct AlgsTabView: View {
     }
 
     private var overviewSearchItems: [AlgSearchItem] {
-        guard selectedPuzzle == .threeByThree else { return [] }
-
         var items: [AlgSearchItem] = []
 
         for section in sections {
@@ -426,13 +442,15 @@ struct AlgsTabView: View {
                     for algCase in payload.cases {
                         let localizedSubset = algCase.subgroup.isEmpty ? "" : localizedAlgSubgroup(algCase.subgroup, languageCode: appLanguage)
                         let caseSubtitle = localizedSubset.isEmpty ? setTitle : "\(setTitle) · \(localizedSubset)"
+                        let localizedCaseName = localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage)
                         items.append(
                             AlgSearchItem(
                                 id: "case::\(item.id)::\(algCase.id)",
                                 kind: .caseName,
-                                title: algCase.displayName,
+                                title: localizedCaseName,
                                 subtitle: caseSubtitle,
                                 searchableText: [
+                                    localizedCaseName,
                                     algCase.displayName,
                                     algCase.name,
                                     algCase.id,
@@ -520,8 +538,7 @@ struct AlgsTabView: View {
             return image
         }
 
-        guard selectedPuzzle == .threeByThree,
-              let set = AlgLibrarySet(itemID: item.id),
+        guard let set = AlgLibrarySet(itemID: item.id),
               let payload = AlgLibraryLoader.load(set),
               let previewCase = payload.cases.first else {
             return nil
@@ -567,8 +584,7 @@ struct AlgsTabView: View {
 
     @ViewBuilder
     private func destinationView(for item: AlgItemData) -> some View {
-        if selectedPuzzle == .threeByThree,
-           let set = AlgLibrarySet(itemID: item.id),
+        if let set = AlgLibrarySet(itemID: item.id),
            let payload = AlgLibraryLoader.load(set) {
             AlgCaseListView(payload: payload)
         } else {
@@ -712,13 +728,19 @@ private enum AlgPuzzle: String, CaseIterable, Identifiable {
 
     static var regularCases: [AlgPuzzle] {
         [
-            .twoByTwo, .threeByThree, .fourByFour, .fiveByFive, .sixBySix, .sevenBySeven,
-            .megaminx, .pyraminx, .squareOne, .clock, .skewb
+            .twoByTwo,
+            .threeByThree,
+            .fourByFour,
+            .fiveByFive,
+            .squareOne,
+            .megaminx,
+            .pyraminx,
+            .skewb
         ]
     }
 
     static var blindfoldedCases: [AlgPuzzle] {
-        [.threeByThreeBLD, .fourByFourBLD, .fiveByFiveBLD]
+        []
     }
 }
 
@@ -726,6 +748,23 @@ private struct AlgSectionData: Identifiable {
     let id: String
     let localizedTitleKey: LocalizedStringKey
     let items: [AlgItemData]
+
+    private static func caseCount(for setID: String) -> Int {
+        guard let set = AlgLibrarySet(itemID: setID),
+              let payload = AlgLibraryLoader.load(set) else {
+            return 0
+        }
+        return payload.cases.count
+    }
+
+    private static func item(id: String, titleKey: String, descriptionKey: String) -> AlgItemData {
+        AlgItemData(
+            id: id,
+            localizedTitleKey: LocalizedStringKey(titleKey),
+            algorithmCount: caseCount(for: id),
+            localizedDescriptionKey: LocalizedStringKey(descriptionKey)
+        )
+    }
 
     static let threeByThreeSections: [AlgSectionData] = [
         AlgSectionData(
@@ -849,6 +888,131 @@ private struct AlgSectionData: Identifiable {
             ]
         )
     ]
+
+    static let twoByTwoSections: [AlgSectionData] = [
+        AlgSectionData(
+            id: "two_by_two",
+            localizedTitleKey: "event.2x2",
+            items: [
+                item(id: "ortegaoll", titleKey: "algs.item.ortegaoll.title", descriptionKey: "algs.item.ortegaoll.description"),
+                item(id: "ortegapbl", titleKey: "algs.item.ortegapbl.title", descriptionKey: "algs.item.ortegapbl.description"),
+                item(id: "cll", titleKey: "algs.item.cll.title", descriptionKey: "algs.item.cll.description"),
+                item(id: "eg1", titleKey: "algs.item.eg1.title", descriptionKey: "algs.item.eg1.description"),
+                item(id: "eg2", titleKey: "algs.item.eg2.title", descriptionKey: "algs.item.eg2.description")
+            ]
+        )
+    ]
+
+    static let fourByFourSections: [AlgSectionData] = [
+        AlgSectionData(
+            id: "four_by_four",
+            localizedTitleKey: "event.4x4",
+            items: [
+                item(id: "ollparity", titleKey: "algs.item.ollparity.title", descriptionKey: "algs.item.ollparity.description"),
+                item(id: "pllparity", titleKey: "algs.item.pllparity.title", descriptionKey: "algs.item.pllparity.description")
+            ]
+        )
+    ]
+
+    static let fiveByFiveSections: [AlgSectionData] = [
+        AlgSectionData(
+            id: "five_by_five",
+            localizedTitleKey: "event.5x5",
+            items: [
+                item(id: "l2e", titleKey: "algs.item.l2e.title", descriptionKey: "algs.item.l2e.description"),
+                item(id: "l2c", titleKey: "algs.item.l2c.title", descriptionKey: "algs.item.l2c.description")
+            ]
+        )
+    ]
+
+    static let squareOneSections: [AlgSectionData] = [
+        AlgSectionData(
+            id: "square_one",
+            localizedTitleKey: "event.square1",
+            items: [
+                item(id: "lin", titleKey: "algs.item.lin.title", descriptionKey: "algs.item.lin.description"),
+                item(id: "sq1cs", titleKey: "algs.item.sq1cs.title", descriptionKey: "algs.item.sq1cs.description"),
+                item(id: "sq1co", titleKey: "algs.item.sq1co.title", descriptionKey: "algs.item.sq1co.description"),
+                item(id: "sq1eo", titleKey: "algs.item.sq1eo.title", descriptionKey: "algs.item.sq1eo.description"),
+                item(id: "sq1cp", titleKey: "algs.item.sq1cp.title", descriptionKey: "algs.item.sq1cp.description"),
+                item(id: "sq1parity", titleKey: "algs.item.sq1parity.title", descriptionKey: "algs.item.sq1parity.description"),
+                item(id: "sq1linpll", titleKey: "algs.item.sq1linpll.title", descriptionKey: "algs.item.sq1linpll.description"),
+                item(id: "sq1linparitypll", titleKey: "algs.item.sq1linparitypll.title", descriptionKey: "algs.item.sq1linparitypll.description"),
+                item(id: "sq1ep", titleKey: "algs.item.sq1ep.title", descriptionKey: "algs.item.sq1ep.description"),
+                item(id: "sq1linpll1", titleKey: "algs.item.sq1linpll1.title", descriptionKey: "algs.item.sq1linpll1.description")
+            ]
+        )
+    ]
+
+    static let megaminxSections: [AlgSectionData] = [
+        AlgSectionData(
+            id: "megaminx",
+            localizedTitleKey: "event.megaminx",
+            items: [
+                item(id: "megaminxoll", titleKey: "algs.item.megaminxoll.title", descriptionKey: "algs.item.megaminxoll.description"),
+                item(id: "megaminxpll", titleKey: "algs.item.megaminxpll.title", descriptionKey: "algs.item.megaminxpll.description"),
+                item(id: "megaminxeo", titleKey: "algs.item.megaminxeo.title", descriptionKey: "algs.item.megaminxeo.description"),
+                item(id: "megaminxco", titleKey: "algs.item.megaminxco.title", descriptionKey: "algs.item.megaminxco.description"),
+                item(id: "megaminxep", titleKey: "algs.item.megaminxep.title", descriptionKey: "algs.item.megaminxep.description"),
+                item(id: "megaminxcp", titleKey: "algs.item.megaminxcp.title", descriptionKey: "algs.item.megaminxcp.description")
+            ]
+        )
+    ]
+
+    static let pyraminxSections: [AlgSectionData] = [
+        AlgSectionData(
+            id: "pyraminx",
+            localizedTitleKey: "event.pyraminx",
+            items: [
+                item(id: "l3e", titleKey: "algs.item.l3e.title", descriptionKey: "algs.item.l3e.description"),
+                item(id: "l4e", titleKey: "algs.item.l4e.title", descriptionKey: "algs.item.l4e.description")
+            ]
+        )
+    ]
+
+    static let skewbSections: [AlgSectionData] = [
+        AlgSectionData(
+            id: "skewb",
+            localizedTitleKey: "event.skewb",
+            items: [
+                item(id: "sarahsadvanced", titleKey: "algs.item.sarahsadvanced.title", descriptionKey: "algs.item.sarahsadvanced.description")
+            ]
+        )
+    ]
+
+    static var allSections: [AlgSectionData] {
+        threeByThreeSections
+        + twoByTwoSections
+        + fourByFourSections
+        + fiveByFiveSections
+        + squareOneSections
+        + megaminxSections
+        + pyraminxSections
+        + skewbSections
+    }
+
+    static func sections(for puzzle: AlgPuzzle) -> [AlgSectionData] {
+        switch puzzle {
+        case .threeByThree:
+            return threeByThreeSections
+        case .twoByTwo:
+            return twoByTwoSections
+        case .fourByFour:
+            return fourByFourSections
+        case .fiveByFive:
+            return fiveByFiveSections
+        case .squareOne:
+            return squareOneSections
+        case .megaminx:
+            return megaminxSections
+        case .pyraminx:
+            return pyraminxSections
+        case .skewb:
+            return skewbSections
+        default:
+            return []
+        }
+    }
 }
 
 private struct AlgItemData: Identifiable {
@@ -863,7 +1027,7 @@ private struct AlgItemData: Identifiable {
     }
 
     var usesCaseCount: Bool {
-        ["f2l", "advancedf2l", "oll", "pll", "coll", "wv", "sv", "cls", "sbls", "cmll", "4a", "zbll", "vls", "ollcp", "1lll"].contains(id)
+        AlgLibrarySet(itemID: id) != nil
     }
 
     var title: LocalizedStringKey { localizedTitleKey }
@@ -879,6 +1043,7 @@ private enum AlgBrowseViewMode: String {
 private enum AlgBrowseOrganization: String {
     case number
     case subset
+    case hybrid
 }
 
 private enum AlgSearchItemKind: Int, Comparable {
@@ -1038,7 +1203,7 @@ private func decodeAlgTrainerAttempts(from store: String) -> [AlgTrainerAttemptR
 private func makeAlgTrainerWeakReviewItems(from records: [AlgTrainerAttemptRecord], languageCode: String) -> [AlgTrainerWeakReviewItem] {
     let grouped = Dictionary(grouping: records) { "\($0.setID)::\($0.caseID)" }
 
-    let setTitles = Dictionary(uniqueKeysWithValues: AlgSectionData.threeByThreeSections
+    let setTitles = Dictionary(uniqueKeysWithValues: AlgSectionData.allSections
         .flatMap(\.items)
         .map { ($0.id.lowercased(), appLocalizedString("algs.item.\($0.id).title", languageCode: languageCode, defaultValue: $0.id)) })
 
@@ -1070,7 +1235,7 @@ private func makeAlgTrainerWeakReviewItems(from records: [AlgTrainerAttemptRecor
         return AlgTrainerWeakReviewItem(
             id: "\(first.setID)::\(first.caseID)",
             setTitle: setTitles[first.setID.lowercased()] ?? payload.set,
-            caseTitle: algCase.displayName,
+            caseTitle: localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: languageCode),
             subtitle: subtitle,
             payload: payload,
             algCase: algCase,
@@ -1114,6 +1279,224 @@ private func normalizedAlgPreviewSlug(_ title: String) -> String {
         .lowercased()
         .replacingOccurrences(of: #"[^a-z0-9]+"#, with: "_", options: .regularExpression)
         .trimmingCharacters(in: CharacterSet(charactersIn: "_"))
+}
+
+private extension String {
+    func strippingPrefix(_ prefix: String) -> String? {
+        guard hasPrefix(prefix) else { return nil }
+        return String(dropFirst(prefix.count))
+    }
+}
+
+private func algPuzzleSourcePath(puzzle: String) -> String? {
+    let normalizedPuzzle = puzzle.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    switch normalizedPuzzle {
+    case "2x2":
+        return "2x2"
+    case "3x3":
+        return "3x3"
+    case "4x4":
+        return "4x4"
+    case "5x5":
+        return "5x5"
+    case "sq1", "square-1", "square1":
+        return "SQ1"
+    case "megaminx":
+        return "Megaminx"
+    case "pyraminx":
+        return "Pyraminx"
+    case "skewb":
+        return "Skewb"
+    default:
+        return nil
+    }
+}
+
+private func algPuzzleSourceURL(puzzle: String) -> URL? {
+    guard let puzzlePath = algPuzzleSourcePath(puzzle: puzzle) else { return nil }
+    return URL(string: "https://www.speedcubedb.com/a/\(puzzlePath)")
+}
+
+private func algSourceURL(puzzle: String, setID: String) -> URL? {
+    guard let puzzlePath = algPuzzleSourcePath(puzzle: puzzle) else { return nil }
+
+    guard let encodedSetID = setID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+        return nil
+    }
+    return URL(string: "https://www.speedcubedb.com/a/\(puzzlePath)/\(encodedSetID)")
+}
+
+private func algSourceURL(puzzle: String, setID: String, childTitle: String) -> URL? {
+    guard let puzzlePath = algPuzzleSourcePath(puzzle: puzzle),
+          let childPath = algSourcePagePath(setID: setID, childTitle: childTitle),
+          let encodedChildPath = childPath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+        return nil
+    }
+    return URL(string: "https://www.speedcubedb.com/a/\(puzzlePath)/\(encodedChildPath)")
+}
+
+private func algSourcePagePath(setID: String, childTitle: String) -> String? {
+    let normalizedSet = normalizedAlgSetID(setID)
+    let trimmedTitle = childTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    switch normalizedSet {
+    case "zbll":
+        switch trimmedTitle {
+        case "U": return "ZBLLU"
+        case "L": return "ZBLLL"
+        case "T": return "ZBLLT"
+        case "H": return "ZBLLH"
+        case "Pi": return "ZBLLPi"
+        case "S": return "ZBLLS"
+        case "AS": return "ZBLLAS"
+        default: return nil
+        }
+    case "ollcp":
+        let compact = trimmedTitle.replacingOccurrences(of: " ", with: "")
+        guard compact.range(of: #"^OLLCP\d+$"#, options: .regularExpression) != nil else { return nil }
+        return compact
+    case "vls":
+        let compact = trimmedTitle
+            .replacingOccurrences(of: " ", with: "")
+            .uppercased()
+        switch compact {
+        case "NOEDGES":
+            return "VLSNE"
+        case "UB", "UBUL", "UF", "UFUB", "UFUL", "UL":
+            return "VLS\(compact)"
+        default:
+            return nil
+        }
+    case "1lll":
+        if trimmedTitle == "PLL" { return "PLL" }
+        if trimmedTitle == "Anti PLL" { return "APLL" }
+        if let zbllSuffix = trimmedTitle.strippingPrefix("ZBLL ") {
+            return algSourcePagePath(setID: "zbll", childTitle: zbllSuffix)
+        }
+        if let numberText = trimmedTitle.strippingPrefix("1LLL "),
+           let number = Int(numberText) {
+            return String(format: "1LLL%02d", number)
+        }
+        return nil
+    case "lin":
+        switch trimmedTitle {
+        case "Lin PLL": return "SQ1LinPLL"
+        case "Lin Parity PLL": return "SQ1LinParityPLL"
+        case "Lin PLL+1": return "SQ1LinPLL1"
+        default: return nil
+        }
+    case "megaminxoll":
+        return megaminxOLLSourcePagePath(title: trimmedTitle)
+    case "megaminxpll":
+        return megaminxPLLSourcePagePath(title: trimmedTitle)
+    default:
+        return nil
+    }
+}
+
+private func megaminxOLLSourcePagePath(title: String) -> String? {
+    let orderedTitles = [
+        "EO",
+        "2 Corner CO",
+        "3 Corner CO",
+        "4 Corner CO",
+        "5 Corner CO",
+        "Anchor Shapes",
+        "T Shapes",
+        "C Shapes",
+        "S Shapes",
+        "Pi Shapes",
+        "Y Shapes",
+        "Hammerhead Shapes",
+        "W Shapes",
+        "Duckhead Shapes",
+        "Megaphone Shapes",
+        "Claw Shapes",
+        "Rabbit Shapes",
+        "Long Block",
+        "Fox Head Shapes",
+        "Scorpion Shapes",
+        "Line Shapes",
+        "Flower Shapes",
+        "Chandelier shapes",
+        "P Shapes",
+        "E Shapes",
+        "Sprinter Shapes",
+        "Eagle Shapes",
+        "Big Block",
+        "Lobster Shapes",
+        "Lightning Shapes",
+        "Cobra Shapes",
+        "Hand Shapes",
+        "Magic Lamp Shapes",
+        "Human Shapes",
+        "Axe Shapes",
+        "Parrot Shapes",
+        "L Shapes"
+    ]
+
+    guard let index = orderedTitles.firstIndex(of: title) else { return nil }
+    return "MegaminxOLL\(index + 1)"
+}
+
+private func megaminxPLLSourcePagePath(title: String) -> String? {
+    let orderedTitles = [
+        "3 corner CP",
+        "Double R block",
+        "2 2x1s touching",
+        "3x1 and 2x2",
+        "4 corner CP",
+        "3x1 and 2x1s",
+        "2x1 and headlights",
+        "5 piece EP/CP",
+        "2x1",
+        "J Block",
+        "5 corner CP",
+        "Double headlights, no blocks",
+        "2 3x1s",
+        "5 2x1s",
+        "R Block",
+        "5 edge EP",
+        "R block and 2x1",
+        "2 2x1s, not touching",
+        "2,3 or 4 2x1s in these patterns",
+        "3 edge EP",
+        "2x2 and 2x1",
+        "2 2x2s",
+        "No blocks or headlights",
+        "2 2x1s in Y pattern and other stuff",
+        "4 edge EP"
+    ]
+
+    guard let index = orderedTitles.firstIndex(of: title),
+          let scalar = UnicodeScalar(65 + index) else {
+        return nil
+    }
+    return "MegaminxPLL\(Character(scalar))"
+}
+
+private func algPuzzleEventKey(_ puzzle: String) -> String {
+    let normalizedPuzzle = puzzle.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    switch normalizedPuzzle {
+    case "2x2":
+        return "event.2x2"
+    case "3x3":
+        return "event.3x3"
+    case "4x4":
+        return "event.4x4"
+    case "5x5":
+        return "event.5x5"
+    case "sq1", "square-1", "square1":
+        return "event.square1"
+    case "megaminx":
+        return "event.megaminx"
+    case "pyraminx":
+        return "event.pyraminx"
+    case "skewb":
+        return "event.skewb"
+    default:
+        return puzzle
+    }
 }
 
 private func algGroupPreviewImageKey(setID: String, title: String) -> String? {
@@ -1302,7 +1685,7 @@ private func makeSetTrainerSeeds(
                 id: algCase.id,
                 algCase: algCase,
                 answerID: algCase.id,
-                answerTitle: algCase.displayName
+                answerTitle: localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: languageCode)
             )
         }
         return (.caseName, seeds)
@@ -1351,19 +1734,19 @@ private func makeSetTrainerSeeds(
             id: algCase.id,
             algCase: algCase,
             answerID: algCase.id,
-            answerTitle: algCase.displayName
+            answerTitle: localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: languageCode)
         )
     }
     return (.caseName, seeds)
 }
 
-private func makeSubsetTrainerSeeds(subset: AlgSubset) -> (AlgTrainerRecognitionLevel, [AlgTrainerQuestionSeed]) {
+private func makeSubsetTrainerSeeds(setID: String, subset: AlgSubset, languageCode: String) -> (AlgTrainerRecognitionLevel, [AlgTrainerQuestionSeed]) {
     let seeds = subset.cases.map { algCase in
         AlgTrainerQuestionSeed(
             id: algCase.id,
             algCase: algCase,
             answerID: algCase.id,
-            answerTitle: algCase.displayName
+            answerTitle: localizedAlgCaseName(setID: setID, caseName: algCase.displayName, languageCode: languageCode)
         )
     }
     return (.caseName, seeds)
@@ -1385,26 +1768,31 @@ private func algBrowsePreferenceStorage(from map: [String: String]) -> String {
     return string
 }
 
+private func globalAlgBrowsePreferenceValue(storage: String, setID: String) -> String? {
+    if !storage.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") {
+        return storage
+    }
+
+    let map = algBrowsePreferenceMap(from: storage)
+    return map["global"] ?? map[normalizedAlgSetID(setID)] ?? map.values.first
+}
+
 private func algBrowseViewMode(setID: String, storage: String) -> AlgBrowseViewMode {
-    let value = algBrowsePreferenceMap(from: storage)[normalizedAlgSetID(setID)]
+    let value = globalAlgBrowsePreferenceValue(storage: storage, setID: setID)
     return value.flatMap(AlgBrowseViewMode.init(rawValue:)) ?? .list
 }
 
 private func updatedAlgBrowseViewModeStorage(storage: String, setID: String, mode: AlgBrowseViewMode) -> String {
-    var map = algBrowsePreferenceMap(from: storage)
-    map[normalizedAlgSetID(setID)] = mode.rawValue
-    return algBrowsePreferenceStorage(from: map)
+    mode.rawValue
 }
 
 private func algBrowseOrganization(setID: String, storage: String) -> AlgBrowseOrganization {
-    let value = algBrowsePreferenceMap(from: storage)[normalizedAlgSetID(setID)]
+    let value = globalAlgBrowsePreferenceValue(storage: storage, setID: setID)
     return value.flatMap(AlgBrowseOrganization.init(rawValue:)) ?? .number
 }
 
 private func updatedAlgBrowseOrganizationStorage(storage: String, setID: String, organization: AlgBrowseOrganization) -> String {
-    var map = algBrowsePreferenceMap(from: storage)
-    map[normalizedAlgSetID(setID)] = organization.rawValue
-    return algBrowsePreferenceStorage(from: map)
+    organization.rawValue
 }
 
 private func learnedCaseMap(from storage: String) -> [String: Set<String>] {
@@ -1452,7 +1840,16 @@ private func updatedLearnedCaseStorage(storage: String, setID: String, caseID: S
 
 private func updatedLearnedCaseStorageForAll(storage: String, setID: String, caseIDs: [String], learned: Bool) -> String {
     var map = learnedCaseMap(from: storage)
-    map[normalizedAlgSetID(setID)] = learned ? Set(caseIDs) : []
+    let key = normalizedAlgSetID(setID)
+    var learnedCases = map[key, default: []]
+
+    if learned {
+        learnedCases.formUnion(caseIDs)
+    } else {
+        learnedCases.subtract(caseIDs)
+    }
+
+    map[key] = learnedCases
     return learnedCaseStorage(from: map)
 }
 
@@ -1593,6 +1990,20 @@ private func algSubgroupLocalizationKey(_ subgroup: String) -> String? {
         return "algs.subgroup.sune"
     case "solved":
         return "algs.subgroup.solved"
+    case "1 slice":
+        return "algs.subgroup.sq1.1_slice"
+    case "2 slices":
+        return "algs.subgroup.sq1.2_slices"
+    case "3 slices":
+        return "algs.subgroup.sq1.3_slices"
+    case "4 slices":
+        return "algs.subgroup.sq1.4_slices"
+    case "5 slices":
+        return "algs.subgroup.sq1.5_slices"
+    case "6 slices":
+        return "algs.subgroup.sq1.6_slices"
+    case "7 slices":
+        return "algs.subgroup.sq1.7_slices"
     default:
         return nil
     }
@@ -1601,6 +2012,22 @@ private func algSubgroupLocalizationKey(_ subgroup: String) -> String? {
 private func localizedAlgSubgroup(_ subgroup: String, languageCode: String) -> String {
     guard let key = algSubgroupLocalizationKey(subgroup) else { return subgroup }
     return localizedAlgString(key: key, languageCode: languageCode)
+}
+
+private func algCaseLocalizationKey(setID: String, caseName: String) -> String? {
+    switch normalizedAlgSetID(setID) {
+    case "sq1cs":
+        return "algs.case.sq1cs.\(normalizedAlgPreviewSlug(caseName))"
+    default:
+        return nil
+    }
+}
+
+private func localizedAlgCaseName(setID: String, caseName: String, languageCode: String) -> String {
+    guard let key = algCaseLocalizationKey(setID: setID, caseName: caseName) else {
+        return caseName
+    }
+    return appLocalizedString(key, languageCode: languageCode, defaultValue: caseName)
 }
 
 #if os(iOS)
@@ -1688,6 +2115,7 @@ private struct AlgCaseListView: View {
     @AppStorage("algBrowseOrganizationStore") private var browseOrganizationStore: String = "{}"
     @State private var isShowingInfoSheet = false
     @State private var isShowingTrainer = false
+    @State private var selectedHybridSubsetID = ""
 
     var body: some View {
         Group {
@@ -1750,19 +2178,27 @@ private struct AlgCaseListView: View {
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
 
-            Button {
-                isShowingTrainer = true
-            } label: {
-                trainerEntryButton(
-                    title: localizedAlgString(key: "algs.trainer.train_set", languageCode: appLanguage),
-                    subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
-                )
+            if showsAlgTrainingEntrypoints {
+                Button {
+                    isShowingTrainer = true
+                } label: {
+                    trainerEntryButton(
+                        title: localizedAlgString(key: "algs.trainer.train_set", languageCode: appLanguage),
+                        subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
+                    )
+                }
+                .buttonStyle(.plain)
+                .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 10, trailing: 16))
+                .listRowSeparator(.hidden)
             }
-            .buttonStyle(.plain)
-            .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 10, trailing: 16))
-            .listRowSeparator(.hidden)
 
-            if browseOrganization == .subset {
+            if usesHybridCapsules {
+                hybridSubsetPicker
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
+                    .listRowSeparator(.hidden)
+            }
+
+            if showsSubsetBrowser {
                 if showsNestedSubsetGroups {
                     ForEach(subsetGroups) { group in
                         NavigationLink {
@@ -1792,7 +2228,7 @@ private struct AlgCaseListView: View {
                     }
                 }
             } else {
-                ForEach(payload.cases) { algCase in
+                ForEach(visibleCases) { algCase in
                     NavigationLink {
                         AlgCaseDetailView(payload: payload, algCase: algCase)
                     } label: {
@@ -1820,19 +2256,25 @@ private struct AlgCaseListView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
 
-                NavigationLink {
-                    trainerDestination
-                } label: {
-                    trainerEntryButton(
-                        title: localizedAlgString(key: "algs.trainer.train_set", languageCode: appLanguage),
-                        subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
-                    )
+                if showsAlgTrainingEntrypoints {
+                    NavigationLink {
+                        trainerDestination
+                    } label: {
+                        trainerEntryButton(
+                            title: localizedAlgString(key: "algs.trainer.train_set", languageCode: appLanguage),
+                            subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 16)
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 16)
+
+                if usesHybridCapsules {
+                    hybridSubsetPicker
+                }
 
                 LazyVGrid(columns: gridColumns, spacing: 12) {
-                    if browseOrganization == .subset {
+                    if showsSubsetBrowser {
                         if showsNestedSubsetGroups {
                             ForEach(subsetGroups) { group in
                                 NavigationLink {
@@ -1862,7 +2304,7 @@ private struct AlgCaseListView: View {
                             }
                         }
                     } else {
-                        ForEach(payload.cases) { algCase in
+                        ForEach(visibleCases) { algCase in
                             NavigationLink {
                                 AlgCaseDetailView(payload: payload, algCase: algCase)
                             } label: {
@@ -1888,7 +2330,7 @@ private struct AlgCaseListView: View {
     }
 
     private var overviewItem: AlgItemData? {
-        AlgSectionData.threeByThreeSections
+        AlgSectionData.allSections
             .flatMap(\.items)
             .first { $0.id.caseInsensitiveCompare(payload.set) == .orderedSame }
     }
@@ -1930,6 +2372,22 @@ private struct AlgCaseListView: View {
                 learnedFraction: subsetLearnedFraction,
                 languageCode: appLanguage
             )
+        case .hybrid:
+            if usesHybridCapsules {
+                localizedCaseSubtitle(
+                    visibleUniqueCaseCount,
+                    learnedCount: learnedCaseCount(setID: payload.set, caseIDs: visibleUniqueCaseIDs, storage: learnedCasesStore),
+                    learnedFraction: visibleLearnedFraction,
+                    languageCode: appLanguage
+                )
+            } else {
+                localizedCaseSubtitle(
+                    subsetBrowseGroupCount,
+                    learnedCount: learnedSubsetCount,
+                    learnedFraction: subsetLearnedFraction,
+                    languageCode: appLanguage
+                )
+            }
         }
     }
 
@@ -1943,6 +2401,28 @@ private struct AlgCaseListView: View {
 
     private var uniqueCaseIDs: [String] {
         Array(Set(payload.cases.map(\.id))).sorted()
+    }
+
+    private var visibleCases: [AlgCase] {
+        guard usesHybridCapsules,
+              let selectedHybridSubset else {
+            return payload.cases
+        }
+        return selectedHybridSubset.cases
+    }
+
+    private var visibleUniqueCaseCount: Int {
+        Set(visibleCases.map(\.id)).count
+    }
+
+    private var visibleUniqueCaseIDs: [String] {
+        Array(Set(visibleCases.map(\.id))).sorted()
+    }
+
+    private var visibleLearnedFraction: Double {
+        guard visibleUniqueCaseCount > 0 else { return 0 }
+        let learned = learnedCaseCount(setID: payload.set, caseIDs: visibleUniqueCaseIDs, storage: learnedCasesStore)
+        return min(max(Double(learned) / Double(visibleUniqueCaseCount), 0), 1)
     }
 
     private var subsets: [AlgSubset] {
@@ -1967,6 +2447,32 @@ private struct AlgCaseListView: View {
 
     private var supportsSubsetBrowsing: Bool {
         showsNestedSubsetGroups || showsCaseGroups || !subsets.isEmpty
+    }
+
+    private var childGroupsHaveSourcePages: Bool {
+        if showsNestedSubsetGroups {
+            return subsetGroups.allSatisfy { algSourcePagePath(setID: payload.set, childTitle: $0.title) != nil }
+        }
+        if showsCaseGroups {
+            return caseGroups.allSatisfy { algSourcePagePath(setID: payload.set, childTitle: $0.title) != nil }
+        }
+        return false
+    }
+
+    private var supportsHybridCapsules: Bool {
+        !subsets.isEmpty && !childGroupsHaveSourcePages
+    }
+
+    private var usesHybridCapsules: Bool {
+        browseOrganization == .hybrid && supportsHybridCapsules
+    }
+
+    private var showsSubsetBrowser: Bool {
+        browseOrganization == .subset || (browseOrganization == .hybrid && supportsSubsetBrowsing && childGroupsHaveSourcePages)
+    }
+
+    private var selectedHybridSubset: AlgSubset? {
+        subsets.first { $0.id == selectedHybridSubsetID }
     }
 
     private var subsetBrowseGroupCount: Int {
@@ -2009,13 +2515,13 @@ private struct AlgCaseListView: View {
     }
 
     private var sourceURL: URL? {
-        URL(string: "https://www.speedcubedb.com/a/3x3/\(payload.set)")
+        algSourceURL(puzzle: payload.puzzle, setID: payload.set)
     }
 
     private func sourceFooterText(for url: URL) -> String {
         String(
             format: localizedAlgString(key: "algs.source_format", languageCode: appLanguage),
-            url.host ?? "SpeedCubeDB"
+            url.absoluteString
         )
     }
 
@@ -2038,7 +2544,7 @@ private struct AlgCaseListView: View {
                 .frame(width: 56, height: 56)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(algCase.displayName)
+                Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                     .font(.system(size: 17, weight: .semibold))
 
                 Text(formulaCountText(for: algCase.displayAlgorithmsCount))
@@ -2222,7 +2728,7 @@ private struct AlgCaseListView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.blue.opacity(0.12))
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.blue)
                 .minimumScaleFactor(0.75)
@@ -2246,7 +2752,7 @@ private struct AlgCaseListView: View {
                 .frame(height: 92)
                 .frame(maxWidth: .infinity)
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -2364,6 +2870,37 @@ private struct AlgCaseListView: View {
         )
     }
 
+    private var hybridSubsetPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(subsets) { subset in
+                    hybridSubsetCapsule(subset)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func hybridSubsetCapsule(_ subset: AlgSubset) -> some View {
+        let isSelected = selectedHybridSubsetID == subset.id
+        return Button {
+            selectedHybridSubsetID = isSelected ? "" : subset.id
+        } label: {
+            Text(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
+                .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
+                .foregroundStyle(isSelected ? .white : .primary)
+                .lineLimit(1)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(isSelected ? Color.blue : Color.secondary.opacity(0.10))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
     private var browseOptionsButton: some View {
         Menu {
             Section(browseViewSectionTitle) {
@@ -2381,6 +2918,8 @@ private struct AlgCaseListView: View {
                         .tag(AlgBrowseOrganization.number.rawValue)
                     Label(bySubsetButtonText, systemImage: "rectangle.3.group")
                         .tag(AlgBrowseOrganization.subset.rawValue)
+                    Label(hybridButtonText, systemImage: "slider.horizontal.3")
+                        .tag(AlgBrowseOrganization.hybrid.rawValue)
                 }
                 .disabled(!supportsSubsetBrowsing)
             }
@@ -2438,6 +2977,10 @@ private struct AlgCaseListView: View {
 
     private var bySubsetButtonText: String {
         localizedAlgString(key: "algs.menu.by_subset", languageCode: appLanguage)
+    }
+
+    private var hybridButtonText: String {
+        localizedAlgString(key: "algs.menu.hybrid", languageCode: appLanguage)
     }
 
     @ViewBuilder
@@ -2541,7 +3084,9 @@ private struct AlgSubsetGroupListView: View {
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("algLearnedCasesStore") private var learnedCasesStore: String = "{}"
     @AppStorage("algBrowseViewModeStore") private var browseViewModeStore: String = "{}"
+    @AppStorage("algBrowseOrganizationStore") private var browseOrganizationStore: String = "{}"
     @State private var isShowingInfoSheet = false
+    @State private var selectedHybridSubsetID = ""
 
     private var displayGroupTitle: String {
         displayAlgGroupTitle(setID: payload.set, title: group.title)
@@ -2605,13 +3150,28 @@ private struct AlgSubsetGroupListView: View {
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
 
-            ForEach(group.subsets) { subset in
-                NavigationLink {
-                    AlgSubsetCaseListView(payload: payload, subset: subset)
-                } label: {
-                    subsetRow(subset)
+            if usesHybridCapsules {
+                hybridSubsetPicker
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
+                    .listRowSeparator(.hidden)
+
+                ForEach(visibleCases) { algCase in
+                    NavigationLink {
+                        AlgCaseDetailView(payload: payload, algCase: algCase)
+                    } label: {
+                        caseRow(algCase)
+                    }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 }
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+            } else {
+                ForEach(group.subsets) { subset in
+                    NavigationLink {
+                        AlgSubsetCaseListView(payload: payload, subset: subset)
+                    } label: {
+                        subsetRow(subset)
+                    }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                }
             }
 
             if let sourceURL {
@@ -2632,14 +3192,29 @@ private struct AlgSubsetGroupListView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
 
+                if usesHybridCapsules {
+                    hybridSubsetPicker
+                }
+
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 220), spacing: 12)], spacing: 12) {
-                    ForEach(group.subsets) { subset in
-                        NavigationLink {
-                            AlgSubsetCaseListView(payload: payload, subset: subset)
-                        } label: {
-                            subsetCard(subset)
+                    if usesHybridCapsules {
+                        ForEach(visibleCases) { algCase in
+                            NavigationLink {
+                                AlgCaseDetailView(payload: payload, algCase: algCase)
+                            } label: {
+                                caseCard(algCase)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
+                    } else {
+                        ForEach(group.subsets) { subset in
+                            NavigationLink {
+                                AlgSubsetCaseListView(payload: payload, subset: subset)
+                            } label: {
+                                subsetCard(subset)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -2663,12 +3238,7 @@ private struct AlgSubsetGroupListView: View {
                 .font(.system(size: 34, weight: .bold))
 
             Text(
-                localizedCaseSubtitle(
-                    group.uniqueCaseCount,
-                    learnedCount: learnedCaseCount(setID: payload.set, caseIDs: group.uniqueCaseIDs, storage: learnedCasesStore),
-                    learnedFraction: learnedFraction,
-                    languageCode: appLanguage
-                )
+                headerSubtitleText
             )
             .font(.system(size: 18, weight: .medium))
             .foregroundStyle(.secondary)
@@ -2689,18 +3259,73 @@ private struct AlgSubsetGroupListView: View {
         return min(max(Double(learned) / Double(group.uniqueCaseCount), 0), 1)
     }
 
+    private var headerSubtitleText: String {
+        if usesHybridCapsules {
+            return localizedCaseSubtitle(
+                visibleUniqueCaseCount,
+                learnedCount: learnedCaseCount(setID: payload.set, caseIDs: visibleUniqueCaseIDs, storage: learnedCasesStore),
+                learnedFraction: visibleLearnedFraction,
+                languageCode: appLanguage
+            )
+        }
+
+        return localizedCaseSubtitle(
+            group.uniqueCaseCount,
+            learnedCount: learnedCaseCount(setID: payload.set, caseIDs: group.uniqueCaseIDs, storage: learnedCasesStore),
+            learnedFraction: learnedFraction,
+            languageCode: appLanguage
+        )
+    }
+
     private var browseViewMode: AlgBrowseViewMode {
         algBrowseViewMode(setID: payload.set, storage: browseViewModeStore)
     }
 
+    private var browseOrganization: AlgBrowseOrganization {
+        algBrowseOrganization(setID: payload.set, storage: browseOrganizationStore)
+    }
+
+    private var usesHybridCapsules: Bool {
+        browseOrganization == .hybrid && !group.subsets.isEmpty && group.subsets.allSatisfy {
+            algSourcePagePath(setID: payload.set, childTitle: $0.title) == nil
+        }
+    }
+
+    private var selectedHybridSubset: AlgSubset? {
+        group.subsets.first { $0.id == selectedHybridSubsetID }
+    }
+
+    private var visibleCases: [AlgCase] {
+        guard usesHybridCapsules,
+              let selectedHybridSubset else {
+            return group.subsets.flatMap(\.cases)
+        }
+        return selectedHybridSubset.cases
+    }
+
+    private var visibleUniqueCaseIDs: [String] {
+        Array(Set(visibleCases.map(\.id))).sorted()
+    }
+
+    private var visibleUniqueCaseCount: Int {
+        visibleUniqueCaseIDs.count
+    }
+
+    private var visibleLearnedFraction: Double {
+        guard visibleUniqueCaseCount > 0 else { return 0 }
+        let learned = learnedCaseCount(setID: payload.set, caseIDs: visibleUniqueCaseIDs, storage: learnedCasesStore)
+        return min(max(Double(learned) / Double(visibleUniqueCaseCount), 0), 1)
+    }
+
     private var sourceURL: URL? {
-        URL(string: "https://www.speedcubedb.com/a/3x3/\(payload.set)")
+        algSourceURL(puzzle: payload.puzzle, setID: payload.set, childTitle: group.title)
+            ?? algSourceURL(puzzle: payload.puzzle, setID: payload.set)
     }
 
     private func sourceFooterText(for url: URL) -> String {
         String(
             format: localizedAlgString(key: "algs.source_format", languageCode: appLanguage),
-            url.host ?? "SpeedCubeDB"
+            url.absoluteString
         )
     }
 
@@ -2785,6 +3410,37 @@ private struct AlgSubsetGroupListView: View {
         return min(max(Double(learned) / Double(subset.uniqueCaseCount), 0), 1)
     }
 
+    private var hybridSubsetPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(group.subsets) { subset in
+                    hybridSubsetCapsule(subset)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func hybridSubsetCapsule(_ subset: AlgSubset) -> some View {
+        let isSelected = selectedHybridSubsetID == subset.id
+        return Button {
+            selectedHybridSubsetID = isSelected ? "" : subset.id
+        } label: {
+            Text(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
+                .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
+                .foregroundStyle(isSelected ? .white : .primary)
+                .lineLimit(1)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(isSelected ? Color.blue : Color.secondary.opacity(0.10))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
     @ViewBuilder
     private func subsetPreviewImage(for subset: AlgSubset) -> some View {
         if let imageKey = algSubsetPreviewImageKey(setID: payload.set, parentGroupTitle: group.title, subsetTitle: subset.title),
@@ -2826,13 +3482,69 @@ private struct AlgSubsetGroupListView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.blue.opacity(0.12))
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.blue)
                 .minimumScaleFactor(0.75)
                 .lineLimit(1)
                 .padding(.horizontal, 6)
         }
+    }
+
+    private func caseRow(_ algCase: AlgCase) -> some View {
+        HStack(spacing: 12) {
+            caseImage(for: algCase)
+                .frame(width: 56, height: 56)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
+                    .font(.system(size: 17, weight: .semibold))
+
+                Text(localizedAlgorithmCount(algCase.displayAlgorithmsCount, languageCode: appLanguage))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            if isAlgCaseLearned(setID: payload.set, caseID: algCase.id, storage: learnedCasesStore) {
+                Image(systemName: "graduationcap.fill")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func caseCard(_ algCase: AlgCase) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top) {
+                Spacer()
+                if isAlgCaseLearned(setID: payload.set, caseID: algCase.id, storage: learnedCasesStore) {
+                    Image(systemName: "graduationcap.fill")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.orange)
+                }
+            }
+
+            caseImage(for: algCase)
+                .frame(height: 92)
+                .frame(maxWidth: .infinity)
+
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.primary)
+
+            Text(localizedAlgorithmCount(algCase.displayAlgorithmsCount, languageCode: appLanguage))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.secondary.opacity(0.08))
+        )
     }
 
     private var browseOptionsButton: some View {
@@ -2874,7 +3586,9 @@ private struct AlgCaseGroupListView: View {
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("algLearnedCasesStore") private var learnedCasesStore: String = "{}"
     @AppStorage("algBrowseViewModeStore") private var browseViewModeStore: String = "{}"
+    @AppStorage("algBrowseOrganizationStore") private var browseOrganizationStore: String = "{}"
     @State private var isShowingInfoSheet = false
+    @State private var selectedHybridSubsetID = ""
 
     var body: some View {
         Group {
@@ -2934,7 +3648,20 @@ private struct AlgCaseGroupListView: View {
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
 
-            if showsSubsets {
+            if usesHybridCapsules {
+                hybridSubsetPicker
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
+                    .listRowSeparator(.hidden)
+
+                ForEach(visibleCases) { algCase in
+                    NavigationLink {
+                        AlgCaseDetailView(payload: payload, algCase: algCase)
+                    } label: {
+                        caseRow(algCase)
+                    }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                }
+            } else if showsSubsets {
                 ForEach(groupSubsets) { subset in
                     NavigationLink {
                         AlgSubsetCaseListView(payload: payload, subset: subset)
@@ -2972,8 +3699,21 @@ private struct AlgCaseGroupListView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
 
+                if usesHybridCapsules {
+                    hybridSubsetPicker
+                }
+
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 220), spacing: 12)], spacing: 12) {
-                    if showsSubsets {
+                    if usesHybridCapsules {
+                        ForEach(visibleCases) { algCase in
+                            NavigationLink {
+                                AlgCaseDetailView(payload: payload, algCase: algCase)
+                            } label: {
+                                caseCard(algCase)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } else if showsSubsets {
                         ForEach(groupSubsets) { subset in
                             NavigationLink {
                                 AlgSubsetCaseListView(payload: payload, subset: subset)
@@ -3051,6 +3791,15 @@ private struct AlgCaseGroupListView: View {
     }
 
     private var headerSubtitleText: String {
+        if usesHybridCapsules {
+            return localizedCaseSubtitle(
+                visibleUniqueCaseCount,
+                learnedCount: learnedCaseCount(setID: payload.set, caseIDs: visibleUniqueCaseIDs, storage: learnedCasesStore),
+                learnedFraction: visibleLearnedFraction,
+                languageCode: appLanguage
+            )
+        }
+
         if showsSubsets {
             return localizedCaseSubtitle(
                 groupSubsets.count,
@@ -3078,14 +3827,51 @@ private struct AlgCaseGroupListView: View {
         algBrowseViewMode(setID: payload.set, storage: browseViewModeStore)
     }
 
+    private var browseOrganization: AlgBrowseOrganization {
+        algBrowseOrganization(setID: payload.set, storage: browseOrganizationStore)
+    }
+
+    private var usesHybridCapsules: Bool {
+        browseOrganization == .hybrid && showsSubsets && groupSubsets.allSatisfy {
+            algSourcePagePath(setID: payload.set, childTitle: $0.title) == nil
+        }
+    }
+
+    private var selectedHybridSubset: AlgSubset? {
+        groupSubsets.first { $0.id == selectedHybridSubsetID }
+    }
+
+    private var visibleCases: [AlgCase] {
+        guard usesHybridCapsules,
+              let selectedHybridSubset else {
+            return group.cases
+        }
+        return selectedHybridSubset.cases
+    }
+
+    private var visibleUniqueCaseIDs: [String] {
+        Array(Set(visibleCases.map(\.id))).sorted()
+    }
+
+    private var visibleUniqueCaseCount: Int {
+        visibleUniqueCaseIDs.count
+    }
+
+    private var visibleLearnedFraction: Double {
+        guard visibleUniqueCaseCount > 0 else { return 0 }
+        let learned = learnedCaseCount(setID: payload.set, caseIDs: visibleUniqueCaseIDs, storage: learnedCasesStore)
+        return min(max(Double(learned) / Double(visibleUniqueCaseCount), 0), 1)
+    }
+
     private var sourceURL: URL? {
-        URL(string: "https://www.speedcubedb.com/a/3x3/\(payload.set)")
+        algSourceURL(puzzle: payload.puzzle, setID: payload.set, childTitle: group.title)
+            ?? algSourceURL(puzzle: payload.puzzle, setID: payload.set)
     }
 
     private func sourceFooterText(for url: URL) -> String {
         String(
             format: localizedAlgString(key: "algs.source_format", languageCode: appLanguage),
-            url.host ?? "SpeedCubeDB"
+            url.absoluteString
         )
     }
 
@@ -3099,13 +3885,44 @@ private struct AlgCaseGroupListView: View {
         return min(max(Double(learned) / Double(subset.uniqueCaseCount), 0), 1)
     }
 
+    private var hybridSubsetPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(groupSubsets) { subset in
+                    hybridSubsetCapsule(subset)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func hybridSubsetCapsule(_ subset: AlgSubset) -> some View {
+        let isSelected = selectedHybridSubsetID == subset.id
+        return Button {
+            selectedHybridSubsetID = isSelected ? "" : subset.id
+        } label: {
+            Text(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
+                .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
+                .foregroundStyle(isSelected ? .white : .primary)
+                .lineLimit(1)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(isSelected ? Color.blue : Color.secondary.opacity(0.10))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
     private func caseRow(_ algCase: AlgCase) -> some View {
         HStack(spacing: 12) {
             caseImage(for: algCase)
                 .frame(width: 56, height: 56)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(algCase.displayName)
+                Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                     .font(.system(size: 17, weight: .semibold))
 
                 Text(formulaCountText(for: algCase.displayAlgorithmsCount))
@@ -3144,7 +3961,7 @@ private struct AlgCaseGroupListView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.blue.opacity(0.12))
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.blue)
                 .minimumScaleFactor(0.75)
@@ -3168,7 +3985,7 @@ private struct AlgCaseGroupListView: View {
                 .frame(height: 92)
                 .frame(maxWidth: .infinity)
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -3378,17 +4195,19 @@ private struct AlgSubsetCaseListView: View {
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
 
-            Button {
-                isShowingTrainer = true
-            } label: {
-                trainerEntryButton(
-                    title: localizedAlgString(key: "algs.trainer.train_subset", languageCode: appLanguage),
-                    subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
-                )
+            if showsAlgTrainingEntrypoints {
+                Button {
+                    isShowingTrainer = true
+                } label: {
+                    trainerEntryButton(
+                        title: localizedAlgString(key: "algs.trainer.train_subset", languageCode: appLanguage),
+                        subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
+                    )
+                }
+                .buttonStyle(.plain)
+                .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 10, trailing: 16))
+                .listRowSeparator(.hidden)
             }
-            .buttonStyle(.plain)
-            .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 10, trailing: 16))
-            .listRowSeparator(.hidden)
 
             ForEach(subset.cases) { algCase in
                 NavigationLink {
@@ -3417,16 +4236,18 @@ private struct AlgSubsetCaseListView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
 
-                NavigationLink {
-                    trainerDestination
-                } label: {
-                    trainerEntryButton(
-                        title: localizedAlgString(key: "algs.trainer.train_subset", languageCode: appLanguage),
-                        subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
-                    )
+                if showsAlgTrainingEntrypoints {
+                    NavigationLink {
+                        trainerDestination
+                    } label: {
+                        trainerEntryButton(
+                            title: localizedAlgString(key: "algs.trainer.train_subset", languageCode: appLanguage),
+                            subtitle: localizedAlgString(key: "algs.trainer.recognition_subtitle", languageCode: appLanguage)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 16)
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 16)
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 220), spacing: 12)], spacing: 12) {
                     ForEach(subset.cases) { algCase in
@@ -3494,18 +4315,18 @@ private struct AlgSubsetCaseListView: View {
     }
 
     private var sourceURL: URL? {
-        URL(string: "https://www.speedcubedb.com/a/3x3/\(payload.set)")
+        algSourceURL(puzzle: payload.puzzle, setID: payload.set)
     }
 
     private func sourceFooterText(for url: URL) -> String {
         String(
             format: localizedAlgString(key: "algs.source_format", languageCode: appLanguage),
-            url.host ?? "SpeedCubeDB"
+            url.absoluteString
         )
     }
 
     private var trainerDestination: some View {
-        let config = makeSubsetTrainerSeeds(subset: subset)
+        let config = makeSubsetTrainerSeeds(setID: payload.set, subset: subset, languageCode: appLanguage)
         return AlgRecognitionTrainerView(
             title: localizedAlgString(key: "algs.trainer.train_subset", languageCode: appLanguage),
             scopeTitle: localizedAlgSubgroup(subset.title, languageCode: appLanguage),
@@ -3527,7 +4348,7 @@ private struct AlgSubsetCaseListView: View {
                 .frame(width: 56, height: 56)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(algCase.displayName)
+                Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                     .font(.system(size: 17, weight: .semibold))
 
                 Text(formulaCountText(for: algCase.displayAlgorithmsCount))
@@ -3566,7 +4387,7 @@ private struct AlgSubsetCaseListView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.blue.opacity(0.12))
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.blue)
                 .minimumScaleFactor(0.75)
@@ -3590,7 +4411,7 @@ private struct AlgSubsetCaseListView: View {
                 .frame(height: 92)
                 .frame(maxWidth: .infinity)
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -4437,7 +5258,7 @@ private struct AlgRecognitionTrainerView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.blue.opacity(0.12))
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: setID, caseName: algCase.displayName, languageCode: languageCode))
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.blue)
                 .minimumScaleFactor(0.7)
@@ -4902,11 +5723,14 @@ private final class AlgInfoNavigationBarFontConfiguratorController: UIViewContro
             let largeTitleFont = UIFont.systemFont(ofSize: largeTitleBase.pointSize, weight: .bold)
             let inlineTitleFont = UIFont.systemFont(ofSize: 15, weight: .semibold)
             let inlineSubtitleFont = UIFont.systemFont(ofSize: 12, weight: .medium)
+            let largeSubtitleFont = UIFont.systemFont(ofSize: 15, weight: .medium)
 
             let standardAppearance = navigationBar.standardAppearance.copy()
             standardAppearance.titleTextAttributes[.font] = inlineTitleFont
             if #available(iOS 26.0, *) {
                 standardAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+                standardAppearance.largeSubtitleTextAttributes[.font] = largeSubtitleFont
+                standardAppearance.largeSubtitleTextAttributes[.foregroundColor] = UIColor.secondaryLabel
             }
 
             let scrollEdgeAppearance = navigationBar.scrollEdgeAppearance?.copy() ?? standardAppearance.copy()
@@ -4914,6 +5738,8 @@ private final class AlgInfoNavigationBarFontConfiguratorController: UIViewContro
             scrollEdgeAppearance.titleTextAttributes[.font] = inlineTitleFont
             if #available(iOS 26.0, *) {
                 scrollEdgeAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
+                scrollEdgeAppearance.largeSubtitleTextAttributes[.font] = largeSubtitleFont
+                scrollEdgeAppearance.largeSubtitleTextAttributes[.foregroundColor] = UIColor.secondaryLabel
             }
 
             navigationBar.standardAppearance = standardAppearance
@@ -4929,6 +5755,8 @@ private final class AlgInfoNavigationBarFontConfiguratorController: UIViewContro
                 targetNavigationItem.style = .browser
             }
             if #available(iOS 26.0, *) {
+                targetNavigationItem.subtitle = largeSubtitle
+                targetNavigationItem.largeSubtitle = largeSubtitle
                 targetNavigationItem.largeSubtitleView = LargeSubtitleContainerView(
                     text: largeSubtitle,
                     topInset: 4
@@ -4992,8 +5820,7 @@ private final class LargeSubtitleContainerView: UIView {
         NSLayoutConstraint.activate([
             label.topAnchor.constraint(equalTo: topAnchor, constant: topInset),
             label.leadingAnchor.constraint(equalTo: leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor),
-            label.bottomAnchor.constraint(equalTo: bottomAnchor)
+            label.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
     }
 
@@ -5022,7 +5849,9 @@ private struct AlgSetInfoContent {
     let sections: [AlgInfoSection]
 
     static func make(setID: String, languageCode: String) -> AlgSetInfoContent? {
-        switch normalizedAlgSetID(setID) {
+        let normalizedID = normalizedAlgSetID(setID)
+        let baseSetID = normalizedID.split(separator: "_").first.map(String.init) ?? normalizedID
+        switch baseSetID {
         case "pll":
             return makePLLInfo(languageCode: languageCode)
         case "oll":
@@ -5056,8 +5885,78 @@ private struct AlgSetInfoContent {
         case "zbll":
             return makeZBLLInfo(languageCode: languageCode)
         default:
+            return makeGenericInfo(setID: baseSetID, languageCode: languageCode)
+        }
+    }
+
+    private static func makeGenericInfo(setID: String, languageCode: String) -> AlgSetInfoContent? {
+        let baseSetID = setID.split(separator: "_").first.map(String.init) ?? setID
+        let localizedTitle = appLocalizedString("algs.item.\(baseSetID).title", languageCode: languageCode, defaultValue: baseSetID)
+        guard localizedTitle != baseSetID || AlgLibrarySet(itemID: baseSetID) != nil else {
             return nil
         }
+
+        let description = appLocalizedString("algs.item.\(baseSetID).description", languageCode: languageCode, defaultValue: "")
+        let puzzleName: String
+        if let set = AlgLibrarySet(itemID: baseSetID),
+           let payload = AlgLibraryLoader.load(set) {
+            puzzleName = appLocalizedString(algPuzzleEventKey(payload.puzzle), languageCode: languageCode, defaultValue: payload.puzzle)
+        } else {
+            puzzleName = ""
+        }
+
+        let subtitle: String
+        if puzzleName.isEmpty {
+            subtitle = description.isEmpty ? localizedTitle : description
+        } else if description.isEmpty {
+            subtitle = puzzleName
+        } else {
+            subtitle = String(
+                format: localizedAlgString(key: "algs.info.generic.subtitle_format", languageCode: languageCode),
+                puzzleName,
+                description
+            )
+        }
+
+        return AlgSetInfoContent(
+            title: localizedTitle,
+            subtitle: subtitle,
+            sections: [
+                AlgInfoSection(
+                    id: "overview",
+                    title: localizedAlgString(key: "algs.info.generic.section.overview", languageCode: languageCode),
+                    paragraphs: [
+                        String(
+                            format: localizedAlgString(key: "algs.info.generic.overview.p1_format", languageCode: languageCode),
+                            localizedTitle
+                        ),
+                        String(
+                            format: localizedAlgString(key: "algs.info.generic.overview.p2_format", languageCode: languageCode),
+                            puzzleName.isEmpty ? localizedTitle : puzzleName
+                        )
+                    ],
+                    bullets: []
+                ),
+                AlgInfoSection(
+                    id: "practice",
+                    title: localizedAlgString(key: "algs.info.generic.section.practice", languageCode: languageCode),
+                    paragraphs: [],
+                    bullets: [
+                        localizedAlgString(key: "algs.info.generic.practice.b1", languageCode: languageCode),
+                        localizedAlgString(key: "algs.info.generic.practice.b2", languageCode: languageCode),
+                        localizedAlgString(key: "algs.info.generic.practice.b3", languageCode: languageCode)
+                    ]
+                ),
+                AlgInfoSection(
+                    id: "source",
+                    title: localizedAlgString(key: "algs.info.generic.section.source", languageCode: languageCode),
+                    paragraphs: [
+                        localizedAlgString(key: "algs.info.generic.source.p1", languageCode: languageCode)
+                    ],
+                    bullets: []
+                )
+            ]
+        )
     }
 
     private static func makePLLInfo(languageCode: String) -> AlgSetInfoContent {
@@ -6217,12 +7116,19 @@ private struct AlgCaseDetailView: View {
                 detailSection(title: localizedAlgString(key: "algs.algorithms", languageCode: appLanguage)) {
                     algorithmsContent
                 }
+
+                if let sourceURL {
+                    Text(sourceFooterText(for: sourceURL))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 4)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
-        .navigationTitle(algCase.displayName)
+        .navigationTitle(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -6250,13 +7156,24 @@ private struct AlgCaseDetailView: View {
         isAlgCaseLearned(setID: payload.set, caseID: algCase.id, storage: learnedCasesStore)
     }
 
+    private var sourceURL: URL? {
+        algSourceURL(puzzle: payload.puzzle, setID: payload.set)
+    }
+
+    private func sourceFooterText(for url: URL) -> String {
+        String(
+            format: localizedAlgString(key: "algs.source_format", languageCode: appLanguage),
+            url.absoluteString
+        )
+    }
+
     private var header: some View {
         HStack(alignment: .top, spacing: 14) {
             caseImage
                 .frame(width: 84, height: 84)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(algCase.displayName)
+                Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                     .font(.system(size: 34, weight: .bold))
 
                 Text(headerMetadata)
@@ -6298,7 +7215,7 @@ private struct AlgCaseDetailView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.blue.opacity(0.12))
 
-            Text(algCase.displayName)
+            Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.blue)
                 .minimumScaleFactor(0.7)

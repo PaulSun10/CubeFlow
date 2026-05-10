@@ -35,6 +35,22 @@ enum DrawScramblePlacement: String, CaseIterable, Identifiable {
     }
 }
 
+enum ScrambleDisplayMode: String, CaseIterable, Identifiable {
+    case shrinkFont
+    case scroll
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .shrinkFont:
+            return "settings.scramble_display_mode_shrink"
+        case .scroll:
+            return "settings.scramble_display_mode_scroll"
+        }
+    }
+}
+
 enum TimerFontDesignOption: String, CaseIterable, Identifiable {
     case `default`
     case expanded

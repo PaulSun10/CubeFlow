@@ -47,6 +47,7 @@ struct SettingsTabView: View {
     @AppStorage("timerAccuracy") private var timerAccuracy: String = TimerAccuracy.thousandths.rawValue
     @AppStorage("enteringTimesWith") private var enteringTimesWith: String = TimeEntryMode.timer.rawValue
     @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = false
+    @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
     @AppStorage("competitionsBackgroundImageData") private var competitionsBackgroundImageData: Data?
     @AppStorage("drawScramblePlacement") private var drawScramblePlacement: String = DrawScramblePlacement.inline.rawValue
@@ -290,13 +291,15 @@ struct SettingsTabView: View {
                                 fontSize: $scrambleTextFontSize,
                                 fontSizeTitleKey: "settings.scramble_text_size",
                                 defaultFontSize: 20,
+                                fontSizeMaximum: 45,
                                 fontDesign: $scrambleTextFontDesign,
                                 fontDesignTarget: .scrambleFontDesign,
                                 defaultFontDesign: TimerFontDesignOption.default.rawValue,
                                 fontWeight: $scrambleTextFontWeight,
                                 fontWeightTarget: .scrambleFontWeight,
                                 defaultFontWeight: TimerFontWeightOption.medium.rawValue,
-                                previewKind: .scramble
+                                previewKind: .scramble,
+                                scrambleDisplayMode: $scrambleDisplayMode
                             )
 
                             appearanceEditorCard(
@@ -305,6 +308,7 @@ struct SettingsTabView: View {
                                 fontSize: $averageTextFontSize,
                                 fontSizeTitleKey: "settings.average_text_size",
                                 defaultFontSize: 20,
+                                fontSizeMaximum: 56,
                                 fontDesign: $averageTextFontDesign,
                                 fontDesignTarget: .averageFontDesign,
                                 defaultFontDesign: TimerFontDesignOption.default.rawValue,
@@ -1231,6 +1235,7 @@ private extension SettingsTabView {
         fontSize: Binding<Double>? = nil,
         fontSizeTitleKey: LocalizedStringKey? = nil,
         defaultFontSize: Double? = nil,
+        fontSizeMaximum: Double = 96,
         fontDesign: Binding<String>? = nil,
         fontDesignTarget: AppearanceSelectionTarget? = nil,
         defaultFontDesign: String? = nil,
@@ -1238,6 +1243,7 @@ private extension SettingsTabView {
         fontWeightTarget: AppearanceSelectionTarget? = nil,
         defaultFontWeight: String? = nil,
         previewKind: TextAppearancePreviewKind? = nil,
+        scrambleDisplayMode: Binding<String>? = nil,
         photoData: Binding<Data?>? = nil,
         allowsPhoto: Bool = false
     ) -> AnyView {
@@ -1276,8 +1282,14 @@ private extension SettingsTabView {
                     appearanceFontSizeRow(
                         titleKey: fontSizeTitleKey,
                         value: fontSize,
-                        defaultValue: defaultFontSize
+                        defaultValue: defaultFontSize,
+                        maximumValue: fontSizeMaximum
                     )
+                }
+
+                if let scrambleDisplayMode {
+                    Divider()
+                    scrambleDisplayModeRow(value: scrambleDisplayMode)
                 }
 
                 if let fontDesign, let defaultFontDesign {
@@ -1394,9 +1406,15 @@ private extension SettingsTabView {
     func appearanceFontSizeRow(
         titleKey: LocalizedStringKey,
         value: Binding<Double>,
-        defaultValue: Double
+        defaultValue: Double,
+        maximumValue: Double = 96
     ) -> AnyView {
-        AnyView(
+        let clampedValue = Binding<Double>(
+            get: { min(max(value.wrappedValue, 12), maximumValue) },
+            set: { value.wrappedValue = min(max($0, 12), maximumValue) }
+        )
+
+        return AnyView(
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text(titleKey)
@@ -1405,7 +1423,7 @@ private extension SettingsTabView {
                     Spacer()
 
                     Button("common.reset") {
-                        value.wrappedValue = defaultValue
+                        value.wrappedValue = min(defaultValue, maximumValue)
                     }
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.blue)
@@ -1413,19 +1431,34 @@ private extension SettingsTabView {
                     .padding(.vertical, 6)
                     .compatibleTintedGlassFromIOS16(.blue, in: Capsule())
                     .buttonStyle(.plain)
-                    .disabled(abs(value.wrappedValue - defaultValue) < 0.5)
-                    .opacity(abs(value.wrappedValue - defaultValue) < 0.5 ? 0.45 : 1)
+                    .disabled(abs(clampedValue.wrappedValue - min(defaultValue, maximumValue)) < 0.5)
+                    .opacity(abs(clampedValue.wrappedValue - min(defaultValue, maximumValue)) < 0.5 ? 0.45 : 1)
 
-                    Text("\(Int(value.wrappedValue.rounded()))")
+                    Text("\(Int(clampedValue.wrappedValue.rounded()))")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                 }
 
-                Slider(value: value, in: 12...96, step: 1)
+                Slider(value: clampedValue, in: 12...maximumValue, step: 1)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
+        )
+    }
+
+    func scrambleDisplayModeRow(value: Binding<String>) -> AnyView {
+        return AnyView(
+            settingsMenuRow(
+                titleKey: "settings.scramble_display_mode",
+                selectedKey: (ScrambleDisplayMode(rawValue: value.wrappedValue) ?? .shrinkFont).localizedKey
+            ) {
+                ForEach(ScrambleDisplayMode.allCases) { mode in
+                    Button(mode.localizedKey) {
+                        value.wrappedValue = mode.rawValue
+                    }
+                }
+            }
         )
     }
 

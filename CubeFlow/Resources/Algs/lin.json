@@ -1,0 +1,2308 @@
+{
+  "puzzle": "SQ1",
+  "set": "Lin",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "ua",
+      "displayName": "Ua",
+      "name": "Ua",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_ua",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ua-1",
+          "notation": "/3,0/1,0/0,-3/-1,0/-3,0/1,0/0,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "ub",
+      "displayName": "Ub",
+      "name": "Ub",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_ub",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ub-1",
+          "notation": "1,0/0,-3/-1,0/3,0/1,0/0,3/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "z",
+      "displayName": "Z",
+      "name": "Z",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_z",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z-1",
+          "notation": "/ 3,3 / 0,3 / 1,1 / -1,-4 / -3,-3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "h",
+      "displayName": "H",
+      "name": "H",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h-1",
+          "notation": "1,0 / 5,-1 / -5,1 / 3,0 / 5,-1 / -5,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "aa",
+      "displayName": "Aa",
+      "name": "Aa",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_aa",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "aa-1",
+          "notation": "1,0/-3,0/3,3/0,-3/2,0/-3,0/3,3/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "ab",
+      "displayName": "Ab",
+      "name": "Ab",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_ab",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ab-1",
+          "notation": "/-3,0/3,3/0,-3/-2,0/-3,0/3,3/0,-3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "e",
+      "displayName": "E",
+      "name": "E",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "e-1",
+          "notation": "/3,3/1,-2/2,2/-3,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "f",
+      "displayName": "F",
+      "name": "F",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f-1",
+          "notation": "1,0/-1,-1/-3,0/3,0/1,4/-3,0/3,0/2,-4/-3,0/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "ja",
+      "displayName": "Ja",
+      "name": "Ja",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_ja",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ja-1",
+          "notation": "1,0/3,-3/3,0/-3,0/0,3/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "jb",
+      "displayName": "Jb",
+      "name": "Jb",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_jb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "jb-1",
+          "notation": "/3,-3/3,0/-3,0/0,3/-3,0/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "ra",
+      "displayName": "Ra",
+      "name": "Ra",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_ra",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ra-1",
+          "notation": "/-3,0/3,0/-3,0/0,-3/4,1/-1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "rb",
+      "displayName": "Rb",
+      "name": "Rb",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_rb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "rb-1",
+          "notation": "1,0/3,0/-3,0/3,0/0,3/2,5/1,4/3,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "t",
+      "displayName": "T",
+      "name": "T",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_t",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t-1",
+          "notation": "/3,0/-3,-3/0,3/4,0/3,0/-3,-3/0,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "y",
+      "displayName": "Y",
+      "name": "Y",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_y",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y-1",
+          "notation": "1,0/3,0/3,3/3,0/5,0/0,3/3,3/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "na",
+      "displayName": "Na",
+      "name": "Na",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_na",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "na-1",
+          "notation": "/3,3/-3,0/3,3/-3,0/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "nb",
+      "displayName": "Nb",
+      "name": "Nb",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_nb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "nb-1",
+          "notation": "1,0/3,3/-3,0/3,3/-3,0/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "ga",
+      "displayName": "Ga",
+      "name": "Ga",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_ga",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ga-1",
+          "notation": "/-3,3/3,-3/-2,0/0,3/0,-3/0,3/0,-3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "gb",
+      "displayName": "Gb",
+      "name": "Gb",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_gb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "gb-1",
+          "notation": "1,0/0,3/0,-3/0,3/0,-3/-1,0/-3,3/3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "gc",
+      "displayName": "Gc",
+      "name": "Gc",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_gc",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "gc-1",
+          "notation": "1,0/-3,3/3,-3/-4,0/0,3/0,-3/0,3/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "gd",
+      "displayName": "Gd",
+      "name": "Gd",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_gd",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "gd-1",
+          "notation": "/0,3/0,-3/0,3/0,-3/1,0/-3,3/3,-3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "v",
+      "displayName": "V",
+      "name": "V",
+      "subgroup": "Lin PLL",
+      "imageKey": "lin_v",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v-1",
+          "notation": "1,0/3,0/-4,-1/0,-3/3,0/1,-2/0,3/0,3/-4,-1/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL"
+    },
+    {
+      "id": "adj",
+      "displayName": "Adj",
+      "name": "Adj",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj-1",
+          "notation": "/-3,0/0,3/0,-3/0,3/2,0/0,2/-2,0/4,0/0,-2/0,2/-1,4/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "opp",
+      "displayName": "Opp",
+      "name": "Opp",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp-1",
+          "notation": "/3,3/-1,0/2,-4/4,-2/0,-2/-4,2/1,-5/3,0/3,3/3,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "oa",
+      "displayName": "Oa",
+      "name": "Oa",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_oa",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "oa-1",
+          "notation": "/3,3/1,0/-2,-2/-2,0/2,2/-1,0/-3,-3/1,0/2,2/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "ob",
+      "displayName": "Ob",
+      "name": "Ob",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_ob",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ob-1",
+          "notation": "/3,3/1,0/-2,-2/2,0/2,2/-1,0/-3,-3/0,2/-2,-2/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "w",
+      "displayName": "W",
+      "name": "W",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_w",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w-1",
+          "notation": "0,-1/1,-2/-4,0/0,3/1,0/3,-2/-4,0/-4,0/-2,2/-1,0/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "m",
+      "displayName": "M",
+      "name": "M",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_m",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "m-1",
+          "notation": "/3,0/1,2/2,0/-4,0/4,0/2,0/-1,-2/-3,0/-2,0/-4,2/4,-2/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "pn",
+      "displayName": "pN",
+      "name": "pN",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_pn",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pn-1",
+          "notation": "/-3,0/0,-3/2,0/0,2/-2,0/4,0/0,-2/0,2/-4,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "pj",
+      "displayName": "PJ",
+      "name": "PJ",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_pj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pj-1",
+          "notation": "/-3,0/-3,0/-1,0/0,2/-2,0/4,0/0,-2/0,2/-1,4/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "x",
+      "displayName": "X",
+      "name": "X",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_x",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x-1",
+          "notation": "/3,0/1,0/4,5/0,4/0,4/2,3/0,-1/-3,0/-4,0/1,-2/0,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "q",
+      "displayName": "Q",
+      "name": "Q",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_q",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "q-1",
+          "notation": "1,0/5,0/3,3/1,-4/4,0/2,2/0,4/4,-1/3,3/-5,0/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "ka",
+      "displayName": "Ka",
+      "name": "Ka",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_ka",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ka-1",
+          "notation": "/3,3/5,0/0,2/-2,0/4,0/0,-2/0,2/-1,1/3,0/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "kb",
+      "displayName": "Kb",
+      "name": "Kb",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_kb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kb-1",
+          "notation": "1,0/5,0/-3,-3/0,3/4,0/-2,0/4,0/-4,0/-2,0/-1,0/-3,-3/-2,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "sa",
+      "displayName": "Sa",
+      "name": "Sa",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_sa",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sa-1",
+          "notation": "/-3,0/0,-1/-4,0/0,4/0,4/4,0/-4,0/1,-4/3,0/3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "sb",
+      "displayName": "Sb",
+      "name": "Sb",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_sb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sb-1",
+          "notation": "/3,0/1,0/0,2/4,0/0,4/2,-2/0,4/1,-1/3,0/-3,0/-3,1/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "ba",
+      "displayName": "Ba",
+      "name": "Ba",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_ba",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ba-1",
+          "notation": "/0,3/-3,3/2,1/0,-2/2,0/-4,0/0,2/0,-2/0,1/0,-3/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "bb",
+      "displayName": "Bb",
+      "name": "Bb",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_bb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bb-1",
+          "notation": "1,0/2,-4/1,4/-4,0/0,3/1,0/-1,4/0,4/4,0/2,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "ca",
+      "displayName": "Ca",
+      "name": "Ca",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_ca",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ca-1",
+          "notation": "0,-1/-3,0/3,0/0,1/3,0/1,0/-2,0/2,-1/0,1/-4,0/-5,0/-4,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "cb",
+      "displayName": "Cb",
+      "name": "Cb",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_cb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cb-1",
+          "notation": "/3,0/1,0/4,0/5,0/4,0/0,-1/-2,1/2,0/-1,0/-3,0/0,-1/-3,0/3,0/0,-1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "da",
+      "displayName": "Da",
+      "name": "Da",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_da",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "da-1",
+          "notation": "/3,0/1,0/-2,0/-4,0/0,-4/1,-4/-1,0/0,-3/4,0/-1,-4/-2,4/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "db",
+      "displayName": "Db",
+      "name": "Db",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_db",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "db-1",
+          "notation": "/0,3/0,3/0,-1/0,2/0,-2/4,0/-2,0/0,2/-2,-1/3,-3/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "pa",
+      "displayName": "Pa",
+      "name": "Pa",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_pa",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pa-1",
+          "notation": "/-3,0/3,-3/3,0/-1,0/0,2/-2,0/4,0/0,-2/0,2/-4,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "pb",
+      "displayName": "Pb",
+      "name": "Pb",
+      "subgroup": "Lin Parity PLL",
+      "imageKey": "lin_pb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pb-1",
+          "notation": "/-3,0/4,-1/0,-2/0,2/-4,0/2,0/0,-2/1,0/-3,0/-3,3/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin Parity PLL"
+    },
+    {
+      "id": "adj_bl",
+      "displayName": "Adj-BL",
+      "name": "Adj-BL",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_adj_bl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_bl-1",
+          "notation": "3,2 / 1,0 / 0,-3 / -1,0 / -3,0 / 1,0 / 0,3 / -1,0 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "adj_fl",
+      "displayName": "Adj-FL",
+      "name": "Adj-FL",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_adj_fl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_fl-1",
+          "notation": "-5,3 / 2,-1 / -2,1 / -1,-1 / 3,0 / -2,1 / 5,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "adj_fr",
+      "displayName": "Adj-FR",
+      "name": "Adj-FR",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_adj_fr",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_fr-1",
+          "notation": "-2,0 / 0,3 / 3,0 / -1,-1 / -2,1 / 0,-3 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "adj_br",
+      "displayName": "Adj-BR",
+      "name": "Adj-BR",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_adj_br",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_br-1",
+          "notation": "-3,2 / 1,0 / 0,-3 / -1,0 / 3,0 / 1,0 / 0,3 / -1,0 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_f",
+      "displayName": "Opp-F",
+      "name": "Opp-F",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_f-1",
+          "notation": "/ 3,0 / 1,3 / 0,-1 / 0,1 / -1,0 / 0,-3 / -3,0 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_lr",
+      "displayName": "Opp-LR",
+      "name": "Opp-LR",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_lr",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_lr-1",
+          "notation": "0,-1 / -3,0 / 4,1 / -1,-1 / -3,0 / 3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "cw_swirl",
+      "displayName": "Cw-Swirl",
+      "name": "Cw-Swirl",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_cw_swirl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cw_swirl-1",
+          "notation": "-3,-1 / 0,1 / -3,0 / 0,-1 / -2,1 / -1,0 / -3,0 / 1,0 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "ccw_swirl",
+      "displayName": "Ccw-Swirl",
+      "name": "Ccw-Swirl",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_ccw_swirl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ccw_swirl-1",
+          "notation": "4,0 / -1,0 / 3,0 / 1,0 / 2,-1 / 0,1 / 3,0 / 0,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "w_bl",
+      "displayName": "W-BL",
+      "name": "W-BL",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_w_bl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_bl-1",
+          "notation": "6,-1 / 4,1 / 2,-1 / 4,1 / 3,0 / 2,-1 / -3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "w_fl",
+      "displayName": "W-FL",
+      "name": "W-FL",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_w_fl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_fl-1",
+          "notation": "3,-1 / -3,0 / 4,1 / 3,0 / -4,-1 / -3,0 / 3,0 / 4,1 / 5,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "w_fr",
+      "displayName": "W-FR",
+      "name": "W-FR",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_w_fr",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_fr-1",
+          "notation": "4,0 / -4,-1 / -3,0 / 3,0 / 4,1 / -3,0 / -4,-1 / 3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "w_br",
+      "displayName": "W-BR",
+      "name": "W-BR",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_w_br",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_br-1",
+          "notation": "-5,0 / -1,-4 / -2,1 / -1,-4 / -3,0 / 1,-2 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_f",
+      "displayName": "Blocks-F+",
+      "name": "Blocks-F+",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f-1",
+          "notation": "-2,0 / 2,-1 / 0,-3 / 3,0 / -3,0 / -2,4 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_f_2",
+      "displayName": "Blocks-F-",
+      "name": "Blocks-F-",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_f_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f_2-1",
+          "notation": "3,-1 / 1,-2 / 0,3 / 0,-3 / 3,0 / -4,2 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_r",
+      "displayName": "Blocks-R+",
+      "name": "Blocks-R+",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_r",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_r-1",
+          "notation": "1,0 / -4,-4 / 3,0 / 0,-3 / 0,3 / 1,4 / -4,-1 / 0,3 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_l",
+      "displayName": "Blocks-L-",
+      "name": "Blocks-L-",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_l-1",
+          "notation": "0,-1 / 4,4 / -3,0 / 3,0 / 0,-3 / -4,-1 / 4,1 / -3,0 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "square_c",
+      "displayName": "Square-C",
+      "name": "Square-C",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_square_c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_c-1",
+          "notation": "-5,-3 / 0,3 / 3,0 / 3,0 / -4,-1 / 1,4 / 0,3 / -4,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "square_d",
+      "displayName": "Square-D",
+      "name": "Square-D",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_square_d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_d-1",
+          "notation": "4,3 / 0,-3 / -1,-4 / 4,1 / -3,0 / -3,0 / 0,-3 / 5,3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_blocks",
+      "displayName": "Opp Blocks",
+      "name": "Opp Blocks",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_blocks",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_blocks-1",
+          "notation": "1,3 / -4,2 / 1,-2 / -1,-4 / 4,1 / 0,-3 / -4,-1 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_blocks_2",
+      "displayName": "Opp Blocks",
+      "name": "Opp Blocks",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_blocks_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_blocks_2-1",
+          "notation": "6,2 / -2,4 / 2,-1 / 1,4 / -1,-4 / 0,3 / 1,4 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_opp_blocks",
+      "displayName": "Opp-Opp Blocks",
+      "name": "Opp-Opp Blocks",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_opp_blocks",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks-1",
+          "notation": "3,-1 / 3,0 / 1,4 / 2,-1 / 4,1 / -3,0 / -1,2 / 0,-3 / -3,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_opp_blocks_2",
+      "displayName": "Opp-Opp Blocks",
+      "name": "Opp-Opp Blocks",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_opp_blocks_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks_2-1",
+          "notation": "-2,0 / 0,-3 / -1,-4 / 1,-2 / -4,-1 / 0,3 / 1,-2 / 3,0 / 2,6",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_t_perm",
+      "displayName": "Fake T-perm",
+      "name": "Fake T-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_t_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_t_perm-1",
+          "notation": "3,-1 / -3,0 / -2,1 / -1,-1 / 0,3 / 0,-3 / 0,3 / -3,0 / 3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_fake_t_perm",
+      "displayName": "Opp-Fake T-perm",
+      "name": "Opp-Fake T-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_fake_t_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_fake_t_perm-1",
+          "notation": "3,-1 / 1,-2 / 0,3 / -1,-4 / 4,1 / -4,-1 / 1,1 / -1,2 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2c_swap",
+      "displayName": "2c-swap",
+      "name": "2c-swap",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2c_swap",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_swap-1",
+          "notation": "4,0 / -1,-1 / 3,0 / -3,0 / 0,3 / -3,0 / 3,0 / 4,-2 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "line_square",
+      "displayName": "Line + Square",
+      "name": "Line + Square",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_line_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_square-1",
+          "notation": "0,-1 / 1,4 / -1,-4 / 1,4 / -4,-1 / 4,-2 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "line_block",
+      "displayName": "Line + Block",
+      "name": "Line + Block",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_line_block",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block-1",
+          "notation": "0,-1 / 0,-3 / 1,4 / -1,-4 / 4,1 / -4,2 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2c_h_perm",
+      "displayName": "2c + H-perm",
+      "name": "2c + H-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2c_h_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_h_perm-1",
+          "notation": "-3,-1 / 1,1 / 3,0 / -4,-1 / -3,3 / 1,-2 / -1,2 / -3,0 / 6,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_rb_perm",
+      "displayName": "Fake Rb-perm",
+      "name": "Fake Rb-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_rb_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_rb_perm-1",
+          "notation": "3,-4 / 0,3 / 3,0 / 4,1 / -4,-1 / 1,4 / -1,2 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_gb_perm_almost",
+      "displayName": "Fake Gb-perm (almost",
+      "name": "Fake Gb-perm (almost",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_gb_perm_almost",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gb_perm_almost-1",
+          "notation": "6,-4 / 3,0 / 1,-2 / -1,2 / 3,-3 / 3,0 / 0,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_gc_perm",
+      "displayName": "Fake Gc-perm",
+      "name": "Fake Gc-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_gc_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gc_perm-1",
+          "notation": "1,0 / 0,3 / -4,-1 / 4,-2 / -3,0 / 0,3 / -1,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_gd_perm",
+      "displayName": "Fake Gd-perm",
+      "name": "Fake Gd-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_gd_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gd_perm-1",
+          "notation": "1,3 / 0,-3 / 3,0 / -4,2 / 4,1 / 0,-3 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2_blocks_opp_line",
+      "displayName": "2 Blocks + opp line",
+      "name": "2 Blocks + opp line",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2_blocks_opp_line",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_opp_line-1",
+          "notation": "6,-1 / 4,1 / 0,3 / -4,-1 / 1,4 / -1,2 / 4,-2 / 2,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2_blocks_adj_line",
+      "displayName": "2 Blocks + adj line",
+      "name": "2 Blocks + adj line",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2_blocks_adj_line",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_adj_line-1",
+          "notation": "-3,-1 / 4,-2 / -3,0 / 0,3 / 0,-3 / -1,2 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "1_opp_a",
+      "displayName": "1-opp (a)",
+      "name": "1-opp (a)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_1_opp_a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_a-1",
+          "notation": "1,0 / 0,-3 / -1,2 / -3,0 / 4,1 / 2,-1 / 1,4 / 3,0 / -1,6",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "1_opp_b",
+      "displayName": "1-opp (b)",
+      "name": "1-opp (b)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_1_opp_b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_b-1",
+          "notation": "-2,3 / -4,-1 / 1,-2 / -1,-4 / 1,-2 / 3,3 / -1,2 / -2,1 / 5,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2c_swap_2",
+      "displayName": "2c-swap",
+      "name": "2c-swap",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2c_swap_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_swap_2-1",
+          "notation": "-2,0 / 2,-1 / -3,3 / 3,0 / 0,-3 / 0,3 / 0,-3 / 1,1 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "line_block_r",
+      "displayName": "Line + Block-R",
+      "name": "Line + Block-R",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_line_block_r",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block_r-1",
+          "notation": "-5,0 / 2,-4 / 4,1 / -4,-1 / 1,4 / -3,0 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "line_block_l",
+      "displayName": "Line + Block-L",
+      "name": "Line + Block-L",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_line_block_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block_l-1",
+          "notation": "6,-1 / 4,-2 / -4,-1 / 1,4 / -1,-4 / 0,3 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2c_h_perm_2",
+      "displayName": "2c + H-perm",
+      "name": "2c + H-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2c_h_perm_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_h_perm_2-1",
+          "notation": "6,-1 / 1,-2 / -1,-1 / 4,1 / -4,-1 / 1,4 / 0,-3 / -1,2 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2_blocks",
+      "displayName": "2 Blocks+",
+      "name": "2 Blocks+",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2_blocks",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks-1",
+          "notation": "3,-1 / 0,-3 / 4,1 / -1,-4 / 0,-3 / 0,3 / -3,0 / 4,4 / 5,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2_blocks_2",
+      "displayName": "2 Blocks-",
+      "name": "2 Blocks-",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2_blocks_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_2-1",
+          "notation": "-2,0 / 3,0 / -4,-1 / 4,1 / 0,3 / -3,0 / 3,0 / -4,-4 / 6,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_ga_perm",
+      "displayName": "Fake Ga-perm",
+      "name": "Fake Ga-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_ga_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_ga_perm-1",
+          "notation": "3,-1 / 0,-3 / -3,3 / -2,1 / -1,2 / 0,-3 / 3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_gc_perm_2",
+      "displayName": "Fake Gc-perm",
+      "name": "Fake Gc-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_gc_perm_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gc_perm_2-1",
+          "notation": "-2,0 / 3,0 / 3,-3 / -1,2 / 1,-2 / 3,0 / -4,3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_line_block_on",
+      "displayName": "Opp line + block on",
+      "name": "Opp line + block on",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_line_block_on",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_line_block_on-1",
+          "notation": "-2,3 / -1,2 / 1,4 / -4,-1 / 4,1 / 3,0 / 0,3 / 5,3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_line_block_on_2",
+      "displayName": "Opp line + block on",
+      "name": "Opp line + block on",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_line_block_on_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_line_block_on_2-1",
+          "notation": "-3,2 / 1,-2 / -1,-4 / 4,1 / -4,-1 / -3,0 / 0,-3 / 0,4",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_opp_blocks_3",
+      "displayName": "Opp-Opp Blocks +",
+      "name": "Opp-Opp Blocks +",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_opp_blocks_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks_3-1",
+          "notation": "4,0 / -1,2 / -2,1 / 0,-3 / -1,2 / -2,1 / 2,-1 / 3,0 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "opp_opp_blocks_4",
+      "displayName": "Opp-Opp Blocks -",
+      "name": "Opp-Opp Blocks -",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_opp_opp_blocks_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks_4-1",
+          "notation": "0,2 / -3,0 / -2,1 / 2,-1 / 1,-2 / 0,3 / 2,-1 / 1,-2 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2c_swap_3",
+      "displayName": "2c-swap",
+      "name": "2c-swap",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2c_swap_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_swap_3-1",
+          "notation": "-3,-1 / 1,1 / -3,0 / 0,3 / 0,-3 / 0,3 / -3,0 / 2,-4 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "line_square_2",
+      "displayName": "Line + Square",
+      "name": "Line + Square",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_line_square_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_square_2-1",
+          "notation": "1,0 / -4,-1 / 1,4 / -4,-1 / 4,1 / 2,-4 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "line_block_2",
+      "displayName": "Line + Block",
+      "name": "Line + Block",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_line_block_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block_2-1",
+          "notation": "1,0 / 3,0 / -1,-4 / 4,1 / -4,-1 / -2,4 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2c_h_perm_3",
+      "displayName": "2c + H-perm",
+      "name": "2c + H-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2c_h_perm_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_h_perm_3-1",
+          "notation": "6,2 / 3,0 / 1,-2 / -1,2 / 3,-3 / 4,1 / -3,0 / -1,-1 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_ra_perm",
+      "displayName": "Fake Ra-perm",
+      "name": "Fake Ra-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_ra_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_ra_perm-1",
+          "notation": "4,-3 / 0,-3 / -3,0 / -4,-1 / 4,1 / -1,-4 / 1,-2 / 5,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_ga_perm_2",
+      "displayName": "Fake Ga-perm",
+      "name": "Fake Ga-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_ga_perm_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_ga_perm_2-1",
+          "notation": "0,-1 / -3,0 / 4,1 / 2,-4 / 3,0 / -3,0 / 0,4",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_gb_perm",
+      "displayName": "Fake Gb-perm",
+      "name": "Fake Gb-perm",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_gb_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gb_perm-1",
+          "notation": "6,2 / 0,3 / -3,0 / 4,-2 / -4,-1 / 0,3 / 6,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "fake_gd_perm_almost",
+      "displayName": "Fake Gd-perm (almost",
+      "name": "Fake Gd-perm (almost",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_fake_gd_perm_almost",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gd_perm_almost-1",
+          "notation": "1,-3 / -3,0 / -1,2 / 1,-2 / -3,3 / -3,0 / 5,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2_blocks_opp_line_2",
+      "displayName": "2 Blocks + opp line",
+      "name": "2 Blocks + opp line",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2_blocks_opp_line_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_opp_line_2-1",
+          "notation": "-5,0 / -1,-4 / 0,-3 / 1,4 / -1,-4 / -2,1 / 2,-4 / 3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "2_blocks_adj_line_2",
+      "displayName": "2 Blocks + adj line",
+      "name": "2 Blocks + adj line",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_2_blocks_adj_line_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_adj_line_2-1",
+          "notation": "4,0 / 2,-4 / 3,0 / -3,0 / 0,3 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "1_opp_a_2",
+      "displayName": "1-opp (a)",
+      "name": "1-opp (a)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_1_opp_a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_a_2-1",
+          "notation": "0,-1 / 3,0 / 1,-2 / 0,3 / -4,-1 / 1,-2 / -1,-4 / 0,-3 / 0,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "1_opp_b_2",
+      "displayName": "1-opp (b)",
+      "name": "1-opp (b)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_1_opp_b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_b_2-1",
+          "notation": "1,3 / 2,-1 / 1,-2 / -3,-3 / -1,2 / 1,4 / -1,2 / 4,1 / -4,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "diag_swap_a",
+      "displayName": "Diag-Swap (a)",
+      "name": "Diag-Swap (a)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_diag_swap_a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "diag_swap_a-1",
+          "notation": "4,0 / -3,-3 / -3,0 / -3,0 / 3,0 / -1,2 / 4,1 / -4,-1 / -3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "diag_swap_b",
+      "displayName": "Diag-Swap (b)",
+      "name": "Diag-Swap (b)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_diag_swap_b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "diag_swap_b-1",
+          "notation": "-3,-1 / 3,3 / 3,0 / 0,3 / -3,0 / -2,1 / -4,-1 / 1,4 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_f_3",
+      "displayName": "Blocks-F+",
+      "name": "Blocks-F+",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_f_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f_3-1",
+          "notation": "3,-1 / -3,-2 / -3,0 / 3,3 / 0,-3 / 3,2 / -3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_f_4",
+      "displayName": "Blocks-F-",
+      "name": "Blocks-F-",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_f_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f_4-1",
+          "notation": "-2,0 / 2,3 / 0,-3 / 3,3 / -3,0 / -2,-3 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_r_2",
+      "displayName": "Blocks-R+",
+      "name": "Blocks-R+",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_r_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_r_2-1",
+          "notation": "4,0 / 0,3 / -4,-1 / 1,-2 / 3,3 / -1,-4 / 4,1 / -4,-1 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "blocks_l_2",
+      "displayName": "Blocks-L-",
+      "name": "Blocks-L-",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_blocks_l_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_l_2-1",
+          "notation": "-3,-1 / -3,0 / 4,1 / 2,-1 / -3,-3 / 4,1 / -4,-1 / 1,4 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "block_r",
+      "displayName": "Block-R+",
+      "name": "Block-R+",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_block_r",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_r-1",
+          "notation": "-5,3 / 2,-1 / -2,1 / -1,2 / 0,-3 / 0,3 / -3,0 / 1,-2 / -4,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "block_r_2",
+      "displayName": "Block-R-",
+      "name": "Block-R-",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_block_r_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_r_2-1",
+          "notation": "0,2 / 1,-2 / -3,0 / 0,3 / 0,-3 / -1,2 / -2,1 / 2,-1 / -3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "block_l",
+      "displayName": "Block-L+",
+      "name": "Block-L+",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_block_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_l-1",
+          "notation": "-5,3 / -1,2 / 3,0 / 0,-3 / 0,3 / 1,-2 / 2,-1 / -2,1 / 2,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "block_l_2",
+      "displayName": "Block-L-",
+      "name": "Block-L-",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_block_l_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_l_2-1",
+          "notation": "0,2 / -2,1 / 2,-1 / 1,-2 / 0,3 / 0,-3 / 3,0 / -1,2 / -3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "no_blocks_a",
+      "displayName": "No Blocks (a)",
+      "name": "No Blocks (a)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_no_blocks_a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "no_blocks_a-1",
+          "notation": "4,0 / -4,0 / 0,3 / -3,0 / 0,-2 / 0,2 / 3,0 / 0,-3 / 4,0 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    },
+    {
+      "id": "no_blocks_b",
+      "displayName": "No Blocks (b)",
+      "name": "No Blocks (b)",
+      "subgroup": "Lin PLL+1",
+      "imageKey": "lin_no_blocks_b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "no_blocks_b-1",
+          "notation": "1,0 / -3,0 / 2,-4 / -2,1 / 2,-1 / 3,0 / 1,-2 / -1,2 / 0,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lin PLL+1"
+    }
+  ]
+}

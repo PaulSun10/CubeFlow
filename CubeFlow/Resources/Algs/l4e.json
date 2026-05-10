@@ -1,0 +1,732 @@
+{
+  "puzzle": "Pyraminx",
+  "set": "L4E",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "sune",
+      "displayName": "Sune",
+      "name": "Sune",
+      "subgroup": "Last Layer",
+      "imageKey": "l4e_sune",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sune-1",
+          "notation": "R U R' U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "antisune",
+      "displayName": "AntiSune",
+      "name": "AntiSune",
+      "subgroup": "Last Layer",
+      "imageKey": "l4e_antisune",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "antisune-1",
+          "notation": "R U' R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "lefty_bars",
+      "displayName": "Lefty Bars",
+      "name": "Lefty Bars",
+      "subgroup": "Last Layer",
+      "imageKey": "l4e_lefty_bars",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "lefty_bars-1",
+          "notation": "R' U' L' U L R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "righty_bars",
+      "displayName": "Righty Bars",
+      "name": "Righty Bars",
+      "subgroup": "Last Layer",
+      "imageKey": "l4e_righty_bars",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "righty_bars-1",
+          "notation": "L U R U' R' L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "sledge",
+      "displayName": "Sledge",
+      "name": "Sledge",
+      "subgroup": "L3E",
+      "imageKey": "l4e_sledge",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sledge-1",
+          "notation": "R' L R L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "hedge",
+      "displayName": "Hedge",
+      "name": "Hedge",
+      "subgroup": "L3E",
+      "imageKey": "l4e_hedge",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "hedge-1",
+          "notation": "L R' L' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "clockwise",
+      "displayName": "Clockwise",
+      "name": "Clockwise",
+      "subgroup": "L3E",
+      "imageKey": "l4e_clockwise",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "clockwise-1",
+          "notation": "L R' L' R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "clockwise-2",
+          "notation": "R U' R' U' L' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "counterclockwise",
+      "displayName": "Counterclockwise",
+      "name": "Counterclockwise",
+      "subgroup": "L3E",
+      "imageKey": "l4e_counterclockwise",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "counterclockwise-1",
+          "notation": "R' L R L2' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "righty",
+      "displayName": "Righty",
+      "name": "Righty",
+      "subgroup": "L3E",
+      "imageKey": "l4e_righty",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "righty-1",
+          "notation": "R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "lefty",
+      "displayName": "Lefty",
+      "name": "Lefty",
+      "subgroup": "L3E",
+      "imageKey": "l4e_lefty",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "lefty-1",
+          "notation": "L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "sexy",
+      "displayName": "Sexy",
+      "name": "Sexy",
+      "subgroup": "L3E",
+      "imageKey": "l4e_sexy",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sexy-1",
+          "notation": "U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_sexy",
+      "displayName": "Left Sexy",
+      "name": "Left Sexy",
+      "subgroup": "L3E",
+      "imageKey": "l4e_left_sexy",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_sexy-1",
+          "notation": "U L' U' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_flip",
+      "displayName": "2 Flip",
+      "name": "2 Flip",
+      "subgroup": "Flipped Edges",
+      "imageKey": "l4e_2_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_flip-1",
+          "notation": "L R' L' R U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "2_flip-2",
+          "notation": "R' L R L' U L' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "dr_flip",
+      "displayName": "DR Flip",
+      "name": "DR Flip",
+      "subgroup": "Flipped Edges",
+      "imageKey": "l4e_dr_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "dr_flip-1",
+          "notation": "L R' L' R L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "dl_flip",
+      "displayName": "DL Flip",
+      "name": "DL Flip",
+      "subgroup": "Flipped Edges",
+      "imageKey": "l4e_dl_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "dl_flip-1",
+          "notation": "R' L R L' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "db_flip",
+      "displayName": "DB Flip",
+      "name": "DB Flip",
+      "subgroup": "Flipped Edges",
+      "imageKey": "l4e_db_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "db_flip-1",
+          "notation": "R U R' U L' U' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4_flip",
+      "displayName": "4 Flip",
+      "name": "4 Flip",
+      "subgroup": "Flipped Edges",
+      "imageKey": "l4e_4_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4_flip-1",
+          "notation": "R U' R' L' U L R U' R' L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_polish_flip",
+      "displayName": "Right Polish Flip",
+      "name": "Right Polish Flip",
+      "subgroup": "Polish Flip",
+      "imageKey": "l4e_right_polish_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_polish_flip-1",
+          "notation": "R U' R' L' U' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_polish_flip",
+      "displayName": "Left Polish Flip",
+      "name": "Left Polish Flip",
+      "subgroup": "Polish Flip",
+      "imageKey": "l4e_left_polish_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_polish_flip-1",
+          "notation": "L' U L R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "sus",
+      "displayName": "SUS",
+      "name": "SUS",
+      "subgroup": "Polish Flip",
+      "imageKey": "l4e_sus",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sus-1",
+          "notation": "R' L R L' U' R' L R L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "anti_sus",
+      "displayName": "Anti SUS",
+      "name": "Anti SUS",
+      "subgroup": "Polish Flip",
+      "imageKey": "l4e_anti_sus",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "anti_sus-1",
+          "notation": "L R' L' R U L R' L' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "good_niky",
+      "displayName": "Good Niky",
+      "name": "Good Niky",
+      "subgroup": "Separated Bar",
+      "imageKey": "l4e_good_niky",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "good_niky-1",
+          "notation": "R U' R' L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "good_sochi",
+      "displayName": "Good Sochi",
+      "name": "Good Sochi",
+      "subgroup": "Separated Bar",
+      "imageKey": "l4e_good_sochi",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "good_sochi-1",
+          "notation": "L' U L R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "super_sledge",
+      "displayName": "Super Sledge",
+      "name": "Super Sledge",
+      "subgroup": "Separated Bar",
+      "imageKey": "l4e_super_sledge",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "super_sledge-1",
+          "notation": "R U' R2' L R L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "super_hedge",
+      "displayName": "Super Hedge",
+      "name": "Super Hedge",
+      "subgroup": "Separated Bar",
+      "imageKey": "l4e_super_hedge",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "super_hedge-1",
+          "notation": "L' U L2' R' L' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_niky",
+      "displayName": "Bad Niky",
+      "name": "Bad Niky",
+      "subgroup": "Separated Bar",
+      "imageKey": "l4e_bad_niky",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_niky-1",
+          "notation": "R U' R' U' L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_sochi",
+      "displayName": "Bad Sochi",
+      "name": "Bad Sochi",
+      "subgroup": "Separated Bar",
+      "imageKey": "l4e_bad_sochi",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_sochi-1",
+          "notation": "L' U L U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_spam",
+      "displayName": "Right Spam",
+      "name": "Right Spam",
+      "subgroup": "Connected Bar",
+      "imageKey": "l4e_right_spam",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_spam-1",
+          "notation": "R U R' U R' L R L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_spam",
+      "displayName": "Left Spam",
+      "name": "Left Spam",
+      "subgroup": "Connected Bar",
+      "imageKey": "l4e_left_spam",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_spam-1",
+          "notation": "L' U' L U' L R' L' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_sledge",
+      "displayName": "Bad Sledge",
+      "name": "Bad Sledge",
+      "subgroup": "Connected Bar",
+      "imageKey": "l4e_bad_sledge",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_sledge-1",
+          "notation": "L R' L' R U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_hedge",
+      "displayName": "Bad Hedge",
+      "name": "Bad Hedge",
+      "subgroup": "Connected Bar",
+      "imageKey": "l4e_bad_hedge",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_hedge-1",
+          "notation": "R' L R L' U L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "bad_hedge-2",
+          "notation": "U' L' U' L R U' R' L' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_sexy",
+      "displayName": "Bad Sexy",
+      "name": "Bad Sexy",
+      "subgroup": "No Bar",
+      "imageKey": "l4e_bad_sexy",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_sexy-1",
+          "notation": "L' U' L U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_ugly",
+      "displayName": "Bad Ugly",
+      "name": "Bad Ugly",
+      "subgroup": "No Bar",
+      "imageKey": "l4e_bad_ugly",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_ugly-1",
+          "notation": "R U R' U L' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_righty",
+      "displayName": "Bad Righty",
+      "name": "Bad Righty",
+      "subgroup": "No Bar",
+      "imageKey": "l4e_bad_righty",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_righty-1",
+          "notation": "L' U L U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bad_lefty",
+      "displayName": "Bad Lefty",
+      "name": "Bad Lefty",
+      "subgroup": "No Bar",
+      "imageKey": "l4e_bad_lefty",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bad_lefty-1",
+          "notation": "R U' R' U L' U' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "double_sexy",
+      "displayName": "Double Sexy",
+      "name": "Double Sexy",
+      "subgroup": "No Bar",
+      "imageKey": "l4e_double_sexy",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "double_sexy-1",
+          "notation": "R U' R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "double_ugly",
+      "displayName": "Double Ugly",
+      "name": "Double Ugly",
+      "subgroup": "No Bar",
+      "imageKey": "l4e_double_ugly",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "double_ugly-1",
+          "notation": "L' U L U L' U' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

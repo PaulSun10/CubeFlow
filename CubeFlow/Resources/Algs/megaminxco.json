@@ -1,0 +1,312 @@
+{
+  "puzzle": "Megaminx",
+  "set": "MegaminxCO",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "co_1",
+      "displayName": "CO 1",
+      "name": "CO 1",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_1-1",
+          "notation": "R U R' U R U R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_2",
+      "displayName": "CO 2",
+      "name": "CO 2",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_2-1",
+          "notation": "F R U2 R' U' R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_3",
+      "displayName": "CO 3",
+      "name": "CO 3",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_3-1",
+          "notation": "R U2 R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_4",
+      "displayName": "CO 4",
+      "name": "CO 4",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_4-1",
+          "notation": "R U R' U' R' F R U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_5",
+      "displayName": "CO 5",
+      "name": "CO 5",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_5-1",
+          "notation": "R U R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_6",
+      "displayName": "CO 6",
+      "name": "CO 6",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_6-1",
+          "notation": "R' U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_7",
+      "displayName": "CO 7",
+      "name": "CO 7",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_7",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_7-1",
+          "notation": "R U2 R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_8",
+      "displayName": "CO 8",
+      "name": "CO 8",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_8",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_8-1",
+          "notation": "R U R' U2 R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_9",
+      "displayName": "CO 9",
+      "name": "CO 9",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_9",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_9-1",
+          "notation": "R U2 R' U' R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_10",
+      "displayName": "CO 10",
+      "name": "CO 10",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_10",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_10-1",
+          "notation": "R U R' U R U' R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_11",
+      "displayName": "CO 11",
+      "name": "CO 11",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_11",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_11-1",
+          "notation": "R U R' U R U R' U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_12",
+      "displayName": "CO 12",
+      "name": "CO 12",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_12",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_12-1",
+          "notation": "R U2 R' U' R U' R2' U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_13",
+      "displayName": "CO 13",
+      "name": "CO 13",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_13",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_13-1",
+          "notation": "R U2 R2' U' R2 U' R2' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_14",
+      "displayName": "CO 14",
+      "name": "CO 14",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_14",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_14-1",
+          "notation": "R' U2' R2 U R2' U R2 U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_15",
+      "displayName": "CO 15",
+      "name": "CO 15",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_15",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_15-1",
+          "notation": "R U R' U2 R U2' R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "co_16",
+      "displayName": "CO 16",
+      "name": "CO 16",
+      "subgroup": "",
+      "imageKey": "megaminxco_co_16",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "co_16-1",
+          "notation": "R U2 R' U' R U2 R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

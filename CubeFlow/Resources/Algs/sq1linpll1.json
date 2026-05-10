@@ -1,0 +1,1376 @@
+{
+  "puzzle": "SQ1",
+  "set": "SQ1LinPLL1",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "adj_bl",
+      "displayName": "Adj-BL",
+      "name": "Adj-BL",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_adj_bl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_bl-1",
+          "notation": "3,2 / 1,0 / 0,-3 / -1,0 / -3,0 / 1,0 / 0,3 / -1,0 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_fl",
+      "displayName": "Adj-FL",
+      "name": "Adj-FL",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_adj_fl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_fl-1",
+          "notation": "-5,3 / 2,-1 / -2,1 / -1,-1 / 3,0 / -2,1 / 5,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_fr",
+      "displayName": "Adj-FR",
+      "name": "Adj-FR",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_adj_fr",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_fr-1",
+          "notation": "-2,0 / 0,3 / 3,0 / -1,-1 / -2,1 / 0,-3 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_br",
+      "displayName": "Adj-BR",
+      "name": "Adj-BR",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_adj_br",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_br-1",
+          "notation": "-3,2 / 1,0 / 0,-3 / -1,0 / 3,0 / 1,0 / 0,3 / -1,0 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_f",
+      "displayName": "Opp-F",
+      "name": "Opp-F",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_f-1",
+          "notation": "/ 3,0 / 1,3 / 0,-1 / 0,1 / -1,0 / 0,-3 / -3,0 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_lr",
+      "displayName": "Opp-LR",
+      "name": "Opp-LR",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_lr",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_lr-1",
+          "notation": "0,-1 / -3,0 / 4,1 / -1,-1 / -3,0 / 3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cw_swirl",
+      "displayName": "Cw-Swirl",
+      "name": "Cw-Swirl",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_cw_swirl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cw_swirl-1",
+          "notation": "-3,-1 / 0,1 / -3,0 / 0,-1 / -2,1 / -1,0 / -3,0 / 1,0 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ccw_swirl",
+      "displayName": "Ccw-Swirl",
+      "name": "Ccw-Swirl",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_ccw_swirl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ccw_swirl-1",
+          "notation": "4,0 / -1,0 / 3,0 / 1,0 / 2,-1 / 0,1 / 3,0 / 0,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_bl",
+      "displayName": "W-BL",
+      "name": "W-BL",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_w_bl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_bl-1",
+          "notation": "6,-1 / 4,1 / 2,-1 / 4,1 / 3,0 / 2,-1 / -3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_fl",
+      "displayName": "W-FL",
+      "name": "W-FL",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_w_fl",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_fl-1",
+          "notation": "3,-1 / -3,0 / 4,1 / 3,0 / -4,-1 / -3,0 / 3,0 / 4,1 / 5,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_fr",
+      "displayName": "W-FR",
+      "name": "W-FR",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_w_fr",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_fr-1",
+          "notation": "4,0 / -4,-1 / -3,0 / 3,0 / 4,1 / -3,0 / -4,-1 / 3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_br",
+      "displayName": "W-BR",
+      "name": "W-BR",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_w_br",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_br-1",
+          "notation": "-5,0 / -1,-4 / -2,1 / -1,-4 / -3,0 / 1,-2 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_f",
+      "displayName": "Blocks-F+",
+      "name": "Blocks-F+",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f-1",
+          "notation": "-2,0 / 2,-1 / 0,-3 / 3,0 / -3,0 / -2,4 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_f_2",
+      "displayName": "Blocks-F-",
+      "name": "Blocks-F-",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_f_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f_2-1",
+          "notation": "3,-1 / 1,-2 / 0,3 / 0,-3 / 3,0 / -4,2 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_r",
+      "displayName": "Blocks-R+",
+      "name": "Blocks-R+",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_r",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_r-1",
+          "notation": "1,0 / -4,-4 / 3,0 / 0,-3 / 0,3 / 1,4 / -4,-1 / 0,3 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_l",
+      "displayName": "Blocks-L-",
+      "name": "Blocks-L-",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_l-1",
+          "notation": "0,-1 / 4,4 / -3,0 / 3,0 / 0,-3 / -4,-1 / 4,1 / -3,0 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_c",
+      "displayName": "Square-C",
+      "name": "Square-C",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_square_c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_c-1",
+          "notation": "-5,-3 / 0,3 / 3,0 / 3,0 / -4,-1 / 1,4 / 0,3 / -4,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_d",
+      "displayName": "Square-D",
+      "name": "Square-D",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_square_d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_d-1",
+          "notation": "4,3 / 0,-3 / -1,-4 / 4,1 / -3,0 / -3,0 / 0,-3 / 5,3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_blocks",
+      "displayName": "Opp Blocks",
+      "name": "Opp Blocks",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_blocks",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_blocks-1",
+          "notation": "1,3 / -4,2 / 1,-2 / -1,-4 / 4,1 / 0,-3 / -4,-1 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_blocks_2",
+      "displayName": "Opp Blocks",
+      "name": "Opp Blocks",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_blocks_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_blocks_2-1",
+          "notation": "6,2 / -2,4 / 2,-1 / 1,4 / -1,-4 / 0,3 / 1,4 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_opp_blocks",
+      "displayName": "Opp-Opp Blocks",
+      "name": "Opp-Opp Blocks",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_opp_blocks",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks-1",
+          "notation": "3,-1 / 3,0 / 1,4 / 2,-1 / 4,1 / -3,0 / -1,2 / 0,-3 / -3,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_opp_blocks_2",
+      "displayName": "Opp-Opp Blocks",
+      "name": "Opp-Opp Blocks",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_opp_blocks_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks_2-1",
+          "notation": "-2,0 / 0,-3 / -1,-4 / 1,-2 / -4,-1 / 0,3 / 1,-2 / 3,0 / 2,6",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_t_perm",
+      "displayName": "Fake T-perm",
+      "name": "Fake T-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_t_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_t_perm-1",
+          "notation": "3,-1 / -3,0 / -2,1 / -1,-1 / 0,3 / 0,-3 / 0,3 / -3,0 / 3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_fake_t_perm",
+      "displayName": "Opp-Fake T-perm",
+      "name": "Opp-Fake T-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_fake_t_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_fake_t_perm-1",
+          "notation": "3,-1 / 1,-2 / 0,3 / -1,-4 / 4,1 / -4,-1 / 1,1 / -1,2 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2c_swap",
+      "displayName": "2c-swap",
+      "name": "2c-swap",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2c_swap",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_swap-1",
+          "notation": "4,0 / -1,-1 / 3,0 / -3,0 / 0,3 / -3,0 / 3,0 / 4,-2 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "line_square",
+      "displayName": "Line + Square",
+      "name": "Line + Square",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_line_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_square-1",
+          "notation": "0,-1 / 1,4 / -1,-4 / 1,4 / -4,-1 / 4,-2 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "line_block",
+      "displayName": "Line + Block",
+      "name": "Line + Block",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_line_block",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block-1",
+          "notation": "0,-1 / 0,-3 / 1,4 / -1,-4 / 4,1 / -4,2 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2c_h_perm",
+      "displayName": "2c + H-perm",
+      "name": "2c + H-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2c_h_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_h_perm-1",
+          "notation": "-3,-1 / 1,1 / 3,0 / -4,-1 / -3,3 / 1,-2 / -1,2 / -3,0 / 6,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_rb_perm",
+      "displayName": "Fake Rb-perm",
+      "name": "Fake Rb-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_rb_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_rb_perm-1",
+          "notation": "3,-4 / 0,3 / 3,0 / 4,1 / -4,-1 / 1,4 / -1,2 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_gb_perm_almost",
+      "displayName": "Fake Gb-perm (almost",
+      "name": "Fake Gb-perm (almost",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_gb_perm_almost",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gb_perm_almost-1",
+          "notation": "6,-4 / 3,0 / 1,-2 / -1,2 / 3,-3 / 3,0 / 0,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_gc_perm",
+      "displayName": "Fake Gc-perm",
+      "name": "Fake Gc-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_gc_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gc_perm-1",
+          "notation": "1,0 / 0,3 / -4,-1 / 4,-2 / -3,0 / 0,3 / -1,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_gd_perm",
+      "displayName": "Fake Gd-perm",
+      "name": "Fake Gd-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_gd_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gd_perm-1",
+          "notation": "1,3 / 0,-3 / 3,0 / -4,2 / 4,1 / 0,-3 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_blocks_opp_line",
+      "displayName": "2 Blocks + opp line",
+      "name": "2 Blocks + opp line",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2_blocks_opp_line",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_opp_line-1",
+          "notation": "6,-1 / 4,1 / 0,3 / -4,-1 / 1,4 / -1,2 / 4,-2 / 2,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_blocks_adj_line",
+      "displayName": "2 Blocks + adj line",
+      "name": "2 Blocks + adj line",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2_blocks_adj_line",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_adj_line-1",
+          "notation": "-3,-1 / 4,-2 / -3,0 / 0,3 / 0,-3 / -1,2 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "1_opp_a",
+      "displayName": "1-opp (a)",
+      "name": "1-opp (a)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_1_opp_a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_a-1",
+          "notation": "1,0 / 0,-3 / -1,2 / -3,0 / 4,1 / 2,-1 / 1,4 / 3,0 / -1,6",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "1_opp_b",
+      "displayName": "1-opp (b)",
+      "name": "1-opp (b)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_1_opp_b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_b-1",
+          "notation": "-2,3 / -4,-1 / 1,-2 / -1,-4 / 1,-2 / 3,3 / -1,2 / -2,1 / 5,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2c_swap_2",
+      "displayName": "2c-swap",
+      "name": "2c-swap",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2c_swap_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_swap_2-1",
+          "notation": "-2,0 / 2,-1 / -3,3 / 3,0 / 0,-3 / 0,3 / 0,-3 / 1,1 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "line_block_r",
+      "displayName": "Line + Block-R",
+      "name": "Line + Block-R",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_line_block_r",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block_r-1",
+          "notation": "-5,0 / 2,-4 / 4,1 / -4,-1 / 1,4 / -3,0 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "line_block_l",
+      "displayName": "Line + Block-L",
+      "name": "Line + Block-L",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_line_block_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block_l-1",
+          "notation": "6,-1 / 4,-2 / -4,-1 / 1,4 / -1,-4 / 0,3 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2c_h_perm_2",
+      "displayName": "2c + H-perm",
+      "name": "2c + H-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2c_h_perm_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_h_perm_2-1",
+          "notation": "6,-1 / 1,-2 / -1,-1 / 4,1 / -4,-1 / 1,4 / 0,-3 / -1,2 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_blocks",
+      "displayName": "2 Blocks+",
+      "name": "2 Blocks+",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2_blocks",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks-1",
+          "notation": "3,-1 / 0,-3 / 4,1 / -1,-4 / 0,-3 / 0,3 / -3,0 / 4,4 / 5,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_blocks_2",
+      "displayName": "2 Blocks-",
+      "name": "2 Blocks-",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2_blocks_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_2-1",
+          "notation": "-2,0 / 3,0 / -4,-1 / 4,1 / 0,3 / -3,0 / 3,0 / -4,-4 / 6,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_ga_perm",
+      "displayName": "Fake Ga-perm",
+      "name": "Fake Ga-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_ga_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_ga_perm-1",
+          "notation": "3,-1 / 0,-3 / -3,3 / -2,1 / -1,2 / 0,-3 / 3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_gc_perm_2",
+      "displayName": "Fake Gc-perm",
+      "name": "Fake Gc-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_gc_perm_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gc_perm_2-1",
+          "notation": "-2,0 / 3,0 / 3,-3 / -1,2 / 1,-2 / 3,0 / -4,3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_line_block_on",
+      "displayName": "Opp line + block on",
+      "name": "Opp line + block on",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_line_block_on",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_line_block_on-1",
+          "notation": "-2,3 / -1,2 / 1,4 / -4,-1 / 4,1 / 3,0 / 0,3 / 5,3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_line_block_on_2",
+      "displayName": "Opp line + block on",
+      "name": "Opp line + block on",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_line_block_on_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_line_block_on_2-1",
+          "notation": "-3,2 / 1,-2 / -1,-4 / 4,1 / -4,-1 / -3,0 / 0,-3 / 0,4",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_opp_blocks_3",
+      "displayName": "Opp-Opp Blocks +",
+      "name": "Opp-Opp Blocks +",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_opp_blocks_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks_3-1",
+          "notation": "4,0 / -1,2 / -2,1 / 0,-3 / -1,2 / -2,1 / 2,-1 / 3,0 / 0,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_opp_blocks_4",
+      "displayName": "Opp-Opp Blocks -",
+      "name": "Opp-Opp Blocks -",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_opp_opp_blocks_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp_blocks_4-1",
+          "notation": "0,2 / -3,0 / -2,1 / 2,-1 / 1,-2 / 0,3 / 2,-1 / 1,-2 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2c_swap_3",
+      "displayName": "2c-swap",
+      "name": "2c-swap",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2c_swap_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_swap_3-1",
+          "notation": "-3,-1 / 1,1 / -3,0 / 0,3 / 0,-3 / 0,3 / -3,0 / 2,-4 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "line_square_2",
+      "displayName": "Line + Square",
+      "name": "Line + Square",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_line_square_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_square_2-1",
+          "notation": "1,0 / -4,-1 / 1,4 / -4,-1 / 4,1 / 2,-4 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "line_block_2",
+      "displayName": "Line + Block",
+      "name": "Line + Block",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_line_block_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "line_block_2-1",
+          "notation": "1,0 / 3,0 / -1,-4 / 4,1 / -4,-1 / -2,4 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2c_h_perm_3",
+      "displayName": "2c + H-perm",
+      "name": "2c + H-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2c_h_perm_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c_h_perm_3-1",
+          "notation": "6,2 / 3,0 / 1,-2 / -1,2 / 3,-3 / 4,1 / -3,0 / -1,-1 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_ra_perm",
+      "displayName": "Fake Ra-perm",
+      "name": "Fake Ra-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_ra_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_ra_perm-1",
+          "notation": "4,-3 / 0,-3 / -3,0 / -4,-1 / 4,1 / -1,-4 / 1,-2 / 5,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_ga_perm_2",
+      "displayName": "Fake Ga-perm",
+      "name": "Fake Ga-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_ga_perm_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_ga_perm_2-1",
+          "notation": "0,-1 / -3,0 / 4,1 / 2,-4 / 3,0 / -3,0 / 0,4",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_gb_perm",
+      "displayName": "Fake Gb-perm",
+      "name": "Fake Gb-perm",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_gb_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gb_perm-1",
+          "notation": "6,2 / 0,3 / -3,0 / 4,-2 / -4,-1 / 0,3 / 6,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "fake_gd_perm_almost",
+      "displayName": "Fake Gd-perm (almost",
+      "name": "Fake Gd-perm (almost",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_fake_gd_perm_almost",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "fake_gd_perm_almost-1",
+          "notation": "1,-3 / -3,0 / -1,2 / 1,-2 / -3,3 / -3,0 / 5,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_blocks_opp_line_2",
+      "displayName": "2 Blocks + opp line",
+      "name": "2 Blocks + opp line",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2_blocks_opp_line_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_opp_line_2-1",
+          "notation": "-5,0 / -1,-4 / 0,-3 / 1,4 / -1,-4 / -2,1 / 2,-4 / 3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_blocks_adj_line_2",
+      "displayName": "2 Blocks + adj line",
+      "name": "2 Blocks + adj line",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_2_blocks_adj_line_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_blocks_adj_line_2-1",
+          "notation": "4,0 / 2,-4 / 3,0 / -3,0 / 0,3 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "1_opp_a_2",
+      "displayName": "1-opp (a)",
+      "name": "1-opp (a)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_1_opp_a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_a_2-1",
+          "notation": "0,-1 / 3,0 / 1,-2 / 0,3 / -4,-1 / 1,-2 / -1,-4 / 0,-3 / 0,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "1_opp_b_2",
+      "displayName": "1-opp (b)",
+      "name": "1-opp (b)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_1_opp_b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_opp_b_2-1",
+          "notation": "1,3 / 2,-1 / 1,-2 / -3,-3 / -1,2 / 1,4 / -1,2 / 4,1 / -4,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "diag_swap_a",
+      "displayName": "Diag-Swap (a)",
+      "name": "Diag-Swap (a)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_diag_swap_a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "diag_swap_a-1",
+          "notation": "4,0 / -3,-3 / -3,0 / -3,0 / 3,0 / -1,2 / 4,1 / -4,-1 / -3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "diag_swap_b",
+      "displayName": "Diag-Swap (b)",
+      "name": "Diag-Swap (b)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_diag_swap_b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "diag_swap_b-1",
+          "notation": "-3,-1 / 3,3 / 3,0 / 0,3 / -3,0 / -2,1 / -4,-1 / 1,4 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_f_3",
+      "displayName": "Blocks-F+",
+      "name": "Blocks-F+",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_f_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f_3-1",
+          "notation": "3,-1 / -3,-2 / -3,0 / 3,3 / 0,-3 / 3,2 / -3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_f_4",
+      "displayName": "Blocks-F-",
+      "name": "Blocks-F-",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_f_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_f_4-1",
+          "notation": "-2,0 / 2,3 / 0,-3 / 3,3 / -3,0 / -2,-3 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_r_2",
+      "displayName": "Blocks-R+",
+      "name": "Blocks-R+",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_r_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_r_2-1",
+          "notation": "4,0 / 0,3 / -4,-1 / 1,-2 / 3,3 / -1,-4 / 4,1 / -4,-1 / 3,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "blocks_l_2",
+      "displayName": "Blocks-L-",
+      "name": "Blocks-L-",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_blocks_l_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "blocks_l_2-1",
+          "notation": "-3,-1 / -3,0 / 4,1 / 2,-1 / -3,-3 / 4,1 / -4,-1 / 1,4 / -4,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "block_r",
+      "displayName": "Block-R+",
+      "name": "Block-R+",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_block_r",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_r-1",
+          "notation": "-5,3 / 2,-1 / -2,1 / -1,2 / 0,-3 / 0,3 / -3,0 / 1,-2 / -4,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "block_r_2",
+      "displayName": "Block-R-",
+      "name": "Block-R-",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_block_r_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_r_2-1",
+          "notation": "0,2 / 1,-2 / -3,0 / 0,3 / 0,-3 / -1,2 / -2,1 / 2,-1 / -3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "block_l",
+      "displayName": "Block-L+",
+      "name": "Block-L+",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_block_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_l-1",
+          "notation": "-5,3 / -1,2 / 3,0 / 0,-3 / 0,3 / 1,-2 / 2,-1 / -2,1 / 2,-3",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "block_l_2",
+      "displayName": "Block-L-",
+      "name": "Block-L-",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_block_l_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "block_l_2-1",
+          "notation": "0,2 / -2,1 / 2,-1 / 1,-2 / 0,3 / 0,-3 / 3,0 / -1,2 / -3,-2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "no_blocks_a",
+      "displayName": "No Blocks (a)",
+      "name": "No Blocks (a)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_no_blocks_a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "no_blocks_a-1",
+          "notation": "4,0 / -4,0 / 0,3 / -3,0 / 0,-2 / 0,2 / 3,0 / 0,-3 / 4,0 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "no_blocks_b",
+      "displayName": "No Blocks (b)",
+      "name": "No Blocks (b)",
+      "subgroup": "",
+      "imageKey": "sq1linpll1_no_blocks_b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "no_blocks_b-1",
+          "notation": "1,0 / -3,0 / 2,-4 / -2,1 / 2,-1 / 3,0 / 1,-2 / -1,2 / 0,-5",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,939 @@
+{
+  "puzzle": "SQ1",
+  "set": "SQ1EP",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "adj_adj",
+      "displayName": "Adj / Adj",
+      "name": "Adj / Adj",
+      "subgroup": "",
+      "imageKey": "sq1ep_adj_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_adj-1",
+          "notation": "-2,0 / 0,3 / -1,-1 / 1,-2 / 2,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_o",
+      "displayName": "Adj / O+",
+      "name": "Adj / O+",
+      "subgroup": "",
+      "imageKey": "sq1ep_adj_o",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_o-1",
+          "notation": "0,-1 / 3,0 / -3,0 / 1,-2 / -4,-1 / 1,-2 / -1,2 / 3,3 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_o_2",
+      "displayName": "Adj / O-",
+      "name": "Adj / O-",
+      "subgroup": "",
+      "imageKey": "sq1ep_adj_o_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_o_2-1",
+          "notation": "1,0 / -3,0 / 3,0 / -1,2 / 4,1 / -1,2 / 1,-2 / -3,-3 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_opp",
+      "displayName": "Adj / Opp",
+      "name": "Adj / Opp",
+      "subgroup": "",
+      "imageKey": "sq1ep_adj_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_opp-1",
+          "notation": "1,0 / -1,0 / -3,0 / 0,-1 / 6,0 / 1,0 / 3,0 / 0,1 / 5,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_w",
+      "displayName": "Adj / W",
+      "name": "Adj / W",
+      "subgroup": "",
+      "imageKey": "sq1ep_adj_w",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_w-1",
+          "notation": "1,0 / 0,3 / -1,-1 / 0,3 / 0,-3 / 1,1 / 0,-3/ -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "h_h",
+      "displayName": "H / H",
+      "name": "H / H",
+      "subgroup": "",
+      "imageKey": "sq1ep_h_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h_h-1",
+          "notation": "1,0 / 5,-1 / -2,-2 / -1,-1 / -2,4 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "h_solved",
+      "displayName": "H / Solved",
+      "name": "H / Solved",
+      "subgroup": "",
+      "imageKey": "sq1ep_h_solved",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h_solved-1",
+          "notation": "/ 3,-3 / 3,-3 / 0,1 / -3,3 / -3,3 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "h_ua",
+      "displayName": "H / Ua",
+      "name": "H / Ua",
+      "subgroup": "",
+      "imageKey": "sq1ep_h_ua",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h_ua-1",
+          "notation": "0,-1 / 0,-3 / 4,1 / -1,-4 / -5,1 / -1,-4 / 4,1 / 0,-3 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "h_ub",
+      "displayName": "H / Ub",
+      "name": "H / Ub",
+      "subgroup": "",
+      "imageKey": "sq1ep_h_ub",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h_ub-1",
+          "notation": "1,0 / 0,3 / -4,-1 / 1,4 / 5,-1 / 1,4 / -4,-1 / 0,3 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "h_z",
+      "displayName": "H / Z",
+      "name": "H / Z",
+      "subgroup": "",
+      "imageKey": "sq1ep_h_z",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h_z-1",
+          "notation": "1,0 / -1,-1 / 0,3 / 1,1 / 0,3 / 3,-3 / -1,-1 / -3,3 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_adj",
+      "displayName": "O+ / Adj",
+      "name": "O+ / Adj",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_adj-1",
+          "notation": "0,-1/-3,0/1,1/2,-1/1,4/5,-1/-2,1/-1,-1/-2,1/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_o",
+      "displayName": "O+ / O+",
+      "name": "O+ / O+",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_o",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_o-1",
+          "notation": "1,0/5,-1/-3,0/1,1/-4,2/1,1/0,-3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_o_2",
+      "displayName": "O+ / O-",
+      "name": "O+ / O-",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_o_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_o_2-1",
+          "notation": "1,0/-1,-1/-3,0/1,1/-3,-3/-1,-1/1,4/-1,-1/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_opp",
+      "displayName": "O+ / Opp",
+      "name": "O+ / Opp",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_opp-1",
+          "notation": "1,0/-1,-1/-3,0/1,1/-3,0/-1,-1/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_w",
+      "displayName": "O+ / W",
+      "name": "O+ / W",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_w",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_w-1",
+          "notation": "1,0 / 2,-4 / 0,3 / 1,4 / 0,3 / 3,-3 / -4,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_adj_2",
+      "displayName": "O- / Adj",
+      "name": "O- / Adj",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_adj_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_adj_2-1",
+          "notation": "1,0/0,3/-1,-1/1,-2/0,3/2,-1/1,1/2,-1/-5,1/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_o_3",
+      "displayName": "O- / O+",
+      "name": "O- / O+",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_o_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_o_3-1",
+          "notation": "1,0/-1,-1/3,0/1,1/3,3/-1,-1/1,-2/-1,-1/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_o_4",
+      "displayName": "O- / O-",
+      "name": "O- / O-",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_o_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_o_4-1",
+          "notation": "1,0/0,3/-1,-1/4,-2/-1,-1/3,0/-5,1/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_opp_2",
+      "displayName": "O- / Opp",
+      "name": "O- / Opp",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_opp_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_opp_2-1",
+          "notation": "1,0/-1,-1/3,0/1,1/3,0/-1,-1/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "o_w_2",
+      "displayName": "O- / W",
+      "name": "O- / W",
+      "subgroup": "",
+      "imageKey": "sq1ep_o_w_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "o_w_2-1",
+          "notation": "1,-3 / 0,3 / -1,-1 / 1,-2 / 3,0 / 5,-1 / -2,1 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_adj",
+      "displayName": "Opp / Adj",
+      "name": "Opp / Adj",
+      "subgroup": "",
+      "imageKey": "sq1ep_opp_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_adj-1",
+          "notation": "0,-1 / 0,-3 / 0,3 / 1,-2 / -1,-1 / 0,3 / 0,-3 / 0,3 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_o",
+      "displayName": "Opp / O+",
+      "name": "Opp / O+",
+      "subgroup": "",
+      "imageKey": "sq1ep_opp_o",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_o-1",
+          "notation": "1,0 / -1,-1 / 1,-2 / -1,-1 / 1,-2 / -1,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_o_2",
+      "displayName": "Opp / O-",
+      "name": "Opp / O-",
+      "subgroup": "",
+      "imageKey": "sq1ep_opp_o_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_o_2-1",
+          "notation": "1,0 / -1,-1 / 1,4 / -1,-1 / 1,4 / -1,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_opp",
+      "displayName": "Opp / Opp",
+      "name": "Opp / Opp",
+      "subgroup": "",
+      "imageKey": "sq1ep_opp_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp-1",
+          "notation": "1,0 / -1,-1 / -5,1 / -1,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_w",
+      "displayName": "Opp / W",
+      "name": "Opp / W",
+      "subgroup": "",
+      "imageKey": "sq1ep_opp_w",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_w-1",
+          "notation": "1,0/-1,2/-5,1/3,0/0,-3/-4,-1/0,3/-5,1/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "solved_h",
+      "displayName": "Solved / H",
+      "name": "Solved / H",
+      "subgroup": "",
+      "imageKey": "sq1ep_solved_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "solved_h-1",
+          "notation": "/ 3,-3 / 3,-3 / -1,0 / -3,3 / -3,3 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "solved_ua",
+      "displayName": "Solved / Ua",
+      "name": "Solved / Ua",
+      "subgroup": "",
+      "imageKey": "sq1ep_solved_ua",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "solved_ua-1",
+          "notation": "0,-1 / 3,0 / 0,1 / 0,-3 / 0,-1 / -3,0 / 0,1 / 0,3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "solved_ub",
+      "displayName": "Solved / Ub",
+      "name": "Solved / Ub",
+      "subgroup": "",
+      "imageKey": "sq1ep_solved_ub",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "solved_ub-1",
+          "notation": "/ 0,-3 / 0,-1 / 3,0 / 0,1 / 0,3 / 0,-1 / -3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "solved_z",
+      "displayName": "Solved / Z",
+      "name": "Solved / Z",
+      "subgroup": "",
+      "imageKey": "sq1ep_solved_z",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "solved_z-1",
+          "notation": "0,-1 / 1,1 / 0,3 / -1,-1 / 0,-3 / 1,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ua_h",
+      "displayName": "Ua / H",
+      "name": "Ua / H",
+      "subgroup": "",
+      "imageKey": "sq1ep_ua_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ua_h-1",
+          "notation": "1,0 / 0,3 / -1,-4 / 1,4 / 5,-1 / 4,1 / -1,-4 / 3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ua_solved",
+      "displayName": "Ua / Solved",
+      "name": "Ua / Solved",
+      "subgroup": "",
+      "imageKey": "sq1ep_ua_solved",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ua_solved-1",
+          "notation": "1,0 / -3,0 / -1,0 / 0,3 / 1,0 / 3,0 / -1,0 / 0,-3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ua_ua",
+      "displayName": "Ua / Ua",
+      "name": "Ua / Ua",
+      "subgroup": "",
+      "imageKey": "sq1ep_ua_ua",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ua_ua-1",
+          "notation": "1,0 / 3,0 / -1,-1 / 3,0 / -5,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ua_ub",
+      "displayName": "Ua / Ub",
+      "name": "Ua / Ub",
+      "subgroup": "",
+      "imageKey": "sq1ep_ua_ub",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ua_ub-1",
+          "notation": "1,0 / 5,-1 / -5,1 / 3,0 / 0,3 / -1,-1 / 1,-2 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ua_z",
+      "displayName": "Ua / Z",
+      "name": "Ua / Z",
+      "subgroup": "",
+      "imageKey": "sq1ep_ua_z",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ua_z-1",
+          "notation": "1,0 / 0,3 / -1,-1 / 1,-2 / 3,0 / 3,0 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ub_h",
+      "displayName": "Ub / H",
+      "name": "Ub / H",
+      "subgroup": "",
+      "imageKey": "sq1ep_ub_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ub_h-1",
+          "notation": "0,-1 / -3,0 / 1,4 / -4,-1 / -5,1 / -1,-4 / 1,4 / 0,-3 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ub_solved",
+      "displayName": "Ub / Solved",
+      "name": "Ub / Solved",
+      "subgroup": "",
+      "imageKey": "sq1ep_ub_solved",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ub_solved-1",
+          "notation": "/ 0,3 / 1,0 / -3,0 / -1,0 / 0,-3 / 1,0 / 3,0 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ub_ua",
+      "displayName": "Ub / Ua",
+      "name": "Ub / Ua",
+      "subgroup": "",
+      "imageKey": "sq1ep_ub_ua",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ub_ua-1",
+          "notation": "-2,0 / 3,0 / -1,-1 / 3,0 / -2,1 / -1,-1 / 3,0 / -5,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ub_ub",
+      "displayName": "Ub / Ub",
+      "name": "Ub / Ub",
+      "subgroup": "",
+      "imageKey": "sq1ep_ub_ub",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ub_ub-1",
+          "notation": "1,0 / 5,-1 / -2,1 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ub_z",
+      "displayName": "Ub / Z",
+      "name": "Ub / Z",
+      "subgroup": "",
+      "imageKey": "sq1ep_ub_z",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ub_z-1",
+          "notation": "1,0 / 0,3 / -1,-1 / 1,-2 / -3,0 / 3,0 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_adj",
+      "displayName": "W / Adj",
+      "name": "W / Adj",
+      "subgroup": "",
+      "imageKey": "sq1ep_w_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_adj-1",
+          "notation": "1,0 / 2,-1 / 1,1 / 2,-1 / -2,1 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_o",
+      "displayName": "W / O+",
+      "name": "W / O+",
+      "subgroup": "",
+      "imageKey": "sq1ep_w_o",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_o-1",
+          "notation": "1,0 / 2,-4 / 0,3 / 4,1 / 0,3 / 3,-3 / -1,-4 / 1,-2 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_o_2",
+      "displayName": "W / O-",
+      "name": "W / O-",
+      "subgroup": "",
+      "imageKey": "sq1ep_w_o_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_o_2-1",
+          "notation": "0,-1 / -2,4 / 0,-3 / -4,-1 / 0,-3 / -3,3 / 1,4 / -1,2 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_opp",
+      "displayName": "W / Opp",
+      "name": "W / Opp",
+      "subgroup": "",
+      "imageKey": "sq1ep_w_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_opp-1",
+          "notation": "1,0 / 5,-1 / -3,0 / 4,1 / 3,0 / -3,0 / 5,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w_w",
+      "displayName": "W / W",
+      "name": "W / W",
+      "subgroup": "",
+      "imageKey": "sq1ep_w_w",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w_w-1",
+          "notation": "1,0 / 5,-1 / -3,0 / 1,1 / 0,-3 / -1,-1 / -2,4 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "z_h",
+      "displayName": "Z / H",
+      "name": "Z / H",
+      "subgroup": "",
+      "imageKey": "sq1ep_z_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z_h-1",
+          "notation": "1,0 / 3,3 / 2,-1 / -3,3 / 4,-2 / 3,0 / -3,-3 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "z_solved",
+      "displayName": "Z / Solved",
+      "name": "Z / Solved",
+      "subgroup": "",
+      "imageKey": "sq1ep_z_solved",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z_solved-1",
+          "notation": "1,0 / -1,-1 / -3,0 / 1,1 / 3,0 / -1,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "z_ua",
+      "displayName": "Z / Ua",
+      "name": "Z / Ua",
+      "subgroup": "",
+      "imageKey": "sq1ep_z_ua",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z_ua-1",
+          "notation": "1,0 / 0,3 / -1,-1 / 1,-2 / 0,3 / 3,0 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "z_ub",
+      "displayName": "Z / Ub",
+      "name": "Z / Ub",
+      "subgroup": "",
+      "imageKey": "sq1ep_z_ub",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z_ub-1",
+          "notation": "1,0 / 0,3 / -1,-1 / 1,-2 / 0,-3 / 3,0 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "z_z",
+      "displayName": "Z / Z",
+      "name": "Z / Z",
+      "subgroup": "",
+      "imageKey": "sq1ep_z_z",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z_z-1",
+          "notation": "-2,0 / 0,3 / -1,-1 / 4,-2 / -1,-1 / -2,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

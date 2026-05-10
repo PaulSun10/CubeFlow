@@ -1,0 +1,895 @@
+{
+  "puzzle": "4x4",
+  "set": "PLLParity",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "opp_parity",
+      "displayName": "OPP Parity",
+      "name": "OPP Parity",
+      "subgroup": "Edge Swap",
+      "imageKey": "pllparity_opp_parity",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_parity-1",
+          "notation": "2R2 U2 2R2 Uw2 2R2 Uw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-2",
+          "notation": "2R2 U2' 2R2 Uw2' 2R2 Uw2'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-3",
+          "notation": "Uw2 2L2 Uw2 2L2 U2 2L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-4",
+          "notation": "2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-5",
+          "notation": "y r2 U2 r' U2 r2 U2 r2 U2 r' U2 r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-6",
+          "notation": "Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-7",
+          "notation": "Uw2' Rw2' U2' Rw2 R2' U2' Rw2 Uw2'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-8",
+          "notation": "Uw2 Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-9",
+          "notation": "2R2 U2 2R2 d2 2L2 d2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-10",
+          "notation": "2R2 U2 2R2 d2 2L2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-11",
+          "notation": "2R2 U2 2R2 u2 2R2 d2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-12",
+          "notation": "u2 2R2 u2 2R2 U2 2R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-13",
+          "notation": "u2 l2 U2 2L2 U2 l2 u2 U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-14",
+          "notation": "r2 R2 U2 r2 R2 u2 r2 R2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-15",
+          "notation": "<span class=\"minifiedalg\"><span class=\"mnemonics\">Parity Alg (2R2)</span> <span class=\"mnemonics\">Parity Alg (2R2)</span> <span class=\"mnemonics\">Parity Alg (2R2)</span></span><span class=\"fullalg\">2R2 U2 2R2 Uw2 2R2 Uw2 2R2 U2 2R2 Uw2 2R2 Uw2 2R2 U2 2R2 Uw2 2R2 Uw2</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-16",
+          "notation": "<span class=\"minifiedalg\"><span class=\"mnemonics\">Parity Alg (2R2)</span> R R'</span><span class=\"fullalg\">2R2 U2 2R2 Uw2 2R2 Uw2 R R'</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-17",
+          "notation": "Uw2 2R2 U2 2R2 U2 2R2 Uw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_parity-18",
+          "notation": "Rw2 R2' U2 Rw2 R2' Uw2 Rw2 R2' Uw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_parity",
+      "displayName": "Adj Parity",
+      "name": "Adj Parity",
+      "subgroup": "Edge Swap",
+      "imageKey": "pllparity_adj_parity",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_parity-1",
+          "notation": "R' U R U' 2R2 U2' 2R2 Uw2' 2R2 Uw2' U' R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-2",
+          "notation": "R U R' U' 2R2 U2' 2R2 Uw2' 2R2 Uw2' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-3",
+          "notation": "R U R' U Uw2 2L2 Uw2 2L2 U2 2L2 U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-4",
+          "notation": "U2 Rw U Rw' R U' Rw' U' Rw U Rw U' Rw' U' 2R' U Rw U R' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-5",
+          "notation": "u' R U' R' u' r2 U2 2R2 U2 r2 u R U R' u",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-6",
+          "notation": "R' U R U' Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2' U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-7",
+          "notation": "R' U R U' 2L2 U2 2L2 Uw2 2L2 Uw2 U' R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-8",
+          "notation": "R U R' U' u2 2R2 u2 2R2 U2 2R2 U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-9",
+          "notation": "R U R' U' r2 F2 U2 r2 R2 U2 F2 r2 U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-10",
+          "notation": "R U R' U' 2R2 U2 2R2 u2 2R2 u2 U2 U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-11",
+          "notation": "R U R' U' 2R2 U2 2R2 u2 2R2 u2 U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-12",
+          "notation": "R U R' U' Uw2 2R2 U2 2R2 U2 2R2 Uw2 U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_parity-13",
+          "notation": "<span class=\"minifiedalg\">R U R' U' <span class=\"mnemonics\">Parity Alg (Rw2 R2)</span> U' R U' R'</span><span class=\"fullalg\">R U R' U' Rw2 R2 U2 Rw2 R2 Uw2 Rw2 R2 Uw2 U' R U' R'</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cwo",
+      "displayName": "CwO",
+      "name": "CwO",
+      "subgroup": "Edge Swap",
+      "imageKey": "pllparity_cwo",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cwo-1",
+          "notation": "<span class=\"minifiedalg\">M2 U' M2 U' M' U2 M2 U2 M' <span class=\"mnemonics\">Parity Alg (2R2)</span></span><span class=\"fullalg\">M2 U' M2 U' M' U2 M2 U2 M' 2R2 U2 2R2 Uw2 2R2 Uw2</span>",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-2",
+          "notation": "Uw2 2L2 Uw2 2L2 U2 2R2 U M2 U M' U2 M2 U2 M'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-3",
+          "notation": "M2 U' M2 U' M' U2 M2 U2 M' Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-4",
+          "notation": "M' U' M2 U' M2 U' M' U2 M2 u2 2R2 u2 2R2 U2 2R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-5",
+          "notation": "M U' M2 U' M2 U' M U2 M2 2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-6",
+          "notation": "M' U' M2 U' M2 U' M' U2 M2 r2 F2 U2 r2 R2 U2 F2 r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-7",
+          "notation": "M2' U2 M' U M2' U M2' U M' U 2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-8",
+          "notation": "<span class=\"minifiedalg\">M2' U2 M' U M2' U M2' U M' U <span class=\"mnemonics\">Parity Alg (2R2)</span></span><span class=\"fullalg\">M2' U2 M' U M2' U M2' U M' U 2R2 U2 2R2 Uw2 2R2 Uw2</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "cwo-9",
+          "notation": "<span class=\"minifiedalg\">M2 U2 M U' M2 U' M2 U' M <span class=\"mnemonics\">Parity Alg (2R2)</span></span><span class=\"fullalg\">M2 U2 M U' M2 U' M2 U' M 2R2 U2 2R2 Uw2 2R2 Uw2</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ccwo",
+      "displayName": "CcwO",
+      "name": "CcwO",
+      "subgroup": "Edge Swap",
+      "imageKey": "pllparity_ccwo",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ccwo-1",
+          "notation": "Uw2 2L2 Uw2 2L2 U2 3Rw' Rw2 R' U2 M2 U2 M' U M2 U M2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "ccwo-2",
+          "notation": "<span class=\"minifiedalg\">M2 U' M2 U' M' U2 M2 U2 M' U' <span class=\"mnemonics\">Parity Alg (2R2)</span></span><span class=\"fullalg\">M2 U' M2 U' M' U2 M2 U2 M' U' 2R2 U2 2R2 Uw2 2R2 Uw2</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "ccwo-3",
+          "notation": "u2 2R2 u2 2R2 U2 2R2 M2 U' M2 U' M' U2 M2 U2 M'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "ccwo-4",
+          "notation": "M U' M2 U' M2 U' M U2 M2 U' 2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "ccwo-5",
+          "notation": "M' U' M2 U' M2 U' M' U2 M2 U' r2 F2 U2 r2 R2 U2 F2 r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "ccwo-6",
+          "notation": "M2 U M2 U M' U2 M2 U2 M' r2 F2 U2 r2 R2 U2 F2 r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "ccwo-7",
+          "notation": "M2' U' M2' U' M' U2' M2' U2' M' U' Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "ccwo-8",
+          "notation": "M2 U' M2 U' M' U2 M2 U2 M' U' Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "w",
+      "displayName": "W",
+      "name": "W",
+      "subgroup": "Edge Swap",
+      "imageKey": "pllparity_w",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w-1",
+          "notation": "R' U R' U' R' U' R' U R U Rw2 U2 2R2 Uw2 2R2 Uw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-2",
+          "notation": "y' R U' R U R U R U' R' U' r2 U2 2R2 u2 2R2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-3",
+          "notation": "R' U R' U' R' U' R3 U R U R2 2L2 U2 2L2 Uw2 2L2 Uw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-4",
+          "notation": "R' U R' U' R' U' R' U R U R2 Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-5",
+          "notation": "y' R U' R U R U R U' R' U' R2 u2 2R2 u2 2R2 U2 2R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-6",
+          "notation": "y2 R2 U R U R' U' R' U' R' U R' r2 F2 U2 r2 R2 U2 F2 r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-7",
+          "notation": "R' U R' U' R3 U' R' U R U Rw2 U2 2R2 Uw2 2R2 Uw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-8",
+          "notation": "<span class=\"minifiedalg\">y R U R' U' <span class=\"mnemonics\">Parity Alg (2R2)</span> R' U' R2 U' R' U R' U R</span><span class=\"fullalg\">y R U R' U' 2R2 U2 2R2 Uw2 2R2 Uw2 R' U' R2 U' R' U R' U R</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "w-9",
+          "notation": "R' U R' U' R' U' R' U R U R2 2L2 U2 2L2 Uw2 2L2 Uw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pj",
+      "displayName": "Pj",
+      "name": "Pj",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_pj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pj-1",
+          "notation": "R U R' U' R' F R2 U' R' U' R U R' F' U' 2L2 U2 2L2 Uw2 2L2 Uw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-2",
+          "notation": "Rw' R2 U' R' U 2R U' R U2 R' U' 2R U 2R' U' Rw' F Rw2 U' Rw' U' Rw U Rw' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-3",
+          "notation": "R U R' U' R' F R2 U' R' U' R U R' F' U' 2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-4",
+          "notation": "R U R' U' R' F R2 U' R' U' R U R' F' U u2 r2 U2 2R2 U2 r2 u2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-5",
+          "notation": "R U R' Fw2 F' R2 U2' Fw2 F2 U2' R2' Fw2 R U R' U' R' F R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-6",
+          "notation": "<span class=\"minifiedalg\">R U R' F' U' <span class=\"mnemonics\">Parity Alg (2R2)</span> U' R U R' U' R' F R2 U' R'</span><span class=\"fullalg\">R U R' F' U' 2R2 U2 2R2 Uw2 2R2 Uw2 U' R U R' U' R' F R2 U' R'</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-7",
+          "notation": "R U R' U' R' F R2 U' R' U' R U R' F' U 2L2 U2 2L2 Uw2 2L2 Uw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-8",
+          "notation": "Rw' R2 U' R' U Rw R' U' R U2' R' U' Rw R' U Rw' R U' Rw' F Rw2 U' Rw' U' Rw U Rw' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-9",
+          "notation": "R' Uw2 2R2 Uw2 2R2 U2 2R2 U R U' R' U R U R2 F' R U R U' R' F U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pj-10",
+          "notation": "<span class=\"minifiedalg\">y' <span class=\"mnemonics\">Parity Alg (2R2)</span> U' R U R' U' R' F R2 U' R' U' R U R' F'</span><span class=\"fullalg\">y' 2R2 U2 2R2 Uw2 2R2 Uw2 U' R U R' U' R' F R2 U' R' U' R U R' F'</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ba",
+      "displayName": "Ba",
+      "name": "Ba",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_ba",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ba-1",
+          "notation": "Uw2 2L2 Uw2 2L2 U2 2L2 U R U R' F' R U R' U' R' F R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "bb",
+      "displayName": "Bb",
+      "name": "Bb",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_bb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "bb-1",
+          "notation": "y x Rw2 U2 Rw2 Uw2 2R2 Uw2 B 3Rw' U R' U2 L U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "bb-2",
+          "notation": "<span class=\"minifiedalg\">R U R' U' R' F R2 U' R' <span class=\"mnemonics\">Parity Alg (2R2)</span> U R U R' F'</span><span class=\"fullalg\">R U R' U' R' F R2 U' R' 2R2 U2 2R2 Uw2 2R2 Uw2 U R U R' F'</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ca",
+      "displayName": "Ca",
+      "name": "Ca",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_ca",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ca-1",
+          "notation": "y2 Uw2 2R2 Uw2 2R2 U2 Rw2 F R U R U' R' F' R U2 R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cb",
+      "displayName": "Cb",
+      "name": "Cb",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_cb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cb-1",
+          "notation": "y R' U2 R U2 R' F R U R' U' R' F' Rw2 U2 2R2 Uw2 2R2 Uw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "da",
+      "displayName": "Da",
+      "name": "Da",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_da",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "da-1",
+          "notation": "R' U L' U2 R U' 3Rw B Rw2 U2 Rw2 Uw2 2R2 Uw2 x'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "db",
+      "displayName": "Db",
+      "name": "Db",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_db",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "db-1",
+          "notation": "R U R' F' R U R' U' R' F R2 U' R' u2 2R2 u2 2R2 U2 2R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ka",
+      "displayName": "Ka",
+      "name": "Ka",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_ka",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ka-1",
+          "notation": "y 3Lw' U R' D2 R U' R' D2 x' Rw2 U2 2R2 Uw2 2R2 Uw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kb",
+      "displayName": "Kb",
+      "name": "Kb",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_kb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kb-1",
+          "notation": "r2 F2 U2 r2 R2 U2 x R' D' R U2 R' D R r2 x' U'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "m",
+      "displayName": "M",
+      "name": "M",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_m",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "m-1",
+          "notation": "y2 Rw2 F2 U2 2R2 U R' U' R U R' D R D' R F2 U Rw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pa",
+      "displayName": "Pa",
+      "name": "Pa",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_pa",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pa-1",
+          "notation": "R U R' F' R U R' U' R' F R2 U' R' U' 2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pa-2",
+          "notation": "<span class=\"minifiedalg\">y2 U2 R U R' F' R U R' U' R' F R2 U' R' U' <span class=\"mnemonics\">Parity Alg (2R2)</span></span><span class=\"fullalg\">y2 U2 R U R' F' R U R' U' R' F R2 U' R' U' 2R2 U2 2R2 Uw2 2R2 Uw2</span>",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pb",
+      "displayName": "Pb",
+      "name": "Pb",
+      "subgroup": "Adj Corner Swap",
+      "imageKey": "pllparity_pb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pb-1",
+          "notation": "2R2 U2 2R2 u2 2R2 u2 R U R' F' R U R' U' R' F R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "diag_c",
+      "displayName": "Diag C",
+      "name": "Diag C",
+      "subgroup": "Diag Corner Swap",
+      "imageKey": "pllparity_diag_c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "diag_c-1",
+          "notation": "F R U' R' U' R U R' F' U' 2R2 U2 2R2 u2 2R2 u2 U' R U R' U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "diag_c-2",
+          "notation": "R' U' R U' R U R' U' R' F R2 U' R' U' R U R' F' U u2 r2 U2 2R2 U2 r2 u2 R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "diag_c-3",
+          "notation": "U2 R U R' U' 2R2 U2 2R2 u2 2R2 u2 U' R U' R' U2 F R U' R' U' R U R' F' R U R' U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "diag_c-4",
+          "notation": "U2 R U R' U' 2R2 U2 2R2 u2 2R2 u2 U2 U R U' R' U2 F R U' R' U' R U R' F' R U R' U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "diag_c-5",
+          "notation": "F R U' R' U' R U R' F' r2 U2 r' U2 r2 U2 r2 U2 r' U2 r2 R U R' U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "q",
+      "displayName": "Q",
+      "name": "Q",
+      "subgroup": "Diag Corner Swap",
+      "imageKey": "pllparity_q",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "q-1",
+          "notation": "z Rw2 Uw2' R2' Uw2' F R U R' U' R U R' U' R U R' U' F' U2' R2 Uw2' Rw2' z'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "sa",
+      "displayName": "Sa",
+      "name": "Sa",
+      "subgroup": "Diag Corner Swap",
+      "imageKey": "pllparity_sa",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sa-1",
+          "notation": "F R U' R' U' R U R' F' R U R' U' R' F R F' U' 2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "sb",
+      "displayName": "Sb",
+      "name": "Sb",
+      "subgroup": "Diag Corner Swap",
+      "imageKey": "pllparity_sb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sb-1",
+          "notation": "F R U' R' U' R U R' F' R U R' U' R' F R F' 2R2 U2 2R2 u2 2R2 u2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "x",
+      "displayName": "X",
+      "name": "X",
+      "subgroup": "Diag Corner Swap",
+      "imageKey": "pllparity_x",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x-1",
+          "notation": "Rw2 F2 U2 Rw2 F' U' R' U R U' R' U R U' R' U R F R2 U2 F2 Rw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

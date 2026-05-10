@@ -1,0 +1,110 @@
+{
+  "puzzle": "Pyraminx",
+  "set": "L3E",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "sune",
+      "displayName": "Sune",
+      "name": "Sune",
+      "subgroup": "",
+      "imageKey": "l3e_sune",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sune-1",
+          "notation": "R U R' U R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "antisune",
+      "displayName": "AntiSune",
+      "name": "AntiSune",
+      "subgroup": "",
+      "imageKey": "l3e_antisune",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "antisune-1",
+          "notation": "R' U' R U' R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "lefty_bars",
+      "displayName": "Lefty Bars",
+      "name": "Lefty Bars",
+      "subgroup": "",
+      "imageKey": "l3e_lefty_bars",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "lefty_bars-1",
+          "notation": "R' U' L' U L R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "righty_bars",
+      "displayName": "Righty Bars",
+      "name": "Righty Bars",
+      "subgroup": "",
+      "imageKey": "l3e_righty_bars",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "righty_bars-1",
+          "notation": "U' R' L' U' L U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_flip",
+      "displayName": "2 Flip",
+      "name": "2 Flip",
+      "subgroup": "",
+      "imageKey": "l3e_2_flip",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_flip-1",
+          "notation": "L R' L' R U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "2_flip-2",
+          "notation": "R' L R L' U L' U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

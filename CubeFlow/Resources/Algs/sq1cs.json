@@ -1,0 +1,3219 @@
+{
+  "puzzle": "SQ1",
+  "set": "SQ1CS",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "kite_kite",
+      "displayName": "Kite / Kite",
+      "name": "Kite / Kite",
+      "subgroup": "1 Slice",
+      "imageKey": "sq1cs_kite_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_kite-1",
+          "notation": "/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_right_fist",
+      "displayName": "Left fist / Right fist",
+      "name": "Left fist / Right fist",
+      "subgroup": "2 Slices",
+      "imageKey": "sq1cs_left_fist_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_right_fist-1",
+          "notation": "/3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_left_fist",
+      "displayName": "Right fist / Left fist",
+      "name": "Right fist / Left fist",
+      "subgroup": "2 Slices",
+      "imageKey": "sq1cs_right_fist_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_left_fist-1",
+          "notation": "/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_barrel",
+      "displayName": "Barrel / Barrel",
+      "name": "Barrel / Barrel",
+      "subgroup": "2 Slices",
+      "imageKey": "sq1cs_barrel_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_barrel-1",
+          "notation": "/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_square",
+      "displayName": "Muffin / Square",
+      "name": "Muffin / Square",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_muffin_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_square-1",
+          "notation": "/2,0/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_muffin",
+      "displayName": "Square / Muffin",
+      "name": "Square / Muffin",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_square_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_muffin-1",
+          "notation": "/0,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_square",
+      "displayName": "Shield / Square",
+      "name": "Shield / Square",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_shield_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_square-1",
+          "notation": "/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_shield",
+      "displayName": "Square / Shield",
+      "name": "Square / Shield",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_square_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_shield-1",
+          "notation": "/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_left_paw",
+      "displayName": "Right paw / Left paw",
+      "name": "Right paw / Left paw",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_right_paw_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_left_paw-1",
+          "notation": "/-4,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_right_paw",
+      "displayName": "Left paw / Right paw",
+      "name": "Left paw / Right paw",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_left_paw_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_right_paw-1",
+          "notation": "/-1,4/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_muffin",
+      "displayName": "Muffin / Muffin",
+      "name": "Muffin / Muffin",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_muffin_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_muffin-1",
+          "notation": "/-2,0/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_shield",
+      "displayName": "Shield / Shield",
+      "name": "Shield / Shield",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_shield_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_shield-1",
+          "notation": "/1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_scallop",
+      "displayName": "Scallop / Scallop",
+      "name": "Scallop / Scallop",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_scallop_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_scallop-1",
+          "notation": "/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_kite",
+      "displayName": "Barrel / Kite",
+      "name": "Barrel / Kite",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_barrel_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_kite-1",
+          "notation": "/-3,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_barrel",
+      "displayName": "Kite / Barrel",
+      "name": "Kite / Barrel",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_kite_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_barrel-1",
+          "notation": "/0,3/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_kite",
+      "displayName": "Scallop / Kite",
+      "name": "Scallop / Kite",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_scallop_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_kite-1",
+          "notation": "/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_scallop",
+      "displayName": "Kite / Scallop",
+      "name": "Kite / Scallop",
+      "subgroup": "3 Slices",
+      "imageKey": "sq1cs_kite_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_scallop-1",
+          "notation": "/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "star_6_2",
+      "displayName": "Star / 6-2",
+      "name": "Star / 6-2",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_star_6_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "star_6_2-1",
+          "notation": "/2,4/-4,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6_2_star",
+      "displayName": "6-2 / Star",
+      "name": "6-2 / Star",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_6_2_star",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6_2_star-1",
+          "notation": "/-4,-2/-1,4/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "star_8",
+      "displayName": "Star / 8",
+      "name": "Star / 8",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_star_8",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "star_8-1",
+          "notation": "/-4,-2/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "8_star",
+      "displayName": "8 / Star",
+      "name": "8 / Star",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_8_star",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8_star-1",
+          "notation": "/2,4/-2,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "star_4_4",
+      "displayName": "Star / 4-4",
+      "name": "Star / 4-4",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_star_4_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "star_4_4-1",
+          "notation": "/-2,-2/1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4_4_star",
+      "displayName": "4-4 / Star",
+      "name": "4-4 / Star",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_4_4_star",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4_4_star-1",
+          "notation": "/2,2/0,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_4_2_parallel_edges",
+      "displayName": "Left 4-2 / Parallel Edges",
+      "name": "Left 4-2 / Parallel Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_left_4_2_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_4_2_parallel_edges-1",
+          "notation": "/2,3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_left_4_2",
+      "displayName": "Parallel Edges / Left 4-2",
+      "name": "Parallel Edges / Left 4-2",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_parallel_edges_left_4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_left_4_2-1",
+          "notation": "/3,2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_4_2_parallel_edges",
+      "displayName": "Right 4-2 / Parallel Edges",
+      "name": "Right 4-2 / Parallel Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_right_4_2_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_4_2_parallel_edges-1",
+          "notation": "/-2,-3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_right_4_2",
+      "displayName": "Parallel Edges / Right 4-2",
+      "name": "Parallel Edges / Right 4-2",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_parallel_edges_right_4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_right_4_2-1",
+          "notation": "/4,0/2,-3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_5_1_perpendicular_edges",
+      "displayName": "Right 5-1 / Perpendicular Edges",
+      "name": "Right 5-1 / Perpendicular Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_right_5_1_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_5_1_perpendicular_edges-1",
+          "notation": "/0,-4/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_right_5_1",
+      "displayName": "Perpendicular Edges / Right 5-1",
+      "name": "Perpendicular Edges / Right 5-1",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_right_5_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_right_5_1-1",
+          "notation": "/-4,0/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_5_1_perpendicular_edges",
+      "displayName": "Left 5-1 / Perpendicular Edges",
+      "name": "Left 5-1 / Perpendicular Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_left_5_1_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_5_1_perpendicular_edges-1",
+          "notation": "/0,4/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_left_5_1",
+      "displayName": "Perpendicular Edges / Left 5-1",
+      "name": "Perpendicular Edges / Left 5-1",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_left_5_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_left_5_1-1",
+          "notation": "/4,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4_1_1_perpendicular_edges",
+      "displayName": "4-1-1 / Perpendicular Edges",
+      "name": "4-1-1 / Perpendicular Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_4_1_1_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4_1_1_perpendicular_edges-1",
+          "notation": "/2,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_4_1_1",
+      "displayName": "Perpendicular Edges / 4-1-1",
+      "name": "Perpendicular Edges / 4-1-1",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_4_1_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_4_1_1-1",
+          "notation": "/0,-2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_2_1_perpendicular_edges",
+      "displayName": "3-2-1 / Perpendicular Edges",
+      "name": "3-2-1 / Perpendicular Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_3_2_1_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_2_1_perpendicular_edges-1",
+          "notation": "/0,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_3_2_1",
+      "displayName": "Perpendicular Edges / 3-2-1",
+      "name": "Perpendicular Edges / 3-2-1",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_3_2_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_3_2_1-1",
+          "notation": "/2,1/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_1_2_perpendicular_edges",
+      "displayName": "3-1-2 / Perpendicular Edges",
+      "name": "3-1-2 / Perpendicular Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_3_1_2_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_1_2_perpendicular_edges-1",
+          "notation": "/-1,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_3_1_2",
+      "displayName": "Perpendicular Edges / 3-1-2",
+      "name": "Perpendicular Edges / 3-1-2",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_3_1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_3_1_2-1",
+          "notation": "/2,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_3_perpendicular_edges",
+      "displayName": "3-3 / Perpendicular Edges",
+      "name": "3-3 / Perpendicular Edges",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_3_3_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_3_perpendicular_edges-1",
+          "notation": "/0,-2/-1,4/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_3_3",
+      "displayName": "Perpendicular Edges / 3-3",
+      "name": "Perpendicular Edges / 3-3",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_3_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_3_3-1",
+          "notation": "/-2,0/-5,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_5_1_pair",
+      "displayName": "Right 5-1 / Pair",
+      "name": "Right 5-1 / Pair",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_right_5_1_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_5_1_pair-1",
+          "notation": "/3,-2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_right_5_1",
+      "displayName": "Pair / Right 5-1",
+      "name": "Pair / Right 5-1",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_pair_right_5_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_right_5_1-1",
+          "notation": "/-2,3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_5_1_pair",
+      "displayName": "Left 5-1 / Pair",
+      "name": "Left 5-1 / Pair",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_left_5_1_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_5_1_pair-1",
+          "notation": "/-3,2/-2,-1/0,-3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_left_5_1",
+      "displayName": "Pair / Left 5-1",
+      "name": "Pair / Left 5-1",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_pair_left_5_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_left_5_1-1",
+          "notation": "/-2,3/-2,-1/-3,0 /-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4_1_1_pair",
+      "displayName": "4-1-1 / Pair",
+      "name": "4-1-1 / Pair",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_4_1_1_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4_1_1_pair-1",
+          "notation": "/0,4/4,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_4_1_1",
+      "displayName": "Pair / 4-1-1",
+      "name": "Pair / 4-1-1",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_pair_4_1_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_4_1_1-1",
+          "notation": "/-4,0/4,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_2_2_pair",
+      "displayName": "2-2-2 / Pair",
+      "name": "2-2-2 / Pair",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_2_2_2_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_2_2_pair-1",
+          "notation": "/-2,0/0,1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_2_2_2",
+      "displayName": "Pair / 2-2-2",
+      "name": "Pair / 2-2-2",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_pair_2_2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_2_2_2-1",
+          "notation": "/0,2/-1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_4_2_pair",
+      "displayName": "Left 4-2 / Pair",
+      "name": "Left 4-2 / Pair",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_left_4_2_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_4_2_pair-1",
+          "notation": "/2,0/-2,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_left_4_2",
+      "displayName": "Pair / Left 4-2",
+      "name": "Pair / Left 4-2",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_pair_left_4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_left_4_2-1",
+          "notation": "/0,2/2,1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_4_2_pair",
+      "displayName": "Right 4-2 / Pair",
+      "name": "Right 4-2 / Pair",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_right_4_2_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_4_2_pair-1",
+          "notation": "/0,4/1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_right_4_2",
+      "displayName": "Pair / Right 4-2",
+      "name": "Pair / Right 4-2",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_pair_right_4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_right_4_2-1",
+          "notation": "/-2,0/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6_pair",
+      "displayName": "6 / Pair",
+      "name": "6 / Pair",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_6_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6_pair-1",
+          "notation": "/0,4/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_6",
+      "displayName": "Pair / 6",
+      "name": "Pair / 6",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_pair_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_6-1",
+          "notation": "/-4,0/-2,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_left_paw",
+      "displayName": "Right fist / Left paw",
+      "name": "Right fist / Left paw",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_right_fist_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_left_paw-1",
+          "notation": "/0,-4/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_right_fist",
+      "displayName": "Left paw / Right fist",
+      "name": "Left paw / Right fist",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_left_paw_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_right_fist-1",
+          "notation": "/4,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_right_paw",
+      "displayName": "Left fist / Right paw",
+      "name": "Left fist / Right paw",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_left_fist_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_right_paw-1",
+          "notation": "/-1,0/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_left_fist",
+      "displayName": "Right paw / Left fist",
+      "name": "Right paw / Left fist",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_right_paw_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_left_fist-1",
+          "notation": "/0,1/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_right_paw",
+      "displayName": "Right paw / Right paw",
+      "name": "Right paw / Right paw",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_right_paw_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_right_paw-1",
+          "notation": "/-1,2/2,2/0,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_shield",
+      "displayName": "Muffin / Shield",
+      "name": "Muffin / Shield",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_muffin_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_shield-1",
+          "notation": "/3,0/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_muffin",
+      "displayName": "Shield / Muffin",
+      "name": "Shield / Muffin",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_shield_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_muffin-1",
+          "notation": "/0,-3/2,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_barrel",
+      "displayName": "Scallop / Barrel",
+      "name": "Scallop / Barrel",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_scallop_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_barrel-1",
+          "notation": "/4,0/-1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_scallop",
+      "displayName": "Barrel / Scallop",
+      "name": "Barrel / Scallop",
+      "subgroup": "4 Slices",
+      "imageKey": "sq1cs_barrel_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_scallop-1",
+          "notation": "/0,-4/0,1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_square",
+      "displayName": "Right paw / Square",
+      "name": "Right paw / Square",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_paw_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_square-1",
+          "notation": "0,-1/1,0/-2,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_right_paw",
+      "displayName": "Square / Right paw",
+      "name": "Square / Right paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_square_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_right_paw-1",
+          "notation": "1,0/0,-1/0,2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_square",
+      "displayName": "Left paw / Square",
+      "name": "Left paw / Square",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_square-1",
+          "notation": "/2,-3/-2,0/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_left_paw",
+      "displayName": "Square / Left paw",
+      "name": "Square / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_square_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_left_paw-1",
+          "notation": "/3,-2/0,2/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_square",
+      "displayName": "Scallop / Square",
+      "name": "Scallop / Square",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_scallop_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_square-1",
+          "notation": "/2,0/-4,0/1,2/3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_scallop",
+      "displayName": "Square / Scallop",
+      "name": "Square / Scallop",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_square_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_scallop-1",
+          "notation": "/0,-2/0,4/-2,-1/0,-3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4_1_1_parallel_edges",
+      "displayName": "4-1-1 / Parallel Edges",
+      "name": "4-1-1 / Parallel Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_4_1_1_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4_1_1_parallel_edges-1",
+          "notation": "/3,-2/0,4/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_4_1_1",
+      "displayName": "Parallel Edges / 4-1-1",
+      "name": "Parallel Edges / 4-1-1",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_parallel_edges_4_1_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_4_1_1-1",
+          "notation": "/-2,3/4,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6_parallel_edges",
+      "displayName": "6 / Parallel Edges",
+      "name": "6 / Parallel Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_6_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6_parallel_edges-1",
+          "notation": "/3,2/2,4/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_6",
+      "displayName": "Parallel Edges / 6",
+      "name": "Parallel Edges / 6",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_parallel_edges_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_6-1",
+          "notation": "/3,2/2,4/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_2_1_parallel_edges",
+      "displayName": "3-2-1 / Parallel Edges",
+      "name": "3-2-1 / Parallel Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_3_2_1_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_2_1_parallel_edges-1",
+          "notation": "/4,0/2,-3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_3_2_1",
+      "displayName": "Parallel Edges / 3-2-1",
+      "name": "Parallel Edges / 3-2-1",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_parallel_edges_3_2_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_3_2_1-1",
+          "notation": "/-3,-2/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_1_2_parallel_edges",
+      "displayName": "3-1-2 / Parallel Edges",
+      "name": "3-1-2 / Parallel Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_3_1_2_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_1_2_parallel_edges-1",
+          "notation": "/2,3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_3_1_2",
+      "displayName": "Parallel Edges / 3-1-2",
+      "name": "Parallel Edges / 3-1-2",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_parallel_edges_3_1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_3_1_2-1",
+          "notation": "/3,2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_3_parallel_edges",
+      "displayName": "3-3 / Parallel Edges",
+      "name": "3-3 / Parallel Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_3_3_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_3_parallel_edges-1",
+          "notation": "/-2,1/-2,0/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_3_3",
+      "displayName": "Parallel Edges / 3-3",
+      "name": "Parallel Edges / 3-3",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_parallel_edges_3_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_3_3-1",
+          "notation": "/1,-2/0,-2/-1,-2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_5_1_parallel_edges",
+      "displayName": "Left 5-1 / Parallel Edges",
+      "name": "Left 5-1 / Parallel Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_5_1_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_5_1_parallel_edges-1",
+          "notation": "/-3,0/0,-4/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_left_5_1",
+      "displayName": "Parallel Edges / Left 5-1",
+      "name": "Parallel Edges / Left 5-1",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_parallel_edges_left_5_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_left_5_1-1",
+          "notation": "/-4,1/0,-4/0,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_5_1_parallel_edges",
+      "displayName": "Right 5-1 / Parallel Edges",
+      "name": "Right 5-1 / Parallel Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_5_1_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_5_1_parallel_edges-1",
+          "notation": "/3,0/0,4/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_right_5_1",
+      "displayName": "Parallel Edges / Right 5-1",
+      "name": "Parallel Edges / Right 5-1",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_parallel_edges_right_5_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_right_5_1-1",
+          "notation": "/0,3/4,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_4_2_perpendicular_edges",
+      "displayName": "Right 4-2 / Perpendicular Edges",
+      "name": "Right 4-2 / Perpendicular Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_4_2_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_4_2_perpendicular_edges-1",
+          "notation": "/-4,3/-3,2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_right_4_2",
+      "displayName": "Perpendicular Edges / Right 4-2",
+      "name": "Perpendicular Edges / Right 4-2",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_right_4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_right_4_2-1",
+          "notation": "/-4,3/-3,2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_4_2_perpendicular_edges_2",
+      "displayName": "Right 4-2 / Perpendicular Edges",
+      "name": "Right 4-2 / Perpendicular Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_4_2_perpendicular_edges_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_4_2_perpendicular_edges_2-1",
+          "notation": "/-3,4/-2,3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_left_4_2",
+      "displayName": "Perpendicular Edges / Left 4-2",
+      "name": "Perpendicular Edges / Left 4-2",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_left_4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_left_4_2-1",
+          "notation": "/0,-3/-4,3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6_perpendicular_edges",
+      "displayName": "6 / Perpendicular Edges",
+      "name": "6 / Perpendicular Edges",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_6_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6_perpendicular_edges-1",
+          "notation": "/-3,-4/-2,3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_6",
+      "displayName": "Perpendicular Edges / 6",
+      "name": "Perpendicular Edges / 6",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_6-1",
+          "notation": "/-3,-2/2,-3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_2_1_pair",
+      "displayName": "3-2-1 / Pair",
+      "name": "3-2-1 / Pair",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_3_2_1_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_2_1_pair-1",
+          "notation": "/0,5/-3,2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_3_2_1",
+      "displayName": "Pair / 3-2-1",
+      "name": "Pair / 3-2-1",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_pair_3_2_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_3_2_1-1",
+          "notation": "/-5,0/-2,3/2,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_1_2_pair",
+      "displayName": "3-1-2 / Pair",
+      "name": "3-1-2 / Pair",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_3_1_2_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_1_2_pair-1",
+          "notation": "/0,-5/-3,4/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_3_1_2",
+      "displayName": "Pair / 3-1-2",
+      "name": "Pair / 3-1-2",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_pair_3_1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_3_1_2-1",
+          "notation": "0,2/-2,2/0,-4/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_3_pair",
+      "displayName": "3-3 / Pair",
+      "name": "3-3 / Pair",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_3_3_pair",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_3_pair-1",
+          "notation": "/0,-2/3,0/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pair_3_3",
+      "displayName": "Pair / 3-3",
+      "name": "Pair / 3-3",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_pair_3_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pair_3_3-1",
+          "notation": "/2,0/0,-3/2,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_left_paw",
+      "displayName": "Left paw / Left paw",
+      "name": "Left paw / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_left_paw-1",
+          "notation": "/1,0/-2,-2/-1,-2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_left_paw",
+      "displayName": "Left fist / Left paw",
+      "name": "Left fist / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_fist_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_left_paw-1",
+          "notation": "/0,2/0,-4/5,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_left_fist",
+      "displayName": "Left paw / Left fist",
+      "name": "Left paw / Left fist",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_left_fist-1",
+          "notation": "/-2,0/4,0/2,-5/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_right_paw",
+      "displayName": "Right fist / Right paw",
+      "name": "Right fist / Right paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_fist_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_right_paw-1",
+          "notation": "/-2,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_right_fist",
+      "displayName": "Right paw / Right fist",
+      "name": "Right paw / Right fist",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_paw_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_right_fist-1",
+          "notation": "/0,2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_muffin",
+      "displayName": "Right paw / Muffin",
+      "name": "Right paw / Muffin",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_paw_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_muffin-1",
+          "notation": "/-1,0/2,0/-2,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_right_paw",
+      "displayName": "Muffin / Right paw",
+      "name": "Muffin / Right paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_muffin_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_right_paw-1",
+          "notation": "/0,-1/0,2/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_muffin",
+      "displayName": "Left paw / Muffin",
+      "name": "Left paw / Muffin",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_muffin-1",
+          "notation": "/1,0/-2,0/2,1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_left_paw",
+      "displayName": "Muffin / Left paw",
+      "name": "Muffin / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_muffin_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_left_paw-1",
+          "notation": "/0,-1/0,2/-1,-2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_shield",
+      "displayName": "Left paw / Shield",
+      "name": "Left paw / Shield",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_shield-1",
+          "notation": "/0,-1/2,-3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_left_paw",
+      "displayName": "Shield / Left paw",
+      "name": "Shield / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_shield_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_left_paw-1",
+          "notation": "/1,0/3,-2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_shield",
+      "displayName": "Right paw / Shield",
+      "name": "Right paw / Shield",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_paw_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_shield-1",
+          "notation": "/1,0/-2,3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_right_paw",
+      "displayName": "Shield / Right paw",
+      "name": "Shield / Right paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_shield_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_right_paw-1",
+          "notation": "/0,-1/-3,2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_shield",
+      "displayName": "Right fist / Shield",
+      "name": "Right fist / Shield",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_fist_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_shield-1",
+          "notation": "/-1,-2/0,2/-5,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_right_fist",
+      "displayName": "Shield / Right fist",
+      "name": "Shield / Right fist",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_shield_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_right_fist-1",
+          "notation": "/-1,-2/0,2/-5,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_shield",
+      "displayName": "Left fist / Shield",
+      "name": "Left fist / Shield",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_fist_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_shield-1",
+          "notation": "/-1,0/0,2/-5,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_left_fist",
+      "displayName": "Shield / Left fist",
+      "name": "Shield / Left fist",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_shield_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_left_fist-1",
+          "notation": "/0,1/-2,0/-2,5/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_scallop",
+      "displayName": "Muffin / Scallop",
+      "name": "Muffin / Scallop",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_muffin_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_scallop-1",
+          "notation": "/0,2/-3,4/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_muffin",
+      "displayName": "Scallop / Muffin",
+      "name": "Scallop / Muffin",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_scallop_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_muffin-1",
+          "notation": "/-2,0/-4,3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_scallop",
+      "displayName": "Left fist / Scallop",
+      "name": "Left fist / Scallop",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_fist_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_scallop-1",
+          "notation": "/1,0/0,-4/-1,4/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_left_fist",
+      "displayName": "Scallop / Left fist",
+      "name": "Scallop / Left fist",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_scallop_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_left_fist-1",
+          "notation": "/0,-1/4,0/-4,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_scallop",
+      "displayName": "Right fist / Scallop",
+      "name": "Right fist / Scallop",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_fist_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_scallop-1",
+          "notation": "/-1,0/0,4/1,-4/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_right_fist",
+      "displayName": "Scallop / Right fist",
+      "name": "Scallop / Right fist",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_scallop_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_right_fist-1",
+          "notation": "/0,1/-4,0/4,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_scallop",
+      "displayName": "Left paw / Scallop",
+      "name": "Left paw / Scallop",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_scallop-1",
+          "notation": "/3,2/-3,2/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_left_paw",
+      "displayName": "Scallop / Left paw",
+      "name": "Scallop / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_scallop_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_left_paw-1",
+          "notation": "/-2,-3/-2,3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_scallop",
+      "displayName": "Right paw / Scallop",
+      "name": "Right paw / Scallop",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_paw_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_scallop-1",
+          "notation": "/-3,-2/3,-2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_right_paw",
+      "displayName": "Scallop / Right paw",
+      "name": "Scallop / Right paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_scallop_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_right_paw-1",
+          "notation": "/2,3/2,-3/2,1/3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_scallop",
+      "displayName": "Shield / Scallop",
+      "name": "Shield / Scallop",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_shield_scallop",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_scallop-1",
+          "notation": "/0,2/0,-4/-1,-2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "scallop_shield",
+      "displayName": "Scallop / Shield",
+      "name": "Scallop / Shield",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_scallop_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "scallop_shield-1",
+          "notation": "/-2,0/4,0/2,1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_barrel",
+      "displayName": "Left paw / Barrel",
+      "name": "Left paw / Barrel",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_barrel-1",
+          "notation": "/2,-1/-4,3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_left_paw",
+      "displayName": "Barrel / Left paw",
+      "name": "Barrel / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_barrel_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_left_paw-1",
+          "notation": "/1,-2/-3,4/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_barrel",
+      "displayName": "Right paw / Barrel",
+      "name": "Right paw / Barrel",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_paw_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_barrel-1",
+          "notation": "/2,-1/3,-4/1,2/0,3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_right_paw",
+      "displayName": "Barrel / Right paw",
+      "name": "Barrel / Right paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_barrel_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_right_paw-1",
+          "notation": "/1,-2/4,-3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_barrel",
+      "displayName": "Shield / Barrel",
+      "name": "Shield / Barrel",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_shield_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_barrel-1",
+          "notation": "/-2,0/2,0/-1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_shield",
+      "displayName": "Barrel / Shield",
+      "name": "Barrel / Shield",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_barrel_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_shield-1",
+          "notation": "/0,2/0,-2/0,1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_paw_kite",
+      "displayName": "Left paw / Kite",
+      "name": "Left paw / Kite",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_left_paw_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_paw_kite-1",
+          "notation": "/0,1/2,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_left_paw",
+      "displayName": "Kite / Left paw",
+      "name": "Kite / Left paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_kite_left_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_left_paw-1",
+          "notation": "/1,0/-1,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "shield_kite",
+      "displayName": "Shield / Kite",
+      "name": "Shield / Kite",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_shield_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "shield_kite-1",
+          "notation": "/0,-2/-1,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_shield",
+      "displayName": "Kite / Shield",
+      "name": "Kite / Shield",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_kite_shield",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_shield-1",
+          "notation": "/-2,0/2,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_paw_kite",
+      "displayName": "Right paw / Kite",
+      "name": "Right paw / Kite",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_right_paw_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_paw_kite-1",
+          "notation": "/0,-1/2,1/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_right_paw",
+      "displayName": "Kite / Right paw",
+      "name": "Kite / Right paw",
+      "subgroup": "5 Slices",
+      "imageKey": "sq1cs_kite_right_paw",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_right_paw-1",
+          "notation": "/-1,0/0,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_square",
+      "displayName": "Left fist / Square",
+      "name": "Left fist / Square",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_left_fist_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_square-1",
+          "notation": "/-4,0/1,2/-2,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_left_fist",
+      "displayName": "Square / Left fist",
+      "name": "Square / Left fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_square_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_left_fist-1",
+          "notation": "/0,4/-2,-1/0,2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_square",
+      "displayName": "Right fist / Square",
+      "name": "Right fist / Square",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_right_fist_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_square-1",
+          "notation": "0,-1/0,1/4,0/-2,-1/2,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_right_fist",
+      "displayName": "Square / Right fist",
+      "name": "Square / Right fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_square_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_right_fist-1",
+          "notation": "1,0/-1,0/0,-4/1,2/0,-2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_square",
+      "displayName": "Barrel / Square",
+      "name": "Barrel / Square",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_barrel_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_square-1",
+          "notation": "/2,2/-2,-1/2,2/-1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_barrel",
+      "displayName": "Square / Barrel",
+      "name": "Square / Barrel",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_square_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_barrel-1",
+          "notation": "/2,2/-1,2/2,2/0,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "star_7_1",
+      "displayName": "Star / 7-1",
+      "name": "Star / 7-1",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_star_7_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "star_7_1-1",
+          "notation": "/-2,0/-2,-1/-3,2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "7_1_star",
+      "displayName": "7-1 / Star",
+      "name": "7-1 / Star",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_7_1_star",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "7_1_star-1",
+          "notation": "1,0/0,-2/-1,-2/ 2,-3/-2,-1/-3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "star_5_3",
+      "displayName": "Star / 5-3",
+      "name": "Star / 5-3",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_star_5_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "star_5_3-1",
+          "notation": "0,3/-4,0/-2,-1/-3,2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "5_3_star",
+      "displayName": "5-3 / Star",
+      "name": "5-3 / Star",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_5_3_star",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "5_3_star-1",
+          "notation": "/0,4/1,2/-2,3/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_2_2_parallel_edges",
+      "displayName": "2-2-2 / Parallel Edges",
+      "name": "2-2-2 / Parallel Edges",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_2_2_2_parallel_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_2_2_parallel_edges-1",
+          "notation": "/6,-3/2,0/2,1/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "parallel_edges_2_2_2",
+      "displayName": "Parallel Edges / 2-2-2",
+      "name": "Parallel Edges / 2-2-2",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_parallel_edges_2_2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "parallel_edges_2_2_2-1",
+          "notation": "/0,3/2,0/2,1/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2_2_2_perpendicular_edges",
+      "displayName": "2-2-2 / Perpendicular Edges",
+      "name": "2-2-2 / Perpendicular Edges",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_2_2_2_perpendicular_edges",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2_2_2_perpendicular_edges-1",
+          "notation": "/-1,0/2,0/0,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "perpendicular_edges_2_2_2",
+      "displayName": "Perpendicular Edges / 2-2-2",
+      "name": "Perpendicular Edges / 2-2-2",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_perpendicular_edges_2_2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "perpendicular_edges_2_2_2-1",
+          "notation": "/0,-1/0,2/2,1/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_left_fist",
+      "displayName": "Left fist / Left fist",
+      "name": "Left fist / Left fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_left_fist_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_left_fist-1",
+          "notation": "/0,-2/0,2/0,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_right_fist",
+      "displayName": "Right fist / Right fist",
+      "name": "Right fist / Right fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_right_fist_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_right_fist-1",
+          "notation": "/2,0/-2,0/2,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_muffin",
+      "displayName": "Right fist / Muffin",
+      "name": "Right fist / Muffin",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_right_fist_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_muffin-1",
+          "notation": "/4,0/-2,-1/2,0/-1,4/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_right_fist",
+      "displayName": "Muffin / Right fist",
+      "name": "Muffin / Right fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_muffin_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_right_fist-1",
+          "notation": "/0,-4/1,2/0,-2/-4,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_muffin",
+      "displayName": "Left fist / Muffin",
+      "name": "Left fist / Muffin",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_left_fist_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_muffin-1",
+          "notation": "/4,0/0,-1/2,0/-1,4/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_left_fist",
+      "displayName": "Muffin / Left fist",
+      "name": "Muffin / Left fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_muffin_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_left_fist-1",
+          "notation": "/0,-4/1,0/0,-2/-4,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_barrel",
+      "displayName": "Right fist / Barrel",
+      "name": "Right fist / Barrel",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_right_fist_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_barrel-1",
+          "notation": "/-2,0/-1,0/2,0/1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_right_fist",
+      "displayName": "Barrel / Right fist",
+      "name": "Barrel / Right fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_barrel_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_right_fist-1",
+          "notation": "/0,2/0,1/0,-2/-2,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_barrel",
+      "displayName": "Left fist / Barrel",
+      "name": "Left fist / Barrel",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_left_fist_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_barrel-1",
+          "notation": "/2,0/1,0/-2,0/-1,-2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_left_fist",
+      "displayName": "Barrel / Left fist",
+      "name": "Barrel / Left fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_barrel_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_left_fist-1",
+          "notation": "/0,-2/0,-1/0,2/2,1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_barrel",
+      "displayName": "Muffin / Barrel",
+      "name": "Muffin / Barrel",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_muffin_barrel",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_barrel-1",
+          "notation": "/2,3/2,0/-2,0/1,0/3,0/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "barrel_muffin",
+      "displayName": "Barrel / Muffin",
+      "name": "Barrel / Muffin",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_barrel_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "barrel_muffin-1",
+          "notation": "/-3,-2/0,-2/0,2/0,-1/0,-3/-1,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "left_fist_kite",
+      "displayName": "Left fist / Kite",
+      "name": "Left fist / Kite",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_left_fist_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "left_fist_kite-1",
+          "notation": "/-2,0/0,-1/2,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_left_fist",
+      "displayName": "Kite / Left fist",
+      "name": "Kite / Left fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_kite_left_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_left_fist-1",
+          "notation": "/0,2/1,0/0,-2/-1,-2/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "right_fist_kite",
+      "displayName": "Right fist / Kite",
+      "name": "Right fist / Kite",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_right_fist_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "right_fist_kite-1",
+          "notation": "/-2,0/0,-1/2,0/-1,-2/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_right_fist",
+      "displayName": "Kite / Right fist",
+      "name": "Kite / Right fist",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_kite_right_fist",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_right_fist-1",
+          "notation": "/0,2/1,0/0,-2/2,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "muffin_kite",
+      "displayName": "Muffin / Kite",
+      "name": "Muffin / Kite",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_muffin_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "muffin_kite-1",
+          "notation": "/2,3/-2,0/2,0/-1,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_muffin",
+      "displayName": "Kite / Muffin",
+      "name": "Kite / Muffin",
+      "subgroup": "6 Slices",
+      "imageKey": "sq1cs_kite_muffin",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_muffin-1",
+          "notation": "/3,2/0,-2/0,2/0,-1/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "kite_square",
+      "displayName": "Kite / Square",
+      "name": "Kite / Square",
+      "subgroup": "7 Slices",
+      "imageKey": "sq1cs_kite_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "kite_square-1",
+          "notation": "/-1,0/2,0/-2,0/2,0/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_kite",
+      "displayName": "Square / Kite",
+      "name": "Square / Kite",
+      "subgroup": "7 Slices",
+      "imageKey": "sq1cs_square_kite",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_kite-1",
+          "notation": "/0,1/0,-2/0,2/0,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

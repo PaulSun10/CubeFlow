@@ -1,0 +1,400 @@
+{
+  "puzzle": "2x2",
+  "set": "OrtegaOLL",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "sune",
+      "displayName": "Sune",
+      "name": "Sune",
+      "subgroup": "",
+      "imageKey": "ortegaoll_sune",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "sune-1",
+          "notation": "R U R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "sune-2",
+          "notation": "y2 L U L' U L U2 L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "sune-3",
+          "notation": "y R' F2 R U R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "sune-4",
+          "notation": "y L' U2 L U L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "sune-5",
+          "notation": "U' R' U2 R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "sune-6",
+          "notation": "R U' R' F R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "sune-7",
+          "notation": "y R' U2 R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "anti_sune",
+      "displayName": "Anti Sune",
+      "name": "Anti Sune",
+      "subgroup": "",
+      "imageKey": "ortegaoll_anti_sune",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "anti_sune-1",
+          "notation": "R U2 R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "anti_sune-2",
+          "notation": "y2 L U2 L' U' L U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "anti_sune-3",
+          "notation": "y L' U R U' L U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "anti_sune-4",
+          "notation": "R' U' R U' R' U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "anti_sune-5",
+          "notation": "y R' F' R U' R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "anti_sune-6",
+          "notation": "R U2 R U R U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "anti_sune-7",
+          "notation": "y U' R U2 R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pi",
+      "displayName": "Pi",
+      "name": "Pi",
+      "subgroup": "",
+      "imageKey": "ortegaoll_pi",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pi-1",
+          "notation": "F R U R' U' R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pi-2",
+          "notation": "y2 F U R U' R' U R U' R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pi-3",
+          "notation": "R' U R2 U' R2 U' R2 U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pi-4",
+          "notation": "y R U' R2 F R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pi-5",
+          "notation": "R U R' U R U2 R' U' R U R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pi-6",
+          "notation": "y' R U R2 F' R2 U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pi-7",
+          "notation": "R U R2 F' R2 U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pi-8",
+          "notation": "R' U2 R2 U R2 U R2 U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "p",
+      "displayName": "P",
+      "name": "P",
+      "subgroup": "",
+      "imageKey": "ortegaoll_p",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p-1",
+          "notation": "F R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "p-2",
+          "notation": "y2 L' U' L U L F' L' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l",
+      "displayName": "L",
+      "name": "L",
+      "subgroup": "",
+      "imageKey": "ortegaoll_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l-1",
+          "notation": "y F' R U R' U' R' F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-2",
+          "notation": "x R' U R D' R' U' R D",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-3",
+          "notation": "U' R U R U' L' U R' U' x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-4",
+          "notation": "R U R' U' R' F R F' R U R' U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-5",
+          "notation": "x U R' U' L U R U' L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-6",
+          "notation": "y2 R U' R' D' R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-7",
+          "notation": "y R U' R' D' R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-8",
+          "notation": "y2 F U' F' U' L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-9",
+          "notation": "U R U' R' y U' L' U L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l-10",
+          "notation": "y2 R U2 R' U' R U R' U' R U R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "t",
+      "displayName": "T",
+      "name": "T",
+      "subgroup": "",
+      "imageKey": "ortegaoll_t",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t-1",
+          "notation": "R U R' U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "t-2",
+          "notation": "F R F' R U R' U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "t-3",
+          "notation": "y2 x U' L' U R' U' L U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "t-4",
+          "notation": "x L U R' U' L' U R U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "t-5",
+          "notation": "y2 R' F' R U R U' R' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "t-6",
+          "notation": "R' F' R U R U' R' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "h",
+      "displayName": "H",
+      "name": "H",
+      "subgroup": "",
+      "imageKey": "ortegaoll_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h-1",
+          "notation": "R2 U2 R' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "h-2",
+          "notation": "R U2 R' U' R U R' U' R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "h-3",
+          "notation": "L2 U2 L U2 L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "h-4",
+          "notation": "L2 U2 L' U2 L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

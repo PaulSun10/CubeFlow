@@ -1,0 +1,407 @@
+{
+  "puzzle": "SQ1",
+  "set": "SQ1LinPLL",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "ua",
+      "displayName": "Ua",
+      "name": "Ua",
+      "subgroup": "",
+      "imageKey": "sq1linpll_ua",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ua-1",
+          "notation": "/3,0/1,0/0,-3/-1,0/-3,0/1,0/0,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ub",
+      "displayName": "Ub",
+      "name": "Ub",
+      "subgroup": "",
+      "imageKey": "sq1linpll_ub",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ub-1",
+          "notation": "1,0/0,-3/-1,0/3,0/1,0/0,3/-1,0/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "z",
+      "displayName": "Z",
+      "name": "Z",
+      "subgroup": "",
+      "imageKey": "sq1linpll_z",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z-1",
+          "notation": "/ 3,3 / 0,3 / 1,1 / -1,-4 / -3,-3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "h",
+      "displayName": "H",
+      "name": "H",
+      "subgroup": "",
+      "imageKey": "sq1linpll_h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h-1",
+          "notation": "1,0 / 5,-1 / -5,1 / 3,0 / 5,-1 / -5,1 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "aa",
+      "displayName": "Aa",
+      "name": "Aa",
+      "subgroup": "",
+      "imageKey": "sq1linpll_aa",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "aa-1",
+          "notation": "1,0/-3,0/3,3/0,-3/2,0/-3,0/3,3/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ab",
+      "displayName": "Ab",
+      "name": "Ab",
+      "subgroup": "",
+      "imageKey": "sq1linpll_ab",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ab-1",
+          "notation": "/-3,0/3,3/0,-3/-2,0/-3,0/3,3/0,-3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "e",
+      "displayName": "E",
+      "name": "E",
+      "subgroup": "",
+      "imageKey": "sq1linpll_e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "e-1",
+          "notation": "/3,3/1,-2/2,2/-3,0/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "f",
+      "displayName": "F",
+      "name": "F",
+      "subgroup": "",
+      "imageKey": "sq1linpll_f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f-1",
+          "notation": "1,0/-1,-1/-3,0/3,0/1,4/-3,0/3,0/2,-4/-3,0/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ja",
+      "displayName": "Ja",
+      "name": "Ja",
+      "subgroup": "",
+      "imageKey": "sq1linpll_ja",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ja-1",
+          "notation": "1,0/3,-3/3,0/-3,0/0,3/-3,0/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "jb",
+      "displayName": "Jb",
+      "name": "Jb",
+      "subgroup": "",
+      "imageKey": "sq1linpll_jb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "jb-1",
+          "notation": "/3,-3/3,0/-3,0/0,3/-3,0/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ra",
+      "displayName": "Ra",
+      "name": "Ra",
+      "subgroup": "",
+      "imageKey": "sq1linpll_ra",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ra-1",
+          "notation": "/-3,0/3,0/-3,0/0,-3/4,1/-1,2/-3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "rb",
+      "displayName": "Rb",
+      "name": "Rb",
+      "subgroup": "",
+      "imageKey": "sq1linpll_rb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "rb-1",
+          "notation": "1,0/3,0/-3,0/3,0/0,3/2,5/1,4/3,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "t",
+      "displayName": "T",
+      "name": "T",
+      "subgroup": "",
+      "imageKey": "sq1linpll_t",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t-1",
+          "notation": "/3,0/-3,-3/0,3/4,0/3,0/-3,-3/0,3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "y",
+      "displayName": "Y",
+      "name": "Y",
+      "subgroup": "",
+      "imageKey": "sq1linpll_y",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y-1",
+          "notation": "1,0/3,0/3,3/3,0/5,0/0,3/3,3/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "na",
+      "displayName": "Na",
+      "name": "Na",
+      "subgroup": "",
+      "imageKey": "sq1linpll_na",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "na-1",
+          "notation": "/3,3/-3,0/3,3/-3,0/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "nb",
+      "displayName": "Nb",
+      "name": "Nb",
+      "subgroup": "",
+      "imageKey": "sq1linpll_nb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "nb-1",
+          "notation": "1,0/3,3/-3,0/3,3/-3,0/3,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ga",
+      "displayName": "Ga",
+      "name": "Ga",
+      "subgroup": "",
+      "imageKey": "sq1linpll_ga",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ga-1",
+          "notation": "/-3,3/3,-3/-2,0/0,3/0,-3/0,3/0,-3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "gb",
+      "displayName": "Gb",
+      "name": "Gb",
+      "subgroup": "",
+      "imageKey": "sq1linpll_gb",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "gb-1",
+          "notation": "1,0/0,3/0,-3/0,3/0,-3/-1,0/-3,3/3,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "gc",
+      "displayName": "Gc",
+      "name": "Gc",
+      "subgroup": "",
+      "imageKey": "sq1linpll_gc",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "gc-1",
+          "notation": "1,0/-3,3/3,-3/-4,0/0,3/0,-3/0,3/0,-3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "gd",
+      "displayName": "Gd",
+      "name": "Gd",
+      "subgroup": "",
+      "imageKey": "sq1linpll_gd",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "gd-1",
+          "notation": "/0,3/0,-3/0,3/0,-3/1,0/-3,3/3,-3/-1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "v",
+      "displayName": "V",
+      "name": "V",
+      "subgroup": "",
+      "imageKey": "sq1linpll_v",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v-1",
+          "notation": "1,0/3,0/-4,-1/0,-3/3,0/1,-2/0,3/0,3/-4,-1/0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

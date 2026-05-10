@@ -1,0 +1,3568 @@
+{
+  "puzzle": "Megaminx",
+  "set": "MegaminxOLL",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "1a",
+      "displayName": "1A",
+      "name": "1A",
+      "subgroup": "EO",
+      "imageKey": "megaminxoll_1a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1a-1",
+          "notation": "L R U R' U' R' F R F' L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "EO"
+    },
+    {
+      "id": "1b",
+      "displayName": "1B",
+      "name": "1B",
+      "subgroup": "EO",
+      "imageKey": "megaminxoll_1b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1b-1",
+          "notation": "L F R' F' R U R U' R' L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "EO"
+    },
+    {
+      "id": "2a",
+      "displayName": "2A",
+      "name": "2A",
+      "subgroup": "2 Corner CO",
+      "imageKey": "megaminxoll_2a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2a-1",
+          "notation": "R U R' U R U R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 Corner CO"
+    },
+    {
+      "id": "2b",
+      "displayName": "2B",
+      "name": "2B",
+      "subgroup": "2 Corner CO",
+      "imageKey": "megaminxoll_2b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2b-1",
+          "notation": "R BR R' F R BR' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 Corner CO"
+    },
+    {
+      "id": "2c",
+      "displayName": "2C",
+      "name": "2C",
+      "subgroup": "2 Corner CO",
+      "imageKey": "megaminxoll_2c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c-1",
+          "notation": "R' U2 R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 Corner CO"
+    },
+    {
+      "id": "2d",
+      "displayName": "2D",
+      "name": "2D",
+      "subgroup": "2 Corner CO",
+      "imageKey": "megaminxoll_2d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2d-1",
+          "notation": "R' F R BR' R' F' R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 Corner CO"
+    },
+    {
+      "id": "3a",
+      "displayName": "3A-",
+      "name": "3A-",
+      "subgroup": "3 Corner CO",
+      "imageKey": "megaminxoll_3a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3a-1",
+          "notation": "R' U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 Corner CO"
+    },
+    {
+      "id": "3a_2",
+      "displayName": "3A+",
+      "name": "3A+",
+      "subgroup": "3 Corner CO",
+      "imageKey": "megaminxoll_3a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3a_2-1",
+          "notation": "R U R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 Corner CO"
+    },
+    {
+      "id": "3b",
+      "displayName": "3B-",
+      "name": "3B-",
+      "subgroup": "3 Corner CO",
+      "imageKey": "megaminxoll_3b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3b-1",
+          "notation": "R' U2' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 Corner CO"
+    },
+    {
+      "id": "3b_2",
+      "displayName": "3B+",
+      "name": "3B+",
+      "subgroup": "3 Corner CO",
+      "imageKey": "megaminxoll_3b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3b_2-1",
+          "notation": "R U2 R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 Corner CO"
+    },
+    {
+      "id": "4a",
+      "displayName": "4A",
+      "name": "4A",
+      "subgroup": "4 Corner CO",
+      "imageKey": "megaminxoll_4a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4a-1",
+          "notation": "R U R' U R U' R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 Corner CO"
+    },
+    {
+      "id": "4b",
+      "displayName": "4B",
+      "name": "4B",
+      "subgroup": "4 Corner CO",
+      "imageKey": "megaminxoll_4b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4b-1",
+          "notation": "y2' R U2 R' U' R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 Corner CO"
+    },
+    {
+      "id": "4c",
+      "displayName": "4C",
+      "name": "4C",
+      "subgroup": "4 Corner CO",
+      "imageKey": "megaminxoll_4c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4c-1",
+          "notation": "R U R' U R U R' U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 Corner CO"
+    },
+    {
+      "id": "4d",
+      "displayName": "4D",
+      "name": "4D",
+      "subgroup": "4 Corner CO",
+      "imageKey": "megaminxoll_4d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4d-1",
+          "notation": "R U2' R' U2' R U2 R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 Corner CO"
+    },
+    {
+      "id": "4e",
+      "displayName": "4E-",
+      "name": "4E-",
+      "subgroup": "4 Corner CO",
+      "imageKey": "megaminxoll_4e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4e-1",
+          "notation": "R' U2' R2 U R2' U R2 U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 Corner CO"
+    },
+    {
+      "id": "4e_2",
+      "displayName": "4E+",
+      "name": "4E+",
+      "subgroup": "4 Corner CO",
+      "imageKey": "megaminxoll_4e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4e_2-1",
+          "notation": "R U2 R2' U' R2 U' R2' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 Corner CO"
+    },
+    {
+      "id": "5",
+      "displayName": "5-",
+      "name": "5-",
+      "subgroup": "5 Corner CO",
+      "imageKey": "megaminxoll_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "5-1",
+          "notation": "R U2 R' U' R U2 R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 Corner CO"
+    },
+    {
+      "id": "5_2",
+      "displayName": "5+",
+      "name": "5+",
+      "subgroup": "5 Corner CO",
+      "imageKey": "megaminxoll_5_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "5_2-1",
+          "notation": "R U R' U2 R U2' R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 Corner CO"
+    },
+    {
+      "id": "6a",
+      "displayName": "6A",
+      "name": "6A",
+      "subgroup": "Anchor Shapes",
+      "imageKey": "megaminxoll_6a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6a-1",
+          "notation": "R U2' R' F R' F' R U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Anchor Shapes"
+    },
+    {
+      "id": "6b",
+      "displayName": "6B",
+      "name": "6B",
+      "subgroup": "Anchor Shapes",
+      "imageKey": "megaminxoll_6b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6b-1",
+          "notation": "F R U' R' U2 R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Anchor Shapes"
+    },
+    {
+      "id": "7a",
+      "displayName": "7A",
+      "name": "7A",
+      "subgroup": "T Shapes",
+      "imageKey": "megaminxoll_7a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "7a-1",
+          "notation": "R U R' U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "T Shapes"
+    },
+    {
+      "id": "7b",
+      "displayName": "7B",
+      "name": "7B",
+      "subgroup": "T Shapes",
+      "imageKey": "megaminxoll_7b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "7b-1",
+          "notation": "F R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "T Shapes"
+    },
+    {
+      "id": "8a",
+      "displayName": "8A-",
+      "name": "8A-",
+      "subgroup": "C Shapes",
+      "imageKey": "megaminxoll_8a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8a-1",
+          "notation": "y2' R U R BR' R' BR U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "C Shapes"
+    },
+    {
+      "id": "8a_2",
+      "displayName": "8A+",
+      "name": "8A+",
+      "subgroup": "C Shapes",
+      "imageKey": "megaminxoll_8a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8a_2-1",
+          "notation": "R' U' R' F R F' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "C Shapes"
+    },
+    {
+      "id": "8b",
+      "displayName": "8B-",
+      "name": "8B-",
+      "subgroup": "C Shapes",
+      "imageKey": "megaminxoll_8b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8b-1",
+          "notation": "F R U R' U' R U R' U R U2' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "C Shapes"
+    },
+    {
+      "id": "8b_2",
+      "displayName": "8B+",
+      "name": "8B+",
+      "subgroup": "C Shapes",
+      "imageKey": "megaminxoll_8b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8b_2-1",
+          "notation": "R U R2' U' R' F R U R U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "C Shapes"
+    },
+    {
+      "id": "9a",
+      "displayName": "9A-",
+      "name": "9A-",
+      "subgroup": "S Shapes",
+      "imageKey": "megaminxoll_9a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "9a-1",
+          "notation": "R U R' F' U' F U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "S Shapes"
+    },
+    {
+      "id": "9a_2",
+      "displayName": "9A+",
+      "name": "9A+",
+      "subgroup": "S Shapes",
+      "imageKey": "megaminxoll_9a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "9a_2-1",
+          "notation": "R' F R U R' U' F' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "S Shapes"
+    },
+    {
+      "id": "9b",
+      "displayName": "9B-",
+      "name": "9B-",
+      "subgroup": "S Shapes",
+      "imageKey": "megaminxoll_9b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "9b-1",
+          "notation": "F U R U R' U2' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "S Shapes"
+    },
+    {
+      "id": "9b_2",
+      "displayName": "9B+",
+      "name": "9B+",
+      "subgroup": "S Shapes",
+      "imageKey": "megaminxoll_9b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "9b_2-1",
+          "notation": "R' U' F' U' F U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "S Shapes"
+    },
+    {
+      "id": "10a",
+      "displayName": "10A-",
+      "name": "10A-",
+      "subgroup": "Pi Shapes",
+      "imageKey": "megaminxoll_10a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "10a-1",
+          "notation": "R' F' U' F U2' R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Pi Shapes"
+    },
+    {
+      "id": "10a_2",
+      "displayName": "10A+",
+      "name": "10A+",
+      "subgroup": "Pi Shapes",
+      "imageKey": "megaminxoll_10a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "10a_2-1",
+          "notation": "R U R' U2 R U' R' U2' R' F R F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Pi Shapes"
+    },
+    {
+      "id": "10b",
+      "displayName": "10B-",
+      "name": "10B-",
+      "subgroup": "Pi Shapes",
+      "imageKey": "megaminxoll_10b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "10b-1",
+          "notation": "R U2 R' U R' F R F' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Pi Shapes"
+    },
+    {
+      "id": "10b_2",
+      "displayName": "10B+",
+      "name": "10B+",
+      "subgroup": "Pi Shapes",
+      "imageKey": "megaminxoll_10b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "10b_2-1",
+          "notation": "R U' R' U2' R' F R F' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Pi Shapes"
+    },
+    {
+      "id": "11a",
+      "displayName": "11A-",
+      "name": "11A-",
+      "subgroup": "Y Shapes",
+      "imageKey": "megaminxoll_11a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11a-1",
+          "notation": "R U2 R' U R' F' U' F U R2 U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Y Shapes"
+    },
+    {
+      "id": "11a_2",
+      "displayName": "11A+",
+      "name": "11A+",
+      "subgroup": "Y Shapes",
+      "imageKey": "megaminxoll_11a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11a_2-1",
+          "notation": "R' U' F' U' F R2 U R2' U R2 U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Y Shapes"
+    },
+    {
+      "id": "11b",
+      "displayName": "11B-",
+      "name": "11B-",
+      "subgroup": "Y Shapes",
+      "imageKey": "megaminxoll_11b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11b-1",
+          "notation": "R U2' R' U' R' F R F' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Y Shapes"
+    },
+    {
+      "id": "11b_2",
+      "displayName": "11B+",
+      "name": "11B+",
+      "subgroup": "Y Shapes",
+      "imageKey": "megaminxoll_11b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11b_2-1",
+          "notation": "R' U2' R' F R F' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Y Shapes"
+    },
+    {
+      "id": "12",
+      "displayName": "12-",
+      "name": "12-",
+      "subgroup": "Hammerhead Shapes",
+      "imageKey": "megaminxoll_12",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "12-1",
+          "notation": "R' U2' R U' R' U F' U F U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Hammerhead Shapes"
+    },
+    {
+      "id": "12_2",
+      "displayName": "12+",
+      "name": "12+",
+      "subgroup": "Hammerhead Shapes",
+      "imageKey": "megaminxoll_12_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "12_2-1",
+          "notation": "F R U' R' U2 R U R' U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Hammerhead Shapes"
+    },
+    {
+      "id": "13",
+      "displayName": "13-",
+      "name": "13-",
+      "subgroup": "W Shapes",
+      "imageKey": "megaminxoll_13",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "13-1",
+          "notation": "F R' F' U2' F R F' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "W Shapes"
+    },
+    {
+      "id": "13_2",
+      "displayName": "13+",
+      "name": "13+",
+      "subgroup": "W Shapes",
+      "imageKey": "megaminxoll_13_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "13_2-1",
+          "notation": "R' F R U2 R' F' R F U2' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "W Shapes"
+    },
+    {
+      "id": "14a",
+      "displayName": "14A-",
+      "name": "14A-",
+      "subgroup": "Duckhead Shapes",
+      "imageKey": "megaminxoll_14a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14a-1",
+          "notation": "BR' R' U2' R U2 BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Duckhead Shapes"
+    },
+    {
+      "id": "14a_2",
+      "displayName": "14A+",
+      "name": "14A+",
+      "subgroup": "Duckhead Shapes",
+      "imageKey": "megaminxoll_14a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14a_2-1",
+          "notation": "F R U2 R' U2' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Duckhead Shapes"
+    },
+    {
+      "id": "14b",
+      "displayName": "14B-",
+      "name": "14B-",
+      "subgroup": "Duckhead Shapes",
+      "imageKey": "megaminxoll_14b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14b-1",
+          "notation": "R' F' U' F R U2' R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Duckhead Shapes"
+    },
+    {
+      "id": "14b_2",
+      "displayName": "14B+",
+      "name": "14B+",
+      "subgroup": "Duckhead Shapes",
+      "imageKey": "megaminxoll_14b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14b_2-1",
+          "notation": "R' U2 R U2 R' F' U F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Duckhead Shapes"
+    },
+    {
+      "id": "15a",
+      "displayName": "15A-",
+      "name": "15A-",
+      "subgroup": "Megaphone Shapes",
+      "imageKey": "megaminxoll_15a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "15a-1",
+          "notation": "F R' F' U' F R F' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Megaphone Shapes"
+    },
+    {
+      "id": "15a_2",
+      "displayName": "15A+",
+      "name": "15A+",
+      "subgroup": "Megaphone Shapes",
+      "imageKey": "megaminxoll_15a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "15a_2-1",
+          "notation": "R' F R U R' F' R F U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Megaphone Shapes"
+    },
+    {
+      "id": "15b",
+      "displayName": "15B-",
+      "name": "15B-",
+      "subgroup": "Megaphone Shapes",
+      "imageKey": "megaminxoll_15b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "15b-1",
+          "notation": "F R' F' U' F R F' R' U' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Megaphone Shapes"
+    },
+    {
+      "id": "15b_2",
+      "displayName": "15B+",
+      "name": "15B+",
+      "subgroup": "Megaphone Shapes",
+      "imageKey": "megaminxoll_15b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "15b_2-1",
+          "notation": "L' F U R U R' U2' F' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Megaphone Shapes"
+    },
+    {
+      "id": "16a",
+      "displayName": "16A-",
+      "name": "16A-",
+      "subgroup": "Claw Shapes",
+      "imageKey": "megaminxoll_16a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "16a-1",
+          "notation": "R' U2' R' F R F' R U' R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Claw Shapes"
+    },
+    {
+      "id": "16a_2",
+      "displayName": "16A+",
+      "name": "16A+",
+      "subgroup": "Claw Shapes",
+      "imageKey": "megaminxoll_16a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "16a_2-1",
+          "notation": "R' F R2 U R' U R U2' R2' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Claw Shapes"
+    },
+    {
+      "id": "16b",
+      "displayName": "16B-",
+      "name": "16B-",
+      "subgroup": "Claw Shapes",
+      "imageKey": "megaminxoll_16b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "16b-1",
+          "notation": "R' U' R U' R' F U R U' R' F' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Claw Shapes"
+    },
+    {
+      "id": "16b_2",
+      "displayName": "16B+",
+      "name": "16B+",
+      "subgroup": "Claw Shapes",
+      "imageKey": "megaminxoll_16b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "16b_2-1",
+          "notation": "F R U2 R' U' F R' F' R U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Claw Shapes"
+    },
+    {
+      "id": "17a",
+      "displayName": "17A-",
+      "name": "17A-",
+      "subgroup": "Rabbit Shapes",
+      "imageKey": "megaminxoll_17a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "17a-1",
+          "notation": "R U2 R BR' R' BR U2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Rabbit Shapes"
+    },
+    {
+      "id": "17a_2",
+      "displayName": "17A+",
+      "name": "17A+",
+      "subgroup": "Rabbit Shapes",
+      "imageKey": "megaminxoll_17a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "17a_2-1",
+          "notation": "R' U2' R' F R F' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Rabbit Shapes"
+    },
+    {
+      "id": "17b",
+      "displayName": "17B-",
+      "name": "17B-",
+      "subgroup": "Rabbit Shapes",
+      "imageKey": "megaminxoll_17b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "17b-1",
+          "notation": "L F R U R' U' F' L'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Rabbit Shapes"
+    },
+    {
+      "id": "17b_2",
+      "displayName": "17B+",
+      "name": "17B+",
+      "subgroup": "Rabbit Shapes",
+      "imageKey": "megaminxoll_17b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "17b_2-1",
+          "notation": "BL' F R U R' U' F' BL",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Rabbit Shapes"
+    },
+    {
+      "id": "18a",
+      "displayName": "18A",
+      "name": "18A",
+      "subgroup": "Long Block",
+      "imageKey": "megaminxoll_18a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18a-1",
+          "notation": "R' F U R U' R2' F' R2 U R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Long Block"
+    },
+    {
+      "id": "18b",
+      "displayName": "18B",
+      "name": "18B",
+      "subgroup": "Long Block",
+      "imageKey": "megaminxoll_18b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18b-1",
+          "notation": "R' F' U' F U R2 U2 R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Long Block"
+    },
+    {
+      "id": "18c",
+      "displayName": "18C",
+      "name": "18C",
+      "subgroup": "Long Block",
+      "imageKey": "megaminxoll_18c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18c-1",
+          "notation": "F U R U' R' U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Long Block"
+    },
+    {
+      "id": "18d",
+      "displayName": "18D",
+      "name": "18D",
+      "subgroup": "Long Block",
+      "imageKey": "megaminxoll_18d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18d-1",
+          "notation": "R' U2' R U R' F R' F' R U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Long Block"
+    },
+    {
+      "id": "18e",
+      "displayName": "18E-",
+      "name": "18E-",
+      "subgroup": "Long Block",
+      "imageKey": "megaminxoll_18e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18e-1",
+          "notation": "R' F' U' F U' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Long Block"
+    },
+    {
+      "id": "18e_2",
+      "displayName": "18E+",
+      "name": "18E+",
+      "subgroup": "Long Block",
+      "imageKey": "megaminxoll_18e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18e_2-1",
+          "notation": "R' F' U2' F R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Long Block"
+    },
+    {
+      "id": "19a",
+      "displayName": "19A-",
+      "name": "19A-",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19a-1",
+          "notation": "F U2 R U' R' U' R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19a_2",
+      "displayName": "19A+",
+      "name": "19A+",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19a_2-1",
+          "notation": "F U R U' R' U R U R' U2' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19b",
+      "displayName": "19B-",
+      "name": "19B-",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19b-1",
+          "notation": "R' U2' R U R' F' U' F R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19b_2",
+      "displayName": "19B+",
+      "name": "19B+",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19b_2-1",
+          "notation": "R U2' R' F' U' F U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19c",
+      "displayName": "19C-",
+      "name": "19C-",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19c-1",
+          "notation": "R U2' R' F R' F' R U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19c_2",
+      "displayName": "19C+",
+      "name": "19C+",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19c_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19c_2-1",
+          "notation": "F R U' R' U R U2' R' U2' R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19d",
+      "displayName": "19D-",
+      "name": "19D-",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19d-1",
+          "notation": "BR' U' R' U' R U R' U' R U2 BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19d_2",
+      "displayName": "19D+",
+      "name": "19D+",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19d_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19d_2-1",
+          "notation": "F U R U R' U' R U R' U2' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19e",
+      "displayName": "19E-",
+      "name": "19E-",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19e-1",
+          "notation": "R' U' R' F R2 U' R' U2 R U R' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19e_2",
+      "displayName": "19E+",
+      "name": "19E+",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19e_2-1",
+          "notation": "R U R' U R U' R' U R U' R' U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19f",
+      "displayName": "19F-",
+      "name": "19F-",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19f-1",
+          "notation": "R' U2' R2 U R2' U R U2' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "19f_2",
+      "displayName": "19F+",
+      "name": "19F+",
+      "subgroup": "Fox Head Shapes",
+      "imageKey": "megaminxoll_19f_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19f_2-1",
+          "notation": "R U2' R' U2' R U R' U2' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Fox Head Shapes"
+    },
+    {
+      "id": "20a",
+      "displayName": "20A-",
+      "name": "20A-",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20a-1",
+          "notation": "F R U2 R' U2' R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20a_2",
+      "displayName": "20A+",
+      "name": "20A+",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20a_2-1",
+          "notation": "BR' R' U2' R U2 R' U' R U BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20b",
+      "displayName": "20B-",
+      "name": "20B-",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20b-1",
+          "notation": "R' F' U' F U R2 U2 R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20b_2",
+      "displayName": "20B+",
+      "name": "20B+",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20b_2-1",
+          "notation": "R' F' U' F U R U2' R' U2' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20c",
+      "displayName": "20C-",
+      "name": "20C-",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20c-1",
+          "notation": "F U2 R U' R' U R U' R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20c_2",
+      "displayName": "20C+",
+      "name": "20C+",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20c_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20c_2-1",
+          "notation": "BR' U2' R' U R U' R' U R U BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20d",
+      "displayName": "20D-",
+      "name": "20D-",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20d-1",
+          "notation": "F R U' R' U R U2' R' U' R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20d_2",
+      "displayName": "20D+",
+      "name": "20D+",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20d_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20d_2-1",
+          "notation": "R' F R' F' R2 U' R' F' U' F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20e",
+      "displayName": "20E-",
+      "name": "20E-",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20e-1",
+          "notation": "R' U2' R F U R' U R2 U2' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20e_2",
+      "displayName": "20E+",
+      "name": "20E+",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20e_2-1",
+          "notation": "F R U R' U' R U2 R' U' R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20f",
+      "displayName": "20F-",
+      "name": "20F-",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20f-1",
+          "notation": "R' U' R F U' R' U2 R U2 R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "20f_2",
+      "displayName": "20F+",
+      "name": "20F+",
+      "subgroup": "Scorpion Shapes",
+      "imageKey": "megaminxoll_20f_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20f_2-1",
+          "notation": "R U2' R' U' R U' R' U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Scorpion Shapes"
+    },
+    {
+      "id": "21a",
+      "displayName": "21A-",
+      "name": "21A-",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21a-1",
+          "notation": "BR' U2' R' U2 R U' R' U R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21a_2",
+      "displayName": "21A+",
+      "name": "21A+",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21a_2-1",
+          "notation": "F U2 R U2' R' U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21b",
+      "displayName": "21B-",
+      "name": "21B-",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21b-1",
+          "notation": "R' F' U' F R U2' R' U2 R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21b_2",
+      "displayName": "21B+",
+      "name": "21B+",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21b_2-1",
+          "notation": "R' U2' F' U F U' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21c",
+      "displayName": "21C-",
+      "name": "21C-",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21c-1",
+          "notation": "BR' U' R' U R U2' R' U2 R U' R' U R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21c_2",
+      "displayName": "21C+",
+      "name": "21C+",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21c_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21c_2-1",
+          "notation": "R' F' U2' F2 R U R' U' F' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21d",
+      "displayName": "21D-",
+      "name": "21D-",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21d-1",
+          "notation": "BR' U2' R' U2 R U2' R' U2 R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21d_2",
+      "displayName": "21D+",
+      "name": "21D+",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21d_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21d_2-1",
+          "notation": "R' F' U' F U2' R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21e",
+      "displayName": "21E-",
+      "name": "21E-",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21e-1",
+          "notation": "F R U R' U' R U2 R' U2' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "21e_2",
+      "displayName": "21E+",
+      "name": "21E+",
+      "subgroup": "Line Shapes",
+      "imageKey": "megaminxoll_21e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21e_2-1",
+          "notation": "BR' R' U' R U R' U2' R U2 BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Line Shapes"
+    },
+    {
+      "id": "22a",
+      "displayName": "22A",
+      "name": "22A",
+      "subgroup": "Flower Shapes",
+      "imageKey": "megaminxoll_22a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "22a-1",
+          "notation": "R U2 R2' F R F' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Flower Shapes"
+    },
+    {
+      "id": "22b",
+      "displayName": "22B",
+      "name": "22B",
+      "subgroup": "Flower Shapes",
+      "imageKey": "megaminxoll_22b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "22b-1",
+          "notation": "F R' F' R U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Flower Shapes"
+    },
+    {
+      "id": "23a",
+      "displayName": "23A",
+      "name": "23A",
+      "subgroup": "Chandelier shapes",
+      "imageKey": "megaminxoll_23a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23a-1",
+          "notation": "R U2 R' U R U' R' U2' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Chandelier shapes"
+    },
+    {
+      "id": "23b",
+      "displayName": "23B",
+      "name": "23B",
+      "subgroup": "Chandelier shapes",
+      "imageKey": "megaminxoll_23b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23b-1",
+          "notation": "R U2' R' U' F R' F' R U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Chandelier shapes"
+    },
+    {
+      "id": "24a",
+      "displayName": "24A-",
+      "name": "24A-",
+      "subgroup": "P Shapes",
+      "imageKey": "megaminxoll_24a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24a-1",
+          "notation": "R' U' F' U F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "P Shapes"
+    },
+    {
+      "id": "24a_2",
+      "displayName": "24A+",
+      "name": "24A+",
+      "subgroup": "P Shapes",
+      "imageKey": "megaminxoll_24a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24a_2-1",
+          "notation": "F U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "P Shapes"
+    },
+    {
+      "id": "24b",
+      "displayName": "24B-",
+      "name": "24B-",
+      "subgroup": "P Shapes",
+      "imageKey": "megaminxoll_24b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24b-1",
+          "notation": "R' U' F U R U' R' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "P Shapes"
+    },
+    {
+      "id": "24b_2",
+      "displayName": "24B+",
+      "name": "24B+",
+      "subgroup": "P Shapes",
+      "imageKey": "megaminxoll_24b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24b_2-1",
+          "notation": "R U BR' U' R' U R BR R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "P Shapes"
+    },
+    {
+      "id": "25a",
+      "displayName": "25A-",
+      "name": "25A-",
+      "subgroup": "E Shapes",
+      "imageKey": "megaminxoll_25a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25a-1",
+          "notation": "R U R2' F' U' F U R2 U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "E Shapes"
+    },
+    {
+      "id": "25a_2",
+      "displayName": "25A+",
+      "name": "25A+",
+      "subgroup": "E Shapes",
+      "imageKey": "megaminxoll_25a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25a_2-1",
+          "notation": "F R U R2' U' F' U F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "E Shapes"
+    },
+    {
+      "id": "25b",
+      "displayName": "25B-",
+      "name": "25B-",
+      "subgroup": "E Shapes",
+      "imageKey": "megaminxoll_25b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25b-1",
+          "notation": "F R U2 R' F' U' F R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "E Shapes"
+    },
+    {
+      "id": "25b_2",
+      "displayName": "25B+",
+      "name": "25B+",
+      "subgroup": "E Shapes",
+      "imageKey": "megaminxoll_25b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25b_2-1",
+          "notation": "R' U2 R U2 R' F R' F' R U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "E Shapes"
+    },
+    {
+      "id": "26a",
+      "displayName": "26A-",
+      "name": "26A-",
+      "subgroup": "Sprinter Shapes",
+      "imageKey": "megaminxoll_26a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26a-1",
+          "notation": "F R' U2' R F R' F' U2 R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Sprinter Shapes"
+    },
+    {
+      "id": "26a_2",
+      "displayName": "26A+",
+      "name": "26A+",
+      "subgroup": "Sprinter Shapes",
+      "imageKey": "megaminxoll_26a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26a_2-1",
+          "notation": "R U R' U R' F R F' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Sprinter Shapes"
+    },
+    {
+      "id": "26b",
+      "displayName": "26B-",
+      "name": "26B-",
+      "subgroup": "Sprinter Shapes",
+      "imageKey": "megaminxoll_26b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26b-1",
+          "notation": "BR' U' R' U2 R U R' U2' R U BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Sprinter Shapes"
+    },
+    {
+      "id": "26b_2",
+      "displayName": "26B+",
+      "name": "26B+",
+      "subgroup": "Sprinter Shapes",
+      "imageKey": "megaminxoll_26b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26b_2-1",
+          "notation": "F U R U' BR R' F' R BR' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Sprinter Shapes"
+    },
+    {
+      "id": "27a",
+      "displayName": "27A-",
+      "name": "27A-",
+      "subgroup": "Eagle Shapes",
+      "imageKey": "megaminxoll_27a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "27a-1",
+          "notation": "R2' U' R F R' U R2 U' R' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Eagle Shapes"
+    },
+    {
+      "id": "27a_2",
+      "displayName": "27A+",
+      "name": "27A+",
+      "subgroup": "Eagle Shapes",
+      "imageKey": "megaminxoll_27a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "27a_2-1",
+          "notation": "F R' F R2 U' R' U' R U R' F2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Eagle Shapes"
+    },
+    {
+      "id": "27b",
+      "displayName": "27B-",
+      "name": "27B-",
+      "subgroup": "Eagle Shapes",
+      "imageKey": "megaminxoll_27b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "27b-1",
+          "notation": "R' F R F' R' F R F' R U R' U' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Eagle Shapes"
+    },
+    {
+      "id": "27b_2",
+      "displayName": "27B+",
+      "name": "27B+",
+      "subgroup": "Eagle Shapes",
+      "imageKey": "megaminxoll_27b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "27b_2-1",
+          "notation": "F R' F' R U2' R U' R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Eagle Shapes"
+    },
+    {
+      "id": "28",
+      "displayName": "28-",
+      "name": "28-",
+      "subgroup": "Big Block",
+      "imageKey": "megaminxoll_28",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "28-1",
+          "notation": "x' L' U2' R U R' U L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Big Block"
+    },
+    {
+      "id": "28_2",
+      "displayName": "28+",
+      "name": "28+",
+      "subgroup": "Big Block",
+      "imageKey": "megaminxoll_28_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "28_2-1",
+          "notation": "x' D R2 U' R' U R' D'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Big Block"
+    },
+    {
+      "id": "29",
+      "displayName": "29-",
+      "name": "29-",
+      "subgroup": "Lobster Shapes",
+      "imageKey": "megaminxoll_29",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "29-1",
+          "notation": "BR' U2' R' U R U' R' U2 R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lobster Shapes"
+    },
+    {
+      "id": "29_2",
+      "displayName": "29+",
+      "name": "29+",
+      "subgroup": "Lobster Shapes",
+      "imageKey": "megaminxoll_29_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "29_2-1",
+          "notation": "F U2 R U' R' U R U2' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lobster Shapes"
+    },
+    {
+      "id": "30a",
+      "displayName": "30A-",
+      "name": "30A-",
+      "subgroup": "Lightning Shapes",
+      "imageKey": "megaminxoll_30a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "30a-1",
+          "notation": "BR' U2' R' U2 R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lightning Shapes"
+    },
+    {
+      "id": "30a_2",
+      "displayName": "30A+",
+      "name": "30A+",
+      "subgroup": "Lightning Shapes",
+      "imageKey": "megaminxoll_30a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "30a_2-1",
+          "notation": "F U2 R U2' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lightning Shapes"
+    },
+    {
+      "id": "30b",
+      "displayName": "30B-",
+      "name": "30B-",
+      "subgroup": "Lightning Shapes",
+      "imageKey": "megaminxoll_30b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "30b-1",
+          "notation": "R U' R' U R U' R' U' F R' F' R2 U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lightning Shapes"
+    },
+    {
+      "id": "30b_2",
+      "displayName": "30B+",
+      "name": "30B+",
+      "subgroup": "Lightning Shapes",
+      "imageKey": "megaminxoll_30b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "30b_2-1",
+          "notation": "BR' L R' F R' F' R2 L' BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Lightning Shapes"
+    },
+    {
+      "id": "31a",
+      "displayName": "31A-",
+      "name": "31A-",
+      "subgroup": "Cobra Shapes",
+      "imageKey": "megaminxoll_31a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "31a-1",
+          "notation": "BR' R' F R' F' R2 BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Cobra Shapes"
+    },
+    {
+      "id": "31a_2",
+      "displayName": "31A+",
+      "name": "31A+",
+      "subgroup": "Cobra Shapes",
+      "imageKey": "megaminxoll_31a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "31a_2-1",
+          "notation": "F R' F' R U2' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Cobra Shapes"
+    },
+    {
+      "id": "31b",
+      "displayName": "31B-",
+      "name": "31B-",
+      "subgroup": "Cobra Shapes",
+      "imageKey": "megaminxoll_31b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "31b-1",
+          "notation": "BR' U' R' U' R U R' U R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Cobra Shapes"
+    },
+    {
+      "id": "31b_2",
+      "displayName": "31B+",
+      "name": "31B+",
+      "subgroup": "Cobra Shapes",
+      "imageKey": "megaminxoll_31b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "31b_2-1",
+          "notation": "F U R U R' U' R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Cobra Shapes"
+    },
+    {
+      "id": "32a",
+      "displayName": "32A-",
+      "name": "32A-",
+      "subgroup": "Hand Shapes",
+      "imageKey": "megaminxoll_32a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "32a-1",
+          "notation": "R U R' U F' U F U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Hand Shapes"
+    },
+    {
+      "id": "32a_2",
+      "displayName": "32A+",
+      "name": "32A+",
+      "subgroup": "Hand Shapes",
+      "imageKey": "megaminxoll_32a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "32a_2-1",
+          "notation": "R U R' U' R' F R2 U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Hand Shapes"
+    },
+    {
+      "id": "32b",
+      "displayName": "32B-",
+      "name": "32B-",
+      "subgroup": "Hand Shapes",
+      "imageKey": "megaminxoll_32b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "32b-1",
+          "notation": "R U R' U R' F R F' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Hand Shapes"
+    },
+    {
+      "id": "32b_2",
+      "displayName": "32B+",
+      "name": "32B+",
+      "subgroup": "Hand Shapes",
+      "imageKey": "megaminxoll_32b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "32b_2-1",
+          "notation": "R U2' R2' F R F' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Hand Shapes"
+    },
+    {
+      "id": "33a",
+      "displayName": "33A-",
+      "name": "33A-",
+      "subgroup": "Magic Lamp Shapes",
+      "imageKey": "megaminxoll_33a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "33a-1",
+          "notation": "R' U' R U' R' U F' U' F R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Magic Lamp Shapes"
+    },
+    {
+      "id": "33a_2",
+      "displayName": "33A+",
+      "name": "33A+",
+      "subgroup": "Magic Lamp Shapes",
+      "imageKey": "megaminxoll_33a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "33a_2-1",
+          "notation": "F U R U' R' F' R' U2' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Magic Lamp Shapes"
+    },
+    {
+      "id": "33b",
+      "displayName": "33B-",
+      "name": "33B-",
+      "subgroup": "Magic Lamp Shapes",
+      "imageKey": "megaminxoll_33b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "33b-1",
+          "notation": "BR' U' R' U' R U R' U' R U R' U R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Magic Lamp Shapes"
+    },
+    {
+      "id": "33b_2",
+      "displayName": "33B+",
+      "name": "33B+",
+      "subgroup": "Magic Lamp Shapes",
+      "imageKey": "megaminxoll_33b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "33b_2-1",
+          "notation": "F U R U R' U' R U R' U' R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Magic Lamp Shapes"
+    },
+    {
+      "id": "34a",
+      "displayName": "34A",
+      "name": "34A",
+      "subgroup": "Human Shapes",
+      "imageKey": "megaminxoll_34a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34a-1",
+          "notation": "F R' F' R U R U R' U R U' R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Human Shapes"
+    },
+    {
+      "id": "34b",
+      "displayName": "34B",
+      "name": "34B",
+      "subgroup": "Human Shapes",
+      "imageKey": "megaminxoll_34b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34b-1",
+          "notation": "F R' F' R U2' R U' R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Human Shapes"
+    },
+    {
+      "id": "34c",
+      "displayName": "34C",
+      "name": "34C",
+      "subgroup": "Human Shapes",
+      "imageKey": "megaminxoll_34c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34c-1",
+          "notation": "R U R' U R' F R F' U R U2' R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Human Shapes"
+    },
+    {
+      "id": "34d",
+      "displayName": "34D",
+      "name": "34D",
+      "subgroup": "Human Shapes",
+      "imageKey": "megaminxoll_34d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34d-1",
+          "notation": "F R' F' R U R U R' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Human Shapes"
+    },
+    {
+      "id": "34e",
+      "displayName": "34E-",
+      "name": "34E-",
+      "subgroup": "Human Shapes",
+      "imageKey": "megaminxoll_34e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34e-1",
+          "notation": "F R' F' R U R U' R2' U2' R U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Human Shapes"
+    },
+    {
+      "id": "34e_2",
+      "displayName": "34E+",
+      "name": "34E+",
+      "subgroup": "Human Shapes",
+      "imageKey": "megaminxoll_34e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34e_2-1",
+          "notation": "F R U' R' U' R U R' F' R U2 R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Human Shapes"
+    },
+    {
+      "id": "35a",
+      "displayName": "35A-",
+      "name": "35A-",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35a-1",
+          "notation": "F R' F' R U R U R' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35a_2",
+      "displayName": "35A+",
+      "name": "35A+",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35a_2-1",
+          "notation": "x' D R U' R U R' U' R U R2' D'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35b",
+      "displayName": "35B-",
+      "name": "35B-",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35b-1",
+          "notation": "R U2' R2' F' U' F R2 U2' R2' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35b_2",
+      "displayName": "35B+",
+      "name": "35B+",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35b_2-1",
+          "notation": "R' F R F' U' F R' F' R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35c",
+      "displayName": "35C-",
+      "name": "35C-",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35c-1",
+          "notation": "R BR' R2' F R2 Br R2' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35c_2",
+      "displayName": "35C+",
+      "name": "35C+",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35c_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35c_2-1",
+          "notation": "R' F R2 BR' R2' F' R2 BR R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35d",
+      "displayName": "35D-",
+      "name": "35D-",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35d-1",
+          "notation": "BR' R' U' R U R' U' R U BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35d_2",
+      "displayName": "35D+",
+      "name": "35D+",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35d_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35d_2-1",
+          "notation": "F R U R' U' R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35e",
+      "displayName": "35E-",
+      "name": "35E-",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35e-1",
+          "notation": "F R' F' U2' R U R' U R2 U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35e_2",
+      "displayName": "35E+",
+      "name": "35E+",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35e_2-1",
+          "notation": "R' U' R' F R F' R' F R F' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35f",
+      "displayName": "35F-",
+      "name": "35F-",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35f-1",
+          "notation": "R U R2' F R F' U F R' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "35f_2",
+      "displayName": "35F+",
+      "name": "35F+",
+      "subgroup": "Axe Shapes",
+      "imageKey": "megaminxoll_35f_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35f_2-1",
+          "notation": "F' U' F2 R' F' R U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Axe Shapes"
+    },
+    {
+      "id": "36a",
+      "displayName": "36A-",
+      "name": "36A-",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36a-1",
+          "notation": "R U R' U2 R' F R F' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36a_2",
+      "displayName": "36A+",
+      "name": "36A+",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36a_2-1",
+          "notation": "F U2' F' U' R' F R U2' R' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36b",
+      "displayName": "36B-",
+      "name": "36B-",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36b-1",
+          "notation": "BR' U2' R' U2' R U R' U2' R U BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36b_2",
+      "displayName": "36B+",
+      "name": "36B+",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36b_2-1",
+          "notation": "F R' F' U' F U R2 U R' U' R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36c",
+      "displayName": "36C-",
+      "name": "36C-",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36c-1",
+          "notation": "R U R' U2 R U' BR U' BR' U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36c_2",
+      "displayName": "36C+",
+      "name": "36C+",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36c_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36c_2-1",
+          "notation": "R' U' R U2' R' U F' U F U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36d",
+      "displayName": "36D-",
+      "name": "36D-",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36d-1",
+          "notation": "R' U2 R U2 R2' F R F' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36d_2",
+      "displayName": "36D+",
+      "name": "36D+",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36d_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36d_2-1",
+          "notation": "R U2' R' U' F R' F' R2 U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36e",
+      "displayName": "36E-",
+      "name": "36E-",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36e-1",
+          "notation": "R U2' R' U F' U' F U2 R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36e_2",
+      "displayName": "36E+",
+      "name": "36E+",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36e_2-1",
+          "notation": "R U2 R' U R U' R2' F R F' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36f",
+      "displayName": "36F-",
+      "name": "36F-",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36f-1",
+          "notation": "F' R U2' R2' F R F' R U2 R' F",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "36f_2",
+      "displayName": "36F+",
+      "name": "36F+",
+      "subgroup": "Parrot Shapes",
+      "imageKey": "megaminxoll_36f_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36f_2-1",
+          "notation": "R U2' R2' U2' R U' R' U2' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Parrot Shapes"
+    },
+    {
+      "id": "37a",
+      "displayName": "37A-",
+      "name": "37A-",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37a-1",
+          "notation": "R U2' R2' F R F' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37a_2",
+      "displayName": "37A+",
+      "name": "37A+",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37a_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37a_2-1",
+          "notation": "R' U2' F R' F' R2 U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37b",
+      "displayName": "37B-",
+      "name": "37B-",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37b-1",
+          "notation": "y R U2' R' F' U' F U2' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37b_2",
+      "displayName": "37B+",
+      "name": "37B+",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37b_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37b_2-1",
+          "notation": "F R' F' R U2 R U' R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37c",
+      "displayName": "37C-",
+      "name": "37C-",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37c-1",
+          "notation": "R' U' R U' R2' F R F' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37c_2",
+      "displayName": "37C+",
+      "name": "37C+",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37c_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37c_2-1",
+          "notation": "R U R' U2 F R' F' R2 U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37d",
+      "displayName": "37D-",
+      "name": "37D-",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37d-1",
+          "notation": "R U2 R' U' R U2 R' F' U' F R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37d_2",
+      "displayName": "37D+",
+      "name": "37D+",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37d_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37d_2-1",
+          "notation": "F R' F' U' R U2' R U2 R2' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37e",
+      "displayName": "37E-",
+      "name": "37E-",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37e-1",
+          "notation": "R' U' R U' R' U F' U' F U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    },
+    {
+      "id": "37e_2",
+      "displayName": "37E+",
+      "name": "37E+",
+      "subgroup": "L Shapes",
+      "imageKey": "megaminxoll_37e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37e_2-1",
+          "notation": "F R' F' R U2' R U2' R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "L Shapes"
+    }
+  ]
+}

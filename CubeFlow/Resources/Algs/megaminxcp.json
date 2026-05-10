@@ -1,0 +1,293 @@
+{
+  "puzzle": "Megaminx",
+  "set": "MegaminxCP",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "cp_1",
+      "displayName": "CP 1",
+      "name": "CP 1",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_1-1",
+          "notation": "R' BR' R BR R' F' R BR' R' BR F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_2",
+      "displayName": "CP 2",
+      "name": "CP 2",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_2-1",
+          "notation": "R' F' BR' R BR R' F R BR' R' BR R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_3",
+      "displayName": "CP 3",
+      "name": "CP 3",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_3-1",
+          "notation": "BR' R' U L U' R' U L' U' R2 BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_4",
+      "displayName": "CP 4",
+      "name": "CP 4",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_4-1",
+          "notation": "BR' R2' U L U' R U L' U' R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_5",
+      "displayName": "CP 5",
+      "name": "CP 5",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_5-1",
+          "notation": "L' R U2 R' U' R U R' U' R U R' U' R U' R' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_6",
+      "displayName": "CP 6",
+      "name": "CP 6",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_6-1",
+          "notation": "R U R' U R' U' R F' R U R' U' R' F R2 U' R2' U R U'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_7",
+      "displayName": "CP 7",
+      "name": "CP 7",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_7",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_7-1",
+          "notation": "R2 U R' U' y R U R' U' R U R' U' R U R' y' R U' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_8",
+      "displayName": "CP 8",
+      "name": "CP 8",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_8",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_8-1",
+          "notation": "F R U2 R' U' R U' R' F' R' y' R' U' R U' R' U2 R BR U'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_9",
+      "displayName": "CP 9",
+      "name": "CP 9",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_9",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_9-1",
+          "notation": "R U R' U R' U' R2 U' R' U R' U R U R U R' U R' U' R2 U' R' U R' U R U",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_10",
+      "displayName": "CP 10",
+      "name": "CP 10",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_10",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_10-1",
+          "notation": "R2 U2 R2' U' R2 U' R2' y' R2' U' R2 U' R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_11",
+      "displayName": "CP 11",
+      "name": "CP 11",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_11",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_11-1",
+          "notation": "R2' U2' R2 U R2' U R2 y R2 U R2' U R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_12",
+      "displayName": "CP 12",
+      "name": "CP 12",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_12",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_12-1",
+          "notation": "R2 U2' R2' U' R2 U2' R' U R' U' R' F R2 U' R' U' R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_13",
+      "displayName": "CP 13",
+      "name": "CP 13",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_13",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_13-1",
+          "notation": "R' U2 R U' R' U2 R U2' R' U' R U2' R' U R U2' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_14",
+      "displayName": "CP 14",
+      "name": "CP 14",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_14",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_14-1",
+          "notation": "R2 U2' R2' U' R2 U R2' U' R2 U R2' U' R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "cp_15",
+      "displayName": "CP 15",
+      "name": "CP 15",
+      "subgroup": "",
+      "imageKey": "megaminxcp_cp_15",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "cp_15-1",
+          "notation": "R2 U2 R2' U R2 U' R2' U R2 U' R2' U R2 U2 R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

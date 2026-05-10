@@ -1,0 +1,303 @@
+{
+  "puzzle": "4x4",
+  "set": "OLLParity",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "basic",
+      "displayName": "Basic",
+      "name": "Basic",
+      "subgroup": "",
+      "imageKey": "ollparity_basic",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "basic-1",
+          "notation": "Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-2",
+          "notation": "Rw' U2 Rw U2 Rw' F2 Rw2 U2 Rw U2 Rw' U2 F2 Rw2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-3",
+          "notation": "Rw' U2 Lw F2 Lw' F2 Rw2 U2 Rw U2 Rw' U2 F2 Rw2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-4",
+          "notation": "r2 B2 r' U2 r' U2 x' U2 r' U2 r U2 r' U2 r2 U2 x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-5",
+          "notation": "Rw U2 x Rw U2 Rw U2' Rw' U2 Lw U2 Rw' U2' Rw U2 Rw' U2' Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-6",
+          "notation": "Rw U2' x Rw U2' Rw U2' Rw' U2' Lw U2' Rw' U2' Rw U2' Rw' U2' Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-7",
+          "notation": "r' U2 l F2 l' F2 r2 U2 r U2 r' U2 F2 r2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-8",
+          "notation": "Rw U2 Rw' U2 Rw U2 Rw U2 Lw' U2 Rw U2 Rw' U2 x' U2 Rw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-9",
+          "notation": "r2 B2 r' U2 r U2 r U2 x' U r U' F2 U r' U r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-10",
+          "notation": "Rw U2 x Rw U2 Rw U2 Rw' U2 x' Rw U2 Rw' U2 Rw U2 Rw' U2 Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-11",
+          "notation": "r U2 r' U2 r U2 r U2 l' U2 r U2 r' U2 x' U2 r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-12",
+          "notation": "Rw' U2 Rw U2 Rw' F2 Rw2 U2 Rw U2 Rw' U2 x U2 Rw2 U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-13",
+          "notation": "r2 B2 U2 l U2 r' U2 r U2 F2 r F2 r' U2 r2 x",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-14",
+          "notation": "r U2 x r U2 r U2 r' U2 l U2 r' U2 r U2 r' U2 r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-15",
+          "notation": "r U2 r U2 r' U2 r U2 l' U2 r U2 r' U2 x' r' U2 r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-16",
+          "notation": "r2 U2 r' U2 r' U2 r U2 F2 r F2 r' F2 U2 r2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-17",
+          "notation": "Rw' U2 Rw U2 Rw U2 Rw2 F2 Rw' U2 Rw' U2 F2 Rw2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-18",
+          "notation": "r U2 r U2' r' U2 r U2' l' U2 r U2' r' U2 l r2 U2' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-19",
+          "notation": "U2 Rw2 F2 U2 Lw U2 Rw' U2 Rw U2 F2 Rw F2 Lw' F2 Rw2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-20",
+          "notation": "r U2 r' U2 r U2 r U2 l' U2 r U2 r' U2 x' U2 r2 U U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-21",
+          "notation": "Rw U2 x Rw U2 Rw U2' Rw' U2 Lw U2' Rw' U2' Rw U2 Rw' U2' Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "basic-22",
+          "notation": "Rw U2 Rw U2 Rw' U2 Rw U2 Lw' U2 Rw U2 Rw' U2 Rw' x' U2 Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "pure",
+      "displayName": "Pure",
+      "name": "Pure",
+      "subgroup": "",
+      "imageKey": "ollparity_pure",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "pure-1",
+          "notation": "2R' U2 2L F2 2L' F2 2R2 U2 2R U2 2R' U2 F2 2R2 F2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-2",
+          "notation": "R' U2 Rw' U2 Rw U2 Rw2 U2 x' U2 Rw' U2 Rw U2 l' U2 Rw U2 Rw R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-3",
+          "notation": "R' F R F' Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw' U R U2 R' U2 U2 U2 U2 U2 U2 U2 U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-4",
+          "notation": "y2 R U R' F' r U2 x r U2 r U2 r' U2 l U2 r' U2 r U2 r' U2 r' F R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-5",
+          "notation": "R' F R F' Rw U2 x Rw U2 Rw U2' Rw' U2 Lw U2 Rw' U2' Rw U2 Rw' U2' Rw' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-6",
+          "notation": "y2 F R U R' U' F' U Rw U2' x Rw U2' Rw U2' Rw' U2' Lw U2' Rw' U2' Rw U2' Rw' U2' Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-7",
+          "notation": "R' F R F' Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-8",
+          "notation": "y2 F R U R' U' F' U Rw' U2' Rw U2 Rw U2' Rw2' F2 Rw' U2 Rw' U2' F2 Rw2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-9",
+          "notation": "y r' U2 r U' r' U r U' r U2 r U2 r' U2 r U2 r2 U' r2 U r U' r U' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-10",
+          "notation": "R' Rw2 B2 Rw' U2 Rw' U2 x' U2 Rw' U2 Rw U2 Rw' U2 Rw2 U2 x U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-11",
+          "notation": "2R2 B2 U2 2L U2 2R' U2 2R U2 F2 2R F2 2L' B2 2R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-12",
+          "notation": "2R U2 x 2R U2 2R U2 2R' U2 2L U2 2R' U2 2R U2 2R' U2 2R' U2 M' x' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "pure-13",
+          "notation": "R' Rw' U2 Rw' U2 l U2 Rw' U2 Rw U2 x U2 Rw2 U2 Rw' U2 Rw U2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "m",
+      "displayName": "M",
+      "name": "M",
+      "subgroup": "",
+      "imageKey": "ollparity_m",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "m-1",
+          "notation": "M Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw' M'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "m-2",
+          "notation": "y2 2R2 U2 2R2 Uw2 2R2 Uw2 Rw' U2 Lw F2 Lw' F2 Rw2 U2 Rw U2 Rw' U2 F2 Rw2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

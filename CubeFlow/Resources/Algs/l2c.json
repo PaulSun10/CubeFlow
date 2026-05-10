@@ -1,0 +1,371 @@
+{
+  "puzzle": "5x5",
+  "set": "L2C",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "l2c_1",
+      "displayName": "L2C 1",
+      "name": "L2C 1",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_1-1",
+          "notation": "U2 Rw U Rw' U Rw U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2c_1-2",
+          "notation": "U2 r U r' U l F2 l'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2c_1-3",
+          "notation": "U Rw U' Lw' U Rw' U' Lw",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_2",
+      "displayName": "L2C 2",
+      "name": "L2C 2",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_2-1",
+          "notation": "Rw U M' U2 M U Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_3",
+      "displayName": "L2C 3",
+      "name": "L2C 3",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_3-1",
+          "notation": "Rw U Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_4",
+      "displayName": "L2C 4",
+      "name": "L2C 4",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_4-1",
+          "notation": "Rw U Rw' U' Rw U' Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_5",
+      "displayName": "L2C 5",
+      "name": "L2C 5",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_5-1",
+          "notation": "Rw U' Rw' U' Rw U' Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_6",
+      "displayName": "L2C 6",
+      "name": "L2C 6",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_6-1",
+          "notation": "Rw U2 Rw' U Rw U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_7",
+      "displayName": "L2C 7",
+      "name": "L2C 7",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_7",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_7-1",
+          "notation": "Rw U' Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_8",
+      "displayName": "L2C 8",
+      "name": "L2C 8",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_8",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_8-1",
+          "notation": "Rw U' Rw' U Rw U Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_9",
+      "displayName": "L2C 9",
+      "name": "L2C 9",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_9",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_9-1",
+          "notation": "Rw U Rw' U Rw U Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_10",
+      "displayName": "L2C 10",
+      "name": "L2C 10",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_10",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_10-1",
+          "notation": "Rw U2 Rw' U' Rw U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_11",
+      "displayName": "L2C 11",
+      "name": "L2C 11",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_11",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_11-1",
+          "notation": "U2 Rw U Rw' U' Rw U Rw' U' Rw U Rw' U'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_12",
+      "displayName": "L2C 12",
+      "name": "L2C 12",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_12",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_12-1",
+          "notation": "Rw U' Rw' U2 Rw U' Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_13",
+      "displayName": "L2C 13",
+      "name": "L2C 13",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_13",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_13-1",
+          "notation": "Rw U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_14",
+      "displayName": "L2C 14",
+      "name": "L2C 14",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_14",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_14-1",
+          "notation": "Rw U Rw' U' Rw U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_15",
+      "displayName": "L2C 15",
+      "name": "L2C 15",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_15",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_15-1",
+          "notation": "Rw U Rw' U Rw U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_16",
+      "displayName": "L2C 16",
+      "name": "L2C 16",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_16",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_16-1",
+          "notation": "Rw U' Rw' U Rw U' Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_17",
+      "displayName": "L2C 17",
+      "name": "L2C 17",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_17",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_17-1",
+          "notation": "Rw U Rw' U' Rw U Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2c_18",
+      "displayName": "L2C 18",
+      "name": "L2C 18",
+      "subgroup": "",
+      "imageKey": "l2c_l2c_18",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2c_18-1",
+          "notation": "M' U2 M U Rw U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2c_18-2",
+          "notation": "r U2 r' U2 r U' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

@@ -387,12 +387,42 @@ struct CompetitionScheduleEntry: Identifiable, Hashable, Sendable {
     let timeText: String
     let title: String
     let detailText: String?
+    let venueName: String?
+    let eventCode: String?
+    let group: String?
+    let round: String?
+    let format: String?
+    let cutoff: String?
+    let timeLimit: String?
+    let advancingCount: String?
+}
+
+struct CompetitionScheduleVenue: Identifiable, Hashable, Sendable {
+    let id: String
+    let title: String
+    let entries: [CompetitionScheduleEntry]
 }
 
 struct CompetitionScheduleDay: Identifiable, Hashable, Sendable {
     let id: String
     let title: String
     let entries: [CompetitionScheduleEntry]
+    let venues: [CompetitionScheduleVenue]
+}
+
+struct CompetitionScheduleDebugInfo: Hashable, Sendable {
+    let source: String
+    let slug: String?
+    let htmlLength: Int
+    let parseDurationMS: Int
+    let hasOldStyleSection: Bool
+    let htmlContainsTable: Bool
+    let scheduleContainsTable: Bool
+    let scheduleContainsResponsiveTable: Bool
+    let panelCount: Int
+    let tableCount: Int
+    let entryCount: Int
+    let panelPreview: String?
 }
 
 struct CompetitionCompetitorPreview: Identifiable, Hashable, Sendable {
@@ -568,6 +598,7 @@ struct CompetitionDetailContent: Hashable, Sendable {
     let travelBlocks: [CompetitionDetailTextBlock]
     let registerBlocks: [CompetitionDetailTextBlock]
     let scheduleDays: [CompetitionScheduleDay]
+    let scheduleDebugInfo: CompetitionScheduleDebugInfo?
     let competitorsCount: Int?
     let competitorPreviews: [CompetitionCompetitorPreview]
     let registrationRequiresSignIn: Bool
@@ -576,12 +607,13 @@ struct CompetitionDetailContent: Hashable, Sendable {
     let liveContent: CompetitionLiveContent?
     let wcaLiveContent: CompetitionWCALiveContent?
 
-    static let empty = CompetitionDetailContent(
+    nonisolated static let empty = CompetitionDetailContent(
         overviewBlocks: [],
         noteBlocks: [],
         travelBlocks: [],
         registerBlocks: [],
         scheduleDays: [],
+        scheduleDebugInfo: nil,
         competitorsCount: nil,
         competitorPreviews: [],
         registrationRequiresSignIn: false,
@@ -590,6 +622,42 @@ struct CompetitionDetailContent: Hashable, Sendable {
         liveContent: nil,
         wcaLiveContent: nil
     )
+
+    func replacingCompetitors(from other: CompetitionDetailContent) -> CompetitionDetailContent {
+        CompetitionDetailContent(
+            overviewBlocks: overviewBlocks,
+            noteBlocks: noteBlocks,
+            travelBlocks: travelBlocks,
+            registerBlocks: registerBlocks,
+            scheduleDays: scheduleDays,
+            scheduleDebugInfo: scheduleDebugInfo,
+            competitorsCount: other.competitorsCount,
+            competitorPreviews: other.competitorPreviews,
+            registrationRequiresSignIn: registrationRequiresSignIn,
+            liveAvailability: liveAvailability,
+            liveURLOverride: liveURLOverride,
+            liveContent: liveContent,
+            wcaLiveContent: wcaLiveContent
+        )
+    }
+
+    func replacingLive(from other: CompetitionDetailContent) -> CompetitionDetailContent {
+        CompetitionDetailContent(
+            overviewBlocks: overviewBlocks,
+            noteBlocks: noteBlocks,
+            travelBlocks: travelBlocks,
+            registerBlocks: registerBlocks,
+            scheduleDays: scheduleDays,
+            scheduleDebugInfo: scheduleDebugInfo,
+            competitorsCount: competitorsCount,
+            competitorPreviews: competitorPreviews,
+            registrationRequiresSignIn: registrationRequiresSignIn,
+            liveAvailability: other.liveAvailability,
+            liveURLOverride: other.liveURLOverride ?? liveURLOverride,
+            liveContent: other.liveContent,
+            wcaLiveContent: other.wcaLiveContent
+        )
+    }
 }
 
 nonisolated private func competitionSelectableEventIDs() -> [String] {
@@ -621,6 +689,14 @@ enum CompetitionServiceError: LocalizedError {
 }
 
 enum CompetitionService {
+    private static func isTimeoutLikeError(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorTimedOut {
+            return true
+        }
+        return nsError.localizedDescription.lowercased().contains("timed out")
+    }
+
     static func warmRecognizedCountriesCache() async {
         _ = try? await CompetitionRecognizedCountryStore.shared.recognizedCountries()
     }
@@ -634,13 +710,47 @@ enum CompetitionService {
 
     static func fetchCompetitionDetail(
         for competition: CompetitionSummary,
-        languageCode: String
+        languageCode: String,
+        forceRefresh: Bool = false,
+        includeCompetitors: Bool = false,
+        includeLive: Bool = false
     ) async -> CompetitionDetailContent {
-        if competition.countryISO2.uppercased() == "CN" {
-            return await fetchCubingCompetitionDetail(for: competition, languageCode: languageCode) ?? .empty
+        let key = cacheKeyForDetail(
+            competitionID: competition.id,
+            languageCode: languageCode,
+            includeCompetitors: includeCompetitors,
+            includeLive: includeLive
+        )
+        if !forceRefresh,
+           let cached = await CompetitionDetailContentStore.shared.content(for: key) {
+            return cached
         }
 
-        return await fetchWCACompetitionDetail(for: competition, languageCode: languageCode) ?? .empty
+        let requestKey = forceRefresh ? "\(key)|force" : key
+        let content = await CompetitionInFlightRequestStore.shared.detailContent(for: requestKey) {
+            if competition.countryISO2.uppercased() == "CN" {
+                return await fetchCubingCompetitionDetail(
+                    for: competition,
+                    languageCode: languageCode,
+                    forceRefresh: forceRefresh,
+                    includeCompetitors: includeCompetitors,
+                    includeLive: includeLive
+                ) ?? .empty
+            }
+
+            return await fetchWCACompetitionDetail(
+                for: competition,
+                languageCode: languageCode,
+                forceRefresh: forceRefresh,
+                includeCompetitors: includeCompetitors,
+                includeLive: includeLive
+            ) ?? .empty
+        }
+
+        if content != .empty {
+            await CompetitionDetailContentStore.shared.store(content, for: key)
+        }
+        return content
     }
 
     static func fetchCompetitionPsychPreviews(
@@ -670,16 +780,19 @@ enum CompetitionService {
         for competition: CompetitionSummary,
         languageCode: String
     ) async -> [CompetitionTopCuberPreview]? {
-        if let cached = await CompetitionTopCuberStore.shared.previews(for: cacheKeyForTopCubers(competitionID: competition.id)) {
+        let key = cacheKeyForTopCubers(competitionID: competition.id)
+        if let cached = await CompetitionTopCuberStore.shared.previews(for: key) {
             return cached
         }
 
-        guard let fetched = await fetchWCATopCuberPreviews(for: competition, languageCode: languageCode) else {
+        guard let fetched = await CompetitionInFlightRequestStore.shared.topCuberPreviews(for: key, loader: {
+            await fetchWCATopCuberPreviews(for: competition, languageCode: languageCode)
+        }) else {
             return nil
         }
         await CompetitionTopCuberStore.shared.store(
             fetched,
-            for: cacheKeyForTopCubers(competitionID: competition.id)
+            for: key
         )
         return fetched
     }
@@ -843,6 +956,13 @@ enum CompetitionService {
     }
 
     static func fetchCompetitionsPage(query: CompetitionQuery, page: Int) async throws -> CompetitionPageResult {
+        let key = "\(cacheKey(for: query))|page:\(page)"
+        return try await CompetitionInFlightRequestStore.shared.competitionsPage(for: key) {
+            try await fetchCompetitionsPageUncoordinated(query: query, page: page)
+        }
+    }
+
+    private static func fetchCompetitionsPageUncoordinated(query: CompetitionQuery, page: Int) async throws -> CompetitionPageResult {
         let today = Calendar.current.startOfDay(for: Date())
         var queryItems: [URLQueryItem] = []
 
@@ -1326,11 +1446,20 @@ enum CompetitionService {
         }
 
         var request = URLRequest(url: url)
-        request.timeoutInterval = 15
+        request.timeoutInterval = 30
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue(acceptLanguageHeader(for: languageCode), forHTTPHeaderField: "Accept-Language")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            guard isTimeoutLikeError(error) else { throw error }
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            (data, response) = try await URLSession.shared.data(for: request)
+        }
+
         guard let httpResponse = response as? HTTPURLResponse, 200 ..< 300 ~= httpResponse.statusCode else {
             throw CompetitionServiceError.requestFailed
         }
@@ -1496,37 +1625,52 @@ enum CompetitionService {
 
     private static func fetchWCACompetitionDetail(
         for competition: CompetitionSummary,
-        languageCode: String
+        languageCode: String,
+        forceRefresh: Bool,
+        includeCompetitors: Bool,
+        includeLive: Bool
     ) async -> CompetitionDetailContent? {
         guard let url = URL(string: competition.url) else { return nil }
         guard let html = await fetchCompetitionHTML(url: url, languageCode: languageCode) else { return nil }
 
         async let registerBlocksTask = fetchWCARegisterBlocks(for: competition, languageCode: languageCode)
-        async let publicWCIFTask = fetchWCAPublicCompetitors(for: competition, languageCode: languageCode)
-        async let competitorsHTMLTask = fetchCompetitionHTML(
-            url: URL(string: competition.url + "/registrations"),
-            languageCode: languageCode
-        )
         let extractedLiveURL = extractWCALiveURL(from: html)
-        async let wcaLiveContentTask = fetchWCALiveContent(
-            for: competition,
-            languageCode: languageCode,
-            liveURL: extractedLiveURL
-        )
 
         let noteBlocks = extractWCATabBlocks(from: html)
-        let scheduleDays = extractWCAScheduleDays(from: html, languageCode: languageCode)
-        let publicWCIFCompetitors = await publicWCIFTask
-        let competitorsHTML = await competitorsHTMLTask
-        let competitorPreviews = publicWCIFCompetitors.previews.isEmpty
-            ? extractWCACompetitorPreviews(from: competitorsHTML)
-            : publicWCIFCompetitors.previews
-        let competitorsCount = publicWCIFCompetitors.count
-            ?? extractWCACompetitorCount(from: html)
-            ?? extractWCACompetitorCount(from: competitorsHTML)
+        let scheduleDays = await CompetitionScheduleParseStore.shared.scheduleDays(
+            for: "wca|\(languageCode)|\(competition.id)",
+            forceRefresh: forceRefresh
+        ) {
+            await extractWCAScheduleDays(from: html, languageCode: languageCode)
+        }
+        let competitorsHTML = includeCompetitors
+            ? await fetchCompetitionHTML(
+                url: URL(string: competition.url + "/registrations"),
+                languageCode: languageCode
+            )
+            : nil
+        let publicWCIFCompetitors = includeCompetitors
+            ? await fetchWCAPublicCompetitors(for: competition, languageCode: languageCode)
+            : WCAPublicCompetitors(previews: [], count: nil)
+        let competitorPreviews = includeCompetitors
+            ? (publicWCIFCompetitors.previews.isEmpty
+                ? extractWCACompetitorPreviews(from: competitorsHTML)
+                : publicWCIFCompetitors.previews)
+            : []
+        let competitorsCount = includeCompetitors
+            ? (publicWCIFCompetitors.count
+                ?? extractWCACompetitorCount(from: html)
+                ?? extractWCACompetitorCount(from: competitorsHTML))
+            : extractWCACompetitorCount(from: html)
         let registerBlocks = await registerBlocksTask
         let liveURLOverride = extractedLiveURL
-        let wcaLiveContent = await wcaLiveContentTask
+        let wcaLiveContent = includeLive
+            ? await fetchWCALiveContent(
+                for: competition,
+                languageCode: languageCode,
+                liveURL: extractedLiveURL
+            )
+            : nil
 
         let liveAvailability: CompetitionLiveAvailability
         if liveURLOverride != nil || wcaLiveContent != nil {
@@ -1541,6 +1685,7 @@ enum CompetitionService {
             travelBlocks: [],
             registerBlocks: registerBlocks,
             scheduleDays: scheduleDays,
+            scheduleDebugInfo: nil,
             competitorsCount: competitorsCount,
             competitorPreviews: competitorPreviews,
             registrationRequiresSignIn: false,
@@ -1553,7 +1698,10 @@ enum CompetitionService {
 
     private static func fetchCubingCompetitionDetail(
         for competition: CompetitionSummary,
-        languageCode: String
+        languageCode: String,
+        forceRefresh: Bool,
+        includeCompetitors: Bool,
+        includeLive: Bool
     ) async -> CompetitionDetailContent? {
         guard let slug = competitionSlug(for: competition) else { return nil }
         let cubingLanguage = cubingLanguageCode(for: languageCode)
@@ -1574,50 +1722,60 @@ enum CompetitionService {
             url: URL(string: "https://cubing.com/competition/\(slug)/registration?lang=\(cubingLanguage)"),
             languageCode: languageCode
         )
-        async let competitorsHTML = fetchCompetitionHTML(
-            url: URL(string: "https://cubing.com/competition/\(slug)/competitors?lang=\(cubingLanguage)"),
-            languageCode: languageCode
-        )
-        async let liveHTML = fetchCompetitionHTML(
-            url: URL(string: "https://cubing.com/live/\(slug)?lang=\(cubingLanguage)"),
-            languageCode: languageCode
-        )
-        async let sumOfRanksHTML = fetchCompetitionHTML(
-            url: URL(string: "https://cubing.com/live/\(slug)/statistics/sum-of-ranks?lang=\(cubingLanguage)"),
-            languageCode: languageCode
-        )
-        async let podiumsHTML = fetchCompetitionHTML(
-            url: URL(string: "https://cubing.com/live/\(slug)/podiums?lang=\(cubingLanguage)"),
-            languageCode: languageCode
-        )
-
         let main = await mainHTML
         let travel = await travelHTML
         let schedule = await scheduleHTML
         let register = await registerHTML
-        let competitors = await competitorsHTML
-        let live = await liveHTML
-        let sumOfRanks = await sumOfRanksHTML
-        let podiums = await podiumsHTML
+        let competitors = includeCompetitors
+            ? await fetchCompetitionHTML(
+                url: URL(string: "https://cubing.com/competition/\(slug)/competitors?lang=\(cubingLanguage)"),
+                languageCode: languageCode
+            )
+            : nil
+        let live = includeLive
+            ? await fetchCompetitionHTML(
+                url: URL(string: "https://cubing.com/live/\(slug)?lang=\(cubingLanguage)"),
+                languageCode: languageCode
+            )
+            : nil
 
         guard main != nil || travel != nil || schedule != nil else { return nil }
 
         let overviewBlocks = main.map(extractCubingOverviewBlocks(from:)) ?? []
         let travelBlocks = travel.map(extractCubingTravelBlocks(from:)) ?? []
-        let scheduleDays = schedule.map(extractCubingScheduleDays(from:)) ?? []
+        let scheduleParseStart = Date()
+        let scheduleDays = await CompetitionScheduleParseStore.shared.scheduleDays(
+            for: "cubing|\(cubingLanguage)|\(slug)",
+            forceRefresh: forceRefresh
+        ) {
+            if let schedule {
+                return await extractCubingScheduleDays(from: schedule)
+            }
+            return []
+        }
+        let scheduleParseDurationMS = Int(Date().timeIntervalSince(scheduleParseStart) * 1000)
+        let scheduleDebugInfo = cubingScheduleDebugInfo(
+            from: schedule,
+            slug: slug,
+            scheduleDays: scheduleDays,
+            parseDurationMS: scheduleParseDurationMS
+        )
         let registerBlocks = register.map(extractCubingRegistrationBlocks(from:)) ?? []
         let registrationRequiresSignIn = register.map(cubingPageRequiresLoginHTML(_:)) ?? false
-        let competitorPreviews = extractCubingCompetitorPreviews(from: competitors)
-        let competitorsCount = extractCubingCompetitorCount(from: competitors)
-            ?? extractCubingCompetitorCount(from: schedule)
-            ?? (competitorPreviews.isEmpty ? nil : competitorPreviews.count)
-        let liveContent = live.flatMap {
-            extractCubingLiveContent(
-                from: $0,
-                sumOfRanksHTML: sumOfRanks,
-                podiumsHTML: podiums
-            )
-        }
+        let competitorPreviews = includeCompetitors
+            ? extractCubingCompetitorPreviews(from: competitors)
+            : []
+        let competitorsCount = includeCompetitors
+            ? (extractCubingCompetitorCount(from: competitors)
+                ?? extractCubingCompetitorCount(from: schedule))
+            : extractCubingCompetitorCount(from: schedule)
+        let liveURL = URL(string: "https://cubing.com/live/\(slug)?lang=\(cubingLanguage)")
+        let cubingLiveContent = includeLive
+            ? await fetchCubingLiveContent(from: live, languageCode: languageCode)
+            : nil
+        let liveAvailability = includeLive
+            ? cubingLiveAvailability(for: competition, liveHTML: live)
+            : (availabilityStatus(for: competition, now: Date()) == .ended ? .ended : .upcoming)
 
         return CompetitionDetailContent(
             overviewBlocks: overviewBlocks,
@@ -1625,13 +1783,45 @@ enum CompetitionService {
             travelBlocks: travelBlocks,
             registerBlocks: registerBlocks,
             scheduleDays: scheduleDays,
+            scheduleDebugInfo: scheduleDebugInfo,
             competitorsCount: competitorsCount,
             competitorPreviews: competitorPreviews,
             registrationRequiresSignIn: registrationRequiresSignIn,
-            liveAvailability: cubingLiveAvailability(for: competition, liveHTML: live),
-            liveURLOverride: nil,
-            liveContent: liveContent,
+            liveAvailability: liveAvailability,
+            liveURLOverride: liveAvailability == .unavailable ? nil : liveURL,
+            liveContent: cubingLiveContent,
             wcaLiveContent: nil
+        )
+    }
+
+    private static func fetchCubingLiveContent(
+        from liveHTML: String?,
+        languageCode: String
+    ) async -> CompetitionLiveContent? {
+        guard let liveHTML else { return nil }
+
+        let sumOfRanksURL = firstCompetitionCapture(
+            in: liveHTML,
+            pattern: #"href=\"([^\"]+/statistics/sum-of-ranks)\""#
+        ).flatMap(URL.init(string:))
+        let podiumsURL = firstCompetitionCapture(
+            in: liveHTML,
+            pattern: #"href=\"([^\"]+/podiums)\""#
+        ).flatMap(URL.init(string:))
+
+        async let sumOfRanksHTML = fetchCompetitionHTML(
+            url: sumOfRanksURL,
+            languageCode: languageCode
+        )
+        async let podiumsHTML = fetchCompetitionHTML(
+            url: podiumsURL,
+            languageCode: languageCode
+        )
+
+        return extractCubingLiveContent(
+            from: liveHTML,
+            sumOfRanksHTML: await sumOfRanksHTML,
+            podiumsHTML: await podiumsHTML
         )
     }
 
@@ -1640,7 +1830,16 @@ enum CompetitionService {
         languageCode: String
     ) async -> String? {
         guard let url else { return nil }
+        let key = "\(languageCode)|\(url.absoluteString)"
+        return await CompetitionInFlightRequestStore.shared.html(for: key) {
+            await fetchCompetitionHTMLUncoordinated(url: url, languageCode: languageCode)
+        }
+    }
 
+    private static func fetchCompetitionHTMLUncoordinated(
+        url: URL,
+        languageCode: String
+    ) async -> String? {
         var request = URLRequest(url: url)
         request.timeoutInterval = 15
         request.cachePolicy = .reloadIgnoringLocalCacheData
@@ -2758,7 +2957,15 @@ enum CompetitionService {
                             id: "\(activity.id)",
                             timeText: timeText,
                             title: activity.name,
-                            detailText: detailText
+                            detailText: detailText,
+                            venueName: detailText,
+                            eventCode: nil,
+                            group: nil,
+                            round: nil,
+                            format: nil,
+                            cutoff: nil,
+                            timeLimit: nil,
+                            advancingCount: nil
                         )
                     )
                 }
@@ -2769,7 +2976,8 @@ enum CompetitionService {
             CompetitionScheduleDay(
                 id: "wca-\(key)",
                 title: key,
-                entries: grouped[key, default: []].sorted { lhs, rhs in lhs.timeText < rhs.timeText }
+                entries: grouped[key, default: []].sorted { lhs, rhs in lhs.timeText < rhs.timeText },
+                venues: []
             )
         }
     }
@@ -3183,49 +3391,254 @@ enum CompetitionService {
     }
 
     private static func extractCubingScheduleDays(from html: String) -> [CompetitionScheduleDay] {
-        let sections = competitionHTMLCaptures(
-            in: html,
-            pattern: #"(?s)<h3 class=\"panel-title\">(.*?)</h3>.*?<tbody>(.*?)</tbody>"#
-        )
+        let scheduleHTML = cubingTraditionalScheduleHTML(from: html)
+        let sections = cubingSchedulePanelSections(in: scheduleHTML)
 
         return sections.compactMap { capture in
-            guard capture.count >= 2 else { return nil }
-            let title = cleanedCompetitionHTMLText(capture[0])
-            let rowCaptures = competitionHTMLCaptures(
-                in: capture[1],
-                pattern: #"(?s)<tr[^>]*>\s*<td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td>\s*</tr>"#
-            )
-            let entries = rowCaptures.enumerated().compactMap { index, row -> CompetitionScheduleEntry? in
-                guard row.count >= 8 else { return nil }
-                let start = cleanedCompetitionHTMLText(row[0])
-                let end = cleanedCompetitionHTMLText(row[1])
-                let event = cleanedCompetitionHTMLText(row[2])
-                let round = cleanedCompetitionHTMLText(row[3])
-                let format = cleanedCompetitionHTMLText(row[4])
-                let cutoff = cleanedCompetitionHTMLText(row[5])
-                let timeLimit = cleanedCompetitionHTMLText(row[6])
-
-                var details: [String] = []
-                if !round.isEmpty { details.append(round) }
-                if !format.isEmpty { details.append(format) }
-                if !cutoff.isEmpty { details.append(cutoff) }
-                if !timeLimit.isEmpty { details.append(timeLimit) }
-
-                return CompetitionScheduleEntry(
-                    id: "\(title)-\(index)",
-                    timeText: [start, end].filter { !$0.isEmpty }.joined(separator: "–"),
-                    title: event,
-                    detailText: details.isEmpty ? nil : details.joined(separator: " · ")
-                )
-            }
+            let title = capture.title
+            let entries = extractCubingScheduleEntries(from: capture.body, dayTitle: title)
+            let venues = extractCubingScheduleVenues(from: capture.body, dayTitle: title)
 
             guard !entries.isEmpty else { return nil }
             return CompetitionScheduleDay(
                 id: "cubing-\(title)",
                 title: title,
+                entries: entries,
+                venues: venues
+            )
+        }
+    }
+
+    private static func cubingScheduleDebugInfo(
+        from html: String?,
+        slug: String,
+        scheduleDays: [CompetitionScheduleDay],
+        parseDurationMS: Int
+    ) -> CompetitionScheduleDebugInfo {
+        guard let html else {
+            return CompetitionScheduleDebugInfo(
+                source: "cubing.com",
+                slug: slug,
+                htmlLength: 0,
+                parseDurationMS: parseDurationMS,
+                hasOldStyleSection: false,
+                htmlContainsTable: false,
+                scheduleContainsTable: false,
+                scheduleContainsResponsiveTable: false,
+                panelCount: 0,
+                tableCount: 0,
+                entryCount: 0,
+                panelPreview: nil
+            )
+        }
+
+        let scheduleHTML = cubingTraditionalScheduleHTML(from: html)
+        let sections = cubingSchedulePanelSections(in: scheduleHTML)
+        let tableCount = sections.reduce(0) { count, section in
+            count + cubingScheduleTableCaptures(in: section.body).count
+        }
+        let entryCount = scheduleDays.reduce(0) { count, day in
+            count + day.entries.count
+        }
+
+        return CompetitionScheduleDebugInfo(
+            source: "cubing.com",
+            slug: slug,
+            htmlLength: html.count,
+            parseDurationMS: parseDurationMS,
+            hasOldStyleSection: html.contains(#"id="old-style""#),
+            htmlContainsTable: html.localizedCaseInsensitiveContains("<table"),
+            scheduleContainsTable: scheduleHTML.localizedCaseInsensitiveContains("<table"),
+            scheduleContainsResponsiveTable: scheduleHTML.localizedCaseInsensitiveContains("table-responsive"),
+            panelCount: sections.count,
+            tableCount: tableCount,
+            entryCount: entryCount,
+            panelPreview: sections.first.map { cubingScheduleDebugPreview(from: $0.body) }
+        )
+    }
+
+    private static func cubingScheduleDebugPreview(from html: String) -> String {
+        let collapsed = html
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\t", with: " ")
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+        return String(collapsed.prefix(700))
+    }
+
+    private static func extractCubingScheduleEntries(from dayHTML: String, dayTitle: String) -> [CompetitionScheduleEntry] {
+        let tableCaptures = cubingScheduleTableCaptures(in: dayHTML)
+
+        return tableCaptures.enumerated().flatMap { tableIndex, capture in
+            let rawVenue = cleanedCompetitionHTMLText(capture.venueHTML)
+            return extractCubingScheduleEntries(
+                from: capture.tableHTML,
+                dayTitle: dayTitle,
+                venueName: rawVenue.isEmpty ? nil : rawVenue,
+                tableIndex: tableIndex
+            )
+        }
+    }
+
+    private struct CubingSchedulePanelSection {
+        let title: String
+        let body: String
+    }
+
+    private static func cubingTraditionalScheduleHTML(from html: String) -> String {
+        guard let oldStyleRange = html.range(of: #"id="old-style""#) else {
+            return html
+        }
+        let lowerBound = oldStyleRange.lowerBound
+        let upperBound = html[lowerBound...].range(of: #"<div class="schedule-comment""#)?.lowerBound ?? html.endIndex
+        return String(html[lowerBound..<upperBound])
+    }
+
+    private static func cubingSchedulePanelSections(in html: String) -> [CubingSchedulePanelSection] {
+        let pattern = #"(?is)<h3 class=\"panel-title\">(.*?)</h3>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let nsHTML = html as NSString
+        let matches = regex.matches(in: html, range: NSRange(location: 0, length: nsHTML.length))
+        return matches.enumerated().compactMap { index, match in
+            guard match.numberOfRanges > 1 else { return nil }
+            let title = cleanedCompetitionHTMLText(nsHTML.substring(with: match.range(at: 1)))
+            guard !title.isEmpty else { return nil }
+            let start = match.range.location + match.range.length
+            let end = index + 1 < matches.count ? matches[index + 1].range.location : nsHTML.length
+            guard start <= end else { return nil }
+            return CubingSchedulePanelSection(
+                title: title,
+                body: nsHTML.substring(with: NSRange(location: start, length: end - start))
+            )
+        }
+    }
+
+    private static func extractCubingScheduleVenues(from dayHTML: String, dayTitle: String) -> [CompetitionScheduleVenue] {
+        let tableCaptures = cubingScheduleTableCaptures(in: dayHTML)
+
+        return tableCaptures.enumerated().compactMap { tableIndex, capture in
+            let rawVenue = cleanedCompetitionHTMLText(capture.venueHTML)
+            let venueTitle = rawVenue.isEmpty ? "赛程" : rawVenue
+            let entries = extractCubingScheduleEntries(
+                from: capture.tableHTML,
+                dayTitle: dayTitle,
+                venueName: rawVenue.isEmpty ? nil : rawVenue,
+                tableIndex: tableIndex
+            )
+            guard !entries.isEmpty else { return nil }
+            return CompetitionScheduleVenue(
+                id: "\(dayTitle)-venue-\(tableIndex)-\(venueTitle)",
+                title: venueTitle,
                 entries: entries
             )
         }
+    }
+
+    private static func cubingScheduleTableCaptures(in dayHTML: String) -> [(venueHTML: String, tableHTML: String)] {
+        let responsiveCaptures = competitionHTMLCaptures(
+            in: dayHTML,
+            pattern: #"(?is)(?:<h3[^>]*>(.*?)</h3>\s*)?<div[^>]*class=["'][^"']*table-responsive[^"']*["'][^>]*>\s*<table[^>]*>(.*?)</table>"#
+        )
+        let responsiveTables = responsiveCaptures.compactMap { capture -> (venueHTML: String, tableHTML: String)? in
+            guard let tableHTML = capture.last else { return nil }
+            let venueHTML = capture.count > 1 ? capture[0] : ""
+            return (venueHTML, tableHTML)
+        }
+
+        if !responsiveTables.isEmpty {
+            return responsiveTables
+        }
+
+        return competitionHTMLCaptures(
+            in: dayHTML,
+            pattern: #"(?is)(?:<h3[^>]*>(.*?)</h3>\s*)?<table[^>]*>(.*?)</table>"#
+        )
+        .compactMap { capture -> (venueHTML: String, tableHTML: String)? in
+            guard let tableHTML = capture.last else { return nil }
+            let venueHTML = capture.count > 1 ? capture[0] : ""
+            return (venueHTML, tableHTML)
+        }
+    }
+
+    private static func extractCubingScheduleEntries(
+        from tableHTML: String,
+        dayTitle: String,
+        venueName: String?,
+        tableIndex: Int
+    ) -> [CompetitionScheduleEntry] {
+        let headerHTMLs = competitionHTMLCaptures(in: tableHTML, pattern: #"(?is)<th[^>]*>(.*?)</th>"#).compactMap(\.first)
+        let headers = headerHTMLs.map(cleanedCompetitionHTMLText)
+        let rowHTMLs = competitionHTMLCaptures(in: tableHTML, pattern: #"(?is)<tr[^>]*>(.*?)</tr>"#).compactMap(\.first)
+
+        return rowHTMLs.enumerated().compactMap { rowIndex, rowHTML -> CompetitionScheduleEntry? in
+            let cellHTMLs = competitionHTMLCaptures(in: rowHTML, pattern: #"(?is)<td[^>]*>(.*?)</td>"#).compactMap(\.first)
+            guard cellHTMLs.count >= 3 else { return nil }
+            let cells = cellHTMLs.map(cleanedCompetitionHTMLText)
+
+            let start = cubingScheduleCell(cells: cells, headers: headers, matching: ["开始", "start"])
+            let end = cubingScheduleCell(cells: cells, headers: headers, matching: ["结束", "end"])
+            let event = normalizedCubingScheduleEventTitle(cubingScheduleCell(cells: cells, headers: headers, matching: ["项目", "event"]))
+            guard !event.isEmpty else { return nil }
+
+            let group = cubingScheduleCell(cells: cells, headers: headers, matching: ["分组", "group"])
+            let round = cubingScheduleCell(cells: cells, headers: headers, matching: ["轮次", "round"])
+            let format = cubingScheduleCell(cells: cells, headers: headers, matching: ["赛制", "format"])
+            let cutoff = cubingScheduleCell(cells: cells, headers: headers, matching: ["及格线", "cutoff"])
+            let timeLimit = cubingScheduleCell(cells: cells, headers: headers, matching: ["还原时限", "time limit", "limit"])
+            let advancingCount = cubingScheduleCell(cells: cells, headers: headers, matching: ["人数", "competitor", "person"])
+
+            var details: [String] = []
+            if !group.isEmpty { details.append(group) }
+            if !round.isEmpty { details.append(round) }
+            if !format.isEmpty { details.append(format) }
+            if !cutoff.isEmpty { details.append(cutoff) }
+            if !timeLimit.isEmpty { details.append(timeLimit) }
+            if !advancingCount.isEmpty { details.append(advancingCount) }
+
+            return CompetitionScheduleEntry(
+                id: "\(dayTitle)-\(tableIndex)-\(rowIndex)-\(start)-\(event)",
+                timeText: [start, end].filter { !$0.isEmpty }.joined(separator: "–"),
+                title: event,
+                detailText: details.isEmpty ? nil : details.joined(separator: " · "),
+                venueName: venueName,
+                eventCode: normalizedCubingScheduleEventCode(
+                    firstCompetitionCapture(in: rowHTML, pattern: #"class=\"[^\"]*\bevent-([^\"\s]+)"#)
+                ),
+                group: group.isEmpty ? nil : group,
+                round: round.isEmpty ? nil : round,
+                format: format.isEmpty ? nil : format,
+                cutoff: cutoff.isEmpty ? nil : cutoff,
+                timeLimit: timeLimit.isEmpty ? nil : timeLimit,
+                advancingCount: advancingCount.isEmpty ? nil : advancingCount
+            )
+        }
+    }
+
+    private static func cubingScheduleCell(cells: [String], headers: [String], matching keywords: [String]) -> String {
+        guard !cells.isEmpty else { return "" }
+        if let index = headers.firstIndex(where: { header in
+            let normalized = header.lowercased()
+            return keywords.contains { normalized.contains($0.lowercased()) }
+        }), cells.indices.contains(index) {
+            return cells[index]
+        }
+        return ""
+    }
+
+    private static func normalizedCubingScheduleEventCode(_ rawCode: String?) -> String? {
+        guard let rawCode else { return nil }
+        let normalized = rawCode
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "ICON-", with: "")
+            .replacingOccurrences(of: "icon-", with: "")
+            .lowercased()
+        return normalized.isEmpty ? nil : normalized
+    }
+
+    private static func normalizedCubingScheduleEventTitle(_ rawTitle: String) -> String {
+        rawTitle
+            .replacingOccurrences(of: #"(?i)\bICON-[A-Z0-9]+\b"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     nonisolated private static func cleanedCompetitionHTMLText(_ html: String) -> String {
@@ -3293,6 +3706,122 @@ enum CompetitionService {
     private static func cacheKeyForTopCubers(competitionID: String) -> String {
         "top-cubers|v2|\(competitionID)"
     }
+
+    private static func cacheKeyForDetail(
+        competitionID: String,
+        languageCode: String,
+        includeCompetitors: Bool,
+        includeLive: Bool
+    ) -> String {
+        "detail|v2|\(languageCode)|\(competitionID)|competitors:\(includeCompetitors)|live:\(includeLive)"
+    }
+}
+
+private actor CompetitionInFlightRequestStore {
+    static let shared = CompetitionInFlightRequestStore()
+
+    private var pageTasks: [String: Task<CompetitionPageResult, Error>] = [:]
+    private var detailTasks: [String: Task<CompetitionDetailContent, Never>] = [:]
+    private var topCuberTasks: [String: Task<[CompetitionTopCuberPreview]?, Never>] = [:]
+    private var htmlTasks: [String: Task<String?, Never>] = [:]
+
+    func competitionsPage(
+        for key: String,
+        loader: @escaping @Sendable () async throws -> CompetitionPageResult
+    ) async throws -> CompetitionPageResult {
+        if let task = pageTasks[key] {
+            return try await task.value
+        }
+
+        let task = Task {
+            try await loader()
+        }
+        pageTasks[key] = task
+        defer { pageTasks[key] = nil }
+        return try await task.value
+    }
+
+    func detailContent(
+        for key: String,
+        loader: @escaping @Sendable () async -> CompetitionDetailContent
+    ) async -> CompetitionDetailContent {
+        if let task = detailTasks[key] {
+            return await task.value
+        }
+
+        let task = Task {
+            await loader()
+        }
+        detailTasks[key] = task
+        defer { detailTasks[key] = nil }
+        return await task.value
+    }
+
+    func topCuberPreviews(
+        for key: String,
+        loader: @escaping @Sendable () async -> [CompetitionTopCuberPreview]?
+    ) async -> [CompetitionTopCuberPreview]? {
+        if let task = topCuberTasks[key] {
+            return await task.value
+        }
+
+        let task = Task {
+            await loader()
+        }
+        topCuberTasks[key] = task
+        defer { topCuberTasks[key] = nil }
+        return await task.value
+    }
+
+    func html(
+        for key: String,
+        loader: @escaping @Sendable () async -> String?
+    ) async -> String? {
+        if let task = htmlTasks[key] {
+            return await task.value
+        }
+
+        let task = Task {
+            await loader()
+        }
+        htmlTasks[key] = task
+        defer { htmlTasks[key] = nil }
+        return await task.value
+    }
+}
+
+private actor CompetitionDetailContentStore {
+    static let shared = CompetitionDetailContentStore()
+
+    private var contentByKey: [String: CompetitionDetailContent] = [:]
+
+    func content(for key: String) -> CompetitionDetailContent? {
+        contentByKey[key]
+    }
+
+    func store(_ content: CompetitionDetailContent, for key: String) {
+        contentByKey[key] = content
+    }
+}
+
+private actor CompetitionScheduleParseStore {
+    static let shared = CompetitionScheduleParseStore()
+
+    private var scheduleDaysByKey: [String: [CompetitionScheduleDay]] = [:]
+
+    func scheduleDays(
+        for key: String,
+        forceRefresh: Bool,
+        parser: @escaping @Sendable () async -> [CompetitionScheduleDay]
+    ) async -> [CompetitionScheduleDay] {
+        if !forceRefresh, let cached = scheduleDaysByKey[key] {
+            return cached
+        }
+
+        let parsed = await parser()
+        scheduleDaysByKey[key] = parsed
+        return parsed
+    }
 }
 
 private actor CompetitionRecognizedCountryStore {
@@ -3352,6 +3881,7 @@ private actor CompetitionLocalizedNameStore {
     static let shared = CompetitionLocalizedNameStore()
 
     private var cachedLocalizedNames: [String: LocalizedCompetitionInfo]?
+    private var loadingTask: Task<[String: LocalizedCompetitionInfo], Never>?
     private var hasLoadedFromDisk = false
 
     private func cacheFileURL() -> URL {
@@ -3371,7 +3901,17 @@ private actor CompetitionLocalizedNameStore {
             return cachedLocalizedNames
         }
 
-        let loaded = await loader()
+        if let loadingTask {
+            return await loadingTask.value
+        }
+
+        let task = Task {
+            await loader()
+        }
+        loadingTask = task
+        let loaded = await task.value
+        loadingTask = nil
+
         if !loaded.isEmpty {
             cachedLocalizedNames = loaded
             saveToDisk(loaded)

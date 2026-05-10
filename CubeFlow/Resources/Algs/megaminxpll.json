@@ -1,0 +1,3028 @@
+{
+  "puzzle": "Megaminx",
+  "set": "MegaminxPLL",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "a1",
+      "displayName": "A1-",
+      "name": "A1-",
+      "subgroup": "3 corner CP",
+      "imageKey": "megaminxpll_a1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "a1-1",
+          "notation": "R' F' R U R U' R2' F R U R' F' R F U'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 corner CP"
+    },
+    {
+      "id": "a1_2",
+      "displayName": "A1+",
+      "name": "A1+",
+      "subgroup": "3 corner CP",
+      "imageKey": "megaminxpll_a1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "a1_2-1",
+          "notation": "F' R' F R U' R' F' R2 U R' U' R' F R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 corner CP"
+    },
+    {
+      "id": "a2",
+      "displayName": "A2-",
+      "name": "A2-",
+      "subgroup": "3 corner CP",
+      "imageKey": "megaminxpll_a2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "a2-1",
+          "notation": "BR' R2' U L U' R U L' U' R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 corner CP"
+    },
+    {
+      "id": "a2_2",
+      "displayName": "A2+",
+      "name": "A2+",
+      "subgroup": "3 corner CP",
+      "imageKey": "megaminxpll_a2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "a2_2-1",
+          "notation": "BR' R' U L U' R' U L' U' R2 BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 corner CP"
+    },
+    {
+      "id": "b1",
+      "displayName": "B1-",
+      "name": "B1-",
+      "subgroup": "Double R block",
+      "imageKey": "megaminxpll_b1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "b1-1",
+          "notation": "R' U' R U R U2 R' U' R' U R2 U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double R block"
+    },
+    {
+      "id": "b1_2",
+      "displayName": "B1+",
+      "name": "B1+",
+      "subgroup": "Double R block",
+      "imageKey": "megaminxpll_b1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "b1_2-1",
+          "notation": "R U R' U' R' U2' R U R U' R2' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double R block"
+    },
+    {
+      "id": "b2",
+      "displayName": "B2-",
+      "name": "B2-",
+      "subgroup": "Double R block",
+      "imageKey": "megaminxpll_b2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "b2-1",
+          "notation": "R2' U' R2 U2' R' U2 R' U' R U R' U R2 U2' R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double R block"
+    },
+    {
+      "id": "b2_2",
+      "displayName": "B2+",
+      "name": "B2+",
+      "subgroup": "Double R block",
+      "imageKey": "megaminxpll_b2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "b2_2-1",
+          "notation": "R2 U R2' U2 R U2' R U R' U' R U' R2' U2 R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double R block"
+    },
+    {
+      "id": "c1",
+      "displayName": "C1-",
+      "name": "C1-",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c1-1",
+          "notation": "R' U2' R U R' U2 R U' R' U' R2 U R' U R' U' R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c1_2",
+      "displayName": "C1+",
+      "name": "C1+",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c1_2-1",
+          "notation": "R U2 R' U' R U2' R' U R U R2' U' R U' R U R2' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c2",
+      "displayName": "C2-",
+      "name": "C2-",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c2-1",
+          "notation": "R U R' U R' U2' R2 U R2' U R2 U2 R' U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c2_2",
+      "displayName": "C2+",
+      "name": "C2+",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c2_2-1",
+          "notation": "R' U' R U' R U2 R2' U' R2 U' R2' U2' R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c3",
+      "displayName": "C3-",
+      "name": "C3-",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c3-1",
+          "notation": "R2 U2' R2' U' R2 U R2' U2 R2 U R2' U2' R2 U2 R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c3_2",
+      "displayName": "C3+",
+      "name": "C3+",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c3_2-1",
+          "notation": "R2' U2 R2 U R2' U' R2 U2' R2' U' R2 U2 R2' U2' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c4",
+      "displayName": "C4-",
+      "name": "C4-",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c4-1",
+          "notation": "R2' U2 R2 U R2' U2 R2 U R2' U2' R2 U' R2' U2' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c4_2",
+      "displayName": "C4+",
+      "name": "C4+",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c4_2-1",
+          "notation": "R2' U2' R2 U' R2' U2' R2 U' R2' U2 R2 U R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c5",
+      "displayName": "C5-",
+      "name": "C5-",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c5-1",
+          "notation": "R' U2' R U2' R' U2' R' U2' R U' R U R2' U2 R U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c5_2",
+      "displayName": "C5+",
+      "name": "C5+",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c5_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c5_2-1",
+          "notation": "R U2 R' U2 R U2 R U2 R' U R' U' R2 U2' R' U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c6",
+      "displayName": "C6-",
+      "name": "C6-",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c6-1",
+          "notation": "R' U R U2' R2' U' R U2' R' U R U R' U R U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "c6_2",
+      "displayName": "C6+",
+      "name": "C6+",
+      "subgroup": "2 2x1s touching",
+      "imageKey": "megaminxpll_c6_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "c6_2-1",
+          "notation": "R U' R' U2 R2 U R' U2 R U' R' U' R U' R' U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s touching"
+    },
+    {
+      "id": "d",
+      "displayName": "D-",
+      "name": "D-",
+      "subgroup": "3x1 and 2x2",
+      "imageKey": "megaminxpll_d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "d-1",
+          "notation": "R' U2' R U R' U' R U' R' U2 R U2' R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x2"
+    },
+    {
+      "id": "d_2",
+      "displayName": "D+",
+      "name": "D+",
+      "subgroup": "3x1 and 2x2",
+      "imageKey": "megaminxpll_d_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "d_2-1",
+          "notation": "R U2 R' U' R U R' U R U2' R' U2 R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x2"
+    },
+    {
+      "id": "e1",
+      "displayName": "E1",
+      "name": "E1",
+      "subgroup": "4 corner CP",
+      "imageKey": "megaminxpll_e1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "e1-1",
+          "notation": "R U R' U R' U' R F' R U R' U' R' F R2 U' R2' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 corner CP"
+    },
+    {
+      "id": "e2",
+      "displayName": "E2",
+      "name": "E2",
+      "subgroup": "4 corner CP",
+      "imageKey": "megaminxpll_e2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "e2-1",
+          "notation": "x' R U' R' dR R U R' dR' R U R' dR R U' R' dR' x",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 corner CP"
+    },
+    {
+      "id": "e3",
+      "displayName": "E3",
+      "name": "E3",
+      "subgroup": "4 corner CP",
+      "imageKey": "megaminxpll_e3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "e3-1",
+          "notation": "L' R U2 R' U' R U R' U' R U R' U' R U' R' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 corner CP"
+    },
+    {
+      "id": "f1",
+      "displayName": "F1-",
+      "name": "F1-",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f1-1",
+          "notation": "R2 U2' R2' U' R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f1_2",
+      "displayName": "F1+",
+      "name": "F1+",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f1_2-1",
+          "notation": "R2 U2 R2' U R2 U2 R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f2",
+      "displayName": "F2-",
+      "name": "F2-",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f2-1",
+          "notation": "R' U' R U2' R U2 R2' U R U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f2_2",
+      "displayName": "F2+",
+      "name": "F2+",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f2_2-1",
+          "notation": "R U R' U2 R' U2' R2 U' R' U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f3",
+      "displayName": "F3-",
+      "name": "F3-",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f3-1",
+          "notation": "R U2 R' U R' U' R2 U2' R' U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f3_2",
+      "displayName": "F3+",
+      "name": "F3+",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f3_2-1",
+          "notation": "R' U2' R U' R U R2' U2 R U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f4",
+      "displayName": "F4-",
+      "name": "F4-",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f4-1",
+          "notation": "R' U' R U' R2' U2 R2 U2 R' U2' R' U2' R U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f4_2",
+      "displayName": "F4+",
+      "name": "F4+",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f4_2-1",
+          "notation": "R U R' U R2 U2' R2' U2' R U2 R U2 R' U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f5",
+      "displayName": "F5-",
+      "name": "F5-",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f5-1",
+          "notation": "R' U2' R' U2 R U2 R U2' R2' U2' R2 U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "f5_2",
+      "displayName": "F5+",
+      "name": "F5+",
+      "subgroup": "3x1 and 2x1s",
+      "imageKey": "megaminxpll_f5_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "f5_2-1",
+          "notation": "R U2 R U2' R' U2' R' U2 R2 U2 R2' U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3x1 and 2x1s"
+    },
+    {
+      "id": "g1",
+      "displayName": "G1-",
+      "name": "G1-",
+      "subgroup": "2x1 and headlights",
+      "imageKey": "megaminxpll_g1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "g1-1",
+          "notation": "R U2' R2' U2 R U2' R U' R' U2' R U' R2' U2' R2 U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1 and headlights"
+    },
+    {
+      "id": "g1_2",
+      "displayName": "G1+",
+      "name": "G1+",
+      "subgroup": "2x1 and headlights",
+      "imageKey": "megaminxpll_g1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "g1_2-1",
+          "notation": "R' U2 R2 U2' R' U2 R' U R U2 R' U R2 U2 R2' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1 and headlights"
+    },
+    {
+      "id": "g2",
+      "displayName": "G2-",
+      "name": "G2-",
+      "subgroup": "2x1 and headlights",
+      "imageKey": "megaminxpll_g2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "g2-1",
+          "notation": "F U2' R' U' R F' R' U' R F U' R' U2' R U2 F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1 and headlights"
+    },
+    {
+      "id": "g2_2",
+      "displayName": "G2+",
+      "name": "G2+",
+      "subgroup": "2x1 and headlights",
+      "imageKey": "megaminxpll_g2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "g2_2-1",
+          "notation": "R U2' R' U' R U2' R2' U2 L U' R U L' R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1 and headlights"
+    },
+    {
+      "id": "h1",
+      "displayName": "H1-",
+      "name": "H1-",
+      "subgroup": "5 piece EP/CP",
+      "imageKey": "megaminxpll_h1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h1-1",
+          "notation": "R U R' U R' U' R2 U' R' U R' U R U R U R' U R' U' R2 U' R' U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 piece EP/CP"
+    },
+    {
+      "id": "h1_2",
+      "displayName": "H1+",
+      "name": "H1+",
+      "subgroup": "5 piece EP/CP",
+      "imageKey": "megaminxpll_h1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h1_2-1",
+          "notation": "R' dR R U R' dR' R U R' dR R U R' dR' R U R' dR R U R' dR' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 piece EP/CP"
+    },
+    {
+      "id": "h2",
+      "displayName": "H2-",
+      "name": "H2-",
+      "subgroup": "5 piece EP/CP",
+      "imageKey": "megaminxpll_h2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h2-1",
+          "notation": "R2' U2' R2 U R2' U R2 y R2 U R2' U R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 piece EP/CP"
+    },
+    {
+      "id": "h2_2",
+      "displayName": "H2+",
+      "name": "H2+",
+      "subgroup": "5 piece EP/CP",
+      "imageKey": "megaminxpll_h2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "h2_2-1",
+          "notation": "R2 U2 R2' U' R2 U' R2' y' R2' U' R2 U' R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 piece EP/CP"
+    },
+    {
+      "id": "i1",
+      "displayName": "I1-",
+      "name": "I1-",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i1-1",
+          "notation": "R2 U2' R2' U' R2 BR2' U R2' U' R2 U' BR2 U' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i1_2",
+      "displayName": "I1+",
+      "name": "I1+",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i1_2-1",
+          "notation": "R2' U2 R2 U R2' F2 U' R2 U R2' U F2' U R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i2",
+      "displayName": "I2-",
+      "name": "I2-",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i2-1",
+          "notation": "R2 U BR2' U R2' U R2 U' BR2 R2' U R2 U2 R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i2_2",
+      "displayName": "I2+",
+      "name": "I2+",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i2_2-1",
+          "notation": "R2' U' F2 U' R2 U' R2' U F2' R2 U' R2' U2' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i3",
+      "displayName": "I3-",
+      "name": "I3-",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i3-1",
+          "notation": "R U2' R2' U2' R U2 R U2 R' U2' R' U' R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i3_2",
+      "displayName": "I3+",
+      "name": "I3+",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i3_2-1",
+          "notation": "R' U2 R2 U2 R' U2' R' U2' R U2 R U R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i4",
+      "displayName": "I4-",
+      "name": "I4-",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i4-1",
+          "notation": "R' U2 R U R' U R' U2' R U R' U R2 U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i4_2",
+      "displayName": "I4+",
+      "name": "I4+",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i4_2-1",
+          "notation": "R' U' R' U2' F' R U R U' R' F R' U2 R U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i5",
+      "displayName": "I5-",
+      "name": "I5-",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i5-1",
+          "notation": "R' U2' R U R2' U' R U' R' U2 R U' R U' R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i5_2",
+      "displayName": "I5+",
+      "name": "I5+",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i5_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i5_2-1",
+          "notation": "R' U' R' U2' R F' R U R' U' R' F U2 R U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i6",
+      "displayName": "I6-",
+      "name": "I6-",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i6-1",
+          "notation": "R2' F2 R2 U' R2' F2' R2 U2 R2' F2 R2 U' R2' F2' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "i6_2",
+      "displayName": "I6+",
+      "name": "I6+",
+      "subgroup": "2x1",
+      "imageKey": "megaminxpll_i6_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i6_2-1",
+          "notation": "R2 BR2' R2' U' R2 BR2 R2' U2 R2 BR2' R2' U' R2 BR2 R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x1"
+    },
+    {
+      "id": "j1",
+      "displayName": "J1-",
+      "name": "J1-",
+      "subgroup": "J Block",
+      "imageKey": "megaminxpll_j1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "j1-1",
+          "notation": "F U' R' F R2 U' R' U' R U R' F' R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "J Block"
+    },
+    {
+      "id": "j1_2",
+      "displayName": "J1+",
+      "name": "J1+",
+      "subgroup": "J Block",
+      "imageKey": "megaminxpll_j1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "j1_2-1",
+          "notation": "R U R' F' R U R' U' R' F R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "J Block"
+    },
+    {
+      "id": "j2",
+      "displayName": "J2-",
+      "name": "J2-",
+      "subgroup": "J Block",
+      "imageKey": "megaminxpll_j2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "j2-1",
+          "notation": "R U2 R' U2' R U' R' U' R' U2' R U R' U R2 U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "J Block"
+    },
+    {
+      "id": "j2_2",
+      "displayName": "J2+",
+      "name": "J2+",
+      "subgroup": "J Block",
+      "imageKey": "megaminxpll_j2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "j2_2-1",
+          "notation": "R' U2' R U2 R' U R U R U2 R' U' R U' R2' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "J Block"
+    },
+    {
+      "id": "j3",
+      "displayName": "J3-",
+      "name": "J3-",
+      "subgroup": "J Block",
+      "imageKey": "megaminxpll_j3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "j3-1",
+          "notation": "F U F' R2' F U' F U' R2 U R2' U F2' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "J Block"
+    },
+    {
+      "id": "j3_2",
+      "displayName": "J3+",
+      "name": "J3+",
+      "subgroup": "J Block",
+      "imageKey": "megaminxpll_j3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "j3_2-1",
+          "notation": "R U R' U' R' U2' R U R U R2' U R2 U2 R2' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "J Block"
+    },
+    {
+      "id": "k1",
+      "displayName": "K1-",
+      "name": "K1-",
+      "subgroup": "5 corner CP",
+      "imageKey": "megaminxpll_k1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "k1-1",
+          "notation": "R2 U2' R2' U' R2 U R2' U' R2 U R2' U' R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 corner CP"
+    },
+    {
+      "id": "k1_2",
+      "displayName": "K1+",
+      "name": "K1+",
+      "subgroup": "5 corner CP",
+      "imageKey": "megaminxpll_k1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "k1_2-1",
+          "notation": "R2' U2 R2 U R2' U' R2 U R2' U' R2 U R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 corner CP"
+    },
+    {
+      "id": "k2",
+      "displayName": "K2-",
+      "name": "K2-",
+      "subgroup": "5 corner CP",
+      "imageKey": "megaminxpll_k2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "k2-1",
+          "notation": "R2 U2' R2' U' R2 U2' R' U R' U' R' F R2 U' R' U' R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 corner CP"
+    },
+    {
+      "id": "k2_2",
+      "displayName": "K2+",
+      "name": "K2+",
+      "subgroup": "5 corner CP",
+      "imageKey": "megaminxpll_k2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "k2_2-1",
+          "notation": "R' U2 R U' R' U2 R U2' R' U' R U2' R' U R U2' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 corner CP"
+    },
+    {
+      "id": "l1",
+      "displayName": "L1",
+      "name": "L1",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l1-1",
+          "notation": "R' U2 R U R' U R U' R' U2 R U' R U R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l2",
+      "displayName": "L2",
+      "name": "L2",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2-1",
+          "notation": "R U2 R' U R U' R' U' R U' R2' U' R U' R' U' R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l3",
+      "displayName": "L3-",
+      "name": "L3-",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l3-1",
+          "notation": "R U R' U' R' U2 R U R U R2' U R U' R U R' U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l3_2",
+      "displayName": "L3+",
+      "name": "L3+",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l3_2-1",
+          "notation": "F U2' F' U2' R F R' U' R F' U2' R' U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l4",
+      "displayName": "L4-",
+      "name": "L4-",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l4-1",
+          "notation": "R U2' R' U R U2 R U2 R' U R' U' R U' R U' R' U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l4_2",
+      "displayName": "L4+",
+      "name": "L4+",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l4_2-1",
+          "notation": "R U R U R' U R' U R U' R U2' R' U2' R' U' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l5",
+      "displayName": "L5-",
+      "name": "L5-",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l5-1",
+          "notation": "R U2 R' U' R U' R2' U2 R U R' U' R U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l5_2",
+      "displayName": "L5+",
+      "name": "L5+",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l5_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l5_2-1",
+          "notation": "R' U2' R U R' U R2 U2' R' U' R U R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l6",
+      "displayName": "L6-",
+      "name": "L6-",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l6-1",
+          "notation": "R' U' R U2' R' U R U' R' U2' R2 U R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "l6_2",
+      "displayName": "L6+",
+      "name": "L6+",
+      "subgroup": "Double headlights, no blocks",
+      "imageKey": "megaminxpll_l6_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l6_2-1",
+          "notation": "R U R' U2 R U' R' U R U2 R2' U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "Double headlights, no blocks"
+    },
+    {
+      "id": "m",
+      "displayName": "M",
+      "name": "M",
+      "subgroup": "2 3x1s",
+      "imageKey": "megaminxpll_m",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "m-1",
+          "notation": "R U R' U2' R' U2' R U R' U R2 U' R' U2 R U' R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 3x1s"
+    },
+    {
+      "id": "n1",
+      "displayName": "N1-",
+      "name": "N1-",
+      "subgroup": "5 2x1s",
+      "imageKey": "megaminxpll_n1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "n1-1",
+          "notation": "R' U2 R' U2' R U' R' U2' R U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 2x1s"
+    },
+    {
+      "id": "n1_2",
+      "displayName": "N1+",
+      "name": "N1+",
+      "subgroup": "5 2x1s",
+      "imageKey": "megaminxpll_n1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "n1_2-1",
+          "notation": "y2' R U2 R U2' R' U' R U2' R' U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 2x1s"
+    },
+    {
+      "id": "n2",
+      "displayName": "N2-",
+      "name": "N2-",
+      "subgroup": "5 2x1s",
+      "imageKey": "megaminxpll_n2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "n2-1",
+          "notation": "R' L' U2' R U' L R' U L' U2' R U2' L",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 2x1s"
+    },
+    {
+      "id": "n2_2",
+      "displayName": "N2-",
+      "name": "N2-",
+      "subgroup": "5 2x1s",
+      "imageKey": "megaminxpll_n2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "n2_2-1",
+          "notation": "R L U2 L' U R' L U' R U2 L' U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 2x1s"
+    },
+    {
+      "id": "p1",
+      "displayName": "P1-",
+      "name": "P1-",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p1-1",
+          "notation": "R' U' R' F R U R U' R' y' R2' U' R U' R' U2 R BR",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "p1_2",
+      "displayName": "P1+",
+      "name": "P1+",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p1_2-1",
+          "notation": "R' F R2 U R' U R U2' R' U R' F' R F U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "p2",
+      "displayName": "P2-",
+      "name": "P2-",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p2-1",
+          "notation": "BR' R' U2' R U R' U R2 BR BL' BR' R' BR BL",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "p2_2",
+      "displayName": "P2+",
+      "name": "P2+",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p2_2-1",
+          "notation": "F U F' R' F R U' R U2 R' U' R U' R2' F' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "p3",
+      "displayName": "P3-",
+      "name": "P3-",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p3-1",
+          "notation": "R' U' R2 U' R2' U2 R U R U2' R U R2' U R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "p3_2",
+      "displayName": "P3+",
+      "name": "P3+",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p3_2-1",
+          "notation": "R U R2' U R2 U2' R' U' R' U2 R' U' R2 U' R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "p4",
+      "displayName": "P4-",
+      "name": "P4-",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p4-1",
+          "notation": "R2 U2 R2' U' R2 U' R' U2 R' U' R' U2' R2 U R2' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "p4_2",
+      "displayName": "P4+",
+      "name": "P4+",
+      "subgroup": "R Block",
+      "imageKey": "megaminxpll_p4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "p4_2-1",
+          "notation": "R2' U2' R2 U R2' U R U2' R U R U2 R2' U' R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R Block"
+    },
+    {
+      "id": "q1",
+      "displayName": "Q1-",
+      "name": "Q1-",
+      "subgroup": "5 edge EP",
+      "imageKey": "megaminxpll_q1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "q1-1",
+          "notation": "R2 U2' R2' U' R2 U2' R2' U R2 U2' R2' U' R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 edge EP"
+    },
+    {
+      "id": "q1_2",
+      "displayName": "Q1+",
+      "name": "Q1+",
+      "subgroup": "5 edge EP",
+      "imageKey": "megaminxpll_q1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "q1_2-1",
+          "notation": "R2' U2 R2 U R2' U2 R2 U' R2' U2 R2 U R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 edge EP"
+    },
+    {
+      "id": "q2",
+      "displayName": "Q2-",
+      "name": "Q2-",
+      "subgroup": "5 edge EP",
+      "imageKey": "megaminxpll_q2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "q2-1",
+          "notation": "R U2 R' U R U2 R2' U2 R U R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 edge EP"
+    },
+    {
+      "id": "q2_2",
+      "displayName": "Q2+",
+      "name": "Q2+",
+      "subgroup": "5 edge EP",
+      "imageKey": "megaminxpll_q2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "q2_2-1",
+          "notation": "R' U2' R U' R' U2' R2 U2' R' U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "5 edge EP"
+    },
+    {
+      "id": "r1",
+      "displayName": "R1-",
+      "name": "R1-",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r1-1",
+          "notation": "R U2' R' U R2 U2' R2' U' R U R U2 R' U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "r1_2",
+      "displayName": "R1+",
+      "name": "R1+",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r1_2-1",
+          "notation": "R' U2 R U' R2' U2 R2 U R' U' R' U2' R U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "r2",
+      "displayName": "R2-",
+      "name": "R2-",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r2-1",
+          "notation": "R U' R U2' R' U' R' U R2 U2 R2' U' R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "r2_2",
+      "displayName": "R2+",
+      "name": "R2+",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r2_2-1",
+          "notation": "R' U R' U2 R U R U' R2' U2' R2 U R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "r3",
+      "displayName": "R3-",
+      "name": "R3-",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r3-1",
+          "notation": "R' U' R2 U' R' U' R' U R U R' U R2 U R' U R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "r3_2",
+      "displayName": "R3+",
+      "name": "R3+",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r3_2-1",
+          "notation": "R U R2' U R U R U' R' U' R U' R2' U' R U' R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "r4",
+      "displayName": "R4-",
+      "name": "R4-",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r4-1",
+          "notation": "R U R' U' R U' R2' U' R U' R' U' R U R U R2' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "r4_2",
+      "displayName": "R4+",
+      "name": "R4+",
+      "subgroup": "R block and 2x1",
+      "imageKey": "megaminxpll_r4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "r4_2-1",
+          "notation": "R' U' R U R' U R2 U R' U R U R' U' R' U' R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "R block and 2x1"
+    },
+    {
+      "id": "s1",
+      "displayName": "S1-",
+      "name": "S1-",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s1-1",
+          "notation": "R' U' R U2' R' U2' R U R U R' U R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s1_2",
+      "displayName": "S1+",
+      "name": "S1+",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s1_2-1",
+          "notation": "R U R' U2 R U2 R' U' R' U' R U' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s2",
+      "displayName": "S2-",
+      "name": "S2-",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s2-1",
+          "notation": "R2' U2 R2 U2 R2' U R U2' R U R U2 R2' U' R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s2_2",
+      "displayName": "S2+",
+      "name": "S2+",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s2_2-1",
+          "notation": "R2 U2' R2' U2' R2 U' R' U2 R' U' R' U2' R2 U R2' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s3",
+      "displayName": "S3-",
+      "name": "S3-",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s3-1",
+          "notation": "R U R2' U R2 U2' R' U' R' U2 R' U' R2 U2' R2' U2' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s3_2",
+      "displayName": "S3+",
+      "name": "S3+",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s3_2-1",
+          "notation": "R' U' R2 U' R2' U2 R U R U2' R U R2' U2 R2 U2 R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s4",
+      "displayName": "S4-",
+      "name": "S4-",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s4-1",
+          "notation": "R2' U2 R2 U R2' U2 R2 U' R2' U2' R2 U' R2' U2' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s4_2",
+      "displayName": "S4+",
+      "name": "S4+",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s4_2-1",
+          "notation": "R2' U2' R2 U' R2' U2' R2 U R2' U2 R2 U R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s5",
+      "displayName": "S5-",
+      "name": "S5-",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s5-1",
+          "notation": "R' U' R' U2' R2 U' R' U R' U2 R U2 R U2 R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s5_2",
+      "displayName": "S5+",
+      "name": "S5+",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s5_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s5_2-1",
+          "notation": "R U R U2 R2' U R U' R U2' R' U2' R' U2' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s6",
+      "displayName": "S6-",
+      "name": "S6-",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s6-1",
+          "notation": "R' U' R' U' R U' R' U' R U2 R' U R2 U2 R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "s6_2",
+      "displayName": "S6+",
+      "name": "S6+",
+      "subgroup": "2 2x1s, not touching",
+      "imageKey": "megaminxpll_s6_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "s6_2-1",
+          "notation": "R U R U R' U R U R' U2' R U' R2' U2' R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s, not touching"
+    },
+    {
+      "id": "t1",
+      "displayName": "T1",
+      "name": "T1",
+      "subgroup": "2,3 or 4 2x1s in these patterns",
+      "imageKey": "megaminxpll_t1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t1-1",
+          "notation": "R U R' U' R' F R2 U' R' U' R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2,3 or 4 2x1s in these patterns"
+    },
+    {
+      "id": "t2",
+      "displayName": "T2-",
+      "name": "T2-",
+      "subgroup": "2,3 or 4 2x1s in these patterns",
+      "imageKey": "megaminxpll_t2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t2-1",
+          "notation": "R2' F R U R U' R' F' R U2' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2,3 or 4 2x1s in these patterns"
+    },
+    {
+      "id": "t2_2",
+      "displayName": "T2+",
+      "name": "T2+",
+      "subgroup": "2,3 or 4 2x1s in these patterns",
+      "imageKey": "megaminxpll_t2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t2_2-1",
+          "notation": "R' U2' R U2 R' F R U R' U' R' F' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2,3 or 4 2x1s in these patterns"
+    },
+    {
+      "id": "t3",
+      "displayName": "T3-",
+      "name": "T3-",
+      "subgroup": "2,3 or 4 2x1s in these patterns",
+      "imageKey": "megaminxpll_t3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t3-1",
+          "notation": "R2 U2' R2' U' R2 U R2' U' R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2,3 or 4 2x1s in these patterns"
+    },
+    {
+      "id": "t3_2",
+      "displayName": "T3+",
+      "name": "T3+",
+      "subgroup": "2,3 or 4 2x1s in these patterns",
+      "imageKey": "megaminxpll_t3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t3_2-1",
+          "notation": "R2' U2 R2 U R2' U' R2 U R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2,3 or 4 2x1s in these patterns"
+    },
+    {
+      "id": "t4",
+      "displayName": "T4-",
+      "name": "T4-",
+      "subgroup": "2,3 or 4 2x1s in these patterns",
+      "imageKey": "megaminxpll_t4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t4-1",
+          "notation": "R' U' R U2' R2' U2' R2 U' R2' U2' R2 U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2,3 or 4 2x1s in these patterns"
+    },
+    {
+      "id": "t4_2",
+      "displayName": "T4+",
+      "name": "T4+",
+      "subgroup": "2,3 or 4 2x1s in these patterns",
+      "imageKey": "megaminxpll_t4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "t4_2-1",
+          "notation": "R U R' F' R U R' U' R' F R U' R' F R2 U' R' U' R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2,3 or 4 2x1s in these patterns"
+    },
+    {
+      "id": "u1",
+      "displayName": "U1-",
+      "name": "U1-",
+      "subgroup": "3 edge EP",
+      "imageKey": "megaminxpll_u1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "u1-1",
+          "notation": "R U R' U R' U' R2 U' R' U R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 edge EP"
+    },
+    {
+      "id": "u1_2",
+      "displayName": "U1+",
+      "name": "U1+",
+      "subgroup": "3 edge EP",
+      "imageKey": "megaminxpll_u1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "u1_2-1",
+          "notation": "R' U' R U' R U R2' U R U' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 edge EP"
+    },
+    {
+      "id": "u2",
+      "displayName": "U2-",
+      "name": "U2-",
+      "subgroup": "3 edge EP",
+      "imageKey": "megaminxpll_u2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "u2-1",
+          "notation": "R U2 R' U R' U' R2 U' R' U R' U R U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 edge EP"
+    },
+    {
+      "id": "u2_2",
+      "displayName": "U2+",
+      "name": "U2+",
+      "subgroup": "3 edge EP",
+      "imageKey": "megaminxpll_u2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "u2_2-1",
+          "notation": "R U R' U2 R' U' R U' R U R2' U R U' R U2' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "3 edge EP"
+    },
+    {
+      "id": "v1",
+      "displayName": "V1-",
+      "name": "V1-",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v1-1",
+          "notation": "R U2 R2' F R F' R U' R' F' U F R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "v1_2",
+      "displayName": "V1+",
+      "name": "V1+",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v1_2-1",
+          "notation": "R' U2 R' dR' R U' R' dR R U R U' R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "v2",
+      "displayName": "V2-",
+      "name": "V2-",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v2-1",
+          "notation": "R U' R' F U R U' R' F' R U R' F' U' F R U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "v2_2",
+      "displayName": "V2+",
+      "name": "V2+",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v2_2-1",
+          "notation": "R' U R U R' U' R' dR' R U R' dR R U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "v3",
+      "displayName": "V3-",
+      "name": "V3-",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v3-1",
+          "notation": "R' U' R2' U R U R' U' R U R U' R2 U' R' U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "v3_2",
+      "displayName": "V3+",
+      "name": "V3+",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v3_2-1",
+          "notation": "R U R2 U' R' U' R U R' U' R' U R2' U R U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "v4",
+      "displayName": "V4-",
+      "name": "V4-",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v4-1",
+          "notation": "R U' R U R2' U R' U' R' U R U' R' U' R2 U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "v4_2",
+      "displayName": "V4+",
+      "name": "V4+",
+      "subgroup": "2x2 and 2x1",
+      "imageKey": "megaminxpll_v4_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "v4_2-1",
+          "notation": "R' U R' U' R2 U' R U R U' R' U R U R2' U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2x2 and 2x1"
+    },
+    {
+      "id": "w",
+      "displayName": "W",
+      "name": "W",
+      "subgroup": "2 2x2s",
+      "imageKey": "megaminxpll_w",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "w-1",
+          "notation": "R' U2' R' U2 R U2 R U' R2' U2 R2 U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x2s"
+    },
+    {
+      "id": "x1",
+      "displayName": "X1",
+      "name": "X1",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x1-1",
+          "notation": "F U2 R U2' R' U R U R' U2' F' R' U' R U2' R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x2",
+      "displayName": "X2",
+      "name": "X2",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x2-1",
+          "notation": "F R U R' F U R' U' F' U R2 U2' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x3",
+      "displayName": "X3",
+      "name": "X3",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x3-1",
+          "notation": "R' U' R U' R' U2 R2 U R' U2 R' U2' R2 U' R' U2 R' U R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x4",
+      "displayName": "X4",
+      "name": "X4",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x4-1",
+          "notation": "R' U' R2 U' R' U R U' R2' U' R2 U R' U' R U R2' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x5",
+      "displayName": "X5-",
+      "name": "X5-",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x5-1",
+          "notation": "R2' U' R U2' R' U R U R' U R2 U' R' U2' R U2' R' U' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x5_2",
+      "displayName": "X5+",
+      "name": "X5+",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x5_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x5_2-1",
+          "notation": "R' U R U2 R' U2 R U R2' U' R U' R' U' R U2 R' U R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x6",
+      "displayName": "X6-",
+      "name": "X6-",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x6-1",
+          "notation": "R U2' R U R2' U R U R' U' R U' R U' R2' U R U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x6_2",
+      "displayName": "X6+",
+      "name": "X6+",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x6_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x6_2-1",
+          "notation": "R' U2 R' U' R2 U' R' U' R U R' U R' U R2 U' R' U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x7",
+      "displayName": "X7-",
+      "name": "X7-",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x7",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x7-1",
+          "notation": "R U R2' F' R U2' R U' R' U2' R' F R U R U R' U2' R U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "x7_2",
+      "displayName": "X7+",
+      "name": "X7+",
+      "subgroup": "No blocks or headlights",
+      "imageKey": "megaminxpll_x7_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "x7_2-1",
+          "notation": "R U R' U' F' U' F U R U R' U R U2' F R' F' R U R U' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "No blocks or headlights"
+    },
+    {
+      "id": "y1",
+      "displayName": "Y1-",
+      "name": "Y1-",
+      "subgroup": "2 2x1s in Y pattern and other stuff",
+      "imageKey": "megaminxpll_y1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y1-1",
+          "notation": "F R' F' R U R U' R' F R U' R' U R U R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s in Y pattern and other stuff"
+    },
+    {
+      "id": "y1_2",
+      "displayName": "Y1+",
+      "name": "Y1+",
+      "subgroup": "2 2x1s in Y pattern and other stuff",
+      "imageKey": "megaminxpll_y1_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y1_2-1",
+          "notation": "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s in Y pattern and other stuff"
+    },
+    {
+      "id": "y2",
+      "displayName": "Y2-",
+      "name": "Y2-",
+      "subgroup": "2 2x1s in Y pattern and other stuff",
+      "imageKey": "megaminxpll_y2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y2-1",
+          "notation": "R2' U2 R2 U2' R2' U R2 U2' R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s in Y pattern and other stuff"
+    },
+    {
+      "id": "y2_2",
+      "displayName": "Y2+",
+      "name": "Y2+",
+      "subgroup": "2 2x1s in Y pattern and other stuff",
+      "imageKey": "megaminxpll_y2_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y2_2-1",
+          "notation": "R2 U2' R2' U2 R2 U' R2' U2 R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s in Y pattern and other stuff"
+    },
+    {
+      "id": "y3",
+      "displayName": "Y3-",
+      "name": "Y3-",
+      "subgroup": "2 2x1s in Y pattern and other stuff",
+      "imageKey": "megaminxpll_y3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y3-1",
+          "notation": "R2' U' R2 U' R2' U2 R2 U2' R2' U' R2 U' R2' U2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s in Y pattern and other stuff"
+    },
+    {
+      "id": "y3_2",
+      "displayName": "Y3+",
+      "name": "Y3+",
+      "subgroup": "2 2x1s in Y pattern and other stuff",
+      "imageKey": "megaminxpll_y3_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "y3_2-1",
+          "notation": "y R2 U R2' U R2 U2' R2' U2 R2 U R2' U R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "2 2x1s in Y pattern and other stuff"
+    },
+    {
+      "id": "z1",
+      "displayName": "Z1",
+      "name": "Z1",
+      "subgroup": "4 edge EP",
+      "imageKey": "megaminxpll_z1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z1-1",
+          "notation": "R' U' F R U' R' U' R U2 R' F' R F U' F' R' U2 R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 edge EP"
+    },
+    {
+      "id": "z2",
+      "displayName": "Z2",
+      "name": "Z2",
+      "subgroup": "4 edge EP",
+      "imageKey": "megaminxpll_z2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z2-1",
+          "notation": "R' U2' R' U' R F R' F' U R F' U' F U2' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 edge EP"
+    },
+    {
+      "id": "z3",
+      "displayName": "Z3",
+      "name": "Z3",
+      "subgroup": "4 edge EP",
+      "imageKey": "megaminxpll_z3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "z3-1",
+          "notation": "R' L' U2 L U R BR F U2' BR' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ],
+      "group": "4 edge EP"
+    }
+  ]
+}

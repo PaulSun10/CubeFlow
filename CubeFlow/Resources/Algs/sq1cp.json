@@ -1,0 +1,160 @@
+{
+  "puzzle": "SQ1",
+  "set": "SQ1CP",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "adj_solved",
+      "displayName": "Adj / Solved",
+      "name": "Adj / Solved",
+      "subgroup": "",
+      "imageKey": "sq1cp_adj_solved",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_solved-1",
+          "notation": "/ -3,3 / 3,0 / 0,-3 / 0,3 / 0,-3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_solved",
+      "displayName": "Opp / Solved",
+      "name": "Opp / Solved",
+      "subgroup": "",
+      "imageKey": "sq1cp_opp_solved",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_solved-1",
+          "notation": "/ 3,3 / -3,0 / 3,3 / -3,0 / 3,3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "solved_adj",
+      "displayName": "Solved / Adj",
+      "name": "Solved / Adj",
+      "subgroup": "",
+      "imageKey": "sq1cp_solved_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "solved_adj-1",
+          "notation": "/ -3,3 / 0,-3 / 3,0 / -3,0 / 3,0 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "solved_opp",
+      "displayName": "Solved / Opp",
+      "name": "Solved / Opp",
+      "subgroup": "",
+      "imageKey": "sq1cp_solved_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "solved_opp-1",
+          "notation": "/ 3,3 / 0,3 / 3,3 / 0,3 / 3,3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_adj",
+      "displayName": "Adj / Adj",
+      "name": "Adj / Adj",
+      "subgroup": "",
+      "imageKey": "sq1cp_adj_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_adj-1",
+          "notation": "/ -3,0 / 3,3 / 0,-3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_adj",
+      "displayName": "Opp / Adj",
+      "name": "Opp / Adj",
+      "subgroup": "",
+      "imageKey": "sq1cp_opp_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_adj-1",
+          "notation": "/ 3,0 / -3,0 / 3,0 / -3,0 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_opp",
+      "displayName": "Adj / Opp",
+      "name": "Adj / Opp",
+      "subgroup": "",
+      "imageKey": "sq1cp_adj_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_opp-1",
+          "notation": "/ 0,-3 / 0,3 / 0,-3 / 0,3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_opp",
+      "displayName": "Opp / Opp",
+      "name": "Opp / Opp",
+      "subgroup": "",
+      "imageKey": "sq1cp_opp_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp-1",
+          "notation": "/ -3,3 / 3,-3 /",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

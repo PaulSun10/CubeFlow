@@ -1,0 +1,297 @@
+{
+  "puzzle": "5x5",
+  "set": "L2E",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "l2e_1",
+      "displayName": "L2E 1",
+      "name": "L2E 1",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_1-1",
+          "notation": "Rw' U' R' U R' F R F' Rw",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_2",
+      "displayName": "L2E 2",
+      "name": "L2E 2",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_2-1",
+          "notation": "Lw U' R' U R' F R F' Lw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_3",
+      "displayName": "L2E 3",
+      "name": "L2E 3",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_3-1",
+          "notation": "x' M' U' R' U R' F R F' M x",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_4",
+      "displayName": "L2E 4",
+      "name": "L2E 4",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_4-1",
+          "notation": "Rw2 F2 U2 Rw2 U2 F2 Rw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_5",
+      "displayName": "L2E 5",
+      "name": "L2E 5",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_5-1",
+          "notation": "Rw2 B2 Rw' U2 Rw' U2' x' U2 Rw' U2' Rw U2 Rw' U2' Rw2 U2 x",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_6",
+      "displayName": "L2E 6",
+      "name": "L2E 6",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_6",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_6-1",
+          "notation": "Rw' U2 3Rw U2 3Rw' F2 Rw2 U2 Rw U2 Rw' U2 F2 Rw2 F2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2e_6-2",
+          "notation": "Rw' U2 Lw F2 Lw' F2 Rw2 U2 Rw U2 Rw' U2 F2 Rw2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2e_6-3",
+          "notation": "Rw U2 Rw U2 Rw' U2 Rw U2 Lw' U2 Lw F2 Rw' F2 Rw' U2 Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2e_6-4",
+          "notation": "l2 B2 r' F2 l F2 U2 l U2 l' U2 r U2 B2 l2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2e_6-5",
+          "notation": "Rw U2 Rw F2 Rw F2 Rw' F2 Lw F2 Lw' U2 Rw U2 Rw' U2 Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2e_6-6",
+          "notation": "Rw U2 x Rw U2 Rw U2' 3Rw' U2 Lw U2 Rw' U2' Rw U2 Rw' U2' Rw'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "l2e_6-7",
+          "notation": "Rw U2 Rw U2 Rw' U2 Rw U2 Lw' U2 Rw U2 Rw' U2 x' Rw' U2 Rw' U2 M' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_7",
+      "displayName": "L2E 7",
+      "name": "L2E 7",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_7",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_7-1",
+          "notation": "y2 Rw U2 Rw U2' x U2 Rw U2' 3Rw' U2 Lw U2' Rw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_8",
+      "displayName": "L2E 8",
+      "name": "L2E 8",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_8",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_8-1",
+          "notation": "Lw2 F2 U2 Lw' U2 Lw2 F2 Lw' U2 Lw2 U2 F2 Lw' F2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_9",
+      "displayName": "L2E 9",
+      "name": "L2E 9",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_9",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_9-1",
+          "notation": "B2 Rw' U2 Rw' U2' Rw B2 Rw U2 Rw U2' Rw' U2 Rw U2' Rw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_10",
+      "displayName": "L2E 10",
+      "name": "L2E 10",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_10",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_10-1",
+          "notation": "Rw' U2 Rw2 U2 Rw U2 Rw' U2 Rw U2 Rw2 U2 Rw'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_11",
+      "displayName": "L2E 11",
+      "name": "L2E 11",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_11",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_11-1",
+          "notation": "Rw U2 Rw2 U2 Rw' U2 Rw U2 Rw' U2 Rw2 U2 Rw",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_12",
+      "displayName": "L2E 12",
+      "name": "L2E 12",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_12",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_12-1",
+          "notation": "Rw' U2 Rw' U2 B2 Rw' B2 Rw' F2 Lw2 F2 Rw U2 Rw2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l2e_13",
+      "displayName": "L2E 13",
+      "name": "L2E 13",
+      "subgroup": "",
+      "imageKey": "l2e_l2e_13",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l2e_13-1",
+          "notation": "r U R' U' r2 U' R' U r2 U R' U' r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1074 @@
+{
+  "puzzle": "2x2",
+  "set": "OrtegaPBL",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "adj",
+      "displayName": "Adj",
+      "name": "Adj",
+      "subgroup": "",
+      "imageKey": "ortegapbl_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj-1",
+          "notation": "y R U R' F' R U R' U' R' F R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-2",
+          "notation": "y2 R' F R' F2 R U' R' F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-3",
+          "notation": "z2 R2 F2 U' R2 U R2 U' R2 U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-4",
+          "notation": "R' U R' F2 R F' R' F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-5",
+          "notation": "z2 R U' R' U' R' F2 U' R U R' F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-6",
+          "notation": "y' R2 F2 R U R' F2 R F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-7",
+          "notation": "R' U L' U2 R U' R' U2 R L U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-8",
+          "notation": "z2 y R' U R' U' R' F R2 U' R' U' R U R' F' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-9",
+          "notation": "x2 R2 B2 U' R2 U R2 U' R2 U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-10",
+          "notation": "x2 R U R2 F R U' R U2 R' F R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-11",
+          "notation": "y R U2 R' U' R U2 R' F R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-12",
+          "notation": "x2 F R' F' R U2 R U R2 F R U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-13",
+          "notation": "y' L' U2 L U L' U2 R U' L U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-14",
+          "notation": "y F R U' R' F R F' R U R2 F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-15",
+          "notation": "y2 z2 F2 R U' R' F2 R2 U' R' F R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-16",
+          "notation": "y x R2 F R F' R U2 R' U R U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-17",
+          "notation": "x2 R2 B2 U R2 U' R2 U R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-18",
+          "notation": "y R U2 R' U' R U2 L' U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-19",
+          "notation": "y2 R' F R' B2 R F' R' B2 R2 U'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-20",
+          "notation": "y L' R' F R F' R U2 R' U L F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-21",
+          "notation": "R B' R F2 R' B R F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-22",
+          "notation": "y2 R U R2 F' R U R U' R' F R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-23",
+          "notation": "F R2 U' R' F R' F' R U R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-24",
+          "notation": "y R' F R F' U R U R' U2 R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-25",
+          "notation": "y R2 F2 R F R' F2 R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-26",
+          "notation": "x2 R U' R' F' R U2 R' U R' F' R2 U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-27",
+          "notation": "y R U' R' U2 R U' R' U' F R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-28",
+          "notation": "z2 y R' U R' F' R U R' U' R' F R2 U' R' U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-29",
+          "notation": "x2 F R' F' R U R' F' R2 U' R' U2 R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-30",
+          "notation": "y R U R' U' R2 U2 F' U' F U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-31",
+          "notation": "U R U R' U' R' F R2 U' R' U' R U R' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-32",
+          "notation": "y2 L' U R' D2 R U' R' D2 R2 B'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-33",
+          "notation": "y R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-34",
+          "notation": "y L' U R U' L U2 R' U R U2 R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-35",
+          "notation": "F' U B U' F U2 B' U B U2 B'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-36",
+          "notation": "y' R U' R' F R' F2 R U' R' F2 R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-37",
+          "notation": "y2 R U' F U R2 U F U2 F' R U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-38",
+          "notation": "x' U2 R' U R U2 R2 F R F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-39",
+          "notation": "x' L' U L' D2 L U' L' D2 L2 F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-40",
+          "notation": "z2 R U' R' U' F R2 U' R' U R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-41",
+          "notation": "R' U L' U2 R U' R' U2 R2 B'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-42",
+          "notation": "y' x2 L2 U' R' F R' F2 R U' R' F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-43",
+          "notation": "y x2 R2 U' R' U L' U2 R U' R' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-44",
+          "notation": "y F R U' R' U R U R2 F' R U R U' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-45",
+          "notation": "y2 R' F' R2 U R' U' R' F R F' R' F R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-46",
+          "notation": "z2 R2 F2 U R2 U' R2 U R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj-47",
+          "notation": "x' y2 R' U R U2 R2 F R F' R U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp",
+      "displayName": "Opp",
+      "name": "Opp",
+      "subgroup": "",
+      "imageKey": "ortegapbl_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp-1",
+          "notation": "R U' R' U' F2 U' R U R' U F2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-2",
+          "notation": "F R' F R2 U' R' U' R U R' F' R U R' U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-3",
+          "notation": "x2 R U' R' U' F2 U' R U R' D F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-4",
+          "notation": "R' U R' F2 R F' U R' F2 R F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-5",
+          "notation": "F R' F' R U R U' R' F R F' U' R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-6",
+          "notation": "R' U L' U2 R U' L R' U L' U2 R U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-7",
+          "notation": "x2 F R U' R' U' R U R' F' R U R' U' R' F R F R2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-8",
+          "notation": "z2 R2 B2 R' U' R' U' F2 U' R U R' U F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-9",
+          "notation": "L' U L U F2 U L' U' L U' F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-10",
+          "notation": "L F' L' B L F L' B' L F L' B L F' L' B'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-11",
+          "notation": "R' F R B' R' F' R B R' F' R B' R' F R B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-12",
+          "notation": "L' B L F' L' B' L F L' B' L F' L' B L F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-13",
+          "notation": "R2 D' R2 U R2 U' D R D' R D R' U R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-14",
+          "notation": "F' R U R' U' R' F R U2 R U R' U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-15",
+          "notation": "R2 U' R2 U' R2 U F U F' R2 F U' F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-16",
+          "notation": "F' R F' U2 R' F R F U2 F R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-17",
+          "notation": "F2 U' R U' R' U F2 U R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-18",
+          "notation": "R U R U' R' F R' F' R U R' U' R' F R F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-19",
+          "notation": "R' U R' U' y R' F' R2 U' R' U R' F R F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-20",
+          "notation": "R U2 R' U2 R' F R F' R U' R' F R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-21",
+          "notation": "z2 R U' R' U' F2 U' R U R' U R2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp-22",
+          "notation": "R U' R2 F R F' R U' B U2 B' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_opp",
+      "displayName": "Opp Opp",
+      "name": "Opp Opp",
+      "subgroup": "",
+      "imageKey": "ortegapbl_opp_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_opp-1",
+          "notation": "R2 F2 R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-2",
+          "notation": "x' L2 U2 L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-3",
+          "notation": "R2 x U2 R2 x'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-4",
+          "notation": "U2 R2 U2 R2 U2 F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-5",
+          "notation": "D2 R2 F2 U2 R2 U2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-6",
+          "notation": "R2 B B R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-7",
+          "notation": "R2 U2 R2 F2 R2 U2 B2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-8",
+          "notation": "L2 F2 L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-9",
+          "notation": "F2 R2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-10",
+          "notation": "F2 L2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_opp-11",
+          "notation": "x L2 U2 L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_adj",
+      "displayName": "Adj Adj",
+      "name": "Adj Adj",
+      "subgroup": "",
+      "imageKey": "ortegapbl_adj_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_adj-1",
+          "notation": "R2 U' B2 U2 R2 U' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-2",
+          "notation": "R2 U' F2 U2 R2 U' B2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-3",
+          "notation": "y2 R2 U' R2 U D R2 D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-4",
+          "notation": "y2 R2 U' B2 U2 R2 U' F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-5",
+          "notation": "R2 U R2 U2 y' R2 U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-6",
+          "notation": "R2 U' R2 U2 y' R2 U' R2 F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-7",
+          "notation": "x' U F R U R' U' R U R' U' R U R' U' F' U",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-8",
+          "notation": "y2 R2 U F2 U2 R2 U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-9",
+          "notation": "R2 U' R2 U2 F2 U' F2 R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-10",
+          "notation": "R2 U' F2 U2 R2 D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-11",
+          "notation": "R2 U' F2 R2 U2 R2 D R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-12",
+          "notation": "z' U2 L U2 L R U2 L U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-13",
+          "notation": "R2 U' B2 R2 U2 R2 U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-14",
+          "notation": "R2 U' R2 U2 R2 F2 U F2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-15",
+          "notation": "x' y F R U R' U' R U R' U' R U R' U' F' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-16",
+          "notation": "z' x' F R U R' U' R U R' U' R U R' U' F' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-17",
+          "notation": "y2 L2 U' B2 U2 R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-18",
+          "notation": "R2 U' F2 R2 D2 R2 U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-19",
+          "notation": "y' R2 B2 U' B2 U2 R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-20",
+          "notation": "y F2 U' R2 U2 B2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_adj-21",
+          "notation": "y2 R2 U' R2 U2 y R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "adj_opp",
+      "displayName": "Adj Opp",
+      "name": "Adj Opp",
+      "subgroup": "",
+      "imageKey": "ortegapbl_adj_opp",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "adj_opp-1",
+          "notation": "R U' R F2 R' U R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-2",
+          "notation": "z2 y R2 U R2 U' R2 U R2 U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-3",
+          "notation": "R U' L D2 L' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-4",
+          "notation": "y2 R' U L' U2 R U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-5",
+          "notation": "y2 L U' R U2 L' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-6",
+          "notation": "y R2 D R2 D' R2 D R2 D' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-7",
+          "notation": "L' U L' F2 L U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-8",
+          "notation": "R' F R' B2 R F' R U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-9",
+          "notation": "x2 R U' R' U' R' F2 U' R U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-10",
+          "notation": "R U' R B2 L' D L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-11",
+          "notation": "D2 x R' U R' D2 R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-12",
+          "notation": "z2 L D' L F2 L' D L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-13",
+          "notation": "z2 y R2 U' R2 U R2 U' R2 U R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "adj_opp-14",
+          "notation": "z2 R F' R F2 R' D R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "opp_adj",
+      "displayName": "Opp Adj",
+      "name": "Opp Adj",
+      "subgroup": "",
+      "imageKey": "ortegapbl_opp_adj",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "opp_adj-1",
+          "notation": "y R2 U R2 U' R2 U R2 U' R2",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-2",
+          "notation": "y2 R U' R' U' R' F2 U' R U R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-3",
+          "notation": "R F' R F2 R' U F'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-4",
+          "notation": "L D' L F2 L' D L'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-5",
+          "notation": "R' D L' U2 L D' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-6",
+          "notation": "R F' R F2 R' D R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-7",
+          "notation": "y R U' R' U R' U2 R U' R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-8",
+          "notation": "y F' U R' U2 R U' F",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-9",
+          "notation": "y2 R D' R B2 R' D R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-10",
+          "notation": "y2 R' F U' R2 U F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-11",
+          "notation": "y R' U R U' R U2 R' U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-12",
+          "notation": "y2 R' F R U R U2 R' U' R' F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-13",
+          "notation": "y2 R U' R' U' R' F2 R U R U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-14",
+          "notation": "z2 L' U L' F2 L U' L",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-15",
+          "notation": "x2 y2 R U' R F2 R' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-16",
+          "notation": "x2 U2 R U' R F2 R' U R' U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-17",
+          "notation": "z2 R' F R' B2 R F' R U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-18",
+          "notation": "y R2 U R2 U R2 U2 R2 U' R2 U' R2 U2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-19",
+          "notation": "y R2 U' R' U R U R2 U2 R' U R' U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-20",
+          "notation": "y R U' R' U R' U2 R2 U R U R' U' R2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-21",
+          "notation": "y' L2 U' L2 U L2 U' L2 U L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-22",
+          "notation": "y' L2 U L2 U' L2 U L2 U' L2",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-23",
+          "notation": "y2 R D' R F2 R' F R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-24",
+          "notation": "x2 R' U R' F2 R F' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-25",
+          "notation": "U2 R' D R' F2 R D' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-26",
+          "notation": "z2 R U' L D2 L' U R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "opp_adj-27",
+          "notation": "D2 x' R' U R' D2 R U' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

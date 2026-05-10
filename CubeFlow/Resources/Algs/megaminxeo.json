@@ -1,0 +1,65 @@
+{
+  "puzzle": "Megaminx",
+  "set": "MegaminxEO",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "eo1",
+      "displayName": "EO1",
+      "name": "EO1",
+      "subgroup": "",
+      "imageKey": "megaminxeo_eo1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "eo1-1",
+          "notation": "F R U R' U' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "eo2",
+      "displayName": "EO2",
+      "name": "EO2",
+      "subgroup": "",
+      "imageKey": "megaminxeo_eo2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "eo2-1",
+          "notation": "F U R U' R' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "eo3",
+      "displayName": "EO3",
+      "name": "EO3",
+      "subgroup": "",
+      "imageKey": "megaminxeo_eo3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "eo3-1",
+          "notation": "F R U2 R2' F R F' U2' F'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "puzzle": "Megaminx",
+  "set": "MegaminxEP",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "ep_1",
+      "displayName": "EP 1",
+      "name": "EP 1",
+      "subgroup": "",
+      "imageKey": "megaminxep_ep_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ep_1-1",
+          "notation": "R2 U2' R2' U' R2 U2' R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ep_2",
+      "displayName": "EP 2",
+      "name": "EP 2",
+      "subgroup": "",
+      "imageKey": "megaminxep_ep_2",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ep_2-1",
+          "notation": "R2 U2 R2' U R2 U2 R2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ep_3",
+      "displayName": "EP 3",
+      "name": "EP 3",
+      "subgroup": "",
+      "imageKey": "megaminxep_ep_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ep_3-1",
+          "notation": "R U R' F' R U R' U' R' F R2 U' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ep_4",
+      "displayName": "EP 4",
+      "name": "EP 4",
+      "subgroup": "",
+      "imageKey": "megaminxep_ep_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ep_4-1",
+          "notation": "R U R' U R' U' R2 U' R' U R' U R U2'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "ep_5",
+      "displayName": "EP 5",
+      "name": "EP 5",
+      "subgroup": "",
+      "imageKey": "megaminxep_ep_5",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "ep_5-1",
+          "notation": "L R U2 L' U R' L U' R U2 L' U2 R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

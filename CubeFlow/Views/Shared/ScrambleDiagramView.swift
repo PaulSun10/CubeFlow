@@ -8,8 +8,24 @@ struct ScrambleDiagramView: View {
 
     var body: some View {
         ScrambleDiagramWebView(puzzleKey: puzzleKey, scramble: scramble)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.clear)
+    }
+
+    static func diagramAspectRatio(for puzzleKey: String) -> CGFloat {
+        switch puzzleKey {
+        case "clk":
+            return 375 / 180
+        case "megaminx":
+            return 392 / 196
+        case "pyraminx":
+            return 315 / 253.31243060694828
+        case "skewb":
+            return 326.26914536239786 / 283.280
+        case "squareone":
+            return 495 / 283.5
+        default:
+            return 39 / 29
+        }
     }
 }
 
@@ -154,8 +170,10 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
               box-sizing: border-box;
             }
             #diagram {
-              width: 100%;
-              height: 100%;
+              width: auto;
+              height: auto;
+              max-width: 100%;
+              max-height: 100%;
               object-fit: contain;
               display: none;
             }
@@ -182,9 +200,21 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
 
             const canvasShim = {
               createCanvas: function(width, height) {
+                const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
                 const canvas = document.createElement("canvas");
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = Math.ceil(width * scale);
+                canvas.height = Math.ceil(height * scale);
+                canvas.style.width = width + "px";
+                canvas.style.height = height + "px";
+                const originalGetContext = canvas.getContext.bind(canvas);
+                canvas.getContext = function(type, ...args) {
+                  const context = originalGetContext(type, ...args);
+                  if (type === "2d" && context && !context.__cubeFlowScaled) {
+                    context.scale(scale, scale);
+                    context.__cubeFlowScaled = true;
+                  }
+                  return context;
+                };
                 canvas.toBuffer = () => canvas.toDataURL("image/png");
                 return canvas;
               }

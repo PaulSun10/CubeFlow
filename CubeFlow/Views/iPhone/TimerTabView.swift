@@ -7,6 +7,14 @@ import UIKit
 #if os(iOS)
 private let solvesDidChangeNotification = Notification.Name("CubeFlowSolvesDidChange")
 
+private struct ScrambleDisplayHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct TimerTabView: View {
     @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
@@ -50,6 +58,7 @@ struct TimerTabView: View {
     @AppStorage("timerAccuracy") private var timerAccuracy: String = "thousandths"
     @AppStorage("enteringTimesWith") private var enteringTimesWith: String = "timer"
     @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = false
+    @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
     @AppStorage("drawScramblePlacement") private var drawScramblePlacement: String = DrawScramblePlacement.inline.rawValue
     @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = 132
@@ -114,10 +123,41 @@ struct TimerTabView: View {
     @State private var localBattleFirstDisplayTime: Double?
     @State private var localBattleSecondDisplayTime: Double?
     @State private var didScoreCurrentLocalBattleRound = false
+    @State private var scrambleDisplayMeasuredHeight: CGFloat = 0
 
     private let hiddenTimerVerticalOffset: CGFloat = 18
     private let ganResultChoices: [SolveResult] = [.solved, .plusTwo, .dnf]
     private let ganResultAutoCommitDelay: TimeInterval = 1.5
+
+    private var timerReservedFrameHeight: CGFloat {
+        max(CGFloat(timerTextFontSize) * 1.45, 110)
+    }
+
+    private var scrambleMaxHeightBeforeTimer: CGFloat {
+        max(96, UIScreen.main.bounds.height / 2 + hiddenTimerVerticalOffset - timerReservedFrameHeight / 2 - 112)
+    }
+
+    private var averageOverlayVerticalOffset: CGFloat {
+        CGFloat(timerTextFontSize) * 0.62 + CGFloat(resolvedAverageTextFontSize) * 0.55 + 10
+    }
+
+    private var resolvedScrambleTextFontSize: Double {
+        min(scrambleTextFontSize, 45)
+    }
+
+    private var resolvedAverageTextFontSize: Double {
+        min(averageTextFontSize, 56)
+    }
+
+    private var resolvedScrambleDisplayMode: ScrambleDisplayMode {
+        ScrambleDisplayMode(rawValue: scrambleDisplayMode) ?? .shrinkFont
+    }
+
+    private var timerGestureTopReserveHeight: CGFloat {
+        let headerHeight: CGFloat = 146
+        guard resolvedScrambleDisplayMode == .scroll else { return headerHeight }
+        return headerHeight + scrambleDisplayMeasuredHeight + 12
+    }
 
     private var selectedSession: Session? {
         sessions.first(where: { $0.id.uuidString == selectedSessionID }) ?? sessions.first
@@ -201,7 +241,7 @@ struct TimerTabView: View {
     private var scrambleDisplayLabel: some View {
         configuredText(
             Text(scrambleDisplayText),
-            size: scrambleTextFontSize,
+            size: resolvedScrambleTextFontSize,
             design: resolvedScrambleTextFontDesign,
             weight: resolvedScrambleTextFontWeight
         )
@@ -209,6 +249,8 @@ struct TimerTabView: View {
         .foregroundStyle(scrambleTextStyle)
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity, alignment: .center)
+        .minimumScaleFactor(resolvedScrambleDisplayMode == .shrinkFont ? 0.45 : 1)
+        .allowsTightening(resolvedScrambleDisplayMode == .shrinkFont)
         .transition(.opacity.combined(with: .move(edge: .top)))
     }
 
@@ -503,19 +545,8 @@ struct TimerTabView: View {
                 .padding(.top, 8)
 
                 HStack(alignment: .top, spacing: 10) {
-                    ZStack {
-                        if selectedEvent == .threeByThreeMBLD, mblindScrambles.count > 3 {
-                            Button {
-                                showingMblindSheet = true
-                            } label: {
-                                scrambleDisplayLabel
-                            }
-                            .buttonStyle(.plain)
-                        } else {
-                            scrambleDisplayLabel
-                        }
-                    }
-                    .animation(.snappy(duration: 0.22, extraBounce: 0), value: scrambleDisplayText)
+                    scrambleDisplayContainer
+                        .animation(.snappy(duration: 0.22, extraBounce: 0), value: scrambleDisplayText)
 
                     VStack(spacing: 6) {
                         if canShowScrambleDiagram && resolvedDrawScramblePlacement == .inline {
@@ -546,16 +577,62 @@ struct TimerTabView: View {
                 Color.clear
                     .frame(height: max(timerTextFontSize * 1.25, 96))
             } else {
-                timerDisplayView
+                Color.clear
+                    .frame(height: max(timerTextFontSize * 1.25, 96))
             }
 
-            averageDisplayView
-                .opacity(shouldHideNonTimerContent ? 0 : 1)
+            Color.clear
+                .frame(height: max(resolvedAverageTextFontSize * 1.3, 34))
 
             Spacer()
         }
         .padding(.horizontal, 24)
         .simultaneousGesture(dismissTypingKeyboardGesture)
+    }
+
+    @ViewBuilder
+    private var scrambleDisplayContainer: some View {
+        Group {
+            if resolvedScrambleDisplayMode == .scroll {
+                ScrollView(.vertical, showsIndicators: false) {
+                    scrambleDisplayButton
+                        .padding(.vertical, 1)
+                        .background {
+                            GeometryReader { proxy in
+                                Color.clear
+                                    .preference(key: ScrambleDisplayHeightPreferenceKey.self, value: proxy.size.height)
+                            }
+                        }
+                }
+            } else {
+                scrambleDisplayButton
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear
+                                .preference(key: ScrambleDisplayHeightPreferenceKey.self, value: proxy.size.height)
+                        }
+                    }
+            }
+        }
+        .frame(maxHeight: scrambleMaxHeightBeforeTimer, alignment: .top)
+        .clipped()
+        .onPreferenceChange(ScrambleDisplayHeightPreferenceKey.self) { height in
+            scrambleDisplayMeasuredHeight = min(height, scrambleMaxHeightBeforeTimer)
+        }
+    }
+
+    @ViewBuilder
+    private var scrambleDisplayButton: some View {
+        if selectedEvent == .threeByThreeMBLD, mblindScrambles.count > 3 {
+            Button {
+                showingMblindSheet = true
+            } label: {
+                scrambleDisplayLabel
+            }
+            .buttonStyle(.plain)
+        } else {
+            scrambleDisplayLabel
+        }
     }
 
     private var dismissTypingKeyboardGesture: some Gesture {
@@ -624,16 +701,28 @@ struct TimerTabView: View {
                     localBattleContent
                 }
 
-                if localBattleMode == .solo && showsOverlayTimer {
+                if localBattleMode == .solo {
                     GeometryReader { proxy in
+                        let timerCenterY = proxy.frame(in: .global).midY + hiddenTimerVerticalOffset
+
                         timerDisplayView
                             .position(
                                 x: proxy.size.width / 2,
-                                y: proxy.frame(in: .global).midY + hiddenTimerVerticalOffset
+                                y: timerCenterY
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+
+                        if !shouldHideNonTimerContent {
+                            averageDisplayView
+                                .position(
+                                    x: proxy.size.width / 2,
+                                    y: timerCenterY + averageOverlayVerticalOffset
+                                )
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                                .allowsHitTesting(false)
+                        }
                     }
-                    .allowsHitTesting(false)
+                    .allowsHitTesting(enteringTimesWith == "typing")
                     .ignoresSafeArea()
                 }
 
@@ -657,7 +746,7 @@ struct TimerTabView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, floatingPlacement == .bottomCenter ? 24 : 0)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
 
@@ -678,7 +767,7 @@ struct TimerTabView: View {
                         VStack(spacing: 0) {
                             // Reserve top area for event menu so menu taps don't start/stop timer.
                             Color.clear
-                                .frame(height: 146)
+                                .frame(height: timerGestureTopReserveHeight)
                                 .allowsHitTesting(false)
 
                             Color.clear
@@ -1459,7 +1548,7 @@ struct TimerTabView: View {
         let averageString = SolveMetrics.formatAverage(value)
         return configuredText(
             Text("\(Text(titleKey)): \(averageString)"),
-            size: averageTextFontSize,
+            size: resolvedAverageTextFontSize,
             design: resolvedAverageTextFontDesign,
             weight: resolvedAverageTextFontWeight
         )
@@ -1847,114 +1936,12 @@ struct TimerTabView: View {
             return scramble
         }
 
-        if let fallback = fallbackScramble(for: event) {
-            return fallback
-        }
-
-        if event == .square1, let diagnostic = TNoodleScrambler.diagnostic(for: registry) {
+        if let diagnostic = TNoodleScrambler.diagnostic(for: registry) {
             return "\(appLocalizedString("timer.scramble_unavailable", languageCode: appLanguage))\n\(diagnostic)"
         }
 
         return appLocalizedString("timer.scramble_unavailable", languageCode: appLanguage)
     }
-
-    private func fallbackScramble(for event: PuzzleEvent) -> String? {
-        switch event {
-        case .twoByTwo:
-            return randomFaceTurnScramble(moves: ["R", "L", "U", "F", "B"], length: 9)
-        case .threeByThree, .threeByThreeOH, .threeByThreeBLD, .threeByThreeMBLD:
-            return randomFaceTurnScramble(moves: ["R", "L", "U", "D", "F", "B"], length: 20)
-        case .threeByThreeFM:
-            return randomFaceTurnScramble(moves: ["R", "L", "U", "D", "F", "B"], length: 25)
-        case .fourByFour, .fourByFourBLD:
-            return randomFaceTurnScramble(
-                moves: ["R", "L", "U", "D", "F", "B", "Rw", "Lw", "Uw", "Dw", "Fw", "Bw"],
-                length: 40
-            )
-        case .fiveByFive, .fiveByFiveBLD:
-            return randomFaceTurnScramble(
-                moves: ["R", "L", "U", "D", "F", "B", "Rw", "Lw", "Uw", "Dw", "Fw", "Bw"],
-                length: 60
-            )
-        case .sixBySix:
-            return randomFaceTurnScramble(
-                moves: ["R", "L", "U", "D", "F", "B", "3Rw", "3Lw", "3Uw", "3Dw", "3Fw", "3Bw"],
-                length: 80
-            )
-        case .sevenBySeven:
-            return randomFaceTurnScramble(
-                moves: ["R", "L", "U", "D", "F", "B", "3Rw", "3Lw", "3Uw", "3Dw", "3Fw", "3Bw"],
-                length: 100
-            )
-        case .megaminx:
-            return randomMegaminxScramble(lines: 7)
-        case .pyraminx:
-            return randomPyraminxScramble()
-        case .square1:
-            return nil
-        case .clock:
-            return randomClockScramble()
-        case .skewb:
-            return randomFaceTurnScramble(moves: ["R", "L", "U", "B"], length: 10, includeDoubleTurns: false)
-        }
-    }
-
-    private func randomFaceTurnScramble(
-        moves: [String],
-        length: Int,
-        includeDoubleTurns: Bool = true
-    ) -> String {
-        let suffixes = includeDoubleTurns ? ["", "'", "2"] : ["", "'"]
-        var result: [String] = []
-        var lastAxis: String?
-
-        while result.count < length {
-            guard let move = moves.randomElement() else { break }
-            let axis = faceTurnAxis(for: move)
-            if axis == lastAxis { continue }
-            guard let suffix = suffixes.randomElement() else { continue }
-            result.append(move + suffix)
-            lastAxis = axis
-        }
-
-        return result.joined(separator: " ")
-    }
-
-    private func faceTurnAxis(for move: String) -> String {
-        if move.contains("R") || move.contains("L") { return "RL" }
-        if move.contains("U") || move.contains("D") { return "UD" }
-        return "FB"
-    }
-
-    private func randomMegaminxScramble(lines: Int) -> String {
-        let pairMoves = ["R++", "R--", "D++", "D--"]
-        return (0..<lines).map { _ in
-            let segment = (0..<10).compactMap { _ in pairMoves.randomElement() }.joined(separator: " ")
-            let tail = Bool.random() ? "U" : "U'"
-            return "\(segment) \(tail)"
-        }
-        .joined(separator: "\n")
-    }
-
-    private func randomPyraminxScramble() -> String {
-        let body = randomFaceTurnScramble(moves: ["R", "L", "U", "B"], length: 11, includeDoubleTurns: false)
-        let tips = ["r", "l", "u", "b"]
-            .compactMap { tip -> String? in
-                Bool.random() ? "\(tip)\(Bool.random() ? "'" : "")" : nil
-            }
-        return ([body] + tips).joined(separator: " ")
-    }
-
-    private func randomClockScramble() -> String {
-        let moves = [
-            "UR", "DR", "DL", "UL", "U", "R", "D", "L", "ALL"
-        ].map { face in
-            "\(face)\(Int.random(in: 0...6))\(Bool.random() ? "+" : "-")"
-        }
-        let pins = ["UR", "DR", "DL", "UL"].map { "\(Bool.random() ? "pin" : "unpin") \($0)" }
-        return (moves + pins).joined(separator: " / ")
-    }
-
 
     private func tnoodleRegistry(for event: PuzzleEvent) -> TNoodlePuzzleRegistry {
         switch event {
@@ -2094,10 +2081,11 @@ struct TimerTabView: View {
     private var floatingScrambleDiagram: some View {
         Group {
             if let scrambleDiagramPuzzleKey {
+                let aspectRatio = ScrambleDiagramView.diagramAspectRatio(for: scrambleDiagramPuzzleKey)
+                let height = drawScrambleFloatingSize / aspectRatio
                 ScrambleDiagramView(puzzleKey: scrambleDiagramPuzzleKey, scramble: currentScramble)
-                    .frame(width: drawScrambleFloatingSize, height: drawScrambleFloatingSize)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .frame(width: drawScrambleFloatingSize, height: height)
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         showingScrambleDiagram = true
                     }

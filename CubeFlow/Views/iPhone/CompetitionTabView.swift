@@ -289,6 +289,43 @@ private enum CompetitionTopCuberLoadState: Equatable {
     case failed
 }
 
+private enum CompetitionScheduleDisplayMode: String, CaseIterable, Identifiable {
+    case calendar
+    case table
+
+    var id: String { rawValue }
+}
+
+private enum CompetitionScheduleTableStyle: String, CaseIterable, Identifiable {
+    case cards
+    case table
+
+    var id: String { rawValue }
+}
+
+@MainActor
+private final class CompetitionListRuntimeCache {
+    struct Snapshot {
+        let competitions: [CompetitionSummary]
+        let visibleCompetitionsSnapshot: [CompetitionSummary]
+        let publishedVisibleCompetitions: [CompetitionSummary]
+        let nextPage: Int?
+        let topCuberStatesByCompetitionID: [String: CompetitionTopCuberLoadState]
+    }
+
+    static let shared = CompetitionListRuntimeCache()
+
+    private var snapshotsBySignature: [String: Snapshot] = [:]
+
+    func snapshot(for signature: String) -> Snapshot? {
+        snapshotsBySignature[signature]
+    }
+
+    func store(_ snapshot: Snapshot, for signature: String) {
+        snapshotsBySignature[signature] = snapshot
+    }
+}
+
 enum CompetitionCardStyleOption: String, CaseIterable, Identifiable {
     case list
     case glass
@@ -329,6 +366,7 @@ struct CompetitionTabView: View {
     @State private var publishedVisibleCompetitions: [CompetitionSummary] = []
     @State private var isLoading = true
     @State private var isLoadingMore = false
+    @State private var isPrefetchingRemainingCompetitions = false
     @State private var errorMessage: String?
     @State private var nextPage: Int? = 1
     @State private var showsMapView = false
@@ -339,6 +377,10 @@ struct CompetitionTabView: View {
     @State private var topCuberStatesByCompetitionID: [String: CompetitionTopCuberLoadState] = [:]
     @State private var topCuberRefreshingIDs: Set<String> = []
     @State private var areCompetitionEventIconsReady = CompetitionEventIconFont.isAvailable
+    @State private var competitionNavigationSubtitleText = ""
+    @State private var topCubersTaskSignatureText = "off"
+    @State private var topCuberPreloadCompetitionIDs: [String] = []
+    @State private var topCuberPrefetchCompetitionIDs: [String] = []
 
     var body: some View {
         CompatibleNavigationContainer {
@@ -409,6 +451,9 @@ struct CompetitionTabView: View {
             .onChange(of: cubingRowClassesByKey) { _ in
                 syncVisibleCompetitionsSnapshot(query: competitionQuery)
                 publishVisibleCompetitionsSnapshot()
+            }
+            .onChange(of: showsTopCubers) { _ in
+                updateCompetitionListDerivedState(for: publishedVisibleCompetitions)
             }
             .task(id: filterSignature) {
                 await loadCompetitions()
@@ -585,17 +630,7 @@ struct CompetitionTabView: View {
     }
 
     private var competitionNavigationSubtitle: String {
-        let ongoingCount = publishedVisibleCompetitions.filter { competitionAvailabilityStatus(for: $0) == .ongoing }.count
-        let upcomingCount = publishedVisibleCompetitions.filter { competitionAvailabilityStatus(for: $0) == .upcoming }.count
-        let registrationOpenCount = publishedVisibleCompetitions.filter { competitionAvailabilityStatus(for: $0) == .registrationOpen }.count
-
-        let parts = [
-            "\(ongoingCount) \(localizedCompetitionStringInView(key: "competitions.status.ongoing", languageCode: appLanguage))",
-            "\(upcomingCount) \(localizedCompetitionStringInView(key: "competitions.status.upcoming", languageCode: appLanguage))",
-            "\(registrationOpenCount) \(localizedCompetitionStringInView(key: "competitions.status.registration_open", languageCode: appLanguage))"
-        ]
-
-        return parts.joined(separator: " · ")
+        competitionNavigationSubtitleText
     }
 
     private var filterSignature: String {
@@ -612,17 +647,7 @@ struct CompetitionTabView: View {
     }
 
     private var topCubersTaskSignature: String {
-        let preloadLimit = Self.initialTopCuberPreloadCount + Self.nextTopCuberPrefetchCount
-        let preloadedCompetitionIDs = publishedVisibleCompetitions
-            .prefix(preloadLimit)
-            .map(\.id)
-            .joined(separator: ",")
-
-        return [
-            showsTopCubers ? "on" : "off",
-            appLanguage,
-            preloadedCompetitionIDs
-        ].joined(separator: "|")
+        topCubersTaskSignatureText
     }
 
     private var competitionQuery: CompetitionQuery {
@@ -786,7 +811,7 @@ struct CompetitionTabView: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(flagEmoji(for: competition.countryISO2))
+                        Text(competitionFlagEmoji(for: competition.countryISO2))
                             .font(.system(size: 18))
                         Text(competition.name)
                             .font(.system(size: 18, weight: .semibold))
@@ -846,7 +871,7 @@ struct CompetitionTabView: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text(flagEmoji(for: competition.countryISO2))
+                            Text(competitionFlagEmoji(for: competition.countryISO2))
                                 .font(.system(size: 18))
                             Text(competition.name)
                                 .font(.system(size: 18, weight: .semibold))
@@ -1321,32 +1346,51 @@ struct CompetitionTabView: View {
         return lowered.contains("cancelled")
     }
 
+    private func isTimeoutLikeError(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorTimedOut {
+            return true
+        }
+        return nsError.localizedDescription.lowercased().contains("timed out")
+    }
+
+    private func competitionListErrorMessage(for error: Error) -> String {
+        if isTimeoutLikeError(error) {
+            return localizedCompetitionStringInView(key: "competitions.error_timed_out", languageCode: appLanguage)
+        }
+        return localizedCompetitionStringInView(key: "competitions.error_request_failed", languageCode: appLanguage)
+    }
+
     @MainActor
     private func loadCompetitions() async {
         let query = competitionQuery
         let expectedSignature = filterSignature
         errorMessage = nil
+
+        if competitions.isEmpty,
+           let runtimeSnapshot = CompetitionListRuntimeCache.shared.snapshot(for: expectedSignature) {
+            restoreCompetitionRuntimeSnapshot(runtimeSnapshot)
+            return
+        }
+
         let cachedSnapshot = await CompetitionService.cachedCompetitions(for: query)
         let localizedCachedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
             cachedSnapshot?.competitions ?? [],
             languageCode: appLanguage
         )
-        let visibleCachedCompetitions = CompetitionService.filterCompetitions(
-            localizedCachedCompetitions,
-            for: query
-        )
-
-        competitions = visibleCachedCompetitions
+        competitions = uniqueCompetitions(localizedCachedCompetitions)
         syncVisibleCompetitionsSnapshot(query: query)
         publishVisibleCompetitionsSnapshot()
         nextPage = nil
         isLoading = publishedVisibleCompetitions.isEmpty
-        isLoadingMore = !publishedVisibleCompetitions.isEmpty
+        isLoadingMore = false
+        storeCompetitionRuntimeSnapshot(signature: expectedSignature)
 
         if publishedVisibleCompetitions.isEmpty {
             do {
-                try await loadMoreCompetitions(minimumVisibleCount: 10, replaceExisting: true)
+                try await loadMoreCompetitions(minimumVisibleCount: 1, replaceExisting: true)
                 isLoading = false
+                storeCompetitionRuntimeSnapshot(signature: expectedSignature)
 
                 if nextPage != nil {
                     Task {
@@ -1365,15 +1409,18 @@ struct CompetitionTabView: View {
                     return
                 }
                 competitions = []
-                errorMessage = error.localizedDescription
+                errorMessage = competitionListErrorMessage(for: error)
                 isLoading = false
                 isLoadingMore = false
                 return
             }
         }
 
+        isLoading = false
+        isLoadingMore = false
+
         do {
-            try await refreshCompetitionsFromNetwork(
+            try await refreshFirstCompetitionPageFromNetwork(
                 for: query,
                 expectedSignature: expectedSignature,
                 cachedCompetitions: competitions
@@ -1386,12 +1433,15 @@ struct CompetitionTabView: View {
                 competitions = []
                 visibleCompetitionsSnapshot = []
                 publishedVisibleCompetitions = []
-                errorMessage = error.localizedDescription
+                errorMessage = competitionListErrorMessage(for: error)
             }
         }
 
-        isLoading = false
-        isLoadingMore = false
+        if nextPage != nil {
+            Task {
+                await prefetchRemainingCompetitions(for: query, expectedSignature: expectedSignature)
+            }
+        }
     }
 
     @MainActor
@@ -1410,12 +1460,8 @@ struct CompetitionTabView: View {
 
             while let page = pageToFetch {
                 let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
-                let localizedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
-                    result.competitions,
-                    languageCode: appLanguage
-                )
 
-                aggregated.append(contentsOf: localizedCompetitions)
+                aggregated = uniqueCompetitions(aggregated + result.competitions)
                 visibleCompetitions = normalizedVisibleCompetitions(aggregated, query: query)
                 pageToFetch = result.nextPage
                 totalCount = result.totalCount ?? totalCount
@@ -1428,13 +1474,14 @@ struct CompetitionTabView: View {
             guard expectedSignature == filterSignature else { return }
 
             if !visibleCompetitions.isEmpty || publishedVisibleCompetitions.isEmpty {
-                competitions = aggregated
-                visibleCompetitionsSnapshot = visibleCompetitions
+                competitions = uniqueCompetitions(aggregated)
+                visibleCompetitionsSnapshot = uniqueCompetitions(visibleCompetitions)
                 publishVisibleCompetitionsSnapshot()
             }
             nextPage = pageToFetch
             isLoading = false
             isLoadingMore = false
+            storeCompetitionRuntimeSnapshot(signature: expectedSignature)
 
             announceRefreshSuccess()
 
@@ -1456,7 +1503,7 @@ struct CompetitionTabView: View {
                 return
             }
             if publishedVisibleCompetitions.isEmpty {
-                errorMessage = error.localizedDescription
+                errorMessage = competitionListErrorMessage(for: error)
             }
             isLoading = false
             isLoadingMore = false
@@ -1475,7 +1522,9 @@ struct CompetitionTabView: View {
             if isCancellationLikeError(error) {
                 return
             }
-            errorMessage = error.localizedDescription
+            if publishedVisibleCompetitions.isEmpty {
+                errorMessage = competitionListErrorMessage(for: error)
+            }
         }
     }
 
@@ -1484,53 +1533,52 @@ struct CompetitionTabView: View {
         var aggregated: [CompetitionSummary] = replaceExisting ? [] : competitions
         var pageToFetch = replaceExisting ? 1 : nextPage
         let query = competitionQuery
-
-        var newlyLoadedVisibleItems: [CompetitionSummary] = []
+        let targetVisibleCount = max(1, minimumVisibleCount)
 
         while let page = pageToFetch {
             let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
-            let localizedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
-                result.competitions,
-                languageCode: appLanguage
-            )
-            newlyLoadedVisibleItems.append(contentsOf: localizedCompetitions)
-            aggregated.append(contentsOf: localizedCompetitions)
+            aggregated = uniqueCompetitions(aggregated + result.competitions)
             pageToFetch = result.nextPage
 
-            if newlyLoadedVisibleItems.count >= minimumVisibleCount || result.nextPage == nil {
+            let visibleCompetitions = normalizedVisibleCompetitions(aggregated, query: query)
+            if visibleCompetitions.count >= targetVisibleCount || result.nextPage == nil {
                 break
             }
         }
 
-        competitions = aggregated
+        competitions = uniqueCompetitions(aggregated)
         visibleCompetitionsSnapshot = normalizedVisibleCompetitions(aggregated, query: query)
         publishVisibleCompetitionsSnapshot()
         nextPage = pageToFetch
+        storeCompetitionRuntimeSnapshot()
     }
 
     @MainActor
     private func prefetchRemainingCompetitions(for query: CompetitionQuery, expectedSignature: String) async {
         guard expectedSignature == filterSignature else { return }
-        guard !isLoadingMore else { return }
+        guard !isPrefetchingRemainingCompetitions else { return }
 
-        isLoadingMore = true
-        defer { isLoadingMore = false }
+        isPrefetchingRemainingCompetitions = true
+        defer { isPrefetchingRemainingCompetitions = false }
 
         while let page = nextPage {
             guard expectedSignature == filterSignature else { return }
 
             do {
-                let result = try await CompetitionService.fetchCompetitionsPage(query: competitionQuery, page: page)
-                let localizedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
-                    result.competitions,
-                    languageCode: appLanguage
-                )
-                competitions.append(contentsOf: localizedCompetitions)
+                let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
+                competitions = uniqueCompetitions(competitions + result.competitions)
                 syncVisibleCompetitionsSnapshot(query: query)
                 nextPage = result.nextPage
+                if !visibleCompetitionsSnapshot.isEmpty {
+                    publishVisibleCompetitionsSnapshot()
+                }
+                storeCompetitionRuntimeSnapshot(signature: expectedSignature)
 
                 if result.nextPage == nil {
-                    publishVisibleCompetitionsSnapshot()
+                    if !visibleCompetitionsSnapshot.isEmpty {
+                        publishVisibleCompetitionsSnapshot()
+                    }
+                    storeCompetitionRuntimeSnapshot(signature: expectedSignature)
                     await CompetitionService.cacheCompetitions(
                         competitions,
                         totalCount: result.totalCount ?? competitions.count,
@@ -1542,7 +1590,7 @@ struct CompetitionTabView: View {
                     return
                 }
                 if publishedVisibleCompetitions.isEmpty {
-                    errorMessage = error.localizedDescription
+                    errorMessage = competitionListErrorMessage(for: error)
                 }
                 return
             }
@@ -1567,43 +1615,26 @@ struct CompetitionTabView: View {
     }
 
     @MainActor
-    private func refreshCompetitionsFromNetwork(
+    private func refreshFirstCompetitionPageFromNetwork(
         for query: CompetitionQuery,
         expectedSignature: String,
         cachedCompetitions: [CompetitionSummary]
     ) async throws {
-        var freshCompetitions: [CompetitionSummary] = []
-        var page = 1
+        guard expectedSignature == filterSignature else { return }
 
-        while true {
-            guard expectedSignature == filterSignature else { return }
+        let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: 1)
+        competitions = mergedCompetitions(cached: cachedCompetitions, fresh: result.competitions)
+        syncVisibleCompetitionsSnapshot(query: query)
+        publishVisibleCompetitionsSnapshot()
+        nextPage = result.nextPage
+        storeCompetitionRuntimeSnapshot(signature: expectedSignature)
 
-            let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
-            let localizedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
+        if result.nextPage == nil {
+            await CompetitionService.cacheCompetitions(
                 result.competitions,
-                languageCode: appLanguage
+                totalCount: result.totalCount ?? result.competitions.count,
+                for: query
             )
-            freshCompetitions.append(contentsOf: localizedCompetitions)
-            competitions = mergedCompetitions(cached: cachedCompetitions, fresh: freshCompetitions)
-            syncVisibleCompetitionsSnapshot(query: query)
-
-            guard let nextPage = result.nextPage else {
-                competitions = freshCompetitions
-                syncVisibleCompetitionsSnapshot(query: query)
-                publishVisibleCompetitionsSnapshot()
-                await CompetitionService.cacheCompetitions(
-                    freshCompetitions,
-                    totalCount: result.totalCount ?? freshCompetitions.count,
-                    for: query
-                )
-                return
-            }
-
-            page = nextPage
-            if freshCompetitions.count >= 25 {
-                isLoading = false
-                isLoadingMore = true
-            }
         }
     }
 
@@ -1611,17 +1642,25 @@ struct CompetitionTabView: View {
         cached: [CompetitionSummary],
         fresh: [CompetitionSummary]
     ) -> [CompetitionSummary] {
-        let freshIDs = Set(fresh.map(\.id))
-        let staleCache = cached.filter { !freshIDs.contains($0.id) }
-        return fresh + staleCache
+        uniqueCompetitions(fresh + cached)
+    }
+
+    private func uniqueCompetitions(_ competitions: [CompetitionSummary]) -> [CompetitionSummary] {
+        var seenIDs = Set<String>()
+        return competitions.filter { competition in
+            seenIDs.insert(competition.id).inserted
+        }
     }
 
     private func normalizedVisibleCompetitions(
         _ competitions: [CompetitionSummary],
         query: CompetitionQuery
     ) -> [CompetitionSummary] {
-        let sortedCompetitions = CompetitionService.filterCompetitions(competitions, for: query)
-        return filterCompetitionsForVisibleStatus(sortedCompetitions, query: query)
+        let sortedCompetitions = CompetitionService.filterCompetitions(
+            uniqueCompetitions(competitions),
+            for: query
+        )
+        return uniqueCompetitions(filterCompetitionsForVisibleStatus(sortedCompetitions, query: query))
     }
 
     private func syncVisibleCompetitionsSnapshot(query: CompetitionQuery) {
@@ -1629,7 +1668,80 @@ struct CompetitionTabView: View {
     }
 
     private func publishVisibleCompetitionsSnapshot() {
-        publishedVisibleCompetitions = visibleCompetitionsSnapshot
+        let published = uniqueCompetitions(visibleCompetitionsSnapshot)
+        publishedVisibleCompetitions = published
+        updateCompetitionListDerivedState(for: published)
+    }
+
+    private func updateCompetitionListDerivedState(for publishedCompetitions: [CompetitionSummary]) {
+        var ongoingCount = 0
+        var upcomingCount = 0
+        var registrationOpenCount = 0
+
+        for competition in publishedCompetitions {
+            switch competitionAvailabilityStatus(for: competition) {
+            case .ongoing:
+                ongoingCount += 1
+            case .upcoming:
+                upcomingCount += 1
+            case .registrationOpen:
+                registrationOpenCount += 1
+            default:
+                break
+            }
+        }
+
+        competitionNavigationSubtitleText = [
+            "\(ongoingCount) \(localizedCompetitionStringInView(key: "competitions.status.ongoing", languageCode: appLanguage))",
+            "\(upcomingCount) \(localizedCompetitionStringInView(key: "competitions.status.upcoming", languageCode: appLanguage))",
+            "\(registrationOpenCount) \(localizedCompetitionStringInView(key: "competitions.status.registration_open", languageCode: appLanguage))"
+        ].joined(separator: " · ")
+
+        topCuberPreloadCompetitionIDs = Array(
+            publishedCompetitions
+                .prefix(Self.initialTopCuberPreloadCount)
+                .map(\.id)
+        )
+        topCuberPrefetchCompetitionIDs = Array(
+            publishedCompetitions
+                .dropFirst(Self.initialTopCuberPreloadCount)
+                .prefix(Self.nextTopCuberPrefetchCount)
+                .map(\.id)
+        )
+        topCubersTaskSignatureText = [
+            showsTopCubers ? "on" : "off",
+            appLanguage,
+            (topCuberPreloadCompetitionIDs + topCuberPrefetchCompetitionIDs).joined(separator: ",")
+        ].joined(separator: "|")
+    }
+
+    @MainActor
+    private func restoreCompetitionRuntimeSnapshot(_ snapshot: CompetitionListRuntimeCache.Snapshot) {
+        guard !snapshot.publishedVisibleCompetitions.isEmpty else { return }
+        competitions = uniqueCompetitions(snapshot.competitions)
+        visibleCompetitionsSnapshot = uniqueCompetitions(snapshot.visibleCompetitionsSnapshot)
+        publishedVisibleCompetitions = uniqueCompetitions(snapshot.publishedVisibleCompetitions)
+        updateCompetitionListDerivedState(for: publishedVisibleCompetitions)
+        nextPage = snapshot.nextPage
+        topCuberStatesByCompetitionID = snapshot.topCuberStatesByCompetitionID
+        errorMessage = nil
+        isLoading = false
+        isLoadingMore = false
+    }
+
+    @MainActor
+    private func storeCompetitionRuntimeSnapshot(signature: String? = nil) {
+        guard !publishedVisibleCompetitions.isEmpty else { return }
+        CompetitionListRuntimeCache.shared.store(
+            CompetitionListRuntimeCache.Snapshot(
+                competitions: uniqueCompetitions(competitions),
+                visibleCompetitionsSnapshot: uniqueCompetitions(visibleCompetitionsSnapshot),
+                publishedVisibleCompetitions: uniqueCompetitions(publishedVisibleCompetitions),
+                nextPage: nextPage,
+                topCuberStatesByCompetitionID: topCuberStatesByCompetitionID
+            ),
+            for: signature ?? filterSignature
+        )
     }
 
     @MainActor
@@ -1649,6 +1761,7 @@ struct CompetitionTabView: View {
 
         if let cached = await CompetitionService.cachedCompetitionTopCuberPreviews(for: competition.id) {
             topCuberStatesByCompetitionID[competition.id] = cached.isEmpty ? .empty : .loaded(cached)
+            storeCompetitionRuntimeSnapshot()
             await refreshTopCuberPreview(for: competition, usesLoadingPlaceholder: false)
             return
         }
@@ -1669,14 +1782,17 @@ struct CompetitionTabView: View {
                 topCuberStatesByCompetitionID[competition.id] = cached.isEmpty ? .empty : .loaded(cached)
             }
         }
+        storeCompetitionRuntimeSnapshot()
+
+        let preloadIDs = Set(topCuberPreloadCompetitionIDs)
+        let prefetchIDs = Set(topCuberPrefetchCompetitionIDs)
 
         let preloadTargets = publishedVisibleCompetitions
-            .prefix(Self.initialTopCuberPreloadCount)
+            .filter { preloadIDs.contains($0.id) }
             .filter { competition in !topCuberRefreshingIDs.contains(competition.id) }
 
         let prefetchTargets = publishedVisibleCompetitions
-            .dropFirst(Self.initialTopCuberPreloadCount)
-            .prefix(Self.nextTopCuberPrefetchCount)
+            .filter { prefetchIDs.contains($0.id) }
             .filter { competition in
                 topCuberStatesByCompetitionID[competition.id] == nil &&
                 !topCuberRefreshingIDs.contains(competition.id)
@@ -1729,6 +1845,7 @@ struct CompetitionTabView: View {
                 } else if usesLoadingPlaceholder {
                     topCuberStatesByCompetitionID[competitionID] = .failed
                 }
+                storeCompetitionRuntimeSnapshot()
 
                 if nextIndex < jobs.count {
                     enqueueJob(jobs[nextIndex])
@@ -1766,6 +1883,7 @@ struct CompetitionTabView: View {
         }
 
         topCuberStatesByCompetitionID[competition.id] = previews.isEmpty ? .empty : .loaded(previews)
+        storeCompetitionRuntimeSnapshot()
     }
 
 
@@ -1907,7 +2025,7 @@ struct CompetitionTabView: View {
     }
 }
 
-private enum CompetitionDetailTab: String, CaseIterable, Identifiable {
+enum CompetitionDetailTab: String, CaseIterable, Identifiable {
     case info
     case register
     case competitors
@@ -1928,6 +2046,319 @@ private enum CompetitionDetailTab: String, CaseIterable, Identifiable {
             return localizedCompetitionStringInView(key: "competitions.detail.tab.schedule", languageCode: languageCode)
         case .live:
             return localizedCompetitionStringInView(key: "competitions.detail.tab.live", languageCode: languageCode)
+        }
+    }
+}
+
+struct CompetitionDetailTabStrip: View {
+    let tabs: [CompetitionDetailTab]
+    let languageCode: String
+    let draggedMaskScale: CGFloat
+    let showsMaskDebugOverlay: Bool
+    @Binding var selection: CompetitionDetailTab
+
+    init(
+        tabs: [CompetitionDetailTab],
+        languageCode: String,
+        draggedMaskScale: CGFloat = 1.10,
+        showsMaskDebugOverlay: Bool = false,
+        selection: Binding<CompetitionDetailTab>
+    ) {
+        self.tabs = tabs
+        self.languageCode = languageCode
+        self.draggedMaskScale = draggedMaskScale
+        self.showsMaskDebugOverlay = showsMaskDebugOverlay
+        self._selection = selection
+    }
+
+    @State private var tabWidths: [String: CGFloat] = [:]
+    @State private var dragOffset: CGFloat = 0
+    @State private var isDragging = false
+    @State private var pressedTab: CompetitionDetailTab?
+
+    private let spacing: CGFloat = 8
+    private let horizontalPadding: CGFloat = 6
+    private let selectedHeight: CGFloat = 34
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            ZStack(alignment: .leading) {
+                selectionIndicator
+                    .zIndex(0)
+
+                tabTextLayers
+
+                if showsMaskDebugOverlay {
+                    capsuleMaskDebugOverlay
+                        .allowsHitTesting(false)
+                        .zIndex(1.75)
+                }
+
+                dragOverlay
+                    .zIndex(2)
+            }
+            .onPreferenceChange(CompetitionTabWidthPreferenceKey.self) { widths in
+                tabWidths = widths
+            }
+            .padding(.horizontal, 16)
+        }
+        .frame(height: 48)
+    }
+
+    private var selectionIndicator: some View {
+        Capsule()
+            .fill(Color.primary.opacity(0.08))
+            .overlay {
+                Capsule()
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+            }
+            .compatibleGlassFromIOS16(in: Capsule())
+            .frame(width: selectedWidth, height: selectedHeight)
+            .offset(x: clampedIndicatorOffset)
+            .animation(.spring(response: 0.28, dampingFraction: 0.78), value: selection)
+            .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isDragging)
+            .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private var tabTextLayers: some View {
+        if #available(iOS 26.0, *) {
+            tabLabelsLayer(isMaskedBoldLayer: false)
+                .mask(alignment: .leading) {
+                    regularTextMask
+                }
+                .zIndex(1)
+
+            tabLabelsLayer(isMaskedBoldLayer: true)
+                .mask(alignment: .leading) {
+                    capsuleMask
+                }
+                .opacity(isDragging ? 1 : 0)
+                .allowsHitTesting(false)
+                .zIndex(1.5)
+        } else {
+            tabLabelsLayer(isMaskedBoldLayer: false)
+                .zIndex(1)
+        }
+    }
+
+    private var capsuleMask: some View {
+        Capsule()
+            .frame(width: selectedWidth * capsuleMaskScale, height: selectedHeight * capsuleMaskScale)
+            .offset(x: clampedIndicatorOffset - selectedWidth * (capsuleMaskScale - 1) / 2,
+                    y: -selectedHeight * (capsuleMaskScale - 1) / 2)
+            .animation(.spring(response: 0.28, dampingFraction: 0.78), value: selection)
+            .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isDragging)
+    }
+
+    private var capsuleMaskDebugOverlay: some View {
+        Capsule()
+            .fill(Color.red.opacity(0.18))
+            .frame(width: selectedWidth * capsuleMaskScale, height: selectedHeight * capsuleMaskScale)
+            .overlay {
+                Capsule()
+                    .stroke(Color.red.opacity(0.85), lineWidth: 1)
+            }
+            .offset(x: clampedIndicatorOffset - selectedWidth * (capsuleMaskScale - 1) / 2,
+                    y: -selectedHeight * (capsuleMaskScale - 1) / 2)
+            .animation(.spring(response: 0.28, dampingFraction: 0.78), value: selection)
+            .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isDragging)
+    }
+
+    private var capsuleMaskScale: CGFloat {
+        isDragging ? draggedMaskScale : 1.0
+    }
+
+    private var regularTextMask: some View {
+        Color.white
+            .overlay(alignment: .leading) {
+                if isDragging {
+                    capsuleMask
+                        .blendMode(.destinationOut)
+                }
+            }
+            .compositingGroup()
+    }
+
+    private func tabLabelsLayer(isMaskedBoldLayer: Bool) -> some View {
+        HStack(spacing: spacing) {
+            ForEach(tabs) { tab in
+                tabLabel(for: tab, isMaskedBoldLayer: isMaskedBoldLayer)
+            }
+        }
+        .padding(.horizontal, horizontalPadding)
+        .padding(.vertical, 5)
+    }
+
+    @ViewBuilder
+    private func tabLabel(for tab: CompetitionDetailTab, isMaskedBoldLayer: Bool) -> some View {
+        let label = Text(tab.localizedTitle(languageCode: languageCode))
+            .font(.system(size: 15, weight: fontWeight(for: tab, isMaskedBoldLayer: isMaskedBoldLayer)))
+            .foregroundStyle(foregroundStyle(for: tab, isMaskedBoldLayer: isMaskedBoldLayer))
+            .lineLimit(1)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .modifier(CompetitionDetailTabMeasurementModifier(tabID: tab.id, isEnabled: !isMaskedBoldLayer))
+
+        if isMaskedBoldLayer {
+            label
+                .allowsHitTesting(false)
+        } else {
+            label
+                .contentShape(Rectangle())
+                .gesture(tabPressGesture(for: tab))
+        }
+    }
+
+    private func tabPressGesture(for tab: CompetitionDetailTab) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { _ in
+                guard !isDragging else { return }
+                if pressedTab != tab {
+                    withAnimation(.spring(response: 0.18, dampingFraction: 0.72)) {
+                        pressedTab = tab
+                    }
+                }
+            }
+            .onEnded { _ in
+                pressThenSelect(tab)
+            }
+    }
+
+    private var dragOverlay: some View {
+        Color.clear
+            .frame(width: selectedWidth, height: selectedHeight)
+            .contentShape(Capsule())
+            .offset(x: selectedBaseOffset, y: 5)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        isDragging = true
+                        pressedTab = selection
+                        dragOffset = gesture.translation.width
+                    }
+                    .onEnded { gesture in
+                        snapToNearestTab(dragDistance: gesture.translation.width)
+                        dragOffset = 0
+                        isDragging = false
+                        pressedTab = nil
+                    }
+            )
+    }
+
+    private var selectedWidth: CGFloat {
+        max(width(for: selection), 44)
+    }
+
+    private var selectedBaseOffset: CGFloat {
+        offset(for: selection)
+    }
+
+    private var isPressingSelection: Bool {
+        isDragging || pressedTab == selection
+    }
+
+    private var clampedIndicatorOffset: CGFloat {
+        let proposed = selectedBaseOffset + dragOffset
+        return min(max(proposed, horizontalPadding), max(horizontalPadding, totalTabsWidth - selectedWidth + horizontalPadding))
+    }
+
+    private var totalTabsWidth: CGFloat {
+        tabs.reduce(CGFloat(0)) { partial, tab in
+            partial + width(for: tab)
+        } + CGFloat(max(tabs.count - 1, 0)) * spacing
+    }
+
+    private func width(for tab: CompetitionDetailTab) -> CGFloat {
+        tabWidths[tab.id] ?? fallbackWidth(for: tab)
+    }
+
+    private func offset(for tab: CompetitionDetailTab) -> CGFloat {
+        guard let index = tabs.firstIndex(of: tab) else { return horizontalPadding }
+        let previousWidths = tabs.prefix(index).reduce(CGFloat(0)) { partial, tab in
+            partial + width(for: tab)
+        }
+        return horizontalPadding + previousWidths + CGFloat(index) * spacing
+    }
+
+    private func fallbackWidth(for tab: CompetitionDetailTab) -> CGFloat {
+        let title = tab.localizedTitle(languageCode: languageCode)
+        return max(CGFloat(title.count) * 8.5 + 28, 54)
+    }
+
+    private func fontWeight(for tab: CompetitionDetailTab, isMaskedBoldLayer: Bool) -> Font.Weight {
+        if isMaskedBoldLayer {
+            return .bold
+        }
+        return selection == tab ? .semibold : .regular
+    }
+
+    private func foregroundStyle(for tab: CompetitionDetailTab, isMaskedBoldLayer: Bool) -> Color {
+        if isMaskedBoldLayer {
+            return .black
+        }
+        return selection == tab ? .primary : .secondary
+    }
+
+    private func pressThenSelect(_ tab: CompetitionDetailTab) {
+        withAnimation(.spring(response: 0.16, dampingFraction: 0.7)) {
+            pressedTab = tab
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            select(tab)
+            withAnimation(.spring(response: 0.22, dampingFraction: 0.82)) {
+                pressedTab = nil
+            }
+        }
+    }
+
+    private func select(_ tab: CompetitionDetailTab) {
+        guard selection != tab else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.78)) {
+            selection = tab
+        }
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+
+    private func snapToNearestTab(dragDistance: CGFloat) {
+        let proposedCenter = selectedBaseOffset + dragDistance + selectedWidth / 2
+        let nearest = tabs.min { lhs, rhs in
+            let lhsDistance = abs((offset(for: lhs) + width(for: lhs) / 2) - proposedCenter)
+            let rhsDistance = abs((offset(for: rhs) + width(for: rhs) / 2) - proposedCenter)
+            return lhsDistance < rhsDistance
+        }
+
+        if let nearest {
+            select(nearest)
+        }
+    }
+}
+
+private struct CompetitionTabWidthPreferenceKey: PreferenceKey {
+    static var defaultValue: [String: CGFloat] = [:]
+
+    static func reduce(value: inout [String: CGFloat], nextValue: () -> [String: CGFloat]) {
+        value.merge(nextValue(), uniquingKeysWith: { $1 })
+    }
+}
+
+private struct CompetitionDetailTabMeasurementModifier: ViewModifier {
+    let tabID: String
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.background(
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: CompetitionTabWidthPreferenceKey.self,
+                        value: [tabID: proxy.size.width]
+                    )
+                }
+            )
+        } else {
+            content
         }
     }
 }
@@ -3204,7 +3635,7 @@ private struct CompetitionLivePodiumsSheet: View {
     }
 }
 
-private struct CompetitionDetailView: View {
+struct CompetitionDetailView: View {
     let competition: CompetitionSummary
     let appLanguage: String
 
@@ -3216,11 +3647,26 @@ private struct CompetitionDetailView: View {
     @State private var selectedCompetitorsMode: CompetitionCompetitorsMode = .registration
     @State private var areCompetitionEventIconsReady = CompetitionEventIconFont.isAvailable
     @State private var isLoadingPsych = false
+    @State private var isLoadingCompetitors = false
     @State private var isRefreshingDetail = false
     @State private var psychPreviewCache: [String: [CompetitionCompetitorPsychPreview]] = [:]
     @State private var isLoadingWCALive = false
     @State private var wcaLiveContentOverride: CompetitionWCALiveContent?
     @State private var selectedWCALiveRoundID = ""
+    @State private var selectedScheduleDisplayMode: CompetitionScheduleDisplayMode = .calendar
+    @AppStorage("competitionScheduleTableStyle") private var selectedScheduleTableStyleRaw = CompetitionScheduleTableStyle.cards.rawValue
+    @State private var filteredCompetitorsSnapshot: [CompetitionCompetitorPreview] = []
+    @State private var competitorMatrixEventIDsSnapshot: [String] = []
+    @State private var showsCompetitorNumbersSnapshot = false
+    @State private var showsCompetitorGenderSnapshot = false
+    @State private var filteredPsychCompetitorsSnapshot: [CompetitionCompetitorPsychPreview] = []
+    @State private var displayedPsychCompetitorsSnapshot: [CompetitionCompetitorPsychPreview] = []
+    @State private var psychOverallRankByCompetitorIDSnapshot: [String: Int] = [:]
+    @State private var psychMatrixEventIDsSnapshot: [String] = []
+
+    private var selectedScheduleTableStyle: CompetitionScheduleTableStyle {
+        CompetitionScheduleTableStyle(rawValue: selectedScheduleTableStyleRaw) ?? .cards
+    }
 
     private var sourceTitle: String {
         localizedCompetitionStringInView(
@@ -3342,6 +3788,13 @@ private struct CompetitionDetailView: View {
         }
     }
 
+    private var canShowCubingCalendarSchedule: Bool {
+        guard isMainlandChinaCompetition else { return false }
+        return detailContent.scheduleDays.contains { day in
+            day.venues.count > 1 || day.venues.contains { $0.title != "赛程" && !$0.entries.isEmpty }
+        }
+    }
+
     private var liveStatusTitle: String {
         if !isMainlandChinaCompetition {
             if detailContent.liveAvailability == .ended {
@@ -3437,29 +3890,19 @@ private struct CompetitionDetailView: View {
     }
 
     private var filteredCompetitors: [CompetitionCompetitorPreview] {
-        let query = competitorSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return detailContent.competitorPreviews.filter { competitor in
-            let matchesQuery = query.isEmpty
-                || competitor.name.localizedCaseInsensitiveContains(query)
-                || (competitor.subtitle?.localizedCaseInsensitiveContains(query) ?? false)
-            let matchesEvent = selectedCompetitorEventID.isEmpty
-                || competitor.registeredEventIDs.contains(selectedCompetitorEventID)
-            return matchesQuery && matchesEvent
-        }
+        filteredCompetitorsSnapshot
     }
 
     private var competitorMatrixEventIDs: [String] {
-        CompetitionEventFilter.selectableCases
-            .map(\.wcaEventID)
-            .filter { competition.eventIDs.contains($0) }
+        competitorMatrixEventIDsSnapshot
     }
 
     private var showsCompetitorNumbers: Bool {
-        detailContent.competitorPreviews.contains { $0.number != nil }
+        showsCompetitorNumbersSnapshot
     }
 
     private var showsCompetitorGender: Bool {
-        detailContent.competitorPreviews.contains { $0.gender != nil }
+        showsCompetitorGenderSnapshot
     }
 
     private var currentPsychCacheKey: String {
@@ -3471,10 +3914,7 @@ private struct CompetitionDetailView: View {
     }
 
     private var filteredPsychCompetitors: [CompetitionCompetitorPsychPreview] {
-        let query = competitorSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let previews = psychPreviewCache[currentPsychCacheKey] ?? []
-        guard !query.isEmpty else { return previews }
-        return previews.filter { $0.name.localizedCaseInsensitiveContains(query) }
+        filteredPsychCompetitorsSnapshot
     }
 
     private var showsPsychOverallRank: Bool {
@@ -3482,43 +3922,15 @@ private struct CompetitionDetailView: View {
     }
 
     private var psychOverallRankByCompetitorID: [String: Int] {
-        guard showsPsychOverallRank else { return [:] }
-
-        let scored = filteredPsychCompetitors.map { competitor in
-            (
-                competitor,
-                competitor.items
-                    .filter { psychMatrixEventIDs.contains($0.eventID) }
-                    .map(\.rank)
-                    .reduce(0, +)
-            )
-        }
-        .filter { !$0.0.items.isEmpty && $0.1 > 0 }
-        .sorted { lhs, rhs in
-            if lhs.1 != rhs.1 { return lhs.1 < rhs.1 }
-            return lhs.0.name.localizedCaseInsensitiveCompare(rhs.0.name) == .orderedAscending
-        }
-
-        return Dictionary(uniqueKeysWithValues: scored.enumerated().map { index, element in
-            (element.0.id, index + 1)
-        })
+        psychOverallRankByCompetitorIDSnapshot
     }
 
     private var displayedPsychCompetitors: [CompetitionCompetitorPsychPreview] {
-        guard showsPsychOverallRank else { return filteredPsychCompetitors }
-        return filteredPsychCompetitors.sorted { lhs, rhs in
-            let lhsRank = psychOverallRankByCompetitorID[lhs.id] ?? .max
-            let rhsRank = psychOverallRankByCompetitorID[rhs.id] ?? .max
-            if lhsRank != rhsRank { return lhsRank < rhsRank }
-            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
-        }
+        displayedPsychCompetitorsSnapshot
     }
 
     private var psychMatrixEventIDs: [String] {
-        if !selectedCompetitorEventID.isEmpty {
-            return competitorMatrixEventIDs.filter { $0 == selectedCompetitorEventID }
-        }
-        return competitorMatrixEventIDs
+        psychMatrixEventIDsSnapshot
     }
 
     var body: some View {
@@ -3543,10 +3955,20 @@ private struct CompetitionDetailView: View {
             await loadDetailContent()
         }
         .task(id: "\(competition.id)|\(appLanguage)|\(selectedTab.rawValue)|\(selectedCompetitorsMode.rawValue)|\(selectedCompetitorEventID)") {
+            await loadCompetitionCompetitorsIfNeeded()
             await loadPsychPreviewsIfNeeded()
         }
         .task(id: "\(competition.id)|\(appLanguage)|\(selectedTab.rawValue)") {
             await loadWCALiveContentIfNeeded()
+        }
+        .onChange(of: competitorSearchText) { _ in
+            updateCompetitionDetailDerivedState()
+        }
+        .onChange(of: selectedCompetitorEventID) { _ in
+            updateCompetitionDetailDerivedState()
+        }
+        .onChange(of: selectedCompetitorsMode) { _ in
+            updateCompetitionDetailDerivedState()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -3632,33 +4054,11 @@ private struct CompetitionDetailView: View {
     }
 
     private var tabStrip: some View {
-        GeometryReader { geometry in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(visibleTabs) { tab in
-                        Button {
-                            withAnimation(.snappy(duration: 0.22)) {
-                                selectedTab = tab
-                            }
-                        } label: {
-                            Text(tab.localizedTitle(languageCode: appLanguage))
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(selectedTab == tab ? .primary : .secondary)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 10)
-                                .background(
-                                    Capsule()
-                                        .fill(selectedTab == tab ? Color.primary.opacity(0.08) : Color.clear)
-                                )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .frame(minWidth: geometry.size.width - 32, alignment: .center)
-                .padding(.horizontal, 16)
-            }
-        }
-        .frame(height: 44)
+        CompetitionDetailTabStrip(
+            tabs: visibleTabs,
+            languageCode: appLanguage,
+            selection: $selectedTab
+        )
     }
 
     @ViewBuilder
@@ -3858,6 +4258,14 @@ private struct CompetitionDetailView: View {
                             } else {
                                 competitorsPsychTable
                             }
+                        } else if isLoadingCompetitors {
+                            HStack(spacing: 10) {
+                                ProgressView()
+                                    .controlSize(.small)
+                                Text(localizedCompetitionStringInView(key: "competitions.loading", languageCode: appLanguage))
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                            }
                         } else if !isLoadingDetail {
                             Text(localizedCompetitionStringInView(key: "competitions.detail.competitors_unavailable", languageCode: appLanguage))
                                 .font(.system(size: 14, weight: .medium))
@@ -3907,8 +4315,23 @@ private struct CompetitionDetailView: View {
                                 FlexibleTagFlow(items: eventTitles)
                             }
                         } else {
-                            ForEach(detailContent.scheduleDays) { day in
-                                detailScheduleDayCard(day)
+                            if canShowCubingCalendarSchedule {
+                                Picker("", selection: $selectedScheduleDisplayMode) {
+                                    Text("项目列表").tag(CompetitionScheduleDisplayMode.calendar)
+                                    Text("赛程安排").tag(CompetitionScheduleDisplayMode.table)
+                                }
+                                .pickerStyle(.segmented)
+                                .labelsHidden()
+                            }
+
+                            if canShowCubingCalendarSchedule && selectedScheduleDisplayMode == .calendar {
+                                cubingScheduleCalendar
+                            } else {
+                                scheduleTableStyleMenu
+
+                                ForEach(detailContent.scheduleDays) { day in
+                                    detailScheduleDayCard(day)
+                                }
                             }
                         }
 
@@ -3998,7 +4421,7 @@ private struct CompetitionDetailView: View {
                                 .buttonStyle(.plain)
                             }
 
-                            if !isMainlandChinaCompetition, isLoadingWCALive {
+                            if isLoadingWCALive {
                                 HStack(spacing: 10) {
                                     ProgressView()
                                     Text(localizedCompetitionStringInView(key: "competitions.loading", languageCode: appLanguage))
@@ -4500,27 +4923,107 @@ private struct CompetitionDetailView: View {
         }
     }
 
+    private var scheduleTableStyleMenu: some View {
+        HStack {
+            Spacer(minLength: 0)
+
+            Menu {
+                Button {
+                    selectedScheduleTableStyleRaw = CompetitionScheduleTableStyle.cards.rawValue
+                } label: {
+                    Label(
+                        localizedScheduleTableStyleTitle(.cards),
+                        systemImage: selectedScheduleTableStyle == .cards ? "checkmark" : "rectangle.stack"
+                    )
+                }
+
+                Button {
+                    selectedScheduleTableStyleRaw = CompetitionScheduleTableStyle.table.rawValue
+                } label: {
+                    Label(
+                        localizedScheduleTableStyleTitle(.table),
+                        systemImage: selectedScheduleTableStyle == .table ? "checkmark" : "tablecells"
+                    )
+                }
+            } label: {
+                Label(localizedScheduleFieldLabel(.display), systemImage: "ellipsis.circle")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     private func detailScheduleDayCard(_ day: CompetitionScheduleDay) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(day.title)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.primary)
+            HStack(spacing: 8) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.orange)
 
-            ForEach(day.entries) { entry in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(entry.timeText)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                Text(day.title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
 
-                    Text(entry.title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.primary)
+                Spacer(minLength: 8)
 
-                    if let detailText = entry.detailText, !detailText.isEmpty {
-                        Text(detailText)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                Text(String(format: "%d", day.entries.count))
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
+
+            switch selectedScheduleTableStyle {
+            case .cards:
+                ForEach(day.entries) { entry in
+                    detailScheduleEntryCard(entry, showsVenue: true)
+                }
+            case .table:
+                detailScheduleTraditionalTable(day, showsVenue: true)
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.background)
+        )
+    }
+
+    private var cubingScheduleCalendar: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ForEach(detailContent.scheduleDays) { day in
+                cubingScheduleCalendarDay(day)
+            }
+        }
+    }
+
+    private func cubingScheduleCalendarDay(_ day: CompetitionScheduleDay) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.orange)
+
+                Text(day.title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 8)
+
+                Text(String(format: "%d 项", day.entries.count))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(alignment: .top, spacing: 12) {
+                    ForEach(day.venues) { venue in
+                        cubingScheduleCalendarVenueColumn(venue)
                     }
                 }
                 .padding(.vertical, 2)
@@ -4531,6 +5034,564 @@ private struct CompetitionDetailView: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(.background)
         )
+    }
+
+    private func cubingScheduleCalendarVenueColumn(_ venue: CompetitionScheduleVenue) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(venue.title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                Spacer(minLength: 6)
+
+                Text("\(venue.entries.count)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(.secondary.opacity(0.10), in: Capsule())
+            }
+
+            ForEach(venue.entries) { entry in
+                cubingScheduleCalendarBlock(entry)
+            }
+        }
+        .padding(12)
+        .frame(width: 210, alignment: .topLeading)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+        )
+    }
+
+    private func cubingScheduleCalendarBlock(_ entry: CompetitionScheduleEntry) -> some View {
+        let color = cubingScheduleEventColor(for: entry)
+        let chips = cubingScheduleCalendarChips(for: entry)
+
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(entry.timeText)
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(color)
+
+                Spacer(minLength: 6)
+
+                if let eventCode = entry.eventCode, !eventCode.isEmpty {
+                    Text(shortEventTitle(for: eventCode))
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(color)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(color.opacity(0.12), in: Capsule())
+                }
+            }
+
+            Text(entry.title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if !chips.isEmpty {
+                FlexibleTagFlow(items: Array(chips.prefix(3)))
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(color.opacity(0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(color.opacity(0.18), lineWidth: 1)
+        )
+    }
+
+    private func cubingScheduleCalendarChips(for entry: CompetitionScheduleEntry) -> [String] {
+        var chips: [String] = []
+
+        if let round = entry.round, !round.isEmpty {
+            chips.append(round)
+        }
+        if let cutoff = entry.cutoff, !cutoff.isEmpty {
+            chips.append(appLanguage.hasPrefix("zh") ? "及格线 \(cutoff)" : "Cutoff \(cutoff)")
+        }
+        if let timeLimit = entry.timeLimit, !timeLimit.isEmpty {
+            chips.append(appLanguage.hasPrefix("zh") ? "时限 \(timeLimit)" : "Limit \(timeLimit)")
+        }
+        if let advancingCount = entry.advancingCount, !advancingCount.isEmpty {
+            chips.append(appLanguage.hasPrefix("zh") ? "晋级 \(advancingCount)" : "Top \(advancingCount)")
+        }
+
+        return chips
+    }
+
+    private func cubingScheduleEventColor(for entry: CompetitionScheduleEntry) -> Color {
+        switch entry.eventCode ?? "" {
+        case "222":
+            return .cyan
+        case "333":
+            return .blue
+        case "444":
+            return .indigo
+        case "555", "666", "777":
+            return .purple
+        case "333bf", "444bf", "555bf", "333mbf":
+            return .red
+        case "333oh":
+            return .orange
+        case "clock":
+            return .pink
+        case "minx":
+            return .teal
+        case "pyram", "skewb":
+            return .green
+        case "sq1":
+            return .yellow
+        default:
+            return .orange
+        }
+    }
+
+    private func detailScheduleEntryCard(_ entry: CompetitionScheduleEntry, showsVenue: Bool) -> some View {
+        let times = detailScheduleTimeParts(entry.timeText)
+        let roundValue = detailScheduleOptionalValue(entry.round)
+        let venueValue = showsVenue ? detailScheduleOptionalValue(entry.venueName) : nil
+        let groupValue = detailScheduleOptionalValue(entry.group)
+        let formatValue = detailScheduleOptionalValue(entry.format)
+        let cutoffValue = detailScheduleOptionalValue(entry.cutoff)
+        let timeLimitValue = detailScheduleOptionalValue(entry.timeLimit)
+        let proceedValue = detailScheduleOptionalValue(entry.advancingCount)
+        let color = cubingScheduleEventColor(for: entry)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(times.start)
+                        .font(.system(size: 20, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+
+                    HStack(spacing: 4) {
+                        Text(localizedScheduleFieldLabel(.start))
+                        if let end = times.end {
+                            Text("->")
+                            Text(end)
+                        }
+                    }
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                }
+                .frame(width: 86, alignment: .topLeading)
+
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        if let eventCode = entry.eventCode, !eventCode.isEmpty {
+                            competitionEventIconLabel(for: eventCode, isEmphasized: true)
+                                .frame(width: 24, alignment: .center)
+                        }
+
+                        Text(entry.title)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    HStack(spacing: 6) {
+                        if let roundValue {
+                            detailScheduleCapsule(roundValue, color: color)
+                        }
+                        if let formatValue {
+                            detailScheduleCapsule(formatValue, color: .secondary)
+                        }
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            HStack(alignment: .top, spacing: 8) {
+                if let cutoffValue {
+                    detailScheduleInfoPill(
+                        label: localizedScheduleFieldLabel(.cutoff),
+                        value: cutoffValue
+                    )
+                }
+                if let timeLimitValue {
+                    detailScheduleInfoPill(
+                        label: localizedScheduleFieldLabel(.timeLimit),
+                        value: timeLimitValue
+                    )
+                }
+                if let proceedValue {
+                    detailScheduleInfoPill(
+                        label: localizedScheduleFieldLabel(.proceed),
+                        value: proceedValue
+                    )
+                }
+            }
+
+            if venueValue != nil || groupValue != nil {
+                HStack(spacing: 8) {
+                    if let venueValue {
+                        detailScheduleMetaText(
+                        label: localizedScheduleFieldLabel(.venue),
+                            value: venueValue
+                    )
+                    }
+
+                    if let groupValue {
+                        detailScheduleMetaText(
+                        label: localizedScheduleFieldLabel(.group),
+                            value: groupValue
+                    )
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(color.opacity(0.18), lineWidth: 1)
+        )
+    }
+
+    private func detailScheduleTraditionalTable(_ day: CompetitionScheduleDay, showsVenue: Bool) -> some View {
+        ScrollView(.horizontal, showsIndicators: true) {
+            VStack(spacing: 0) {
+                detailScheduleTraditionalHeader(showsVenue: showsVenue)
+
+                ForEach(Array(day.entries.enumerated()), id: \.element.id) { index, entry in
+                    detailScheduleHorizontalDivider
+                    detailScheduleTraditionalRow(entry, index: index, showsVenue: showsVenue)
+                }
+            }
+            .frame(minWidth: detailScheduleTraditionalTableWidth(showsVenue: showsVenue), alignment: .leading)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(.secondary.opacity(0.12), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private func detailScheduleTraditionalHeader(showsVenue: Bool) -> some View {
+        HStack(spacing: 0) {
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.start), width: 74)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.end), width: 74)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.event), width: 230)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.round), width: 108)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.format), width: 132)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.cutoff), width: 132)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.timeLimit), width: 132)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.proceed), width: 92)
+
+            if showsVenue {
+                detailScheduleVerticalDivider
+                detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.venue), width: 120)
+                detailScheduleVerticalDivider
+                detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.group), width: 96)
+            }
+        }
+        .background(.secondary.opacity(0.08))
+    }
+
+    private func detailScheduleTraditionalRow(_ entry: CompetitionScheduleEntry, index: Int, showsVenue: Bool) -> some View {
+        let times = detailScheduleTimeParts(entry.timeText)
+        let roundValue = detailScheduleOptionalValue(entry.round)
+        let venueValue = showsVenue ? detailScheduleOptionalValue(entry.venueName) : nil
+        let groupValue = detailScheduleOptionalValue(entry.group)
+        let formatValue = detailScheduleOptionalValue(entry.format)
+        let cutoffValue = detailScheduleOptionalValue(entry.cutoff)
+        let timeLimitValue = detailScheduleOptionalValue(entry.timeLimit)
+        let proceedValue = detailScheduleOptionalValue(entry.advancingCount)
+
+        return HStack(spacing: 0) {
+            detailScheduleTraditionalCell(times.start, width: 74, role: .time)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalCell(times.end ?? "—", width: 74, role: .time)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalEventCell(entry, width: 230)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalCell(roundValue ?? "—", width: 108, role: .secondary)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalCell(formatValue ?? "—", width: 132, role: .secondary)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalCell(cutoffValue ?? "—", width: 132, role: .secondary)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalCell(timeLimitValue ?? "—", width: 132, role: .secondary)
+            detailScheduleVerticalDivider
+            detailScheduleTraditionalCell(proceedValue ?? "—", width: 92, role: .secondary)
+
+            if showsVenue {
+                detailScheduleVerticalDivider
+                detailScheduleTraditionalCell(venueValue ?? "—", width: 120, role: .secondary)
+                detailScheduleVerticalDivider
+                detailScheduleTraditionalCell(groupValue ?? "—", width: 96, role: .secondary)
+            }
+        }
+        .background(index.isMultiple(of: 2) ? Color.clear : Color.primary.opacity(0.025))
+    }
+
+    private func detailScheduleCapsule(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.10), in: Capsule())
+    }
+
+    private func detailScheduleInfoPill(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .lineLimit(1)
+
+            Text(value)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.primary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.75)
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background.opacity(0.70), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func detailScheduleMetaText(label: String, value: String) -> some View {
+        Text("\(label): \(value)")
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+    }
+
+    private enum DetailScheduleCellRole {
+        case time
+        case event
+        case secondary
+    }
+
+    private func detailScheduleTraditionalHeaderCell(_ text: String, width: CGFloat) -> some View {
+        Text(text)
+            .font(.system(size: 11, weight: .bold))
+            .foregroundStyle(.secondary)
+            .textCase(.uppercase)
+            .lineLimit(1)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 9)
+            .frame(width: width, alignment: .leading)
+    }
+
+    private func detailScheduleTraditionalCell(_ text: String, width: CGFloat, role: DetailScheduleCellRole) -> some View {
+        Text(text)
+            .font(detailScheduleCellValueFont(for: role))
+            .foregroundStyle(role == .event ? Color.primary : Color.primary.opacity(0.86))
+            .lineLimit(role == .event ? 2 : 1)
+            .minimumScaleFactor(0.75)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 9)
+            .frame(width: width, alignment: .leading)
+    }
+
+    private func detailScheduleTraditionalEventCell(_ entry: CompetitionScheduleEntry, width: CGFloat) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 7) {
+            detailScheduleEventIcon(for: entry)
+                .frame(width: 22, alignment: .center)
+
+            Text(entry.title)
+                .font(detailScheduleCellValueFont(for: .event))
+                .foregroundStyle(.primary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.75)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 9)
+        .frame(width: width, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func detailScheduleEventIcon(for entry: CompetitionScheduleEntry) -> some View {
+        let code = entry.eventCode?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+
+        if let code, let systemName = cubingScheduleCustomSystemIconName(for: code) {
+            Image(systemName: systemName)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(cubingScheduleEventColor(for: entry))
+                .accessibilityLabel(entry.title)
+        } else if let code, !code.isEmpty {
+            competitionEventIconLabel(for: code, isEmphasized: true)
+                .accessibilityLabel(entry.title)
+        } else if let systemName = cubingScheduleCustomSystemIconName(forTitle: entry.title) {
+            Image(systemName: systemName)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(cubingScheduleEventColor(for: entry))
+                .accessibilityLabel(entry.title)
+        }
+    }
+
+    private func cubingScheduleCustomSystemIconName(for code: String) -> String? {
+        switch code {
+        case "registration":
+            return "checkmark.circle"
+        case "lunch":
+            return "fork.knife"
+        case "intro":
+            return "info.circle"
+        case "ceremony":
+            return "star.circle"
+        case "smart":
+            return "iphone"
+        default:
+            return nil
+        }
+    }
+
+    private func cubingScheduleCustomSystemIconName(forTitle title: String) -> String? {
+        if title.contains("签到") || title.localizedCaseInsensitiveContains("registration") {
+            return "checkmark.circle"
+        }
+        if title.contains("午餐") || title.localizedCaseInsensitiveContains("lunch") {
+            return "fork.knife"
+        }
+        if title.contains("开场") || title.localizedCaseInsensitiveContains("intro") {
+            return "info.circle"
+        }
+        if title.contains("颁奖") || title.localizedCaseInsensitiveContains("ceremony") {
+            return "star.circle"
+        }
+        if title.contains("智能") || title.localizedCaseInsensitiveContains("smart") {
+            return "iphone"
+        }
+        return nil
+    }
+
+    private var detailScheduleHorizontalDivider: some View {
+        Rectangle()
+            .fill(.secondary.opacity(0.10))
+            .frame(height: 1)
+    }
+
+    private var detailScheduleVerticalDivider: some View {
+        Rectangle()
+            .fill(.secondary.opacity(0.10))
+            .frame(width: 1)
+    }
+
+    private func detailScheduleCellValueFont(for role: DetailScheduleCellRole) -> Font {
+        switch role {
+        case .time:
+            return .system(size: 14, weight: .semibold, design: .monospaced)
+        case .event:
+            return .system(size: 15, weight: .semibold)
+        case .secondary:
+            return .system(size: 13, weight: .medium)
+        }
+    }
+
+    private func detailScheduleTraditionalTableWidth(showsVenue: Bool) -> CGFloat {
+        let baseWidth: CGFloat = 74 + 74 + 230 + 108 + 132 + 132 + 132 + 92 + 7
+        return showsVenue ? baseWidth + 120 + 96 + 2 : baseWidth
+    }
+
+    private func detailScheduleOptionalValue(_ value: String?) -> String? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
+            return nil
+        }
+        return value
+    }
+
+    private func detailScheduleTimeParts(_ timeText: String) -> (start: String, end: String?) {
+        let separators = ["–", "-", "—", "~"]
+        for separator in separators {
+            let parts = timeText.components(separatedBy: separator)
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            if parts.count >= 2 {
+                return (parts[0], parts[1])
+            }
+        }
+
+        return (timeText, nil)
+    }
+
+    private enum ScheduleFieldLabel {
+        case display
+        case start
+        case end
+        case event
+        case round
+        case format
+        case cutoff
+        case timeLimit
+        case proceed
+        case venue
+        case group
+    }
+
+    private func localizedScheduleFieldLabel(_ label: ScheduleFieldLabel) -> String {
+        let isChinese = appLanguage.hasPrefix("zh")
+        switch label {
+        case .display:
+            return isChinese ? "显示方式" : "View"
+        case .start:
+            return isChinese ? "开始" : "Start"
+        case .end:
+            return isChinese ? "结束" : "End"
+        case .event:
+            return isChinese ? "项目" : "Event"
+        case .round:
+            return isChinese ? "轮次" : "Round"
+        case .format:
+            return isChinese ? "赛制" : "Format"
+        case .cutoff:
+            return isChinese ? "及格线" : "Cutoff"
+        case .timeLimit:
+            return isChinese ? "时限" : "Time Limit"
+        case .proceed:
+            return isChinese ? "晋级" : "Proceed"
+        case .venue:
+            return isChinese ? "场地" : "Venue"
+        case .group:
+            return isChinese ? "分组" : "Group"
+        }
+    }
+
+    private func localizedScheduleTableStyleTitle(_ style: CompetitionScheduleTableStyle) -> String {
+        let isChinese = appLanguage.hasPrefix("zh")
+        switch style {
+        case .cards:
+            return isChinese ? "卡片" : "Cards"
+        case .table:
+            return isChinese ? "表格" : "Table"
+        }
     }
 
     private var wcaLiveRoundPicker: some View {
@@ -4760,9 +5821,17 @@ private struct CompetitionDetailView: View {
     private func loadDetailContent() async {
         isLoadingDetail = true
         detailContent = .empty
-        let fetched = await CompetitionService.fetchCompetitionDetail(for: competition, languageCode: appLanguage)
+        updateCompetitionDetailDerivedState()
+        let fetched = await CompetitionService.fetchCompetitionDetail(
+            for: competition,
+            languageCode: appLanguage
+        )
         detailContent = fetched
+        updateCompetitionDetailDerivedState()
         isLoadingDetail = false
+
+        await loadCompetitionCompetitorsIfNeeded()
+        await loadWCALiveContentIfNeeded()
     }
 
     private func refreshDetailContent() async {
@@ -4770,10 +5839,20 @@ private struct CompetitionDetailView: View {
         isRefreshingDetail = true
         defer { isRefreshingDetail = false }
 
-        let fetched = await CompetitionService.fetchCompetitionDetail(for: competition, languageCode: appLanguage)
+        let fetched = await CompetitionService.fetchCompetitionDetail(
+            for: competition,
+            languageCode: appLanguage,
+            forceRefresh: true,
+            includeCompetitors: selectedTab == .competitors,
+            includeLive: selectedTab == .live
+        )
         detailContent = fetched
         psychPreviewCache = [:]
         wcaLiveContentOverride = nil
+        updateCompetitionDetailDerivedState()
+
+        await loadCompetitionCompetitorsIfNeeded()
+        await loadWCALiveContentIfNeeded()
 
         if selectedTab == .competitors,
            selectedCompetitorsMode == .psych,
@@ -4782,17 +5861,40 @@ private struct CompetitionDetailView: View {
         }
     }
 
+    private func loadCompetitionCompetitorsIfNeeded() async {
+        guard selectedTab == .competitors else { return }
+        guard detailContent.competitorPreviews.isEmpty else { return }
+        guard !isLoadingCompetitors else { return }
+
+        isLoadingCompetitors = true
+        let fetched = await CompetitionService.fetchCompetitionDetail(
+            for: competition,
+            languageCode: appLanguage,
+            includeCompetitors: true
+        )
+        detailContent = detailContent.replacingCompetitors(from: fetched)
+        updateCompetitionDetailDerivedState()
+        isLoadingCompetitors = false
+    }
+
     private func loadWCALiveContentIfNeeded() async {
-        guard selectedTab == .live, !isMainlandChinaCompetition else { return }
-        guard shouldRefreshWCALiveContent else { return }
+        guard selectedTab == .live else { return }
         guard !isLoadingWCALive else { return }
 
+        if isMainlandChinaCompetition {
+            guard detailContent.liveContent == nil else { return }
+        } else {
+            guard shouldRefreshWCALiveContent else { return }
+        }
+
         isLoadingWCALive = true
-        let fetched = await CompetitionService.fetchCompetitionWCALiveContent(
+        let fetched = await CompetitionService.fetchCompetitionDetail(
             for: competition,
-            languageCode: appLanguage
+            languageCode: appLanguage,
+            includeLive: true
         )
-        wcaLiveContentOverride = fetched
+        detailContent = detailContent.replacingLive(from: fetched)
+        wcaLiveContentOverride = nil
         isLoadingWCALive = false
     }
 
@@ -4812,7 +5914,70 @@ private struct CompetitionDetailView: View {
             eventID: selectedCompetitorEventID.isEmpty ? nil : selectedCompetitorEventID
         )
         psychPreviewCache[currentPsychCacheKey] = previews
+        updateCompetitionDetailDerivedState()
         isLoadingPsych = false
+    }
+
+    private func updateCompetitionDetailDerivedState() {
+        let matrixEventIDs = CompetitionEventFilter.selectableCases
+            .map(\.wcaEventID)
+            .filter { competition.eventIDs.contains($0) }
+        competitorMatrixEventIDsSnapshot = matrixEventIDs
+        showsCompetitorNumbersSnapshot = detailContent.competitorPreviews.contains { $0.number != nil }
+        showsCompetitorGenderSnapshot = detailContent.competitorPreviews.contains { $0.gender != nil }
+
+        let query = competitorSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        filteredCompetitorsSnapshot = detailContent.competitorPreviews.filter { competitor in
+            let matchesQuery = query.isEmpty
+                || competitor.name.localizedCaseInsensitiveContains(query)
+                || (competitor.subtitle?.localizedCaseInsensitiveContains(query) ?? false)
+            let matchesEvent = selectedCompetitorEventID.isEmpty
+                || competitor.registeredEventIDs.contains(selectedCompetitorEventID)
+            return matchesQuery && matchesEvent
+        }
+
+        let psychEventIDs = selectedCompetitorEventID.isEmpty
+            ? matrixEventIDs
+            : matrixEventIDs.filter { $0 == selectedCompetitorEventID }
+        psychMatrixEventIDsSnapshot = psychEventIDs
+
+        let psychPreviews = psychPreviewCache[currentPsychCacheKey] ?? []
+        let filteredPsych = query.isEmpty
+            ? psychPreviews
+            : psychPreviews.filter { $0.name.localizedCaseInsensitiveContains(query) }
+        filteredPsychCompetitorsSnapshot = filteredPsych
+
+        guard selectedCompetitorEventID.isEmpty else {
+            psychOverallRankByCompetitorIDSnapshot = [:]
+            displayedPsychCompetitorsSnapshot = filteredPsych
+            return
+        }
+
+        let scored = filteredPsych.map { competitor in
+            (
+                competitor,
+                competitor.items
+                    .filter { psychEventIDs.contains($0.eventID) }
+                    .map(\.rank)
+                    .reduce(0, +)
+            )
+        }
+        .filter { !$0.0.items.isEmpty && $0.1 > 0 }
+        .sorted { lhs, rhs in
+            if lhs.1 != rhs.1 { return lhs.1 < rhs.1 }
+            return lhs.0.name.localizedCaseInsensitiveCompare(rhs.0.name) == .orderedAscending
+        }
+
+        let rankByID = Dictionary(uniqueKeysWithValues: scored.enumerated().map { index, element in
+            (element.0.id, index + 1)
+        })
+        psychOverallRankByCompetitorIDSnapshot = rankByID
+        displayedPsychCompetitorsSnapshot = filteredPsych.sorted { lhs, rhs in
+            let lhsRank = rankByID[lhs.id] ?? .max
+            let rhsRank = rankByID[rhs.id] ?? .max
+            if lhsRank != rhsRank { return lhsRank < rhsRank }
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        }
     }
 
     private func detailSectionStack<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
@@ -5124,2013 +6289,4 @@ private enum CompetitionEventIconFont {
     }
 }
 
-@available(iOS 17.0, *)
-private struct CompetitionMapView: View {
-    let query: CompetitionQuery
-    let appLanguage: String
-
-    @AppStorage("competition_map_mode") private var storedMapModeRawValue: String = CompetitionMapMode.satellite.rawValue
-    @AppStorage("competition_map_look") private var storedMapLookRawValue: String = CompetitionMapLook.globe.rawValue
-    @State private var competitions: [CompetitionSummary] = []
-    @State private var isLoading = false
-    @State private var isLoadingMore = false
-    @State private var errorMessage: String?
-    @State private var selectedCompetitionID: String?
-    @State private var selectedClusterCompetitions: [CompetitionSummary] = []
-    @State private var selectedMapItemID: String?
-    @State private var cameraPosition: MapCameraPosition = .automatic
-    @State private var currentMapRegion = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 22.3193, longitude: 114.1694),
-        span: MKCoordinateSpan(latitudeDelta: 8, longitudeDelta: 8)
-    )
-    @State private var hasPositionedCamera = false
-    @State private var isFollowingUserLocation = false
-    @State private var shouldRefocusToUserLocation = false
-    @StateObject private var locationManager = CompetitionLocationManager()
-    @State private var weatherSnapshot: CompetitionWeatherSnapshot?
-    @State private var isLoadingWeather = false
-    @State private var lastWeatherLocation: CLLocation?
-    @State private var currentCityName: String?
-    @State private var isResolvingCity = false
-    @State private var lastResolvedCityLocation: CLLocation?
-    @State private var selectedCardHeight: CGFloat = 0
-    @State private var showsRefreshProgress = false
-    @State private var expectedCompetitionCount: Int?
-    @State private var selectedCompetitionForDetail: CompetitionSummary?
-
-    private var mappableCompetitions: [CompetitionSummary] {
-        competitions.filter { $0.latitude != nil && $0.longitude != nil }
-    }
-
-    private var selectedCompetition: CompetitionSummary? {
-        competitions.first { $0.id == selectedCompetitionID }
-    }
-
-    private var mapModeSelection: CompetitionMapMode {
-        get { CompetitionMapMode(rawValue: storedMapModeRawValue) ?? .satellite }
-        nonmutating set { storedMapModeRawValue = newValue.rawValue }
-    }
-
-    private var mapLookSelection: CompetitionMapLook {
-        get { CompetitionMapLook(rawValue: storedMapLookRawValue) ?? .globe }
-        nonmutating set { storedMapLookRawValue = newValue.rawValue }
-    }
-
-    private var mapDisplayItems: [CompetitionMapDisplayItem] {
-        clusteredMapDisplayItems(from: mappableCompetitions, in: currentMapRegion)
-    }
-
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            Map(position: $cameraPosition, selection: $selectedMapItemID) {
-                UserAnnotation()
-
-                ForEach(mapDisplayItems) { item in
-                    Annotation(
-                        item.title,
-                        coordinate: item.coordinate,
-                        anchor: .bottom
-                    ) {
-                        mapAnnotationView(for: item)
-                    }
-                    .tag(item.id)
-                }
-            }
-            .mapStyle(mapModeSelection.mapStyle(look: mapLookSelection))
-            .ignoresSafeArea(edges: .bottom)
-            .onMapCameraChange(frequency: .onEnd) { context in
-                currentMapRegion = context.region
-            }
-            .simultaneousGesture(
-                TapGesture().onEnded {
-                    withAnimation(.snappy(duration: 0.28)) {
-                        selectedCompetitionID = nil
-                        selectedClusterCompetitions = []
-                        selectedMapItemID = nil
-                    }
-                }
-            )
-            .overlay(alignment: .center) {
-                if let errorMessage, competitions.isEmpty {
-                    mapErrorOverlay(message: errorMessage)
-                } else if mappableCompetitions.isEmpty, !isLoading {
-                    mapEmptyOverlay
-                }
-            }
-            .overlay(alignment: .bottom) {
-                mapBottomOverlay
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 20)
-                    .animation(.snappy(duration: 0.28), value: selectedCompetition != nil)
-                    .animation(.snappy(duration: 0.28), value: selectedCardHeight)
-            }
-        }
-        .navigationTitle(Text(localizedCompetitionStringInView(key: "competitions.map_title", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(item: $selectedCompetitionForDetail) { competition in
-            CompetitionDetailView(
-                competition: competition,
-                appLanguage: appLanguage
-            )
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                mapRefreshToolbarControl
-            }
-        }
-        .task {
-            if locationManager.authorizationStatus == .notDetermined {
-                locationManager.requestWhenInUseAuthorization()
-            }
-            await requestLocationIfAuthorized()
-            await loadMapCompetitions()
-            if let currentLocation = locationManager.currentLocation {
-                async let weatherLoad: Void = loadWeatherIfNeeded(for: currentLocation)
-                async let cityLoad: Void = loadCityIfNeeded(for: currentLocation)
-                _ = await (weatherLoad, cityLoad)
-            }
-        }
-        .onChange(of: locationManager.authorizationStatus) { newValue in
-            if newValue == .authorizedAlways || newValue == .authorizedWhenInUse {
-                locationManager.requestCurrentLocation()
-                if isFollowingUserLocation {
-                    focusOnUserLocation()
-                }
-            }
-        }
-        .onChange(of: locationManager.currentLocation) { newLocation in
-            guard let newLocation else { return }
-            if shouldRefocusToUserLocation {
-                focusOnUserLocation(using: newLocation)
-                shouldRefocusToUserLocation = false
-            }
-            Task {
-                async let weatherLoad: Void = loadWeatherIfNeeded(for: newLocation)
-                async let cityLoad: Void = loadCityIfNeeded(for: newLocation)
-                _ = await (weatherLoad, cityLoad)
-            }
-        }
-        .onChange(of: cameraPosition.positionedByUser) { positionedByUser in
-            if positionedByUser {
-                isFollowingUserLocation = false
-                shouldRefocusToUserLocation = false
-            }
-        }
-        .onChange(of: selectedMapItemID) { newValue in
-            guard let newValue,
-                  let item = mapDisplayItems.first(where: { $0.id == newValue }) else {
-                return
-            }
-
-            switch item.kind {
-            case .competition(let competitionID):
-                selectedClusterCompetitions = []
-                selectedCompetitionID = competitionID
-            case .cluster(let competitions):
-                selectedCompetitionID = nil
-                if shouldShowClusterCards(for: competitions) {
-                    selectedClusterCompetitions = competitions
-                } else {
-                    selectedClusterCompetitions = []
-                    zoomToCluster(competitions)
-                }
-                Task { @MainActor in
-                    selectedMapItemID = nil
-                }
-            }
-        }
-        .onPreferenceChange(CompetitionMapCardHeightPreferenceKey.self) { height in
-            selectedCardHeight = height
-        }
-    }
-
-    private var bottomControlsSpacing: CGFloat {
-        selectedCompetition == nil && selectedClusterCompetitions.isEmpty ? 0 : 12
-    }
-
-    @ViewBuilder
-    private func mapAnnotationView(for item: CompetitionMapDisplayItem) -> some View {
-        switch item.kind {
-        case .competition(let competitionID):
-            Image(systemName: "mappin")
-                .font(.system(size: selectedCompetitionID == competitionID ? 26 : 22, weight: .semibold))
-                .foregroundStyle(selectedCompetitionID == competitionID ? .red : .blue)
-                .shadow(color: .black.opacity(0.14), radius: 3, y: 1)
-                .contentShape(Rectangle())
-        case .cluster:
-            Image(systemName: "mappin")
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(.blue)
-                .shadow(color: .black.opacity(0.14), radius: 3, y: 1)
-            .contentShape(Rectangle())
-        }
-    }
-
-    private func clusteredMapDisplayItems(
-        from competitions: [CompetitionSummary],
-        in region: MKCoordinateRegion
-    ) -> [CompetitionMapDisplayItem] {
-        let latitudeThreshold = max(region.span.latitudeDelta * 0.04, 0.0012)
-        let longitudeThreshold = max(region.span.longitudeDelta * 0.04, 0.0012)
-        var remaining = competitions
-        var items: [CompetitionMapDisplayItem] = []
-
-        while let seed = remaining.first {
-            remaining.removeFirst()
-
-            let nearby = remaining.filter { candidate in
-                guard let seedLatitude = seed.latitude,
-                      let seedLongitude = seed.longitude,
-                      let candidateLatitude = candidate.latitude,
-                      let candidateLongitude = candidate.longitude else {
-                    return false
-                }
-
-                return abs(seedLatitude - candidateLatitude) <= latitudeThreshold
-                    && abs(seedLongitude - candidateLongitude) <= longitudeThreshold
-            }
-
-            let nearbyIDs = Set(nearby.map(\.id))
-            remaining.removeAll { nearbyIDs.contains($0.id) }
-
-            let group = [seed] + nearby
-
-            if group.count == 1,
-               let competition = group.first,
-               let latitude = competition.latitude,
-               let longitude = competition.longitude {
-                items.append(
-                    CompetitionMapDisplayItem(
-                        id: competition.id,
-                        title: competition.name,
-                        coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
-                        kind: .competition(competition.id)
-                    )
-                )
-            } else {
-                let averagedLatitude = group.compactMap(\.latitude).reduce(0, +) / Double(group.count)
-                let averagedLongitude = group.compactMap(\.longitude).reduce(0, +) / Double(group.count)
-                let combinedTitle = group.map(\.name).joined(separator: " & ")
-                items.append(
-                    CompetitionMapDisplayItem(
-                        id: "cluster:" + group.map(\.id).sorted().joined(separator: ","),
-                        title: combinedTitle,
-                        coordinate: CLLocationCoordinate2D(latitude: averagedLatitude, longitude: averagedLongitude),
-                        kind: .cluster(group)
-                    )
-                )
-            }
-        }
-
-        return items
-    }
-
-    private func zoomToCluster(_ competitions: [CompetitionSummary]) {
-        let coordinates = competitions.compactMap { competition -> CLLocationCoordinate2D? in
-            guard let latitude = competition.latitude,
-                  let longitude = competition.longitude else { return nil }
-            return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        }
-
-        guard !coordinates.isEmpty else { return }
-
-        let latitudes = coordinates.map(\.latitude)
-        let longitudes = coordinates.map(\.longitude)
-
-        guard let minLatitude = latitudes.min(),
-              let maxLatitude = latitudes.max(),
-              let minLongitude = longitudes.min(),
-              let maxLongitude = longitudes.max() else {
-            return
-        }
-
-        let rawLatitudeDelta = maxLatitude - minLatitude
-        let rawLongitudeDelta = maxLongitude - minLongitude
-
-        let paddedLatitudeDelta = max(rawLatitudeDelta * 1.7, 0.0045)
-        let paddedLongitudeDelta = max(rawLongitudeDelta * 1.7, 0.0045)
-
-        let center = CLLocationCoordinate2D(
-            latitude: ((minLatitude + maxLatitude) / 2) - (paddedLatitudeDelta * 0.10),
-            longitude: (minLongitude + maxLongitude) / 2
-        )
-
-        let span = MKCoordinateSpan(
-            latitudeDelta: paddedLatitudeDelta,
-            longitudeDelta: paddedLongitudeDelta
-        )
-
-        withAnimation(.snappy(duration: 0.3)) {
-            cameraPosition = .region(MKCoordinateRegion(center: center, span: span))
-        }
-    }
-
-    private var mapBottomOverlay: some View {
-        VStack(spacing: bottomControlsSpacing) {
-            HStack(alignment: .bottom) {
-                mapBottomLeadingControls
-                Spacer(minLength: 16)
-                mapControls
-            }
-
-            if !selectedClusterCompetitions.isEmpty {
-                VStack(spacing: 10) {
-                    ForEach(selectedClusterCompetitions, id: \.id) { competition in
-                        mapCompetitionCard(competition)
-                    }
-                }
-                .measureHeight { height in
-                    selectedCardHeight = height
-                }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else if let selectedCompetition {
-                mapCompetitionCard(selectedCompetition)
-                    .measureHeight { height in
-                        selectedCardHeight = height
-                    }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-    }
-
-    private func shouldShowClusterCards(for competitions: [CompetitionSummary]) -> Bool {
-        guard competitions.count > 1 else { return false }
-        let normalizedAddresses = Set(
-            competitions.map { competition in
-                competition.venueLine.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-        )
-        return normalizedAddresses.count == 1 && !(normalizedAddresses.first?.isEmpty ?? true)
-    }
-
-    private var mapBottomLeadingControls: some View {
-        HStack(spacing: 8) {
-            Button {
-                Task {
-                    await refreshWeather()
-                }
-            } label: {
-                Group {
-                    if isLoadingWeather {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.9)
-                    } else {
-                        HStack(spacing: 8) {
-                            Image(systemName: weatherSnapshot?.symbolName ?? "cloud.sun.fill")
-                                .font(.system(size: 16, weight: .semibold))
-                            if let weatherSnapshot {
-                                Text(weatherSnapshot.temperatureText)
-                                    .font(.system(size: 13, weight: .semibold))
-                            }
-                        }
-                    }
-                }
-                .frame(minWidth: 40, minHeight: 40)
-                .padding(.horizontal, weatherSnapshot == nil ? 0 : 12)
-            }
-            .buttonStyle(.plain)
-            .modifier(MapAccessoryGlassModifier(shape: weatherSnapshot == nil ? .circle : .capsule))
-
-            if let currentCityName {
-                HStack(spacing: 8) {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 13, weight: .semibold))
-                    Text(currentCityName)
-                        .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(1)
-                }
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .modifier(MapAccessoryGlassModifier(shape: .capsule))
-            }
-
-            HStack(spacing: 8) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 13, weight: .semibold))
-                Text(mapInfoDateText)
-                    .font(.system(size: 13, weight: .semibold))
-            }
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .modifier(MapAccessoryGlassModifier(shape: .capsule))
-        }
-    }
-
-    private var mapRefreshControl: some View {
-        Button {
-            withAnimation(.snappy(duration: 0.24)) {
-                showsRefreshProgress = true
-            }
-            Task {
-                await loadMapCompetitions()
-                try? await Task.sleep(for: .seconds(1.2))
-                await MainActor.run {
-                    withAnimation(.snappy(duration: 0.24)) {
-                        showsRefreshProgress = false
-                    }
-                }
-            }
-        } label: {
-            HStack(spacing: 8) {
-                Group {
-                    if isLoading || isLoadingMore {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.9)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                }
-
-                if showsRefreshProgress || isLoading || isLoadingMore {
-                    Text(refreshProgressText)
-                        .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(1)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                }
-            }
-            .foregroundStyle(.primary)
-            .frame(minHeight: 40)
-            .padding(.horizontal, showsRefreshProgress || isLoading || isLoadingMore ? 16 : 0)
-            .frame(width: showsRefreshProgress || isLoading || isLoadingMore ? nil : 40)
-        }
-        .buttonStyle(.plain)
-        .disabled(isLoading || isLoadingMore)
-        .modifier(MapAccessoryGlassModifier(shape: showsRefreshProgress || isLoading || isLoadingMore ? .capsule : .circle))
-    }
-
-    private var mapRefreshToolbarControl: some View {
-        Button {
-            withAnimation(.snappy(duration: 0.24)) {
-                showsRefreshProgress = true
-            }
-            Task {
-                await loadMapCompetitions()
-                try? await Task.sleep(for: .seconds(1.2))
-                await MainActor.run {
-                    withAnimation(.snappy(duration: 0.24)) {
-                        showsRefreshProgress = false
-                    }
-                }
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Group {
-                    if isLoading || isLoadingMore {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.8)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 15, weight: .semibold))
-                    }
-                }
-
-                if showsRefreshProgress || isLoading || isLoadingMore {
-                    Text(refreshProgressText)
-                        .font(.system(size: 12, weight: .semibold))
-                        .lineLimit(1)
-                        .opacity(showsRefreshProgress || isLoading || isLoadingMore ? 1 : 0)
-                        .scaleEffect(showsRefreshProgress || isLoading || isLoadingMore ? 1 : 0.92, anchor: .trailing)
-                }
-            }
-            .padding(.horizontal, showsRefreshProgress || isLoading || isLoadingMore ? 10 : 0)
-            .animation(.snappy(duration: 0.22), value: showsRefreshProgress || isLoading || isLoadingMore)
-            .animation(.snappy(duration: 0.22), value: refreshProgressText)
-        }
-        .buttonStyle(.plain)
-        .disabled(isLoading || isLoadingMore)
-    }
-
-    private var refreshProgressText: String {
-        let denominator = max(expectedCompetitionCount ?? competitions.count, competitions.count)
-
-        if isLoading || isLoadingMore {
-            return String(
-                format: localizedCompetitionStringInView(key: "competition.refresh_progress.loaded_format", languageCode: appLanguage),
-                competitions.count,
-                denominator
-            )
-        }
-
-        return String(
-            format: localizedCompetitionStringInView(key: "competition.refresh_progress.refreshed_format", languageCode: appLanguage),
-            competitions.count,
-            denominator
-        )
-    }
-
-    private var mapControls: some View {
-        VStack(spacing: 0) {
-            mapStyleButton
-            locationButton
-        }
-        .fixedSize()
-        .padding(2)
-        .modifier(MapAccessoryGlassModifier(shape: .capsule))
-    }
-
-    private var isExperimentalExploreGlobe: Bool {
-        mapModeSelection == .explore && mapLookSelection == .globe
-    }
-
-    private var mapStyleButton: some View {
-        Menu {
-            Section(localizedCompetitionStringInView(key: "competitions.map_mode.title", languageCode: appLanguage)) {
-                Button {
-                    mapModeSelection = .explore
-                } label: {
-                    CompetitionFilterOptionLabel(
-                        title: localizedCompetitionStringInView(key: "competitions.map_style.explore", languageCode: appLanguage),
-                        isSelected: mapModeSelection == .explore
-                    )
-                }
-
-                Button {
-                    mapModeSelection = .satellite
-                } label: {
-                    CompetitionFilterOptionLabel(
-                        title: localizedCompetitionStringInView(key: "competitions.map_style.satellite", languageCode: appLanguage),
-                        isSelected: mapModeSelection == .satellite
-                    )
-                }
-            }
-
-            Section(localizedCompetitionStringInView(key: "competitions.map_look.title", languageCode: appLanguage)) {
-                Button {
-                    mapLookSelection = .globe
-                } label: {
-                    CompetitionFilterOptionLabel(
-                        title: localizedCompetitionStringInView(key: "competitions.map_look.globe", languageCode: appLanguage),
-                        isSelected: mapLookSelection == .globe
-                    )
-                }
-
-                Button {
-                    mapLookSelection = .flat
-                } label: {
-                    CompetitionFilterOptionLabel(
-                        title: localizedCompetitionStringInView(key: "competitions.map_look.flat", languageCode: appLanguage),
-                        isSelected: mapLookSelection == .flat
-                    )
-                }
-            }
-
-            if isExperimentalExploreGlobe {
-                Section {
-                    Text(localizedCompetitionStringInView(key: "competitions.map_look.explore_globe_experimental", languageCode: appLanguage))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        } label: {
-            Group {
-                if mapLookSelection == .globe {
-                    Image(systemName: "globe.americas.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                } else if mapModeSelection == .explore {
-                    Image(systemName: "map.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                } else {
-                    Text("🛰️")
-                        .font(.system(size: 20))
-                }
-            }
-            .frame(width: 48, height: 48)
-        }
-        .buttonStyle(.plain)
-        .contentShape(.circle)
-    }
-
-    private var locationButton: some View {
-        Button {
-            handleLocationButtonTap()
-        } label: {
-            Image(systemName: isFollowingUserLocation ? "location.fill" : "location")
-                .font(.system(size: 18, weight: .semibold))
-                .frame(width: 48, height: 48)
-        }
-        .buttonStyle(.plain)
-        .contentShape(.circle)
-    }
-
-    private func mapErrorOverlay(message: String) -> some View {
-        VStack(spacing: 12) {
-            Text(message)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-
-            Button(localizedCompetitionStringInView(key: "wca.results_retry", languageCode: appLanguage)) {
-                Task {
-                    await loadMapCompetitions()
-                }
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 18)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .padding(.horizontal, 24)
-    }
-
-    private var mapEmptyOverlay: some View {
-        Text(localizedCompetitionStringInView(key: "competitions.empty", languageCode: appLanguage))
-            .font(.system(size: 15, weight: .medium))
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 22)
-            .padding(.vertical, 18)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private func mapCompetitionCard(_ competition: CompetitionSummary) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 18, style: .continuous)
-
-        return Button {
-            selectedCompetitionForDetail = competition
-        } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text(flagEmoji(for: competition.countryISO2))
-                                .font(.system(size: 17))
-                            Text(competition.name)
-                                .font(.system(size: 17, weight: .semibold))
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        Text(localizedCompetitionDateRange(for: competition))
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.secondary)
-                        Text(competition.locationLine)
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer(minLength: 12)
-
-                    VStack(alignment: .trailing, spacing: 8) {
-                        HStack(alignment: .center, spacing: 8) {
-                            mapStatusBadge(
-                                for: mapCompetitionAvailabilityStatus(for: competition),
-                                competition: competition
-                            )
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                        }
-
-                        if let competitorLimit = competition.competitorLimit {
-                            Text(String(format: localizedCompetitionStringInView(key: "competitions.competitor_limit_format", languageCode: appLanguage), competitorLimit))
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.trailing)
-                        }
-                    }
-                }
-
-                if !competition.venueLine.isEmpty {
-                    Text(competition.venueLine)
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(shape)
-            .modifier(CompetitionMapCardBackground())
-        }
-        .buttonStyle(.plain)
-        .background(shape.fill(.black.opacity(0.001)))
-        .contentShape(shape)
-    }
-
-    private func mapStatusBadge(for status: CompetitionAvailabilityStatus, competition: CompetitionSummary) -> some View {
-        Text(statusBadgeTitle(for: status, competition: competition, languageCode: appLanguage))
-            .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(mapStatusColor(for: status))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(mapStatusColor(for: status).opacity(0.12), in: Capsule())
-    }
-
-    private func statusBadgeTitle(for status: CompetitionAvailabilityStatus, competition: CompetitionSummary, languageCode: String) -> String {
-        switch status {
-        case .registrationNotOpenYet:
-            let days = daysUntil(competition.localizedRegistrationStartOverride)
-            return String(
-                format: localizedCompetitionStringInView(
-                    key: "competitions.status.registration_not_open_yet_in_format",
-                    languageCode: languageCode
-                ),
-                days
-            )
-        case .upcoming:
-            if let waitlistStart = competition.localizedWaitlistStartOverride, Date() < waitlistStart {
-                let days = daysUntil(waitlistStart)
-                return String(
-                    format: localizedCompetitionStringInView(
-                        key: "competitions.status.waitlist_in_format",
-                        languageCode: languageCode
-                    ),
-                    days
-                )
-            }
-            return status.localizedTitle(languageCode: languageCode)
-        case .waitlist:
-            if let waitlistStart = competition.localizedWaitlistStartOverride, Date() < waitlistStart {
-                let days = daysUntil(waitlistStart)
-                return String(
-                    format: localizedCompetitionStringInView(
-                        key: "competitions.status.waitlist_in_format",
-                        languageCode: languageCode
-                        ),
-                        days
-                    )
-                }
-            return localizedCompetitionStringInView(
-                key: "competitions.status.waitlist_open",
-                languageCode: languageCode
-            )
-        default:
-            return status.localizedTitle(languageCode: languageCode)
-        }
-    }
-
-    private func daysUntil(_ date: Date?) -> Int {
-        guard let date else { return 0 }
-        let calendar = Calendar.current
-        let now = calendar.startOfDay(for: Date())
-        let target = calendar.startOfDay(for: date)
-        return max(calendar.dateComponents([.day], from: now, to: target).day ?? 0, 0)
-    }
-
-    private func daysUntil(_ date: Date) -> Int {
-        let calendar = Calendar.current
-        let now = calendar.startOfDay(for: Date())
-        let target = calendar.startOfDay(for: date)
-        return max(calendar.dateComponents([.day], from: now, to: target).day ?? 0, 0)
-    }
-
-    private func mapCompetitionAvailabilityStatus(for competition: CompetitionSummary) -> CompetitionAvailabilityStatus {
-        if let localizedStatusOverride = competition.localizedStatusOverride {
-            return localizedStatusOverride
-        }
-
-        let now = Date()
-        let today = Calendar.current.startOfDay(for: now)
-
-        if competition.endDate < today {
-            return .ended
-        }
-
-        let startOfCompetition = Calendar.current.startOfDay(for: competition.startDate)
-        let endOfCompetition = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: competition.endDate))
-            ?? competition.endDate
-        if now >= startOfCompetition && now < endOfCompetition {
-            return .ongoing
-        }
-
-        if let open = competition.registrationOpen,
-           let close = competition.registrationClose,
-           open <= now && close >= now {
-            return .registrationOpen
-        }
-
-        return .upcoming
-    }
-
-    private func mapStatusColor(for status: CompetitionAvailabilityStatus) -> Color {
-        switch status {
-        case .upcoming:
-            return .orange
-        case .registrationNotOpenYet:
-            return .yellow
-        case .registrationOpen:
-            return .green
-        case .waitlist:
-            return .mint
-        case .ongoing:
-            return .blue
-        case .ended:
-            return .secondary
-        }
-    }
-
-    @MainActor
-    private func loadMapCompetitions() async {
-        let cachedSnapshot = await CompetitionService.cachedCompetitions(for: query)
-        let localizedCachedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
-            cachedSnapshot?.competitions ?? [],
-            languageCode: appLanguage
-        )
-
-        competitions = CompetitionService.filterCompetitions(localizedCachedCompetitions, for: query)
-        expectedCompetitionCount = cachedSnapshot?.totalCount
-        isLoading = competitions.isEmpty
-        isLoadingMore = !competitions.isEmpty
-        errorMessage = nil
-        selectedCompetitionID = nil
-        selectedClusterCompetitions = []
-        selectedMapItemID = nil
-        if !competitions.isEmpty {
-            fitCameraToVisibleCompetitions()
-            hasPositionedCamera = true
-        } else {
-            hasPositionedCamera = false
-        }
-
-        do {
-            try await refreshMapCompetitionsFromNetwork(cachedCompetitions: competitions)
-        } catch {
-            if competitions.isEmpty {
-                errorMessage = error.localizedDescription
-            }
-        }
-
-        isLoading = false
-        isLoadingMore = false
-    }
-
-    private var mapInfoDateText: String {
-        let formatter = DateFormatter()
-        formatter.locale = appLocale(for: appLanguage)
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.dateFormat = localizedCompetitionStringInView(key: "competition.map_info_date_format", languageCode: appLanguage)
-        return formatter.string(from: Date())
-    }
-
-    private func handleLocationButtonTap() {
-        withAnimation(.snappy(duration: 0.28)) {
-            selectedCompetitionID = nil
-            selectedClusterCompetitions = []
-        }
-        isFollowingUserLocation = true
-        shouldRefocusToUserLocation = true
-
-        switch locationManager.authorizationStatus {
-        case .authorizedAlways, .authorizedWhenInUse:
-            withAnimation(.snappy(duration: 0.28)) {
-                focusOnUserLocation()
-            }
-            locationManager.requestCurrentLocation()
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-        default:
-            isFollowingUserLocation = false
-        }
-    }
-
-    private func focusOnUserLocation() {
-        isFollowingUserLocation = true
-        cameraPosition = .userLocation(
-            followsHeading: false,
-            fallback: .region(
-                MKCoordinateRegion(
-                    center: CLLocationCoordinate2D(latitude: 22.3193, longitude: 114.1694),
-                    span: MKCoordinateSpan(latitudeDelta: 8, longitudeDelta: 8)
-                )
-            )
-        )
-    }
-
-    private func focusOnUserLocation(using location: CLLocation) {
-        cameraPosition = .region(
-            MKCoordinateRegion(
-                center: location.coordinate,
-                span: MKCoordinateSpan(
-                    latitudeDelta: 0.0035,
-                    longitudeDelta: 0.0035
-                )
-            )
-        )
-    }
-
-    private func localizedCompetitionDateRange(for competition: CompetitionSummary) -> String {
-        let locale = appLocale(for: appLanguage)
-        let calendar = Calendar(identifier: .gregorian)
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.calendar = calendar
-
-        let sameYear = calendar.component(.year, from: competition.startDate) == calendar.component(.year, from: competition.endDate)
-        let sameMonth = sameYear && calendar.component(.month, from: competition.startDate) == calendar.component(.month, from: competition.endDate)
-        let sameDay = sameMonth && calendar.component(.day, from: competition.startDate) == calendar.component(.day, from: competition.endDate)
-
-        formatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.full_format", languageCode: appLanguage)
-        if sameDay {
-            return formatter.string(from: competition.startDate)
-        }
-        if sameMonth {
-            let monthFormatter = DateFormatter()
-            monthFormatter.locale = locale
-            monthFormatter.calendar = calendar
-            monthFormatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.month_day_format", languageCode: appLanguage)
-            let start = monthFormatter.string(from: competition.startDate)
-            formatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.day_suffix_format", languageCode: appLanguage)
-            return "\(start) - \(formatter.string(from: competition.endDate))"
-        }
-        return "\(formatter.string(from: competition.startDate)) - \(formatter.string(from: competition.endDate))"
-    }
-
-    private func fitCameraToVisibleCompetitions() {
-        let coordinates = mappableCompetitions.compactMap { competition -> CLLocationCoordinate2D? in
-            guard let latitude = competition.latitude,
-                  let longitude = competition.longitude else { return nil }
-            return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        }
-
-        guard !coordinates.isEmpty else { return }
-
-        if coordinates.count == 1, let coordinate = coordinates.first {
-            cameraPosition = .region(
-                MKCoordinateRegion(
-                    center: coordinate,
-                    span: MKCoordinateSpan(latitudeDelta: 6, longitudeDelta: 6)
-                )
-            )
-            return
-        }
-
-        let latitudes = coordinates.map(\.latitude)
-        let longitudes = coordinates.map(\.longitude)
-
-        guard let minLatitude = latitudes.min(),
-              let maxLatitude = latitudes.max(),
-              let minLongitude = longitudes.min(),
-              let maxLongitude = longitudes.max() else {
-            return
-        }
-
-        let center = CLLocationCoordinate2D(
-            latitude: (minLatitude + maxLatitude) / 2,
-            longitude: (minLongitude + maxLongitude) / 2
-        )
-        let span = MKCoordinateSpan(
-            latitudeDelta: max((maxLatitude - minLatitude) * 1.4, 8),
-            longitudeDelta: max((maxLongitude - minLongitude) * 1.4, 8)
-        )
-        cameraPosition = .region(MKCoordinateRegion(center: center, span: span))
-    }
-
-    @MainActor
-    private func requestLocationIfAuthorized() async {
-        guard locationManager.authorizationStatus == .authorizedAlways
-            || locationManager.authorizationStatus == .authorizedWhenInUse else {
-            return
-        }
-        locationManager.requestCurrentLocation()
-        if let currentLocation = locationManager.currentLocation {
-            await loadCityIfNeeded(for: currentLocation)
-            await loadWeatherIfNeeded(for: currentLocation)
-        }
-    }
-
-    @MainActor
-    private func refreshWeather() async {
-        switch locationManager.authorizationStatus {
-        case .authorizedAlways, .authorizedWhenInUse:
-            if let currentLocation = locationManager.currentLocation {
-                await loadWeather(for: currentLocation)
-            } else {
-                locationManager.requestCurrentLocation()
-            }
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-        default:
-            weatherSnapshot = nil
-        }
-    }
-
-    @MainActor
-    private func loadWeatherIfNeeded(for location: CLLocation) async {
-        if let lastWeatherLocation,
-           location.distance(from: lastWeatherLocation) < 500,
-           weatherSnapshot != nil {
-            return
-        }
-        await loadWeather(for: location)
-    }
-
-    @MainActor
-    private func loadWeather(for location: CLLocation) async {
-        isLoadingWeather = true
-        defer { isLoadingWeather = false }
-
-        do {
-            let weather = try await WeatherService.shared.weather(for: location)
-            weatherSnapshot = CompetitionWeatherSnapshot(
-                currentWeather: weather.currentWeather,
-                languageCode: appLanguage
-            )
-            lastWeatherLocation = location
-        } catch {
-            weatherSnapshot = nil
-        }
-    }
-
-    @MainActor
-    private func loadCityIfNeeded(for location: CLLocation) async {
-        if let lastResolvedCityLocation,
-           location.distance(from: lastResolvedCityLocation) < 500,
-           currentCityName != nil {
-            return
-        }
-
-        guard !isResolvingCity else { return }
-        isResolvingCity = true
-        defer { isResolvingCity = false }
-
-        do {
-            if #available(iOS 26.0, *) {
-                guard let request = MKReverseGeocodingRequest(location: location) else { return }
-                let mapItems = try await request.mapItems
-                guard let mapItem = mapItems.first else { return }
-                let addressRepresentations = mapItem.addressRepresentations
-                let cityName = addressRepresentations?.cityName
-                let cityWithContext = addressRepresentations?.cityWithContext
-                let shortCityWithContext = addressRepresentations?.cityWithContext(.short)
-                let regionName = addressRepresentations?.regionName
-                let shortAddress = mapItem.address?.shortAddress
-                let fullAddress = mapItem.address?.fullAddress
-                currentCityName = cityName
-                    ?? cityWithContext
-                    ?? shortCityWithContext
-                    ?? regionName
-                    ?? shortAddress
-                    ?? fullAddress
-            } else {
-                let placemarks = try await CLGeocoder().reverseGeocodeLocation(location)
-                guard let placemark = placemarks.first else { return }
-                currentCityName =
-                    placemark.locality
-                    ?? placemark.subAdministrativeArea
-                    ?? placemark.administrativeArea
-                    ?? placemark.country
-            }
-            lastResolvedCityLocation = location
-        } catch {
-            currentCityName = nil
-        }
-    }
-
-    @MainActor
-    private func refreshMapCompetitionsFromNetwork(cachedCompetitions: [CompetitionSummary]) async throws {
-        var freshCompetitions: [CompetitionSummary] = []
-        var page = 1
-
-        while true {
-            let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
-            if expectedCompetitionCount == nil, let totalCount = result.totalCount {
-                expectedCompetitionCount = totalCount
-            }
-
-            let localizedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
-                result.competitions,
-                languageCode: appLanguage
-            )
-            freshCompetitions.append(contentsOf: localizedCompetitions)
-            competitions = CompetitionService.filterCompetitions(
-                mergedMapCompetitions(cached: cachedCompetitions, fresh: freshCompetitions),
-                for: query
-            )
-
-            if !hasPositionedCamera {
-                fitCameraToVisibleCompetitions()
-                hasPositionedCamera = true
-            }
-
-            guard let nextPage = result.nextPage else {
-                competitions = CompetitionService.filterCompetitions(freshCompetitions, for: query)
-                expectedCompetitionCount = result.totalCount ?? freshCompetitions.count
-                await CompetitionService.cacheCompetitions(
-                    competitions,
-                    totalCount: expectedCompetitionCount,
-                    for: query
-                )
-                return
-            }
-
-            page = nextPage
-            isLoading = false
-            isLoadingMore = true
-        }
-    }
-
-    private func mergedMapCompetitions(
-        cached: [CompetitionSummary],
-        fresh: [CompetitionSummary]
-    ) -> [CompetitionSummary] {
-        let freshIDs = Set(fresh.map(\.id))
-        let staleCache = cached.filter { !freshIDs.contains($0.id) }
-        return fresh + staleCache
-    }
-}
-
-@available(iOS 17.0, *)
-private enum CompetitionMapMode: String, CaseIterable {
-    case satellite
-    case explore
-
-    func mapStyle(look: CompetitionMapLook) -> MapStyle {
-        switch self {
-        case .satellite:
-            return .hybrid(elevation: look.elevation)
-        case .explore:
-            return .standard(elevation: look.elevation)
-        }
-    }
-}
-
-@available(iOS 17.0, *)
-private enum CompetitionMapLook: String, CaseIterable {
-    case globe
-    case flat
-
-    var elevation: MapStyle.Elevation {
-        switch self {
-        case .globe:
-            return .realistic
-        case .flat:
-            return .flat
-        }
-    }
-}
-
-@MainActor
-private final class CompetitionLocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
-    @Published var authorizationStatus: CLAuthorizationStatus
-    @Published var currentLocation: CLLocation?
-
-    private let manager: CLLocationManager
-
-    override init() {
-        let manager = CLLocationManager()
-        self.manager = manager
-        self.authorizationStatus = manager.authorizationStatus
-        self.currentLocation = manager.location
-        super.init()
-        manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-        manager.distanceFilter = kCLDistanceFilterNone
-        manager.activityType = .otherNavigation
-        manager.pausesLocationUpdatesAutomatically = false
-        manager.delegate = self
-        if manager.authorizationStatus == .authorizedAlways
-            || manager.authorizationStatus == .authorizedWhenInUse {
-            manager.startUpdatingLocation()
-            manager.requestLocation()
-        }
-    }
-
-    func requestWhenInUseAuthorization() {
-        manager.requestWhenInUseAuthorization()
-    }
-
-    func requestCurrentLocation() {
-        manager.startUpdatingLocation()
-        manager.requestLocation()
-    }
-
-    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        Task { @MainActor in
-            authorizationStatus = manager.authorizationStatus
-            if manager.authorizationStatus == .authorizedAlways
-                || manager.authorizationStatus == .authorizedWhenInUse {
-                self.manager.startUpdatingLocation()
-                self.manager.requestLocation()
-            }
-        }
-    }
-
-    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-        Task { @MainActor in
-            currentLocation = location
-        }
-    }
-
-    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // Keep the last known location if the refresh fails.
-    }
-}
-
-@available(iOS 16.0, *)
-private struct CompetitionWeatherSnapshot {
-    let symbolName: String
-    let temperatureText: String
-
-    init(currentWeather: CurrentWeather, languageCode: String) {
-        symbolName = currentWeather.symbolName
-
-        let formatter = MeasurementFormatter()
-        formatter.locale = appLocale(for: languageCode)
-        formatter.unitOptions = .temperatureWithoutUnit
-        formatter.numberFormatter.maximumFractionDigits = 0
-        formatter.numberFormatter.minimumFractionDigits = 0
-        temperatureText = formatter.string(from: currentWeather.temperature)
-    }
-}
-#endif
-
-private enum MapAccessoryGlassShape {
-    case circle
-    case capsule
-}
-
-private struct MapAccessoryGlassModifier: ViewModifier {
-    let shape: MapAccessoryGlassShape
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        switch shape {
-        case .circle:
-            if #available(iOS 26.0, *) {
-                content
-                    .foregroundStyle(.primary)
-                    .glassEffect(.regular.interactive(), in: .circle)
-            } else {
-                content
-                    .foregroundStyle(.primary)
-                    .background(.regularMaterial, in: Circle())
-            }
-        case .capsule:
-            if #available(iOS 26.0, *) {
-                content
-                    .foregroundStyle(.primary)
-                    .glassEffect(.regular.interactive(), in: .capsule)
-            } else {
-                content
-                    .foregroundStyle(.primary)
-                    .background(.regularMaterial, in: Capsule())
-            }
-        }
-    }
-}
-
-private struct CompetitionMapCardHeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-private struct CompetitionMapCardBackground: ViewModifier {
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        } else {
-            content
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
-        }
-    }
-}
-
-private extension View {
-    func measureHeight(_ onChange: @escaping (CGFloat) -> Void) -> some View {
-        background(
-            GeometryReader { proxy in
-                Color.clear
-                    .preference(key: CompetitionMapCardHeightPreferenceKey.self, value: proxy.size.height)
-            }
-        )
-        .onPreferenceChange(CompetitionMapCardHeightPreferenceKey.self, perform: onChange)
-    }
-}
-
-private struct CompetitionFilterButtonBackground: ViewModifier {
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .clipShape(.circle)
-                .glassEffect(.regular.interactive(), in: .circle)
-        } else {
-            content
-                .background(.thinMaterial, in: Circle())
-        }
-    }
-}
-
-private struct CompetitionFiltersPopover: View {
-    @Binding var selectedRegion: CompetitionRegionFilter
-    @Binding var selectedEvents: Set<CompetitionEventFilter>
-    @Binding var selectedYear: CompetitionYearFilter
-    @Binding var selectedStatus: CompetitionStatusFilter
-    @Binding var showsTopCubers: Bool
-    let appLanguage: String
-    @Binding var showsFilterPopover: Bool
-    @State private var showsRegionPicker = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text(localizedCompetitionStringInView(key: "competitions.filter", languageCode: appLanguage))
-                    .font(.system(size: 18, weight: .semibold))
-                Spacer()
-                Button {
-                    showsFilterPopover = false
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
-                        .background(.secondary.opacity(0.12), in: Circle())
-                }
-                .buttonStyle(.plain)
-            }
-
-            CompetitionFilterButtonRow(
-                title: localizedCompetitionStringInView(key: "competitions.filter.region_country", languageCode: appLanguage),
-                selectionTitle: selectedRegion.localizedTitle(languageCode: appLanguage)
-            ) {
-                showsRegionPicker = true
-            }
-
-            CompetitionEventMultiSelectSection(
-                title: localizedCompetitionStringInView(key: "competitions.filter.event", languageCode: appLanguage),
-                selectedEvents: $selectedEvents,
-                appLanguage: appLanguage
-            )
-
-            CompetitionFilterMenuRow(
-                title: localizedCompetitionStringInView(key: "competitions.filter.year", languageCode: appLanguage),
-                selectionTitle: selectedYear.localizedTitle(languageCode: appLanguage)
-            ) {
-                ForEach(CompetitionYearFilter.allCases) { year in
-                    Button {
-                        selectedYear = year
-                    } label: {
-                        CompetitionFilterOptionLabel(
-                            title: year.localizedTitle(languageCode: appLanguage),
-                            isSelected: selectedYear == year
-                        )
-                    }
-                }
-            }
-
-            CompetitionFilterMenuRow(
-                title: localizedCompetitionStringInView(key: "competitions.filter.status", languageCode: appLanguage),
-                selectionTitle: selectedStatus.localizedTitle(languageCode: appLanguage)
-            ) {
-                ForEach(CompetitionStatusFilter.selectableCases) { status in
-                    Button {
-                        selectedStatus = status
-                    } label: {
-                        CompetitionFilterOptionLabel(
-                            title: status.localizedTitle(languageCode: appLanguage),
-                            isSelected: selectedStatus == status
-                        )
-                    }
-                }
-            }
-
-            Toggle(isOn: $showsTopCubers) {
-                Text(localizedCompetitionStringInView(key: "competitions.filter.show_top_cubers", languageCode: appLanguage))
-                    .font(.system(size: 16, weight: .medium))
-            }
-            .toggleStyle(.switch)
-        }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 18)
-        .frame(width: 290)
-        .task {
-            await CompetitionService.warmRecognizedCountriesCache()
-        }
-        .sheet(isPresented: $showsRegionPicker) {
-            CompetitionRegionPickerView(
-                selectedRegion: $selectedRegion,
-                appLanguage: appLanguage
-            )
-        }
-    }
-}
-
-private struct CompetitionFilterOptionLabel: View {
-    let title: String
-    let isSelected: Bool
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text(title)
-            Spacer(minLength: 12)
-            if isSelected {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 12, weight: .bold))
-            }
-        }
-    }
-}
-
-private struct CompetitionEventMultiSelectSection: View {
-    let title: String
-    @Binding var selectedEvents: Set<CompetitionEventFilter>
-    let appLanguage: String
-
-    private var allSelectableEvents: Set<CompetitionEventFilter> {
-        Set(CompetitionEventFilter.selectableCases)
-    }
-
-    private var allEventsSelected: Bool {
-        selectedEvents == allSelectableEvents
-    }
-
-    private var selectionTitle: String {
-        if allEventsSelected {
-            return CompetitionEventFilter.all.localizedTitle(languageCode: appLanguage)
-        }
-
-        if selectedEvents.count == 1, let first = selectedEvents.first {
-            return first.localizedTitle(languageCode: appLanguage)
-        }
-
-        return String(
-            format: localizedCompetitionStringInView(
-                key: "competitions.event.selected_count",
-                languageCode: appLanguage
-            ),
-            selectedEvents.count
-        )
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-
-            Menu {
-                Button {
-                    toggle(.all)
-                } label: {
-                    CompetitionFilterOptionLabel(
-                        title: CompetitionEventFilter.all.localizedTitle(languageCode: appLanguage),
-                        isSelected: allEventsSelected
-                    )
-                }
-
-                Divider()
-
-                ForEach(CompetitionEventFilter.selectableCases) { event in
-                    Button {
-                        toggle(event)
-                    } label: {
-                        CompetitionFilterOptionLabel(
-                            title: event.localizedTitle(languageCode: appLanguage),
-                            isSelected: isSelected(event)
-                        )
-                    }
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Text(selectionTitle)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                    Spacer(minLength: 8)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 11)
-            }
-            .buttonStyle(.plain)
-            .compatibleMenuActionDismissBehaviorDisabled()
-        }
-    }
-
-    private func isSelected(_ event: CompetitionEventFilter) -> Bool {
-        if event == .all {
-            return allEventsSelected
-        }
-        return selectedEvents.contains(event)
-    }
-
-    private func toggle(_ event: CompetitionEventFilter) {
-        if event == .all {
-            selectedEvents = allSelectableEvents
-            return
-        }
-
-        if allEventsSelected {
-            selectedEvents = [event]
-            return
-        }
-
-        if selectedEvents.contains(event) {
-            if selectedEvents.count == 1 {
-                selectedEvents = allSelectableEvents
-            } else {
-                selectedEvents.remove(event)
-            }
-        } else {
-            selectedEvents.insert(event)
-        }
-    }
-}
-
-private struct CompetitionFilterButtonRow: View {
-    let title: String
-    let selectionTitle: String
-    let action: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-
-            Button(action: action) {
-                HStack(spacing: 8) {
-                    Text(selectionTitle)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                    Spacer(minLength: 8)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 11)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-}
-
-private struct CompetitionFilterMenuRow<MenuContent: View>: View {
-    let title: String
-    let selectionTitle: String
-    @ViewBuilder let menuContent: () -> MenuContent
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-
-            Menu {
-                menuContent()
-            } label: {
-                HStack(spacing: 8) {
-                    Text(selectionTitle)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                    Spacer(minLength: 8)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 11)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-}
-
-private struct CompetitionRegionPickerView: View {
-    private struct CountryOption: Identifiable, Hashable {
-        let code: String
-        let title: String
-        let wcaName: String
-
-        var id: String { code }
-
-        var searchableText: String {
-            [title, wcaName, code].joined(separator: " ").lowercased()
-        }
-    }
-
-    @Binding var selectedRegion: CompetitionRegionFilter
-    let appLanguage: String
-
-    @Environment(\.dismiss) private var dismiss
-    @State private var searchText = ""
-    @State private var countries: [CountryOption] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-
-    private var normalizedSearchText: String {
-        searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-    }
-
-    private var filteredCountries: [CountryOption] {
-        guard !normalizedSearchText.isEmpty else {
-            return countries
-        }
-
-        return countries.filter { country in
-            country.searchableText.contains(normalizedSearchText)
-        }
-    }
-
-    var body: some View {
-        CompatibleNavigationContainer {
-            List {
-                allRegionsSection
-                continentSection
-                countrySection
-            }
-            .listStyle(.insetGrouped)
-            .searchable(
-                text: $searchText,
-                placement: .navigationBarDrawer(displayMode: .always),
-                prompt: localizedCompetitionStringInView(
-                    key: "competitions.region.search",
-                    languageCode: appLanguage
-                )
-            )
-            .navigationTitle(localizedCompetitionStringInView(key: "competitions.filter.region_country", languageCode: appLanguage))
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(localizedCompetitionStringInView(key: "common.done", languageCode: appLanguage)) {
-                        dismiss()
-                    }
-                }
-            }
-            .task {
-                guard countries.isEmpty else { return }
-                isLoading = true
-                errorMessage = nil
-
-                do {
-                    let recognizedCountries = try await CompetitionService.fetchRecognizedCountries()
-                    countries = recognizedCountries.map { country in
-                        CountryOption(
-                            code: country.code,
-                            title: country.localizedTitle(languageCode: appLanguage),
-                            wcaName: country.wcaName
-                        )
-                    }
-                } catch {
-                    errorMessage = error.localizedDescription
-                    countries = []
-                }
-
-                isLoading = false
-            }
-        }
-        .compatibleMediumLargeSheet()
-    }
-
-    private var allRegionsSection: some View {
-        Section {
-            regionButton(
-                title: CompetitionRegionFilter.all.localizedTitle(languageCode: appLanguage),
-                isSelected: selectedRegion == .all
-            ) {
-                applyRegionSelection(.all)
-            }
-        }
-    }
-
-    private var continentSection: some View {
-        Section {
-            ForEach(CompetitionContinent.allCases) { continent in
-                let option = CompetitionRegionFilter.continent(continent)
-                regionButton(
-                    title: option.localizedTitle(languageCode: appLanguage),
-                    isSelected: selectedRegion == option
-                ) {
-                    applyRegionSelection(option)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var countrySection: some View {
-        Section {
-            if isLoading {
-                HStack(spacing: 12) {
-                    ProgressView()
-                    Text(localizedCompetitionStringInView(key: "competitions.loading", languageCode: appLanguage))
-                        .foregroundStyle(.secondary)
-                }
-            } else if let errorMessage {
-                Text(errorMessage)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(filteredCountries) { country in
-                    countryButton(for: country)
-                }
-            }
-        }
-    }
-
-    private func countryButton(for country: CountryOption) -> some View {
-        let option = CompetitionRegionFilter.country(country.code)
-
-        return Button {
-            applyRegionSelection(option)
-        } label: {
-            HStack(spacing: 12) {
-                Text(flagEmoji(for: country.code))
-                CompetitionFilterOptionLabel(
-                    title: country.title,
-                    isSelected: selectedRegion == option
-                )
-            }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func applyRegionSelection(_ region: CompetitionRegionFilter) {
-        dismiss()
-        DispatchQueue.main.async {
-            selectedRegion = region
-        }
-    }
-
-    private func regionButton(
-        title: String,
-        isSelected: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button {
-            action()
-        } label: {
-            CompetitionFilterOptionLabel(
-                title: title,
-                isSelected: isSelected
-            )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private func localizedCompetitionStringInView(key: String, languageCode: String) -> String {
-    appLocalizedString(key, languageCode: languageCode)
-}
-
-private func flagEmoji(for countryCode: String) -> String {
-    guard countryCode.count == 2 else { return "" }
-
-    let regionalIndicatorBase: UInt32 = 127397
-    let scalars = countryCode.uppercased().unicodeScalars.compactMap { scalar in
-        UnicodeScalar(regionalIndicatorBase + scalar.value)
-    }
-    return String(String.UnicodeScalarView(scalars))
-}
-
-private struct CompetitionMapDisplayItem: Identifiable {
-    enum Kind {
-        case competition(String)
-        case cluster([CompetitionSummary])
-    }
-
-    let id: String
-    let title: String
-    let coordinate: CLLocationCoordinate2D
-    let kind: Kind
-}
-
-private struct CompetitionSearchView: View {
-    let competitions: [CompetitionSummary]
-    let appLanguage: String
-
-    @State private var searchText = ""
-
-    private var normalizedSearchText: String {
-        searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-    }
-
-    private var filteredCompetitions: [CompetitionSummary] {
-        guard !normalizedSearchText.isEmpty else { return competitions }
-
-        return competitions.filter { competition in
-            let haystack = [
-                competition.name,
-                competition.locationLine,
-                competition.venueLine
-            ]
-            .joined(separator: " ")
-            .lowercased()
-
-            return haystack.contains(normalizedSearchText)
-        }
-    }
-
-    var body: some View {
-        List {
-            if normalizedSearchText.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(localizedCompetitionStringInView(key: "competitions.search.empty_query_title", languageCode: appLanguage))
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.primary)
-
-                    Text(localizedCompetitionStringInView(key: "competitions.search.empty_query_body", languageCode: appLanguage))
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 8)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-            } else if filteredCompetitions.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(localizedCompetitionStringInView(key: "competitions.search.no_results_title", languageCode: appLanguage))
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.primary)
-
-                    Text(localizedCompetitionStringInView(key: "competitions.search.no_results_body", languageCode: appLanguage))
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 8)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-            } else {
-                ForEach(filteredCompetitions) { competition in
-                    NavigationLink {
-                        CompetitionDetailView(
-                            competition: competition,
-                            appLanguage: appLanguage
-                        )
-                    } label: {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(alignment: .top, spacing: 12) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                        Text(flagEmoji(for: competition.countryISO2))
-                                            .font(.system(size: 18))
-                                        Text(competition.name)
-                                            .font(.system(size: 18, weight: .semibold))
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-
-                                    Text(competition.locationLine)
-                                        .font(.system(size: 15, weight: .regular))
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Spacer(minLength: 12)
-                            }
-
-                            if !competition.venueLine.isEmpty {
-                                Text(competition.venueLine)
-                                    .font(.system(size: 15, weight: .regular))
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                }
-            }
-        }
-        .listStyle(.plain)
-        .compatibleScrollContentBackgroundHidden()
-        .navigationTitle(Text(localizedCompetitionStringInView(key: "competitions.search_title", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
-        .searchable(
-            text: $searchText,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: Text(localizedCompetitionStringInView(key: "competitions.search_placeholder", languageCode: appLanguage))
-        )
-    }
-}
-
-#if os(iOS)
-private struct CompetitionNavigationBarFontConfigurator: UIViewControllerRepresentable {
-    let largeSubtitle: String
-
-    func makeUIViewController(context: Context) -> CompetitionNavigationBarFontConfiguratorController {
-        CompetitionNavigationBarFontConfiguratorController()
-    }
-
-    func updateUIViewController(_ uiViewController: CompetitionNavigationBarFontConfiguratorController, context: Context) {
-        uiViewController.applyFontsIfNeeded(largeSubtitle: largeSubtitle)
-    }
-}
-
-private final class CompetitionNavigationBarFontConfiguratorController: UIViewController {
-    func applyFontsIfNeeded(largeSubtitle: String) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            guard let navigationController = self.resolvedNavigationController() else { return }
-            let navigationBar = navigationController.navigationBar
-
-            let largeTitleBase = UIFont.preferredFont(forTextStyle: .largeTitle)
-            let largeTitleFont = UIFont.systemFont(ofSize: largeTitleBase.pointSize, weight: .bold)
-            let inlineTitleFont = UIFont.systemFont(ofSize: 15, weight: .semibold)
-            let inlineSubtitleFont = UIFont.systemFont(ofSize: 12, weight: .medium)
-
-            let standardAppearance = navigationBar.standardAppearance.copy()
-            standardAppearance.titleTextAttributes[.font] = inlineTitleFont
-            if #available(iOS 26.0, *) {
-                standardAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
-            }
-
-            let scrollEdgeAppearance = navigationBar.scrollEdgeAppearance?.copy() ?? standardAppearance.copy()
-            scrollEdgeAppearance.largeTitleTextAttributes[.font] = largeTitleFont
-            scrollEdgeAppearance.titleTextAttributes[.font] = inlineTitleFont
-            if #available(iOS 26.0, *) {
-                scrollEdgeAppearance.subtitleTextAttributes[.font] = inlineSubtitleFont
-            }
-
-            navigationBar.standardAppearance = standardAppearance
-            navigationBar.compactAppearance = standardAppearance
-            navigationBar.scrollEdgeAppearance = scrollEdgeAppearance
-            if #available(iOS 17.0, *) {
-                navigationBar.compactScrollEdgeAppearance = scrollEdgeAppearance
-            }
-
-            guard let targetNavigationItem = self.resolvedNavigationItem(from: navigationController) else { return }
-
-            if #available(iOS 16.0, *) {
-                targetNavigationItem.style = .browser
-            }
-            if #available(iOS 26.0, *) {
-                targetNavigationItem.largeSubtitleView = CompetitionLargeSubtitleContainerView(
-                    text: largeSubtitle,
-                    topInset: 4
-                )
-            }
-        }
-    }
-
-    private func resolvedNavigationController() -> UINavigationController? {
-        if let navigationController {
-            return navigationController
-        }
-
-        var current: UIViewController? = parent
-        while let controller = current {
-            if let navigationController = controller.navigationController {
-                return navigationController
-            }
-            current = controller.parent
-        }
-
-        return nil
-    }
-
-    private func resolvedNavigationItem(from navigationController: UINavigationController) -> UINavigationItem? {
-        if let topItem = navigationController.topViewController?.navigationItem {
-            return topItem
-        }
-
-        var current: UIViewController? = parent
-        while let controller = current {
-            let item = controller.navigationItem
-            if item.title != nil {
-                return item
-            }
-            if #available(iOS 26.0, *), item.subtitle != nil || item.largeSubtitle != nil {
-                return item
-            }
-            current = controller.parent
-        }
-
-        return navigationController.visibleViewController?.navigationItem
-    }
-}
-
-private final class CompetitionLargeSubtitleContainerView: UIView {
-    private let label = UILabel()
-    private let topInset: CGFloat
-
-    init(text: String, topInset: CGFloat) {
-        self.topInset = topInset
-        super.init(frame: .zero)
-
-        label.font = .systemFont(ofSize: 15, weight: .medium)
-        label.textColor = .secondaryLabel
-        label.text = text
-        label.numberOfLines = 1
-        label.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(label)
-        NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: topAnchor, constant: topInset),
-            label.leadingAnchor.constraint(equalTo: leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor),
-            label.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override var intrinsicContentSize: CGSize {
-        let labelSize = label.intrinsicContentSize
-        return CGSize(width: labelSize.width, height: labelSize.height + topInset)
-    }
-}
 #endif

@@ -1,0 +1,3099 @@
+{
+  "puzzle": "Skewb",
+  "set": "SarahsAdvanced",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "1a",
+      "displayName": "1a",
+      "name": "1a",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_1a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1a-1",
+          "notation": "y x R b' r' R' r z B' r B",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1a-2",
+          "notation": "y' x r' R r R' z' R r' R r z R r' R' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1a-3",
+          "notation": "y x r' R r' R' r' R r R z R r R' b'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1a-4",
+          "notation": "x r' R r' R' B' r' B' r B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "1b",
+      "displayName": "1b",
+      "name": "1b",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_1b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1b-1",
+          "notation": "y2 x r' B R r R' B r' B'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1b-2",
+          "notation": "y2 x R r R' r' R r R z' r' R' r B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1b-3",
+          "notation": "y x r' R r R z2 r' R r R' z' R r' R' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1b-4",
+          "notation": "z' S z' S z S z' H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1b-5",
+          "notation": "z' S z' H z S z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2a",
+      "displayName": "2a",
+      "name": "2a",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_2a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2a-1",
+          "notation": "z2 H z' S z S z' S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "2a-2",
+          "notation": "y' x b' r' R r R' z' R r' R' r R r R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "2a-3",
+          "notation": "y2 x r B R' B' r R r R' r' R r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "2a-4",
+          "notation": "z2 S z' S z H z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2b",
+      "displayName": "2b",
+      "name": "2b",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_2b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2b-1",
+          "notation": "z S z' H z H z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "2b-2",
+          "notation": "z H z' H z S z' H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "1c",
+      "displayName": "1c",
+      "name": "1c",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_1c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1c-1",
+          "notation": "S z H z' S z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1c-2",
+          "notation": "S z S z' S z H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "1d",
+      "displayName": "1d",
+      "name": "1d",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_1d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1d-1",
+          "notation": "z' H z' S z H z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "1d-2",
+          "notation": "z' H z' H z H z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2c",
+      "displayName": "2c",
+      "name": "2c",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_2c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2c-1",
+          "notation": "z2 S z' H z H z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "2d",
+      "displayName": "2d",
+      "name": "2d",
+      "subgroup": "Pi + Swirl Perm",
+      "imageKey": "sarahsadvanced_2d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "2d-1",
+          "notation": "z S z S z' H z S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "2d-2",
+          "notation": "z H z S z' S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3a",
+      "displayName": "3a",
+      "name": "3a",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_3a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3a-1",
+          "notation": "z' S z2 H z' S z' S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3b",
+      "displayName": "3b",
+      "name": "3b",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_3b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3b-1",
+          "notation": "x B' R' B' r' R' B R' r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "3b-2",
+          "notation": "y x R' r' R r R B R' B' R' B R B'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "3b-3",
+          "notation": "z2 S z2 H z H z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4a",
+      "displayName": "4a",
+      "name": "4a",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_4a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4a-1",
+          "notation": "x r' R' r B R' B' R' r' R r R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4b",
+      "displayName": "4b",
+      "name": "4b",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_4b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4b-1",
+          "notation": "y x r' R r R B' r' R' r B R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3c",
+      "displayName": "3c",
+      "name": "3c",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_3c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3c-1",
+          "notation": "z S z S z H z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "3c-2",
+          "notation": "z S z2 H z' H z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3d",
+      "displayName": "3d",
+      "name": "3d",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_3d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3d-1",
+          "notation": "H z' H z' S z2 H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "3d-2",
+          "notation": "z2 S z2 H z S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4c",
+      "displayName": "4c",
+      "name": "4c",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_4c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4c-1",
+          "notation": "y' x R r' R r z R r' R' r R r R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4d",
+      "displayName": "4d",
+      "name": "4d",
+      "subgroup": "Pi + Wat Perm",
+      "imageKey": "sarahsadvanced_4d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4d-1",
+          "notation": "y x R r' R ' r' z' r' R r R z R r R' r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "5a",
+      "displayName": "5a",
+      "name": "5a",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_5a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "5a-1",
+          "notation": "x' S z2 S y2 x' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "5a-2",
+          "notation": "z2 S z S S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "5b",
+      "displayName": "5b",
+      "name": "5b",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_5b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "5b-1",
+          "notation": "y2 x R r' B R' B' R' r' R r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "5b-2",
+          "notation": "z H z' S S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6a",
+      "displayName": "6a",
+      "name": "6a",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_6a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6a-1",
+          "notation": "y x R r' R r z2 R r' R' r b",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6b",
+      "displayName": "6b",
+      "name": "6b",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_6b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6b-1",
+          "notation": "y' x R' r R' r' z' r' R' r z R' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "5c",
+      "displayName": "5c",
+      "name": "5c",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_5c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "5c-1",
+          "notation": "x' S z2 S y2 x' S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "5c-2",
+          "notation": "z2 H z S S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "5d",
+      "displayName": "5d",
+      "name": "5d",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_5d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "5d-1",
+          "notation": "y z' S z2 S z2 x' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "5d-2",
+          "notation": "z S z' S S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6c",
+      "displayName": "6c",
+      "name": "6c",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_6c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6c-1",
+          "notation": "y' x B' r' R r R' z2 r' R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "6d",
+      "displayName": "6d",
+      "name": "6d",
+      "subgroup": "Pi + X Perm",
+      "imageKey": "sarahsadvanced_6d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "6d-1",
+          "notation": "y x r B R' B' R r z' r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "6d-2",
+          "notation": "z2 H y2 x' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "7a",
+      "displayName": "7a",
+      "name": "7a",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_7a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "7a-1",
+          "notation": "y' x B r' R r' R' r B r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "7b",
+      "displayName": "7b",
+      "name": "7b",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_7b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "7b-1",
+          "notation": "y2 x r' z R r' R r z r' B' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "7c",
+      "displayName": "7c",
+      "name": "7c",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_7c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "7c-1",
+          "notation": "y' x r B' r' R r R' r B'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "7d",
+      "displayName": "7d",
+      "name": "7d",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_7d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "7d-1",
+          "notation": "y2 x B' r z R r' R' r z' B' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "8a",
+      "displayName": "8a",
+      "name": "8a",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_8a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8a-1",
+          "notation": "x R' r R' B b r' R r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "8b",
+      "displayName": "8b",
+      "name": "8b",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_8b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8b-1",
+          "notation": "x R' r B R' B' r2' R' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "8b-2",
+          "notation": "S z' H z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "8c",
+      "displayName": "8c",
+      "name": "8c",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_8c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8c-1",
+          "notation": "H z H z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "8d",
+      "displayName": "8d",
+      "name": "8d",
+      "subgroup": "Pi + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_8d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "8d-1",
+          "notation": "H z S z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "8d-2",
+          "notation": "S z S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "9a",
+      "displayName": "9a",
+      "name": "9a",
+      "subgroup": "Pi + Vertical U Perm",
+      "imageKey": "sarahsadvanced_9a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "9a-1",
+          "notation": "y' x B' r' R r R B' R' r' R' r B'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "9a-2",
+          "notation": "z2 S S z' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "9a-3",
+          "notation": "z' S z2 S z S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "9b",
+      "displayName": "9b",
+      "name": "9b",
+      "subgroup": "Pi + Vertical U Perm",
+      "imageKey": "sarahsadvanced_9b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "9b-1",
+          "notation": "S z2 S z' S S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "9b-2",
+          "notation": "x z r B R' B' z' r' R' r B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "9b-3",
+          "notation": "y' x B r' R r z R r' R' r R' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "9b-4",
+          "notation": "z S S z' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "10a",
+      "displayName": "10a",
+      "name": "10a",
+      "subgroup": "Pi + Vertical U Perm",
+      "imageKey": "sarahsadvanced_10a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "10a-1",
+          "notation": "x z r B r B' r' B'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "10b",
+      "displayName": "10b",
+      "name": "10b",
+      "subgroup": "Pi + Vertical U Perm",
+      "imageKey": "sarahsadvanced_10b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "10b-1",
+          "notation": "x B' r' B' r B r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "11a",
+      "displayName": "11a",
+      "name": "11a",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_11a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11a-1",
+          "notation": "y' x R r' R' r' R r R' z' r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "11b",
+      "displayName": "11b",
+      "name": "11b",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_11b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11b-1",
+          "notation": "x r' R r R r' R' r z R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "12a",
+      "displayName": "12a",
+      "name": "12a",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_12a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "12a-1",
+          "notation": "z S z' x' S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "12a-2",
+          "notation": "z2 S z2 S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "12b",
+      "displayName": "12b",
+      "name": "12b",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_12b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "12b-1",
+          "notation": "z2 H z x S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "11c",
+      "displayName": "11c",
+      "name": "11c",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_11c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11c-1",
+          "notation": "y x r R' r B r' R B",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "11d",
+      "displayName": "11d",
+      "name": "11d",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_11d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "11d-1",
+          "notation": "z H z H z2 H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "12c",
+      "displayName": "12c",
+      "name": "12c",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_12c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "12c-1",
+          "notation": "z H y' z' S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "12d",
+      "displayName": "12d",
+      "name": "12d",
+      "subgroup": "Pi + O Perm",
+      "imageKey": "sarahsadvanced_12d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "12d-1",
+          "notation": "z2 S x y' S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "13a",
+      "displayName": "13a",
+      "name": "13a",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_13a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "13a-1",
+          "notation": "y x r' R' r' R' z' r' R r R B'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "13b",
+      "displayName": "13b",
+      "name": "13b",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_13b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "13b-1",
+          "notation": "y' x B R B' r B R' B' r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "13c",
+      "displayName": "13c",
+      "name": "13c",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_13c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "13c-1",
+          "notation": "x r B R B' r' B R' B'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "13d",
+      "displayName": "13d",
+      "name": "13d",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_13d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "13d-1",
+          "notation": "x B' r' R' r B r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "14a",
+      "displayName": "14a",
+      "name": "14a",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_14a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14a-1",
+          "notation": "z' H z' S z S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "14a-2",
+          "notation": "x R' r' R' r R r' R' r R r' R r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "14a-3",
+          "notation": "z' S z' S z H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "14b",
+      "displayName": "14b",
+      "name": "14b",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_14b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14b-1",
+          "notation": "z H z' H z S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "14c",
+      "displayName": "14c",
+      "name": "14c",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_14c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14c-1",
+          "notation": "z' S z H z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "14c-2",
+          "notation": "z' H z H z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "14d",
+      "displayName": "14d",
+      "name": "14d",
+      "subgroup": "Pi + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_14d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "14d-1",
+          "notation": "z S z S z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "14d-2",
+          "notation": "y' x R r R' B R B' R r2' R r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "14d-3",
+          "notation": "z H z S z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "15a",
+      "displayName": "15a",
+      "name": "15a",
+      "subgroup": "Pi + Triple Sledge",
+      "imageKey": "sarahsadvanced_15a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "15a-1",
+          "notation": "S S y S S S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "15b",
+      "displayName": "15b",
+      "name": "15b",
+      "subgroup": "Pi + Triple Sledge",
+      "imageKey": "sarahsadvanced_15b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "15b-1",
+          "notation": "y' S S y' S S S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "displayName": "16",
+      "name": "16",
+      "subgroup": "Pi + H or Z Perm",
+      "imageKey": "sarahsadvanced_16",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "16-1",
+          "notation": "z' S z2 S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "16-2",
+          "notation": "z S z2 S z2 H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "17a",
+      "displayName": "17a",
+      "name": "17a",
+      "subgroup": "Pi + H or Z Perm",
+      "imageKey": "sarahsadvanced_17a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "17a-1",
+          "notation": "z S z' H z H z' S z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "17b",
+      "displayName": "17b",
+      "name": "17b",
+      "subgroup": "Pi + H or Z Perm",
+      "imageKey": "sarahsadvanced_17b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "17b-1",
+          "notation": "z S z H z' H z S z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "17b-2",
+          "notation": "y x R r2' R' r B r' R r' R' r B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "17b-3",
+          "notation": "y2 x R r R' r' z' r' R r z R r' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18a",
+      "displayName": "18a",
+      "name": "18a",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18a-1",
+          "notation": "H z H z' H z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18b",
+      "displayName": "18b",
+      "name": "18b",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18b-1",
+          "notation": "z' S z' S z S z' S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18c",
+      "displayName": "18c",
+      "name": "18c",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18c-1",
+          "notation": "z2 S z' H z S z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "18c-2",
+          "notation": "S z' H x y S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18d",
+      "displayName": "18d",
+      "name": "18d",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18d-1",
+          "notation": "z H z S z' H z S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18e",
+      "displayName": "18e",
+      "name": "18e",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18e-1",
+          "notation": "y' x B r' R r R' z R r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "18e-2",
+          "notation": "S z S z' S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18f",
+      "displayName": "18f",
+      "name": "18f",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18f-1",
+          "notation": "z' H z' H z H z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18g",
+      "displayName": "18g",
+      "name": "18g",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18g",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18g-1",
+          "notation": "z2 H z' S z H z' S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "18g-2",
+          "notation": "H z' S y' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "18h",
+      "displayName": "18h",
+      "name": "18h",
+      "subgroup": "Peanut + Swirl Perm",
+      "imageKey": "sarahsadvanced_18h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "18h-1",
+          "notation": "z S z H z' S z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "18h-2",
+          "notation": "z H z' H x' y S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19a",
+      "displayName": "19a",
+      "name": "19a",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19a-1",
+          "notation": "z' H z S y' S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19a-2",
+          "notation": "z2 S z2 S z' H z' H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19b",
+      "displayName": "19b",
+      "name": "19b",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19b-1",
+          "notation": "S z' H y S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19b-2",
+          "notation": "z S z2 S z S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19c",
+      "displayName": "19c",
+      "name": "19c",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19c-1",
+          "notation": "z S z' S y S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19c-2",
+          "notation": "S z' H z' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19c-3",
+          "notation": "z2 S z2 S z S z H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19d",
+      "displayName": "19d",
+      "name": "19d",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19d-1",
+          "notation": "z2 H z' H y' S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19d-2",
+          "notation": "z' H z S z S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19d-3",
+          "notation": "z S z2 S z' H z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19e",
+      "displayName": "19e",
+      "name": "19e",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19e-1",
+          "notation": "z2 S z2 S z' S z' S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19e-2",
+          "notation": "y x B' R r R' r' R r R' B' r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19e-3",
+          "notation": "H z H z S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19e-4",
+          "notation": "z' S z H y' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19f",
+      "displayName": "19f",
+      "name": "19f",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19f-1",
+          "notation": "z S z2 S z H z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19f-2",
+          "notation": "H z' S y S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19g",
+      "displayName": "19g",
+      "name": "19g",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19g",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19g-1",
+          "notation": "z2 S z2 S z H z S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19g-2",
+          "notation": "z H z' H y S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "19h",
+      "displayName": "19h",
+      "name": "19h",
+      "subgroup": "Peanut + Wat Perm",
+      "imageKey": "sarahsadvanced_19h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "19h-1",
+          "notation": "z S z2 S z' S z' H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "19h-2",
+          "notation": "z2 S z S y' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20a",
+      "displayName": "20a",
+      "name": "20a",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20a-1",
+          "notation": "z S z' S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20b",
+      "displayName": "20b",
+      "name": "20b",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20b-1",
+          "notation": "S z S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20c",
+      "displayName": "20c",
+      "name": "20c",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20c-1",
+          "notation": "z2 H z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20d",
+      "displayName": "20d",
+      "name": "20d",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20d-1",
+          "notation": "y r' B r' R r R' r2 B",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20e",
+      "displayName": "20e",
+      "name": "20e",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20e-1",
+          "notation": "y2 x B' R r' R' r z r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20f",
+      "displayName": "20f",
+      "name": "20f",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20f-1",
+          "notation": "y' x r' R' r z' r' R r R' B",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20g",
+      "displayName": "20g",
+      "name": "20g",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20g",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20g-1",
+          "notation": "x y b r' R r R' z' R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "20h",
+      "displayName": "20h",
+      "name": "20h",
+      "subgroup": "Peanut + X Perm",
+      "imageKey": "sarahsadvanced_20h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "20h-1",
+          "notation": "x R r R' z R r' R' r b'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21a",
+      "displayName": "21a",
+      "name": "21a",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21a-1",
+          "notation": "y x b' r' R r R z' r' B' r B r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21b",
+      "displayName": "21b",
+      "name": "21b",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21b-1",
+          "notation": "y' x R r R' z R r' R' r z' r2' R r R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21c",
+      "displayName": "21c",
+      "name": "21c",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21c-1",
+          "notation": "x B' r R' r' B r R r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21d",
+      "displayName": "21d",
+      "name": "21d",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21d-1",
+          "notation": "x r' R' r' R r R B R' B' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "21d-2",
+          "notation": "z2 S z H z H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21e",
+      "displayName": "21e",
+      "name": "21e",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21e-1",
+          "notation": "y x R' r R' r' z' r' R' r z r R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21f",
+      "displayName": "21f",
+      "name": "21f",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21f-1",
+          "notation": "y' x R r' z' r' R r z r R r' R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21g",
+      "displayName": "21g",
+      "name": "21g",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21g",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21g-1",
+          "notation": "x R' B' R r' y' r' R' z' R r R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "21g-2",
+          "notation": "H z S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "21h",
+      "displayName": "21h",
+      "name": "21h",
+      "subgroup": "Peanut + Horizontal U Perm",
+      "imageKey": "sarahsadvanced_21h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "21h-1",
+          "notation": "x r' R B R' B' R' r' R r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "22a",
+      "displayName": "22a",
+      "name": "22a",
+      "subgroup": "Peanut + Vertical U Perm",
+      "imageKey": "sarahsadvanced_22a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "22a-1",
+          "notation": "x r R' r' R r R B R' B' r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "22b",
+      "displayName": "22b",
+      "name": "22b",
+      "subgroup": "Peanut + Vertical U Perm",
+      "imageKey": "sarahsadvanced_22b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "22b-1",
+          "notation": "x B' R B R' B' R' r' R r B",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "22c",
+      "displayName": "22c",
+      "name": "22c",
+      "subgroup": "Peanut + Vertical U Perm",
+      "imageKey": "sarahsadvanced_22c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "22c-1",
+          "notation": "y r' R' r R z' R r' R' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "22d",
+      "displayName": "22d",
+      "name": "22d",
+      "subgroup": "Peanut + Vertical U Perm",
+      "imageKey": "sarahsadvanced_22d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "22d-1",
+          "notation": "y r R r' R' x r' R r R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23a",
+      "displayName": "23a",
+      "name": "23a",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23a-1",
+          "notation": "x z r R r' R' z' R' r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23b",
+      "displayName": "23b",
+      "name": "23b",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23b-1",
+          "notation": "x R' r' R r z r R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23c",
+      "displayName": "23c",
+      "name": "23c",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23c-1",
+          "notation": "x r' R' r R z R r R' r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23d",
+      "displayName": "23d",
+      "name": "23d",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23d-1",
+          "notation": "x z R r R' r' z' r' R' r R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23e",
+      "displayName": "23e",
+      "name": "23e",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23e",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23e-1",
+          "notation": "y' R r R B R' B' R' r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23f",
+      "displayName": "23f",
+      "name": "23f",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23f",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23f-1",
+          "notation": "y x B' r' R r R' z R' r' R r R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "23f-2",
+          "notation": "z' H z' S z2 H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23g",
+      "displayName": "23g",
+      "name": "23g",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23g",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23g-1",
+          "notation": "y2 x b r' R r R' z' R r R' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "23h",
+      "displayName": "23h",
+      "name": "23h",
+      "subgroup": "Peanut + O Perm",
+      "imageKey": "sarahsadvanced_23h",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "23h-1",
+          "notation": "y r' R' r' R r z' r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "24a",
+      "displayName": "24a",
+      "name": "24a",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_24a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24a-1",
+          "notation": "x z R r R' r' R r R' r z' r' R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "24b",
+      "displayName": "24b",
+      "name": "24b",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_24b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24b-1",
+          "notation": "x r' R' r R r' R' r R' z R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "24b-2",
+          "notation": "H z S z' H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "24c",
+      "displayName": "24c",
+      "name": "24c",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_24c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24c-1",
+          "notation": "x r' R' r R' z R r' R' r R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "24d",
+      "displayName": "24d",
+      "name": "24d",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_24d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "24d-1",
+          "notation": "y' x R r' R r R' z R r' R' r R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "25a",
+      "displayName": "25a",
+      "name": "25a",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_25a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25a-1",
+          "notation": "y' x r' R' r' z' r' R' r R r' R' r B",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "25b",
+      "displayName": "25b",
+      "name": "25b",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_25b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25b-1",
+          "notation": "y2 r B R' B' R B R' B' R' r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "25c",
+      "displayName": "25c",
+      "name": "25c",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_25c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25c-1",
+          "notation": "y' x b' R r R' r' R r R' r z' r' R r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "25d",
+      "displayName": "25d",
+      "name": "25d",
+      "subgroup": "Peanut + Z Perm Conjugates",
+      "imageKey": "sarahsadvanced_25d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "25d-1",
+          "notation": "y2 x B' r' R r R' r' R r z r R r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "26a",
+      "displayName": "26a",
+      "name": "26a",
+      "subgroup": "Peanut+ Triple Sledge",
+      "imageKey": "sarahsadvanced_26a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26a-1",
+          "notation": "S z H H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "26b",
+      "displayName": "26b",
+      "name": "26b",
+      "subgroup": "Peanut+ Triple Sledge",
+      "imageKey": "sarahsadvanced_26b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26b-1",
+          "notation": "S z' H H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "26c",
+      "displayName": "26c",
+      "name": "26c",
+      "subgroup": "Peanut+ Triple Sledge",
+      "imageKey": "sarahsadvanced_26c",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26c-1",
+          "notation": "z2 S S z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "26d",
+      "displayName": "26d",
+      "name": "26d",
+      "subgroup": "Peanut+ Triple Sledge",
+      "imageKey": "sarahsadvanced_26d",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "26d-1",
+          "notation": "z H H z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "27",
+      "displayName": "27",
+      "name": "27",
+      "subgroup": "Peanut + H or Z Perm and Pure Peanut",
+      "imageKey": "sarahsadvanced_27",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "27-1",
+          "notation": "y2 B r' R r R' B' z' R r' R' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "27-2",
+          "notation": "x z' B' r' R r R' B' z2 R r' R' r b'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "27-3",
+          "notation": "y2 x r' R' z' r B r' R r y' r' R' r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "27-4",
+          "notation": "z2 S S z S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "27-5",
+          "notation": "z' S S z' S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "28",
+      "displayName": "28",
+      "name": "28",
+      "subgroup": "Peanut + H or Z Perm and Pure Peanut",
+      "imageKey": "sarahsadvanced_28",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "28-1",
+          "notation": "S z' S S z' S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "28-2",
+          "notation": "x z r' R r x R r' R z R r' R' r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "28-3",
+          "notation": "x z R' r' R r R' z R r' R' r z' r' R r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "28-4",
+          "notation": "x z' r' R' r z r' R r R' r z' r' R' r R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "29a",
+      "displayName": "29a",
+      "name": "29a",
+      "subgroup": "Peanut + H or Z Perm and Pure Peanut",
+      "imageKey": "sarahsadvanced_29a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "29a-1",
+          "notation": "y x r' R' r R r' R' r' z' r' R' r B",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "29a-2",
+          "notation": "x z' B' r' R r R z R r R' r' R r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "29a-3",
+          "notation": "y x r R r' R' z' r' R' r z r' R r' R'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "29a-4",
+          "notation": "z' S z' S z' H",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "29b",
+      "displayName": "29b",
+      "name": "29b",
+      "subgroup": "Peanut + H or Z Perm and Pure Peanut",
+      "imageKey": "sarahsadvanced_29b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "29b-1",
+          "notation": "y' r' R r y' r l B r' l B'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "30a",
+      "displayName": "30a",
+      "name": "30a",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_30a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "30a-1",
+          "notation": "y2 x B' r' B r B R r' R'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "30a-2",
+          "notation": "y2 x R r R' B' r' B' r B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "30b",
+      "displayName": "30b",
+      "name": "30b",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_30b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "30b-1",
+          "notation": "y x B r' B' z' r' R' r b R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "30b-2",
+          "notation": "y' x R r R' r' R r R' r2 R r R' r'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "30b-3",
+          "notation": "x B' r B r' B' z' r' R' r b'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "30b-4",
+          "notation": "x z' r' R' r b z r B r' z' b'",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "31",
+      "displayName": "31",
+      "name": "31",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_31",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "31-1",
+          "notation": "y2 x b' r' R' r b z r B r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "31-2",
+          "notation": "y2 x b z r B r' B' z' r' R' r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "31-3",
+          "notation": "S S S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "u_perm",
+      "displayName": "U Perm",
+      "name": "U Perm",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_u_perm",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "u_perm-1",
+          "notation": "z' x S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "32",
+      "displayName": "32",
+      "name": "32",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_32",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "32-1",
+          "notation": "y x r' B r' B' z' r' R' r z B r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "32-2",
+          "notation": "x r' B' r' B' r B R r R r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "32-3",
+          "notation": "y x R2' B' r' B' r B R r R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "32-4",
+          "notation": "y x r B' r B R r R' B' r",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "32-5",
+          "notation": "y R L' U' L U L R L' R",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "33",
+      "displayName": "33",
+      "name": "33",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_33",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "33-1",
+          "notation": "r R' r R' b' r B' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "33-2",
+          "notation": "r R' r R' x' B' R r' B",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "33-3",
+          "notation": "S z2 H z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "34a",
+      "displayName": "34a",
+      "name": "34a",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_34a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34a-1",
+          "notation": "x b r' R r R' z2 r' R r R",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "34b",
+      "displayName": "34b",
+      "name": "34b",
+      "subgroup": "L4C",
+      "imageKey": "sarahsadvanced_34b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "34b-1",
+          "notation": "x B' r' R r R' z2 r' R r R' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "35a",
+      "displayName": "35a",
+      "name": "35a",
+      "subgroup": "L5C",
+      "imageKey": "sarahsadvanced_35a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35a-1",
+          "notation": "y' x r' R r R' r R y' r' R r B' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "35b",
+      "displayName": "35b",
+      "name": "35b",
+      "subgroup": "L5C",
+      "imageKey": "sarahsadvanced_35b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "35b-1",
+          "notation": "y2 x R r' R' r B r' R r' R' r B r'",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "35b-2",
+          "notation": "S z2 S y' z' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "36a",
+      "displayName": "36a",
+      "name": "36a",
+      "subgroup": "L5C",
+      "imageKey": "sarahsadvanced_36a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36a-1",
+          "notation": "H z2 H z H z2 H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "36a-2",
+          "notation": "S z2 S z S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "36b",
+      "displayName": "36b",
+      "name": "36b",
+      "subgroup": "L5C",
+      "imageKey": "sarahsadvanced_36b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "36b-1",
+          "notation": "S z2 S x' y S z2 S",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "36b-2",
+          "notation": "z' S z2 S z' S z2 S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "37a",
+      "displayName": "37a",
+      "name": "37a",
+      "subgroup": "L5C",
+      "imageKey": "sarahsadvanced_37a",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37a-1",
+          "notation": "S z S z' H z H",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "37a-2",
+          "notation": "H z H z' S z S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "37b",
+      "displayName": "37b",
+      "name": "37b",
+      "subgroup": "L5C",
+      "imageKey": "sarahsadvanced_37b",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "37b-1",
+          "notation": "x r' R r z' r B' R r' R' B' r",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        },
+        {
+          "id": "37b-2",
+          "notation": "z' S z' H z H z' S",
+          "isPrimary": false,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

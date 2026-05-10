@@ -1,0 +1,141 @@
+{
+  "puzzle": "SQ1",
+  "set": "SQ1EO",
+  "version": 1,
+  "source": "SpeedCubeDB",
+  "cases": [
+    {
+      "id": "1_1",
+      "displayName": "1-1",
+      "name": "1-1",
+      "subgroup": "",
+      "imageKey": "sq1eo_1_1",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "1_1-1",
+          "notation": "1,0 / 3,0 / 3,0 / -1,-1 / -2,1 / -3,0 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "i_i",
+      "displayName": "I-I",
+      "name": "I-I",
+      "subgroup": "",
+      "imageKey": "sq1eo_i_i",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i_i-1",
+          "notation": "1,0 / -1,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l_l",
+      "displayName": "L-L",
+      "name": "L-L",
+      "subgroup": "",
+      "imageKey": "sq1eo_l_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l_l-1",
+          "notation": "1,0 / -4,-1 / 1,1 / 3,0 / -1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "l_i",
+      "displayName": "L-I",
+      "name": "L-I",
+      "subgroup": "",
+      "imageKey": "sq1eo_l_i",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "l_i-1",
+          "notation": "1,0 / 3,0 / 3,0 / -1,-1 / -2,1 / -4,-1 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "3_3",
+      "displayName": "3-3",
+      "name": "3-3",
+      "subgroup": "",
+      "imageKey": "sq1eo_3_3",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "3_3-1",
+          "notation": "1,0 / 3,0 / 3,0 / -1,-1 / -3,0 / -3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "4_4",
+      "displayName": "4-4",
+      "name": "4-4",
+      "subgroup": "",
+      "imageKey": "sq1eo_4_4",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "4_4-1",
+          "notation": "1,0 / -1,-1 / -2,4 / -1,-1 / 1,0",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "i_l",
+      "displayName": "I-L",
+      "name": "I-L",
+      "subgroup": "",
+      "imageKey": "sq1eo_i_l",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "i_l-1",
+          "notation": "1,0 / -3,0 / 3,0 / -1,-1 / -3,0 / 3,0 / 0,1",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

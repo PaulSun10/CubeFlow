@@ -68,6 +68,34 @@ enum AlgLibrarySet: String {
     case ollcp
     case zbll
     case oneLLL = "1lll"
+    case ortegaOLL = "ortegaoll"
+    case ortegaPBL = "ortegapbl"
+    case cll
+    case eg1
+    case eg2
+    case ollParity = "ollparity"
+    case pllParity = "pllparity"
+    case l2e
+    case l2c
+    case lin
+    case sq1CS = "sq1cs"
+    case sq1CO = "sq1co"
+    case sq1EO = "sq1eo"
+    case sq1CP = "sq1cp"
+    case sq1Parity = "sq1parity"
+    case sq1LinPLL = "sq1linpll"
+    case sq1LinParityPLL = "sq1linparitypll"
+    case sq1EP = "sq1ep"
+    case sq1LinPLL1 = "sq1linpll1"
+    case megaminxOLL = "megaminxoll"
+    case megaminxPLL = "megaminxpll"
+    case megaminxEO = "megaminxeo"
+    case megaminxCO = "megaminxco"
+    case megaminxEP = "megaminxep"
+    case megaminxCP = "megaminxcp"
+    case l3e
+    case l4e
+    case sarahsAdvanced = "sarahsadvanced"
 
     var resourceName: String { rawValue }
 
@@ -88,6 +116,34 @@ enum AlgLibrarySet: String {
         case "ollcp": self = .ollcp
         case "zbll": self = .zbll
         case "1lll": self = .oneLLL
+        case "ortegaoll": self = .ortegaOLL
+        case "ortegapbl": self = .ortegaPBL
+        case "cll": self = .cll
+        case "eg1": self = .eg1
+        case "eg2": self = .eg2
+        case "ollparity": self = .ollParity
+        case "pllparity": self = .pllParity
+        case "l2e": self = .l2e
+        case "l2c": self = .l2c
+        case "lin": self = .lin
+        case "sq1cs": self = .sq1CS
+        case "sq1co": self = .sq1CO
+        case "sq1eo": self = .sq1EO
+        case "sq1cp": self = .sq1CP
+        case "sq1parity": self = .sq1Parity
+        case "sq1linpll": self = .sq1LinPLL
+        case "sq1linparitypll": self = .sq1LinParityPLL
+        case "sq1ep": self = .sq1EP
+        case "sq1linpll1": self = .sq1LinPLL1
+        case "megaminxoll": self = .megaminxOLL
+        case "megaminxpll": self = .megaminxPLL
+        case "megaminxeo": self = .megaminxEO
+        case "megaminxco": self = .megaminxCO
+        case "megaminxep": self = .megaminxEP
+        case "megaminxcp": self = .megaminxCP
+        case "l3e": self = .l3e
+        case "l4e": self = .l4e
+        case "sarahsadvanced": self = .sarahsAdvanced
         default: return nil
         }
     }
