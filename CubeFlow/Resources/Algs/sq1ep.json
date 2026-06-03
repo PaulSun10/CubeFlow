@@ -12,7 +12,7 @@
       "imageKey": "sq1ep_adj_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "-2,0 / -1,2 / 1,1 / 0,-3 / 2,0",
       "algorithms": [
         {
           "id": "adj_adj-1",
@@ -31,7 +31,7 @@
       "imageKey": "sq1ep_adj_o",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / -3,-3 / 1,-2 / -1,2 / 4,1 / -1,2 / 3,0 / -3,0 / 0,1",
       "algorithms": [
         {
           "id": "adj_o-1",
@@ -50,7 +50,7 @@
       "imageKey": "sq1ep_adj_o_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 3,3 / -1,2 / 1,-2 / -4,-1 / 1,-2 / -3,0 / 3,0 / -1,0",
       "algorithms": [
         {
           "id": "adj_o_2-1",
@@ -69,7 +69,7 @@
       "imageKey": "sq1ep_adj_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "-5,0 / 0,-1 / -3,0 / -1,0 / -6,0 / 0,1 / 3,0 / 1,0 / -1,0",
       "algorithms": [
         {
           "id": "adj_opp-1",
@@ -88,7 +88,7 @@
       "imageKey": "sq1ep_adj_w",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 0,3 / -1,-1 / 0,3 / 0,-3 / 1,1 / 0,-3 / -1,0",
       "algorithms": [
         {
           "id": "adj_w-1",
@@ -107,7 +107,7 @@
       "imageKey": "sq1ep_h_h",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-4 / 1,1 / 2,2 / -5,1 / -1,0",
       "algorithms": [
         {
           "id": "h_h-1",
@@ -126,7 +126,7 @@
       "imageKey": "sq1ep_h_solved",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 3,-3 / 3,-3 / 0,-1 / -3,3 / -3,3 /",
       "algorithms": [
         {
           "id": "h_solved-1",
@@ -145,7 +145,7 @@
       "imageKey": "sq1ep_h_ua",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 0,3 / -4,-1 / 1,4 / 5,-1 / 1,4 / -4,-1 / 0,3 / 0,1",
       "algorithms": [
         {
           "id": "h_ua-1",
@@ -164,7 +164,7 @@
       "imageKey": "sq1ep_h_ub",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 0,-3 / 4,1 / -1,-4 / -5,1 / -1,-4 / 4,1 / 0,-3 / -1,0",
       "algorithms": [
         {
           "id": "h_ub-1",
@@ -183,7 +183,7 @@
       "imageKey": "sq1ep_h_z",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 3,-3 / 1,1 / -3,3 / 0,-3 / -1,-1 / 0,-3 / 1,1 / -1,0",
       "algorithms": [
         {
           "id": "h_z-1",
@@ -202,7 +202,7 @@
       "imageKey": "sq1ep_o_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/2,-1/1,1/2,-1/-5,1/-1,-4/-2,1/-1,-1/3,0/0,1",
       "algorithms": [
         {
           "id": "o_adj-1",
@@ -221,7 +221,7 @@
       "imageKey": "sq1ep_o_o",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/0,3/-1,-1/4,-2/-1,-1/3,0/-5,1/-1,0",
       "algorithms": [
         {
           "id": "o_o-1",
@@ -240,7 +240,7 @@
       "imageKey": "sq1ep_o_o_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1/1,1/-1,-4/1,1/3,3/-1,-1/3,0/1,1/-1,0",
       "algorithms": [
         {
           "id": "o_o_2-1",
@@ -259,7 +259,7 @@
       "imageKey": "sq1ep_o_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1/1,1/3,0/-1,-1/3,0/1,1/-1,0",
       "algorithms": [
         {
           "id": "o_opp-1",
@@ -278,7 +278,7 @@
       "imageKey": "sq1ep_o_w",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 4,1 / -3,3 / 0,-3 / -1,-4 / 0,-3 / -2,4 / -1,0",
       "algorithms": [
         {
           "id": "o_w-1",
@@ -297,7 +297,7 @@
       "imageKey": "sq1ep_o_adj_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/5,-1/-2,1/-1,-1/-2,1/0,-3/-1,2/1,1/0,-3/-1,0",
       "algorithms": [
         {
           "id": "o_adj_2-1",
@@ -316,7 +316,7 @@
       "imageKey": "sq1ep_o_o_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1/1,1/-1,2/1,1/-3,-3/-1,-1/-3,0/1,1/-1,0",
       "algorithms": [
         {
           "id": "o_o_3-1",
@@ -335,7 +335,7 @@
       "imageKey": "sq1ep_o_o_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/5,-1/-3,0/1,1/-4,2/1,1/0,-3/-1,0",
       "algorithms": [
         {
           "id": "o_o_4-1",
@@ -354,7 +354,7 @@
       "imageKey": "sq1ep_o_opp_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1/1,1/-3,0/-1,-1/-3,0/1,1/-1,0",
       "algorithms": [
         {
           "id": "o_opp_2-1",
@@ -373,7 +373,7 @@
       "imageKey": "sq1ep_o_w_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / 2,-1 / -5,1 / -3,0 / -1,2 / 1,1 / 0,-3 / -1,3",
       "algorithms": [
         {
           "id": "o_w_2-1",
@@ -392,7 +392,7 @@
       "imageKey": "sq1ep_opp_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 0,-3 / 0,3 / 0,-3 / 1,1 / -1,2 / 0,-3 / 0,3 / 0,1",
       "algorithms": [
         {
           "id": "opp_adj-1",
@@ -411,7 +411,7 @@
       "imageKey": "sq1ep_opp_o",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 1,1 / -1,2 / 1,1 / -1,2 / 1,1 / -1,0",
       "algorithms": [
         {
           "id": "opp_o-1",
@@ -430,7 +430,7 @@
       "imageKey": "sq1ep_opp_o_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 1,1 / -1,-4 / 1,1 / -1,-4 / 1,1 / -1,0",
       "algorithms": [
         {
           "id": "opp_o_2-1",
@@ -449,7 +449,7 @@
       "imageKey": "sq1ep_opp_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 1,1 / 5,-1 / 1,1 / -1,0",
       "algorithms": [
         {
           "id": "opp_opp-1",
@@ -468,7 +468,7 @@
       "imageKey": "sq1ep_opp_w",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/5,-1/0,-3/4,1/0,3/-3,0/5,-1/1,-2/-1,0",
       "algorithms": [
         {
           "id": "opp_w-1",
@@ -487,7 +487,7 @@
       "imageKey": "sq1ep_solved_h",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 3,-3 / 3,-3 / 1,0 / -3,3 / -3,3 /",
       "algorithms": [
         {
           "id": "solved_h-1",
@@ -506,7 +506,7 @@
       "imageKey": "sq1ep_solved_ua",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ 0,-3 / 0,-1 / 3,0 / 0,1 / 0,3 / 0,-1 / -3,0 / 0,1",
       "algorithms": [
         {
           "id": "solved_ua-1",
@@ -525,7 +525,7 @@
       "imageKey": "sq1ep_solved_ub",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 3,0 / 0,1 / 0,-3 / 0,-1 / -3,0 / 0,1 / 0,3 /",
       "algorithms": [
         {
           "id": "solved_ub-1",
@@ -544,7 +544,7 @@
       "imageKey": "sq1ep_solved_z",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / -1,-1 / 0,3 / 1,1 / 0,-3 / -1,-1 / 0,1",
       "algorithms": [
         {
           "id": "solved_z-1",
@@ -563,7 +563,7 @@
       "imageKey": "sq1ep_ua_h",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / -3,0 / 1,4 / -4,-1 / -5,1 / -1,-4 / 1,4 / 0,-3 / -1,0",
       "algorithms": [
         {
           "id": "ua_h-1",
@@ -582,7 +582,7 @@
       "imageKey": "sq1ep_ua_solved",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ 0,3 / 1,0 / -3,0 / -1,0 / 0,-3 / 1,0 / 3,0 / -1,0",
       "algorithms": [
         {
           "id": "ua_solved-1",
@@ -601,7 +601,7 @@
       "imageKey": "sq1ep_ua_ua",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 5,-1 / -3,0 / 1,1 / -3,0 / -1,0",
       "algorithms": [
         {
           "id": "ua_ua-1",
@@ -620,7 +620,7 @@
       "imageKey": "sq1ep_ua_ub",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / -1,2 / 1,1 / 0,-3 / -3,0 / 5,-1 / -5,1 / -1,0",
       "algorithms": [
         {
           "id": "ua_ub-1",
@@ -639,7 +639,7 @@
       "imageKey": "sq1ep_ua_z",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / -3,0 / -3,0 / -1,2 / 1,1 / 0,-3 / -1,0",
       "algorithms": [
         {
           "id": "ua_z-1",
@@ -658,7 +658,7 @@
       "imageKey": "sq1ep_ub_h",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 0,3 / -1,-4 / 1,4 / 5,-1 / 4,1 / -1,-4 / 3,0 / 0,1",
       "algorithms": [
         {
           "id": "ub_h-1",
@@ -677,7 +677,7 @@
       "imageKey": "sq1ep_ub_solved",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / -3,0 / -1,0 / 0,3 / 1,0 / 3,0 / -1,0 / 0,-3 /",
       "algorithms": [
         {
           "id": "ub_solved-1",
@@ -696,7 +696,7 @@
       "imageKey": "sq1ep_ub_ua",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 5,-1 / -3,0 / 1,1 / 2,-1 / -3,0 / 1,1 / -3,0 / 2,0",
       "algorithms": [
         {
           "id": "ub_ua-1",
@@ -715,7 +715,7 @@
       "imageKey": "sq1ep_ub_ub",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / 2,-1 / -5,1 / -1,0",
       "algorithms": [
         {
           "id": "ub_ub-1",
@@ -734,7 +734,7 @@
       "imageKey": "sq1ep_ub_z",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / -3,0 / 3,0 / -1,2 / 1,1 / 0,-3 / -1,0",
       "algorithms": [
         {
           "id": "ub_z-1",
@@ -753,7 +753,7 @@
       "imageKey": "sq1ep_w_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / 2,-1 / -2,1 / -1,-1 / -2,1 / -1,0",
       "algorithms": [
         {
           "id": "w_adj-1",
@@ -772,7 +772,7 @@
       "imageKey": "sq1ep_w_o",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / -1,2 / 1,4 / -3,3 / 0,-3 / -4,-1 / 0,-3 / -2,4 / -1,0",
       "algorithms": [
         {
           "id": "w_o-1",
@@ -791,7 +791,7 @@
       "imageKey": "sq1ep_w_o_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 1,-2 / -1,-4 / 3,-3 / 0,3 / 4,1 / 0,3 / 2,-4 / 0,1",
       "algorithms": [
         {
           "id": "w_o_2-1",
@@ -810,7 +810,7 @@
       "imageKey": "sq1ep_w_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / -5,1 / 3,0 / -3,0 / -4,-1 / 3,0 / -5,1 / -1,0",
       "algorithms": [
         {
           "id": "w_opp-1",
@@ -829,7 +829,7 @@
       "imageKey": "sq1ep_w_w",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-4 / 1,1 / 0,3 / -1,-1 / 3,0 / -5,1 / -1,0",
       "algorithms": [
         {
           "id": "w_w-1",
@@ -848,7 +848,7 @@
       "imageKey": "sq1ep_z_h",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 3,3 / -3,0 / -4,2 / 3,-3 / -2,1 / -3,-3 / -1,0",
       "algorithms": [
         {
           "id": "z_h-1",
@@ -867,7 +867,7 @@
       "imageKey": "sq1ep_z_solved",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1 / 1,1 / -3,0 / -1,-1 / 3,0 / 1,1 / -1,0",
       "algorithms": [
         {
           "id": "z_solved-1",
@@ -886,7 +886,7 @@
       "imageKey": "sq1ep_z_ua",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / -3,0 / 0,-3 / -1,2 / 1,1 / 0,-3 / -1,0",
       "algorithms": [
         {
           "id": "z_ua-1",
@@ -905,7 +905,7 @@
       "imageKey": "sq1ep_z_ub",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / -3,0 / 0,3 / -1,2 / 1,1 / 0,-3 / -1,0",
       "algorithms": [
         {
           "id": "z_ub-1",
@@ -924,7 +924,7 @@
       "imageKey": "sq1ep_z_z",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 2,-1 / 1,1 / -4,2 / 1,1 / 0,-3 / 2,0",
       "algorithms": [
         {
           "id": "z_z-1",

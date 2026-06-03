@@ -12,7 +12,7 @@
       "imageKey": "l3e_sune",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U' R U' R'",
       "algorithms": [
         {
           "id": "sune-1",
@@ -31,7 +31,7 @@
       "imageKey": "l3e_antisune",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' U R U R' U R",
       "algorithms": [
         {
           "id": "antisune-1",
@@ -50,7 +50,7 @@
       "imageKey": "l3e_lefty_bars",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' L' U' L U R",
       "algorithms": [
         {
           "id": "lefty_bars-1",
@@ -69,7 +69,7 @@
       "imageKey": "l3e_righty_bars",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' U' L' U L R U",
       "algorithms": [
         {
           "id": "righty_bars-1",
@@ -88,7 +88,7 @@
       "imageKey": "l3e_2_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U R' L R L'",
       "algorithms": [
         {
           "id": "2_flip-1",

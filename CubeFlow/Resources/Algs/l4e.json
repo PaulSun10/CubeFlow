@@ -12,7 +12,7 @@
       "imageKey": "l4e_sune",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U' R U' R'",
       "algorithms": [
         {
           "id": "sune-1",
@@ -31,7 +31,7 @@
       "imageKey": "l4e_antisune",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U R U R'",
       "algorithms": [
         {
           "id": "antisune-1",
@@ -50,7 +50,7 @@
       "imageKey": "l4e_lefty_bars",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' L' U' L U R",
       "algorithms": [
         {
           "id": "lefty_bars-1",
@@ -69,7 +69,7 @@
       "imageKey": "l4e_righty_bars",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L R U R' U' L'",
       "algorithms": [
         {
           "id": "righty_bars-1",
@@ -88,7 +88,7 @@
       "imageKey": "l4e_sledge",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L R' L' R",
       "algorithms": [
         {
           "id": "sledge-1",
@@ -107,7 +107,7 @@
       "imageKey": "l4e_hedge",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' L R L'",
       "algorithms": [
         {
           "id": "hedge-1",
@@ -126,7 +126,7 @@
       "imageKey": "l4e_clockwise",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R2' L R L'",
       "algorithms": [
         {
           "id": "clockwise-1",
@@ -152,7 +152,7 @@
       "imageKey": "l4e_counterclockwise",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L2 R' L' R",
       "algorithms": [
         {
           "id": "counterclockwise-1",
@@ -171,7 +171,7 @@
       "imageKey": "l4e_righty",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R'",
       "algorithms": [
         {
           "id": "righty-1",
@@ -190,7 +190,7 @@
       "imageKey": "l4e_lefty",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L",
       "algorithms": [
         {
           "id": "lefty-1",
@@ -209,7 +209,7 @@
       "imageKey": "l4e_sexy",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U",
       "algorithms": [
         {
           "id": "sexy-1",
@@ -228,7 +228,7 @@
       "imageKey": "l4e_left_sexy",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U L U'",
       "algorithms": [
         {
           "id": "left_sexy-1",
@@ -247,7 +247,7 @@
       "imageKey": "l4e_2_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U R' L R L'",
       "algorithms": [
         {
           "id": "2_flip-1",
@@ -273,7 +273,7 @@
       "imageKey": "l4e_dr_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L R' L R L'",
       "algorithms": [
         {
           "id": "dr_flip-1",
@@ -292,7 +292,7 @@
       "imageKey": "l4e_dl_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' L R' L' R",
       "algorithms": [
         {
           "id": "dl_flip-1",
@@ -311,7 +311,7 @@
       "imageKey": "l4e_db_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U L U' R U' R'",
       "algorithms": [
         {
           "id": "db_flip-1",
@@ -330,7 +330,7 @@
       "imageKey": "l4e_4_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L R U R' L' U' L R U R'",
       "algorithms": [
         {
           "id": "4_flip-1",
@@ -349,7 +349,7 @@
       "imageKey": "l4e_right_polish_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U L R U R'",
       "algorithms": [
         {
           "id": "right_polish_flip-1",
@@ -368,7 +368,7 @@
       "imageKey": "l4e_left_polish_flip",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' L' U' L",
       "algorithms": [
         {
           "id": "left_polish_flip-1",
@@ -387,7 +387,7 @@
       "imageKey": "l4e_sus",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L R' L' R U L R' L' R",
       "algorithms": [
         {
           "id": "sus-1",
@@ -406,7 +406,7 @@
       "imageKey": "l4e_anti_sus",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' L R L' U' R' L R L'",
       "algorithms": [
         {
           "id": "anti_sus-1",
@@ -425,7 +425,7 @@
       "imageKey": "l4e_good_niky",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L R U R'",
       "algorithms": [
         {
           "id": "good_niky-1",
@@ -444,7 +444,7 @@
       "imageKey": "l4e_good_sochi",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' L' U' L",
       "algorithms": [
         {
           "id": "good_sochi-1",
@@ -463,7 +463,7 @@
       "imageKey": "l4e_super_sledge",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L R' L' R2 U R'",
       "algorithms": [
         {
           "id": "super_sledge-1",
@@ -482,7 +482,7 @@
       "imageKey": "l4e_super_hedge",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' L R L2 U' L",
       "algorithms": [
         {
           "id": "super_hedge-1",
@@ -501,7 +501,7 @@
       "imageKey": "l4e_bad_niky",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L U R U R'",
       "algorithms": [
         {
           "id": "bad_niky-1",
@@ -520,7 +520,7 @@
       "imageKey": "l4e_bad_sochi",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U' L' U' L",
       "algorithms": [
         {
           "id": "bad_sochi-1",
@@ -539,7 +539,7 @@
       "imageKey": "l4e_right_spam",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L R' L' R U' R U' R'",
       "algorithms": [
         {
           "id": "right_spam-1",
@@ -558,7 +558,7 @@
       "imageKey": "l4e_left_spam",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' L R L' U L' U L",
       "algorithms": [
         {
           "id": "left_spam-1",
@@ -577,7 +577,7 @@
       "imageKey": "l4e_bad_sledge",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U R' L R L'",
       "algorithms": [
         {
           "id": "bad_sledge-1",
@@ -596,7 +596,7 @@
       "imageKey": "l4e_bad_hedge",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L U' L R' L' R",
       "algorithms": [
         {
           "id": "bad_hedge-1",
@@ -622,7 +622,7 @@
       "imageKey": "l4e_bad_sexy",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U L' U L",
       "algorithms": [
         {
           "id": "bad_sexy-1",
@@ -641,7 +641,7 @@
       "imageKey": "l4e_bad_ugly",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U' L U' R U' R'",
       "algorithms": [
         {
           "id": "bad_ugly-1",
@@ -660,7 +660,7 @@
       "imageKey": "l4e_bad_righty",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U L' U' L",
       "algorithms": [
         {
           "id": "bad_righty-1",
@@ -679,7 +679,7 @@
       "imageKey": "l4e_bad_lefty",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U L U' R U R'",
       "algorithms": [
         {
           "id": "bad_lefty-1",
@@ -698,7 +698,7 @@
       "imageKey": "l4e_double_sexy",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U R U R'",
       "algorithms": [
         {
           "id": "double_sexy-1",
@@ -717,7 +717,7 @@
       "imageKey": "l4e_double_ugly",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U L U' L' U' L",
       "algorithms": [
         {
           "id": "double_ugly-1",

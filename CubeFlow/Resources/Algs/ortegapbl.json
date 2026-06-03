@@ -12,7 +12,7 @@
       "imageKey": "ortegapbl_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R2' F' R U R U' R' F R U' R' y'",
       "algorithms": [
         {
           "id": "adj-1",
@@ -353,7 +353,7 @@
       "imageKey": "ortegapbl_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F2' U' R U' R' U F2' U R U R'",
       "algorithms": [
         {
           "id": "opp-1",
@@ -519,7 +519,7 @@
       "imageKey": "ortegapbl_opp_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2' F2' R2'",
       "algorithms": [
         {
           "id": "opp_opp-1",
@@ -608,7 +608,7 @@
       "imageKey": "ortegapbl_adj_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2' U R2' U2' B2' U R2'",
       "algorithms": [
         {
           "id": "adj_adj-1",
@@ -767,7 +767,7 @@
       "imageKey": "ortegapbl_adj_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R F2' R' U R'",
       "algorithms": [
         {
           "id": "adj_opp-1",
@@ -877,7 +877,7 @@
       "imageKey": "ortegapbl_opp_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2' U R2' U' R2' U R2' U' R2' y'",
       "algorithms": [
         {
           "id": "opp_adj-1",

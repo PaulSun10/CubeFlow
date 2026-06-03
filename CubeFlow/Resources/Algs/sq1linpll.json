@@ -12,7 +12,7 @@
       "imageKey": "sq1linpll_ua",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/0,-3/-1,0/3,0/1,0/0,3/-1,0/-3,0/",
       "algorithms": [
         {
           "id": "ua-1",
@@ -31,7 +31,7 @@
       "imageKey": "sq1linpll_ub",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/0,-3/-1,0/-3,0/1,0/0,3/-1,0",
       "algorithms": [
         {
           "id": "ub-1",
@@ -50,7 +50,7 @@
       "imageKey": "sq1linpll_z",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ 3,3 / 1,4 / -1,-1 / 0,-3 / -3,-3 /",
       "algorithms": [
         {
           "id": "z-1",
@@ -69,7 +69,7 @@
       "imageKey": "sq1linpll_h",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0 / 5,-1 / -5,1 / -3,0 / 5,-1 / -5,1 / -1,0",
       "algorithms": [
         {
           "id": "h-1",
@@ -88,7 +88,7 @@
       "imageKey": "sq1linpll_aa",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/-3,-3/3,0/-2,0/0,3/-3,-3/3,0/-1,0",
       "algorithms": [
         {
           "id": "aa-1",
@@ -107,7 +107,7 @@
       "imageKey": "sq1linpll_ab",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/0,3/-3,-3/3,0/2,0/0,3/-3,-3/3,0/",
       "algorithms": [
         {
           "id": "ab-1",
@@ -126,7 +126,7 @@
       "imageKey": "sq1linpll_e",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/3,0/-2,-2/-1,2/-3,-3/",
       "algorithms": [
         {
           "id": "e-1",
@@ -145,7 +145,7 @@
       "imageKey": "sq1linpll_f",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1/3,0/-2,4/-3,0/3,0/-1,-4/-3,0/3,0/1,1/-1,0",
       "algorithms": [
         {
           "id": "f-1",
@@ -164,7 +164,7 @@
       "imageKey": "sq1linpll_ja",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/0,-3/3,0/-3,0/-3,3/-1,0",
       "algorithms": [
         {
           "id": "ja-1",
@@ -183,7 +183,7 @@
       "imageKey": "sq1linpll_jb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/3,0/0,-3/3,0/-3,0/-3,3/",
       "algorithms": [
         {
           "id": "jb-1",
@@ -202,7 +202,7 @@
       "imageKey": "sq1linpll_ra",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,-2/-4,-1/0,3/3,0/-3,0/3,0/",
       "algorithms": [
         {
           "id": "ra-1",
@@ -221,7 +221,7 @@
       "imageKey": "sq1linpll_rb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/-3,-3/-1,-4/-2,-5/0,-3/-3,0/3,0/-3,0/-1,0",
       "algorithms": [
         {
           "id": "rb-1",
@@ -240,7 +240,7 @@
       "imageKey": "sq1linpll_t",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/0,-3/3,3/-3,0/-4,0/0,-3/3,3/-3,0/",
       "algorithms": [
         {
           "id": "t-1",
@@ -259,7 +259,7 @@
       "imageKey": "sq1linpll_y",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-3,-3/0,-3/-5,0/-3,0/-3,-3/-3,0/-1,0",
       "algorithms": [
         {
           "id": "y-1",
@@ -278,7 +278,7 @@
       "imageKey": "sq1linpll_na",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/3,0/-3,-3/3,0/-3,-3/",
       "algorithms": [
         {
           "id": "na-1",
@@ -297,7 +297,7 @@
       "imageKey": "sq1linpll_nb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/3,0/-3,-3/3,0/-3,-3/-1,0",
       "algorithms": [
         {
           "id": "nb-1",
@@ -316,7 +316,7 @@
       "imageKey": "sq1linpll_ga",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/0,3/0,-3/0,3/0,-3/2,0/-3,3/3,-3/",
       "algorithms": [
         {
           "id": "ga-1",
@@ -335,7 +335,7 @@
       "imageKey": "sq1linpll_gb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,3/3,-3/1,0/0,3/0,-3/0,3/0,-3/-1,0",
       "algorithms": [
         {
           "id": "gb-1",
@@ -354,7 +354,7 @@
       "imageKey": "sq1linpll_gc",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/0,-3/0,3/0,-3/4,0/-3,3/3,-3/-1,0",
       "algorithms": [
         {
           "id": "gc-1",
@@ -373,7 +373,7 @@
       "imageKey": "sq1linpll_gd",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/-3,3/3,-3/-1,0/0,3/0,-3/0,3/0,-3/",
       "algorithms": [
         {
           "id": "gd-1",
@@ -392,7 +392,7 @@
       "imageKey": "sq1linpll_v",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1/4,1/0,-3/0,-3/-1,2/-3,0/0,3/4,1/-3,0/-1,0",
       "algorithms": [
         {
           "id": "v-1",

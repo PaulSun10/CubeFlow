@@ -12,7 +12,7 @@
       "imageKey": "ortegaoll_sune",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' R' U' R U' R'",
       "algorithms": [
         {
           "id": "sune-1",
@@ -73,7 +73,7 @@
       "imageKey": "ortegaoll_anti_sune",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U R U2' R'",
       "algorithms": [
         {
           "id": "anti_sune-1",
@@ -134,7 +134,7 @@
       "imageKey": "ortegaoll_pi",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F U R U' R' U R U' R' F'",
       "algorithms": [
         {
           "id": "pi-1",
@@ -202,7 +202,7 @@
       "imageKey": "ortegaoll_p",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F U R U' R' F'",
       "algorithms": [
         {
           "id": "p-1",
@@ -228,7 +228,7 @@
       "imageKey": "ortegaoll_l",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' F' R U R U' R' F y'",
       "algorithms": [
         {
           "id": "l-1",
@@ -310,7 +310,7 @@
       "imageKey": "ortegaoll_t",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R' F' R U R U' R'",
       "algorithms": [
         {
           "id": "t-1",
@@ -364,7 +364,7 @@
       "imageKey": "ortegaoll_h",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2' U2' R U2' R2'",
       "algorithms": [
         {
           "id": "h-1",

@@ -12,7 +12,7 @@
       "imageKey": "cll_cll_as_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U R U2' R' y'",
       "algorithms": [
         {
           "id": "cll_as_1-1",
@@ -66,7 +66,7 @@
       "imageKey": "cll_cll_as_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U R' F R F' R U2' R'",
       "algorithms": [
         {
           "id": "cll_as_2-1",
@@ -176,7 +176,7 @@
       "imageKey": "cll_cll_as_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "L' U2' L U2' L F' L' F y2'",
       "algorithms": [
         {
           "id": "cll_as_3-1",
@@ -216,7 +216,7 @@
       "imageKey": "cll_cll_as_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' F R' F' R y2'",
       "algorithms": [
         {
           "id": "cll_as_4-1",
@@ -263,7 +263,7 @@
       "imageKey": "cll_cll_as_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R' F' R U2' R U2' R' y2'",
       "algorithms": [
         {
           "id": "cll_as_5-1",
@@ -303,7 +303,7 @@
       "imageKey": "cll_cll_as_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "U R U R' U' R' F R F' R U R' U R U2' R' y",
       "algorithms": [
         {
           "id": "cll_as_6-1",
@@ -427,7 +427,7 @@
       "imageKey": "cll_cll_h_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R2' U' R2' U R2' U R2' F'",
       "algorithms": [
         {
           "id": "cll_h_1-1",
@@ -481,7 +481,7 @@
       "imageKey": "cll_cll_h_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' F R F' R U' R' U' R U' R'",
       "algorithms": [
         {
           "id": "cll_h_2-1",
@@ -535,7 +535,7 @@
       "imageKey": "cll_cll_h_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F U R U' R' U R U' R' U R U' R' F' y'",
       "algorithms": [
         {
           "id": "cll_h_3-1",
@@ -631,7 +631,7 @@
       "imageKey": "cll_cll_h_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2' U2' R U2' R2' y'",
       "algorithms": [
         {
           "id": "cll_h_4-1",
@@ -685,7 +685,7 @@
       "imageKey": "cll_cll_l_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' F2' R U' R U2' R' F R U2' R' y'",
       "algorithms": [
         {
           "id": "cll_l_1-1",
@@ -774,7 +774,7 @@
       "imageKey": "cll_cll_l_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R' F2' R U' R' F2' R2' U2' R' y2'",
       "algorithms": [
         {
           "id": "cll_l_2-1",
@@ -863,7 +863,7 @@
       "imageKey": "cll_cll_l_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2' U R' U' R U R' U2' R U' R y2'",
       "algorithms": [
         {
           "id": "cll_l_3-1",
@@ -980,7 +980,7 @@
       "imageKey": "cll_cll_l_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' R' F R' F' R2' U2' R' y'",
       "algorithms": [
         {
           "id": "cll_l_4-1",
@@ -1034,7 +1034,7 @@
       "imageKey": "cll_cll_l_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U' R' F R F' y'",
       "algorithms": [
         {
           "id": "cll_l_5-1",
@@ -1088,7 +1088,7 @@
       "imageKey": "cll_cll_l_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' F' R U R U' R' F y2'",
       "algorithms": [
         {
           "id": "cll_l_6-1",
@@ -1135,7 +1135,7 @@
       "imageKey": "cll_cll_pi_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' R' U' R U R' U2' R' F R F' y'",
       "algorithms": [
         {
           "id": "cll_pi_1-1",
@@ -1203,7 +1203,7 @@
       "imageKey": "cll_cll_pi_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R' F' R U2' R U' R' U R U2' R'",
       "algorithms": [
         {
           "id": "cll_pi_2-1",
@@ -1264,7 +1264,7 @@
       "imageKey": "cll_cll_pi_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R2' U' R2' U' R2' U R2' F' y'",
       "algorithms": [
         {
           "id": "cll_pi_3-1",
@@ -1311,7 +1311,7 @@
       "imageKey": "cll_cll_pi_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U R U R' F R' F' R y2'",
       "algorithms": [
         {
           "id": "cll_pi_4-1",
@@ -1344,7 +1344,7 @@
       "imageKey": "cll_cll_pi_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' U2' R U R' F R' F' R U R y",
       "algorithms": [
         {
           "id": "cll_pi_5-1",
@@ -1426,7 +1426,7 @@
       "imageKey": "cll_cll_pi_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F U R U' R' U R U' R' F'",
       "algorithms": [
         {
           "id": "cll_pi_6-1",
@@ -1480,7 +1480,7 @@
       "imageKey": "cll_cll_sune_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F' L F L' U2' L' U2' L",
       "algorithms": [
         {
           "id": "cll_sune_1-1",
@@ -1520,7 +1520,7 @@
       "imageKey": "cll_cll_sune_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' R' U' R U' R' F R' F' R U R U' R'",
       "algorithms": [
         {
           "id": "cll_sune_2-1",
@@ -1574,7 +1574,7 @@
       "imageKey": "cll_cll_sune_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' F R F' R U R'",
       "algorithms": [
         {
           "id": "cll_sune_3-1",
@@ -1635,7 +1635,7 @@
       "imageKey": "cll_cll_sune_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' R' U2' R' F R F'",
       "algorithms": [
         {
           "id": "cll_sune_4-1",
@@ -1661,7 +1661,7 @@
       "imageKey": "cll_cll_sune_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' R' F R' F' R U' R U' R' y2'",
       "algorithms": [
         {
           "id": "cll_sune_5-1",
@@ -1736,7 +1736,7 @@
       "imageKey": "cll_cll_sune_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' R' U' R U' R'",
       "algorithms": [
         {
           "id": "cll_sune_6-1",
@@ -1769,7 +1769,7 @@
       "imageKey": "cll_cll_t_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R' F' R U R U' R' y",
       "algorithms": [
         {
           "id": "cll_t_1-1",
@@ -1795,7 +1795,7 @@
       "imageKey": "cll_cll_t_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F' L F L' U' L' U L y'",
       "algorithms": [
         {
           "id": "cll_t_2-1",
@@ -1849,7 +1849,7 @@
       "imageKey": "cll_cll_t_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' F2' U R U2' R' U F'",
       "algorithms": [
         {
           "id": "cll_t_3-1",
@@ -1910,7 +1910,7 @@
       "imageKey": "cll_cll_t_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2' F2' R U R' F R2' U2' R' U' R",
       "algorithms": [
         {
           "id": "cll_t_4-1",
@@ -2013,7 +2013,7 @@
       "imageKey": "cll_cll_t_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R U' R' U R U R' U R U' R' F' y2'",
       "algorithms": [
         {
           "id": "cll_t_5-1",
@@ -2088,7 +2088,7 @@
       "imageKey": "cll_cll_t_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' F R' F' R2' U2' R' U' R",
       "algorithms": [
         {
           "id": "cll_t_6-1",
@@ -2149,7 +2149,7 @@
       "imageKey": "cll_cll_u_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F U R U' R' F' y",
       "algorithms": [
         {
           "id": "cll_u_1-1",
@@ -2196,7 +2196,7 @@
       "imageKey": "cll_cll_u_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R U2' R' U2' R U' R2' U R",
       "algorithms": [
         {
           "id": "cll_u_2-1",
@@ -2348,7 +2348,7 @@
       "imageKey": "cll_cll_u_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F' R U R' F U2' R U' R' F' y2'",
       "algorithms": [
         {
           "id": "cll_u_3-1",
@@ -2500,7 +2500,7 @@
       "imageKey": "cll_cll_u_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R' U2' R U R' U R' F R F' y",
       "algorithms": [
         {
           "id": "cll_u_4-1",
@@ -2589,7 +2589,7 @@
       "imageKey": "cll_cll_u_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U' R' U R U' R' F R' F' R2' U R'",
       "algorithms": [
         {
           "id": "cll_u_5-1",
@@ -2671,7 +2671,7 @@
       "imageKey": "cll_cll_u_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R' U' R U2' R' F R' F' R U' R",
       "algorithms": [
         {
           "id": "cll_u_6-1",

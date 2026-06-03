@@ -12,7 +12,7 @@
       "imageKey": "l2c_l2c_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw' U' Rw U' Rw' U2'",
       "algorithms": [
         {
           "id": "l2c_1-1",
@@ -45,7 +45,7 @@
       "imageKey": "l2c_l2c_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U' M' U2' M U' Rw'",
       "algorithms": [
         {
           "id": "l2c_2-1",
@@ -64,7 +64,7 @@
       "imageKey": "l2c_l2c_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U' Rw'",
       "algorithms": [
         {
           "id": "l2c_3-1",
@@ -83,7 +83,7 @@
       "imageKey": "l2c_l2c_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U Rw' U Rw U' Rw'",
       "algorithms": [
         {
           "id": "l2c_4-1",
@@ -102,7 +102,7 @@
       "imageKey": "l2c_l2c_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U Rw' U Rw U Rw'",
       "algorithms": [
         {
           "id": "l2c_5-1",
@@ -121,7 +121,7 @@
       "imageKey": "l2c_l2c_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw' U' Rw U2' Rw'",
       "algorithms": [
         {
           "id": "l2c_6-1",
@@ -140,7 +140,7 @@
       "imageKey": "l2c_l2c_7",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U Rw'",
       "algorithms": [
         {
           "id": "l2c_7-1",
@@ -159,7 +159,7 @@
       "imageKey": "l2c_l2c_8",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U' Rw' U' Rw U Rw'",
       "algorithms": [
         {
           "id": "l2c_8-1",
@@ -178,7 +178,7 @@
       "imageKey": "l2c_l2c_9",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U' Rw' U' Rw U' Rw'",
       "algorithms": [
         {
           "id": "l2c_9-1",
@@ -197,7 +197,7 @@
       "imageKey": "l2c_l2c_10",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw' U Rw U2' Rw'",
       "algorithms": [
         {
           "id": "l2c_10-1",
@@ -216,7 +216,7 @@
       "imageKey": "l2c_l2c_11",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "U Rw U' Rw' U Rw U' Rw' U Rw U' Rw' U2'",
       "algorithms": [
         {
           "id": "l2c_11-1",
@@ -235,7 +235,7 @@
       "imageKey": "l2c_l2c_12",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U Rw' U2' Rw U Rw'",
       "algorithms": [
         {
           "id": "l2c_12-1",
@@ -254,7 +254,7 @@
       "imageKey": "l2c_l2c_13",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw'",
       "algorithms": [
         {
           "id": "l2c_13-1",
@@ -273,7 +273,7 @@
       "imageKey": "l2c_l2c_14",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw' U Rw U' Rw'",
       "algorithms": [
         {
           "id": "l2c_14-1",
@@ -292,7 +292,7 @@
       "imageKey": "l2c_l2c_15",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw' U' Rw U' Rw'",
       "algorithms": [
         {
           "id": "l2c_15-1",
@@ -311,7 +311,7 @@
       "imageKey": "l2c_l2c_16",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U Rw' U' Rw U Rw'",
       "algorithms": [
         {
           "id": "l2c_16-1",
@@ -330,7 +330,7 @@
       "imageKey": "l2c_l2c_17",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U' Rw' U Rw U' Rw'",
       "algorithms": [
         {
           "id": "l2c_17-1",
@@ -349,7 +349,7 @@
       "imageKey": "l2c_l2c_18",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw' U' M' U2' M",
       "algorithms": [
         {
           "id": "l2c_18-1",

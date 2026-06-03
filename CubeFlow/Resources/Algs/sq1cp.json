@@ -12,7 +12,7 @@
       "imageKey": "sq1cp_adj_solved",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ 0,3 / 0,-3 / 0,3 / -3,0 / 3,-3 /",
       "algorithms": [
         {
           "id": "adj_solved-1",
@@ -31,7 +31,7 @@
       "imageKey": "sq1cp_opp_solved",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ -3,-3 / 3,0 / -3,-3 / 3,0 / -3,-3 /",
       "algorithms": [
         {
           "id": "opp_solved-1",
@@ -50,7 +50,7 @@
       "imageKey": "sq1cp_solved_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ -3,0 / 3,0 / -3,0 / 0,3 / 3,-3 /",
       "algorithms": [
         {
           "id": "solved_adj-1",
@@ -69,7 +69,7 @@
       "imageKey": "sq1cp_solved_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ -3,-3 / 0,-3 / -3,-3 / 0,-3 / -3,-3 /",
       "algorithms": [
         {
           "id": "solved_opp-1",
@@ -88,7 +88,7 @@
       "imageKey": "sq1cp_adj_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ 0,3 / -3,-3 / 3,0 /",
       "algorithms": [
         {
           "id": "adj_adj-1",
@@ -107,7 +107,7 @@
       "imageKey": "sq1cp_opp_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ 3,0 / -3,0 / 3,0 / -3,0 /",
       "algorithms": [
         {
           "id": "opp_adj-1",
@@ -126,7 +126,7 @@
       "imageKey": "sq1cp_adj_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ 0,-3 / 0,3 / 0,-3 / 0,3 /",
       "algorithms": [
         {
           "id": "adj_opp-1",
@@ -145,7 +145,7 @@
       "imageKey": "sq1cp_opp_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/ -3,3 / 3,-3 /",
       "algorithms": [
         {
           "id": "opp_opp-1",

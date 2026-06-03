@@ -12,7 +12,7 @@
       "imageKey": "sq1linparitypll_adj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,-4/0,-2/0,2/-4,0/2,0/0,-2/-2,0/0,-3/0,3/0,-3/3,0/",
       "algorithms": [
         {
           "id": "adj-1",
@@ -31,7 +31,7 @@
       "imageKey": "sq1linparitypll_opp",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "-3,0/-3,-3/-3,0/-1,5/4,-2/0,2/-4,2/-2,4/1,0/-3,-3/",
       "algorithms": [
         {
           "id": "opp-1",
@@ -50,7 +50,7 @@
       "imageKey": "sq1linparitypll_oa",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,-1/-2,-2/-1,0/3,3/1,0/-2,-2/2,0/2,2/-1,0/-3,-3/",
       "algorithms": [
         {
           "id": "oa-1",
@@ -69,7 +69,7 @@
       "imageKey": "sq1linparitypll_ob",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/2,2/0,-2/3,3/1,0/-2,-2/-2,0/2,2/-1,0/-3,-3/",
       "algorithms": [
         {
           "id": "ob-1",
@@ -88,7 +88,7 @@
       "imageKey": "sq1linparitypll_w",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,0/2,-2/4,0/4,0/-3,2/-1,0/0,-3/4,0/-1,2/0,1",
       "algorithms": [
         {
           "id": "w-1",
@@ -107,7 +107,7 @@
       "imageKey": "sq1linparitypll_m",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/-4,2/4,-2/2,0/3,0/1,2/-2,0/-4,0/4,0/-2,0/-1,-2/-3,0/",
       "algorithms": [
         {
           "id": "m-1",
@@ -126,7 +126,7 @@
       "imageKey": "sq1linparitypll_pn",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/4,-1/0,-2/0,2/-4,0/2,0/0,-2/-2,0/0,3/3,0/",
       "algorithms": [
         {
           "id": "pn-1",
@@ -145,7 +145,7 @@
       "imageKey": "sq1linparitypll_pj",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,-4/0,-2/0,2/-4,0/2,0/0,-2/1,0/3,0/3,0/",
       "algorithms": [
         {
           "id": "pj-1",
@@ -164,7 +164,7 @@
       "imageKey": "sq1linparitypll_x",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/0,-3/-1,2/4,0/3,0/0,1/-2,-3/0,-4/0,-4/-4,-5/-1,0/-3,0/",
       "algorithms": [
         {
           "id": "x-1",
@@ -183,7 +183,7 @@
       "imageKey": "sq1linparitypll_q",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/5,0/-3,-3/-4,1/0,-4/-2,-2/-4,0/-1,4/-3,-3/-5,0/-1,0",
       "algorithms": [
         {
           "id": "q-1",
@@ -202,7 +202,7 @@
       "imageKey": "sq1linparitypll_ka",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/-3,0/1,-1/0,-2/0,2/-4,0/2,0/0,-2/-5,0/-3,-3/",
       "algorithms": [
         {
           "id": "ka-1",
@@ -221,7 +221,7 @@
       "imageKey": "sq1linparitypll_kb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/2,-3/3,3/1,0/2,0/4,0/-4,0/2,0/-4,0/0,-3/3,3/-5,0/-1,0",
       "algorithms": [
         {
           "id": "kb-1",
@@ -240,7 +240,7 @@
       "imageKey": "sq1linparitypll_sa",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,3/-3,0/-1,4/4,0/-4,0/0,-4/0,-4/4,0/0,1/3,0/",
       "algorithms": [
         {
           "id": "sa-1",
@@ -259,7 +259,7 @@
       "imageKey": "sq1linparitypll_sb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/3,-1/3,0/-3,0/-1,1/0,-4/-2,2/0,-4/-4,0/0,-2/-1,0/-3,0/",
       "algorithms": [
         {
           "id": "sb-1",
@@ -278,7 +278,7 @@
       "imageKey": "sq1linparitypll_ba",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/0,3/0,-1/0,2/0,-2/4,0/-2,0/0,2/-2,-1/3,-3/0,-3/",
       "algorithms": [
         {
           "id": "ba-1",
@@ -297,7 +297,7 @@
       "imageKey": "sq1linparitypll_bb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,0/-4,0/0,-4/1,-4/-1,0/0,-3/4,0/-1,-4/-2,4/-1,0",
       "algorithms": [
         {
           "id": "bb-1",
@@ -316,7 +316,7 @@
       "imageKey": "sq1linparitypll_ca",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/4,0/5,0/4,0/0,-1/-2,1/2,0/-1,0/-3,0/0,-1/-3,0/3,0/0,1",
       "algorithms": [
         {
           "id": "ca-1",
@@ -335,7 +335,7 @@
       "imageKey": "sq1linparitypll_cb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "0,1/-3,0/3,0/0,1/3,0/1,0/-2,0/2,-1/0,1/-4,0/-5,0/-4,0/-1,0/-3,0/",
       "algorithms": [
         {
           "id": "cb-1",
@@ -354,7 +354,7 @@
       "imageKey": "sq1linparitypll_da",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,0/2,-4/1,4/-4,0/0,3/1,0/-1,4/0,4/4,0/2,0/-1,0/-3,0/",
       "algorithms": [
         {
           "id": "da-1",
@@ -373,7 +373,7 @@
       "imageKey": "sq1linparitypll_db",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/-3,3/2,1/0,-2/2,0/-4,0/0,2/0,-2/0,1/0,-3/0,-3/",
       "algorithms": [
         {
           "id": "db-1",
@@ -392,7 +392,7 @@
       "imageKey": "sq1linparitypll_pa",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/4,-1/0,-2/0,2/-4,0/2,0/0,-2/1,0/-3,0/-3,3/3,0/",
       "algorithms": [
         {
           "id": "pa-1",
@@ -411,7 +411,7 @@
       "imageKey": "sq1linparitypll_pb",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/3,-3/3,0/-1,0/0,2/-2,0/4,0/0,-2/0,2/-4,1/3,0/",
       "algorithms": [
         {
           "id": "pb-1",

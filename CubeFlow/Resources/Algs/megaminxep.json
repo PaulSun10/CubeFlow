@@ -12,7 +12,7 @@
       "imageKey": "megaminxep_ep_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2 U2 R2' U R2 U2 R2'",
       "algorithms": [
         {
           "id": "ep_1-1",
@@ -31,7 +31,7 @@
       "imageKey": "megaminxep_ep_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R2 U2' R2' U' R2 U2' R2'",
       "algorithms": [
         {
           "id": "ep_2-1",
@@ -50,7 +50,7 @@
       "imageKey": "megaminxep_ep_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U R2' F' R U R U' R' F R U' R'",
       "algorithms": [
         {
           "id": "ep_3-1",
@@ -69,7 +69,7 @@
       "imageKey": "megaminxep_ep_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "U2 R' U' R U' R U R2' U R U' R U' R'",
       "algorithms": [
         {
           "id": "ep_4-1",
@@ -88,7 +88,7 @@
       "imageKey": "megaminxep_ep_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "R U2' L U2' R' U L' R U' L U2' R' L'",
       "algorithms": [
         {
           "id": "ep_5-1",

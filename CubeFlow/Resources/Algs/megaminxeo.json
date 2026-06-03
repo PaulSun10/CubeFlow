@@ -12,7 +12,7 @@
       "imageKey": "megaminxeo_eo1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F U R U' R' F'",
       "algorithms": [
         {
           "id": "eo1-1",
@@ -31,7 +31,7 @@
       "imageKey": "megaminxeo_eo2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F R U R' U' F'",
       "algorithms": [
         {
           "id": "eo2-1",
@@ -50,7 +50,7 @@
       "imageKey": "megaminxeo_eo3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F U2 F R' F' R2 U2' R' F'",
       "algorithms": [
         {
           "id": "eo3-1",

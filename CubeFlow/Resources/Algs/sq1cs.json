@@ -12,7 +12,7 @@
       "imageKey": "sq1cs_kite_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/",
       "algorithms": [
         {
           "id": "kite_kite-1",
@@ -31,7 +31,7 @@
       "imageKey": "sq1cs_left_fist_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/-3,0/",
       "algorithms": [
         {
           "id": "left_fist_right_fist-1",
@@ -50,7 +50,7 @@
       "imageKey": "sq1cs_right_fist_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/",
       "algorithms": [
         {
           "id": "right_fist_left_fist-1",
@@ -69,7 +69,7 @@
       "imageKey": "sq1cs_barrel_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/",
       "algorithms": [
         {
           "id": "barrel_barrel-1",
@@ -88,7 +88,7 @@
       "imageKey": "sq1cs_muffin_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/-2,0/",
       "algorithms": [
         {
           "id": "muffin_square-1",
@@ -107,7 +107,7 @@
       "imageKey": "sq1cs_square_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/0,2/",
       "algorithms": [
         {
           "id": "square_muffin-1",
@@ -126,7 +126,7 @@
       "imageKey": "sq1cs_shield_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/",
       "algorithms": [
         {
           "id": "shield_square-1",
@@ -145,7 +145,7 @@
       "imageKey": "sq1cs_square_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/",
       "algorithms": [
         {
           "id": "square_shield-1",
@@ -164,7 +164,7 @@
       "imageKey": "sq1cs_right_paw_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/4,-1/",
       "algorithms": [
         {
           "id": "right_paw_left_paw-1",
@@ -183,7 +183,7 @@
       "imageKey": "sq1cs_left_paw_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,-4/",
       "algorithms": [
         {
           "id": "left_paw_right_paw-1",
@@ -202,7 +202,7 @@
       "imageKey": "sq1cs_muffin_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/2,0/",
       "algorithms": [
         {
           "id": "muffin_muffin-1",
@@ -221,7 +221,7 @@
       "imageKey": "sq1cs_shield_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,0/",
       "algorithms": [
         {
           "id": "shield_shield-1",
@@ -240,7 +240,7 @@
       "imageKey": "sq1cs_scallop_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/",
       "algorithms": [
         {
           "id": "scallop_scallop-1",
@@ -259,7 +259,7 @@
       "imageKey": "sq1cs_barrel_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/3,0/",
       "algorithms": [
         {
           "id": "barrel_kite-1",
@@ -278,7 +278,7 @@
       "imageKey": "sq1cs_kite_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-3/",
       "algorithms": [
         {
           "id": "kite_barrel-1",
@@ -297,7 +297,7 @@
       "imageKey": "sq1cs_scallop_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/",
       "algorithms": [
         {
           "id": "scallop_kite-1",
@@ -316,7 +316,7 @@
       "imageKey": "sq1cs_kite_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/",
       "algorithms": [
         {
           "id": "kite_scallop-1",
@@ -335,7 +335,7 @@
       "imageKey": "sq1cs_star_6_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/4,-1/-2,-4/",
       "algorithms": [
         {
           "id": "star_6_2-1",
@@ -354,7 +354,7 @@
       "imageKey": "sq1cs_6_2_star",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,-4/4,2/",
       "algorithms": [
         {
           "id": "6_2_star-1",
@@ -373,7 +373,7 @@
       "imageKey": "sq1cs_star_8",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/4,2/",
       "algorithms": [
         {
           "id": "star_8-1",
@@ -392,7 +392,7 @@
       "imageKey": "sq1cs_8_star",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/2,1/-2,-4/",
       "algorithms": [
         {
           "id": "8_star-1",
@@ -411,7 +411,7 @@
       "imageKey": "sq1cs_star_4_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,0/2,2/",
       "algorithms": [
         {
           "id": "star_4_4-1",
@@ -430,7 +430,7 @@
       "imageKey": "sq1cs_4_4_star",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,1/-2,-2/",
       "algorithms": [
         {
           "id": "4_4_star-1",
@@ -449,7 +449,7 @@
       "imageKey": "sq1cs_left_4_2_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/-2,-3/",
       "algorithms": [
         {
           "id": "left_4_2_parallel_edges-1",
@@ -468,7 +468,7 @@
       "imageKey": "sq1cs_parallel_edges_left_4_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/-3,-2/",
       "algorithms": [
         {
           "id": "parallel_edges_left_4_2-1",
@@ -487,7 +487,7 @@
       "imageKey": "sq1cs_right_4_2_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/2,3/",
       "algorithms": [
         {
           "id": "right_4_2_parallel_edges-1",
@@ -506,7 +506,7 @@
       "imageKey": "sq1cs_parallel_edges_right_4_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-2,3/-4,0/",
       "algorithms": [
         {
           "id": "parallel_edges_right_4_2-1",
@@ -525,7 +525,7 @@
       "imageKey": "sq1cs_right_5_1_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/0,4/",
       "algorithms": [
         {
           "id": "right_5_1_perpendicular_edges-1",
@@ -544,7 +544,7 @@
       "imageKey": "sq1cs_perpendicular_edges_right_5_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/4,0/",
       "algorithms": [
         {
           "id": "perpendicular_edges_right_5_1-1",
@@ -563,7 +563,7 @@
       "imageKey": "sq1cs_left_5_1_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/0,-4/",
       "algorithms": [
         {
           "id": "left_5_1_perpendicular_edges-1",
@@ -582,7 +582,7 @@
       "imageKey": "sq1cs_perpendicular_edges_left_5_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-4,0/",
       "algorithms": [
         {
           "id": "perpendicular_edges_left_5_1-1",
@@ -601,7 +601,7 @@
       "imageKey": "sq1cs_4_1_1_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-2,0/",
       "algorithms": [
         {
           "id": "4_1_1_perpendicular_edges-1",
@@ -620,7 +620,7 @@
       "imageKey": "sq1cs_perpendicular_edges_4_1_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/0,2/",
       "algorithms": [
         {
           "id": "perpendicular_edges_4_1_1-1",
@@ -639,7 +639,7 @@
       "imageKey": "sq1cs_3_2_1_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/0,2/",
       "algorithms": [
         {
           "id": "3_2_1_perpendicular_edges-1",
@@ -658,7 +658,7 @@
       "imageKey": "sq1cs_perpendicular_edges_3_2_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,-1/",
       "algorithms": [
         {
           "id": "perpendicular_edges_3_2_1-1",
@@ -677,7 +677,7 @@
       "imageKey": "sq1cs_3_1_2_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/1,2/",
       "algorithms": [
         {
           "id": "3_1_2_perpendicular_edges-1",
@@ -696,7 +696,7 @@
       "imageKey": "sq1cs_perpendicular_edges_3_1_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,0/",
       "algorithms": [
         {
           "id": "perpendicular_edges_3_1_2-1",
@@ -715,7 +715,7 @@
       "imageKey": "sq1cs_3_3_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,-4/0,2/",
       "algorithms": [
         {
           "id": "3_3_perpendicular_edges-1",
@@ -734,7 +734,7 @@
       "imageKey": "sq1cs_perpendicular_edges_3_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/5,-2/2,0/",
       "algorithms": [
         {
           "id": "perpendicular_edges_3_3-1",
@@ -753,7 +753,7 @@
       "imageKey": "sq1cs_right_5_1_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/-3,2/",
       "algorithms": [
         {
           "id": "right_5_1_pair-1",
@@ -772,7 +772,7 @@
       "imageKey": "sq1cs_pair_right_5_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/2,-3/",
       "algorithms": [
         {
           "id": "pair_right_5_1-1",
@@ -791,7 +791,7 @@
       "imageKey": "sq1cs_left_5_1_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,3/2,1/3,-2/",
       "algorithms": [
         {
           "id": "left_5_1_pair-1",
@@ -810,7 +810,7 @@
       "imageKey": "sq1cs_pair_left_5_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1 / 3,0 / 2,1 / 2,-3 /",
       "algorithms": [
         {
           "id": "pair_left_5_1-1",
@@ -829,7 +829,7 @@
       "imageKey": "sq1cs_4_1_1_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/-4,1/0,-4/",
       "algorithms": [
         {
           "id": "4_1_1_pair-1",
@@ -848,7 +848,7 @@
       "imageKey": "sq1cs_pair_4_1_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/-4,1/4,0/",
       "algorithms": [
         {
           "id": "pair_4_1_1-1",
@@ -867,7 +867,7 @@
       "imageKey": "sq1cs_2_2_2_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,-1/2,0/",
       "algorithms": [
         {
           "id": "2_2_2_pair-1",
@@ -886,7 +886,7 @@
       "imageKey": "sq1cs_pair_2_2_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,0/0,-2/",
       "algorithms": [
         {
           "id": "pair_2_2_2-1",
@@ -905,7 +905,7 @@
       "imageKey": "sq1cs_left_4_2_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/2,1/-2,0/",
       "algorithms": [
         {
           "id": "left_4_2_pair-1",
@@ -924,7 +924,7 @@
       "imageKey": "sq1cs_pair_left_4_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/-2,-1/0,-2/",
       "algorithms": [
         {
           "id": "pair_left_4_2-1",
@@ -943,7 +943,7 @@
       "imageKey": "sq1cs_right_4_2_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,0/0,-4/",
       "algorithms": [
         {
           "id": "right_4_2_pair-1",
@@ -962,7 +962,7 @@
       "imageKey": "sq1cs_pair_right_4_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/2,0/",
       "algorithms": [
         {
           "id": "pair_right_4_2-1",
@@ -981,7 +981,7 @@
       "imageKey": "sq1cs_6_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/0,-4/",
       "algorithms": [
         {
           "id": "6_pair-1",
@@ -1000,7 +1000,7 @@
       "imageKey": "sq1cs_pair_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/2,1/4,0/",
       "algorithms": [
         {
           "id": "pair_6-1",
@@ -1019,7 +1019,7 @@
       "imageKey": "sq1cs_right_fist_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/0,4/",
       "algorithms": [
         {
           "id": "right_fist_left_paw-1",
@@ -1038,7 +1038,7 @@
       "imageKey": "sq1cs_left_paw_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-4,0/",
       "algorithms": [
         {
           "id": "left_paw_right_fist-1",
@@ -1057,7 +1057,7 @@
       "imageKey": "sq1cs_left_fist_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/1,0/",
       "algorithms": [
         {
           "id": "left_fist_right_paw-1",
@@ -1076,7 +1076,7 @@
       "imageKey": "sq1cs_right_paw_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/0,-1/",
       "algorithms": [
         {
           "id": "right_paw_left_fist-1",
@@ -1095,7 +1095,7 @@
       "imageKey": "sq1cs_right_paw_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,1/-2,-2/1,-2/",
       "algorithms": [
         {
           "id": "right_paw_right_paw-1",
@@ -1114,7 +1114,7 @@
       "imageKey": "sq1cs_muffin_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/-3,0/",
       "algorithms": [
         {
           "id": "muffin_shield-1",
@@ -1133,7 +1133,7 @@
       "imageKey": "sq1cs_shield_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/-2,-1/0,3/",
       "algorithms": [
         {
           "id": "shield_muffin-1",
@@ -1152,7 +1152,7 @@
       "imageKey": "sq1cs_scallop_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,0/-4,0/",
       "algorithms": [
         {
           "id": "scallop_barrel-1",
@@ -1171,7 +1171,7 @@
       "imageKey": "sq1cs_barrel_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,-1/0,4/",
       "algorithms": [
         {
           "id": "barrel_scallop-1",
@@ -1190,7 +1190,7 @@
       "imageKey": "sq1cs_right_paw_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/2,0/-1,0/0,1",
       "algorithms": [
         {
           "id": "right_paw_square-1",
@@ -1209,7 +1209,7 @@
       "imageKey": "sq1cs_square_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/0,-2/0,1/-1,0",
       "algorithms": [
         {
           "id": "square_right_paw-1",
@@ -1228,7 +1228,7 @@
       "imageKey": "sq1cs_left_paw_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/2,0/-2,3/",
       "algorithms": [
         {
           "id": "left_paw_square-1",
@@ -1247,7 +1247,7 @@
       "imageKey": "sq1cs_square_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/0,-2/-3,2/",
       "algorithms": [
         {
           "id": "square_left_paw-1",
@@ -1266,7 +1266,7 @@
       "imageKey": "sq1cs_scallop_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/-3,0/-1,-2/4,0/-2,0/",
       "algorithms": [
         {
           "id": "scallop_square-1",
@@ -1285,7 +1285,7 @@
       "imageKey": "sq1cs_square_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,3/2,1/0,-4/0,2/",
       "algorithms": [
         {
           "id": "square_scallop-1",
@@ -1304,7 +1304,7 @@
       "imageKey": "sq1cs_4_1_1_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/0,-4/-3,2/",
       "algorithms": [
         {
           "id": "4_1_1_parallel_edges-1",
@@ -1323,7 +1323,7 @@
       "imageKey": "sq1cs_parallel_edges_4_1_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-4,0/2,-3/",
       "algorithms": [
         {
           "id": "parallel_edges_4_1_1-1",
@@ -1342,7 +1342,7 @@
       "imageKey": "sq1cs_6_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/-2,-4/-3,-2/",
       "algorithms": [
         {
           "id": "6_parallel_edges-1",
@@ -1361,7 +1361,7 @@
       "imageKey": "sq1cs_parallel_edges_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/-2,-4/-3,-2/",
       "algorithms": [
         {
           "id": "parallel_edges_6-1",
@@ -1380,7 +1380,7 @@
       "imageKey": "sq1cs_3_2_1_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-2,3/-4,0/",
       "algorithms": [
         {
           "id": "3_2_1_parallel_edges-1",
@@ -1399,7 +1399,7 @@
       "imageKey": "sq1cs_parallel_edges_3_2_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/3,2/",
       "algorithms": [
         {
           "id": "parallel_edges_3_2_1-1",
@@ -1418,7 +1418,7 @@
       "imageKey": "sq1cs_3_1_2_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/-2,-3/",
       "algorithms": [
         {
           "id": "3_1_2_parallel_edges-1",
@@ -1437,7 +1437,7 @@
       "imageKey": "sq1cs_parallel_edges_3_1_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/-3,-2/",
       "algorithms": [
         {
           "id": "parallel_edges_3_1_2-1",
@@ -1456,7 +1456,7 @@
       "imageKey": "sq1cs_3_3_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/2,0/2,-1/",
       "algorithms": [
         {
           "id": "3_3_parallel_edges-1",
@@ -1475,7 +1475,7 @@
       "imageKey": "sq1cs_parallel_edges_3_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,2/0,2/-1,2/",
       "algorithms": [
         {
           "id": "parallel_edges_3_3-1",
@@ -1494,7 +1494,7 @@
       "imageKey": "sq1cs_left_5_1_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/0,4/3,0/",
       "algorithms": [
         {
           "id": "left_5_1_parallel_edges-1",
@@ -1513,7 +1513,7 @@
       "imageKey": "sq1cs_parallel_edges_left_5_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,1/0,4/4,-1/",
       "algorithms": [
         {
           "id": "parallel_edges_left_5_1-1",
@@ -1532,7 +1532,7 @@
       "imageKey": "sq1cs_right_5_1_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/0,-4/-3,0/",
       "algorithms": [
         {
           "id": "right_5_1_parallel_edges-1",
@@ -1551,7 +1551,7 @@
       "imageKey": "sq1cs_parallel_edges_right_5_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-4,0/0,-3/",
       "algorithms": [
         {
           "id": "parallel_edges_right_5_1-1",
@@ -1570,7 +1570,7 @@
       "imageKey": "sq1cs_right_4_2_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/3,-2/4,-3/",
       "algorithms": [
         {
           "id": "right_4_2_perpendicular_edges-1",
@@ -1589,11 +1589,11 @@
       "imageKey": "sq1cs_perpendicular_edges_right_4_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/2,-3/3,-4/",
       "algorithms": [
         {
-          "id": "perpendicular_edges_right_4_2-1",
-          "notation": "/-4,3/-3,2/-1,-2/0,-3/",
+          "id": "right_4_2_perpendicular_edges_2-1",
+          "notation": "/-3,4/-2,3/-1,-2/-3,0/",
           "isPrimary": true,
           "source": "SpeedCubeDB",
           "tags": []
@@ -1601,20 +1601,20 @@
       ]
     },
     {
-      "id": "right_4_2_perpendicular_edges_2",
-      "displayName": "Right 4-2 / Perpendicular Edges",
-      "name": "Right 4-2 / Perpendicular Edges",
+      "id": "left_4_2_perpendicular_edges",
+      "displayName": "Left 4-2 / Perpendicular Edges",
+      "name": "Left 4-2 / Perpendicular Edges",
       "subgroup": "5 Slices",
-      "imageKey": "sq1cs_right_4_2_perpendicular_edges_2",
+      "imageKey": "sq1cs_left_4_2_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/-4,1/4,0/-2,3/",
       "algorithms": [
         {
-          "id": "right_4_2_perpendicular_edges_2-1",
-          "notation": "/-3,4/-2,3/-1,-2/-3,0/",
+          "id": "left_4_2_perpendicular_edges-1",
+          "notation": "/2,-3/-4,0/4,-1/-3,0/-1,1",
           "isPrimary": true,
-          "source": "SpeedCubeDB",
+          "source": "Manual verification",
           "tags": []
         }
       ]
@@ -1627,7 +1627,7 @@
       "imageKey": "sq1cs_perpendicular_edges_left_4_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/4,-3/0,3/",
       "algorithms": [
         {
           "id": "perpendicular_edges_left_4_2-1",
@@ -1646,7 +1646,7 @@
       "imageKey": "sq1cs_6_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/2,-3/3,4/",
       "algorithms": [
         {
           "id": "6_perpendicular_edges-1",
@@ -1665,7 +1665,7 @@
       "imageKey": "sq1cs_perpendicular_edges_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/-2,3/3,2/",
       "algorithms": [
         {
           "id": "perpendicular_edges_6-1",
@@ -1684,7 +1684,7 @@
       "imageKey": "sq1cs_3_2_1_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/3,-2/0,-5/",
       "algorithms": [
         {
           "id": "3_2_1_pair-1",
@@ -1703,7 +1703,7 @@
       "imageKey": "sq1cs_pair_3_2_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/-2,-1/2,-3/5,0/",
       "algorithms": [
         {
           "id": "pair_3_2_1-1",
@@ -1722,7 +1722,7 @@
       "imageKey": "sq1cs_3_1_2_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/3,-4/0,5/",
       "algorithms": [
         {
           "id": "3_1_2_pair-1",
@@ -1741,7 +1741,7 @@
       "imageKey": "sq1cs_pair_3_1_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/0,4/2,-2/0,-2",
       "algorithms": [
         {
           "id": "pair_3_1_2-1",
@@ -1760,7 +1760,7 @@
       "imageKey": "sq1cs_3_3_pair",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/-3,0/0,2/",
       "algorithms": [
         {
           "id": "3_3_pair-1",
@@ -1779,7 +1779,7 @@
       "imageKey": "sq1cs_pair_3_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/-2,-1/0,3/-2,0/",
       "algorithms": [
         {
           "id": "pair_3_3-1",
@@ -1798,7 +1798,7 @@
       "imageKey": "sq1cs_left_paw_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,2/2,2/-1,0/",
       "algorithms": [
         {
           "id": "left_paw_left_paw-1",
@@ -1817,7 +1817,7 @@
       "imageKey": "sq1cs_left_fist_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/-5,2/0,4/0,-2/",
       "algorithms": [
         {
           "id": "left_fist_left_paw-1",
@@ -1836,7 +1836,7 @@
       "imageKey": "sq1cs_left_paw_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,5/-4,0/2,0/",
       "algorithms": [
         {
           "id": "left_paw_left_fist-1",
@@ -1855,7 +1855,7 @@
       "imageKey": "sq1cs_right_fist_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/2,0/",
       "algorithms": [
         {
           "id": "right_fist_right_paw-1",
@@ -1874,7 +1874,7 @@
       "imageKey": "sq1cs_right_paw_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/0,-2/",
       "algorithms": [
         {
           "id": "right_paw_right_fist-1",
@@ -1893,7 +1893,7 @@
       "imageKey": "sq1cs_right_paw_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/2,1/-2,0/1,0/",
       "algorithms": [
         {
           "id": "right_paw_muffin-1",
@@ -1912,7 +1912,7 @@
       "imageKey": "sq1cs_muffin_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/0,-2/0,1/",
       "algorithms": [
         {
           "id": "muffin_right_paw-1",
@@ -1931,7 +1931,7 @@
       "imageKey": "sq1cs_left_paw_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/-2,-1/2,0/-1,0/",
       "algorithms": [
         {
           "id": "left_paw_muffin-1",
@@ -1950,7 +1950,7 @@
       "imageKey": "sq1cs_muffin_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,2/0,-2/0,1/",
       "algorithms": [
         {
           "id": "muffin_left_paw-1",
@@ -1969,7 +1969,7 @@
       "imageKey": "sq1cs_left_paw_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-2,3/0,1/",
       "algorithms": [
         {
           "id": "left_paw_shield-1",
@@ -1988,7 +1988,7 @@
       "imageKey": "sq1cs_shield_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/-3,2/-1,0/",
       "algorithms": [
         {
           "id": "shield_left_paw-1",
@@ -2007,7 +2007,7 @@
       "imageKey": "sq1cs_right_paw_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/2,-3/-1,0/",
       "algorithms": [
         {
           "id": "right_paw_shield-1",
@@ -2026,7 +2026,7 @@
       "imageKey": "sq1cs_shield_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/3,-2/0,1/",
       "algorithms": [
         {
           "id": "shield_right_paw-1",
@@ -2045,7 +2045,7 @@
       "imageKey": "sq1cs_right_fist_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/5,-2/0,-2/1,2/",
       "algorithms": [
         {
           "id": "right_fist_shield-1",
@@ -2064,7 +2064,7 @@
       "imageKey": "sq1cs_shield_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/5,-2/0,-2/1,2/",
       "algorithms": [
         {
           "id": "shield_right_fist-1",
@@ -2083,7 +2083,7 @@
       "imageKey": "sq1cs_left_fist_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/5,-2/0,-2/1,0/",
       "algorithms": [
         {
           "id": "left_fist_shield-1",
@@ -2102,7 +2102,7 @@
       "imageKey": "sq1cs_shield_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,-5/2,0/0,-1/",
       "algorithms": [
         {
           "id": "shield_left_fist-1",
@@ -2121,7 +2121,7 @@
       "imageKey": "sq1cs_muffin_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/3,-4/0,-2/",
       "algorithms": [
         {
           "id": "muffin_scallop-1",
@@ -2140,7 +2140,7 @@
       "imageKey": "sq1cs_scallop_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/4,-3/2,0/",
       "algorithms": [
         {
           "id": "scallop_muffin-1",
@@ -2159,7 +2159,7 @@
       "imageKey": "sq1cs_left_fist_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,-4/0,4/-1,0/",
       "algorithms": [
         {
           "id": "left_fist_scallop-1",
@@ -2178,7 +2178,7 @@
       "imageKey": "sq1cs_scallop_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/4,-1/-4,0/0,1/",
       "algorithms": [
         {
           "id": "scallop_left_fist-1",
@@ -2197,7 +2197,7 @@
       "imageKey": "sq1cs_right_fist_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,4/0,-4/1,0/",
       "algorithms": [
         {
           "id": "right_fist_scallop-1",
@@ -2216,7 +2216,7 @@
       "imageKey": "sq1cs_scallop_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/-4,1/4,0/0,-1/",
       "algorithms": [
         {
           "id": "scallop_right_fist-1",
@@ -2235,7 +2235,7 @@
       "imageKey": "sq1cs_left_paw_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/3,-2/-3,-2/",
       "algorithms": [
         {
           "id": "left_paw_scallop-1",
@@ -2254,7 +2254,7 @@
       "imageKey": "sq1cs_scallop_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/2,-3/2,3/",
       "algorithms": [
         {
           "id": "scallop_left_paw-1",
@@ -2273,7 +2273,7 @@
       "imageKey": "sq1cs_right_paw_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/-3,2/3,2/",
       "algorithms": [
         {
           "id": "right_paw_scallop-1",
@@ -2292,7 +2292,7 @@
       "imageKey": "sq1cs_scallop_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,0/-2,-1/-2,3/-2,-3/",
       "algorithms": [
         {
           "id": "scallop_right_paw-1",
@@ -2311,7 +2311,7 @@
       "imageKey": "sq1cs_shield_scallop",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,2/0,4/0,-2/",
       "algorithms": [
         {
           "id": "shield_scallop-1",
@@ -2330,7 +2330,7 @@
       "imageKey": "sq1cs_scallop_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/-2,-1/-4,0/2,0/",
       "algorithms": [
         {
           "id": "scallop_shield-1",
@@ -2349,7 +2349,7 @@
       "imageKey": "sq1cs_left_paw_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/4,-3/-2,1/",
       "algorithms": [
         {
           "id": "left_paw_barrel-1",
@@ -2368,7 +2368,7 @@
       "imageKey": "sq1cs_barrel_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/3,-4/-1,2/",
       "algorithms": [
         {
           "id": "barrel_left_paw-1",
@@ -2387,7 +2387,7 @@
       "imageKey": "sq1cs_right_paw_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,-3/-1,-2/-3,4/-2,1/",
       "algorithms": [
         {
           "id": "right_paw_barrel-1",
@@ -2406,7 +2406,7 @@
       "imageKey": "sq1cs_barrel_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/3,0/2,1/-4,3/-1,2/",
       "algorithms": [
         {
           "id": "barrel_right_paw-1",
@@ -2425,7 +2425,7 @@
       "imageKey": "sq1cs_shield_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,0/-2,0/2,0/",
       "algorithms": [
         {
           "id": "shield_barrel-1",
@@ -2444,7 +2444,7 @@
       "imageKey": "sq1cs_barrel_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,-1/0,2/0,-2/",
       "algorithms": [
         {
           "id": "barrel_shield-1",
@@ -2463,7 +2463,7 @@
       "imageKey": "sq1cs_left_paw_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,0/0,-1/",
       "algorithms": [
         {
           "id": "left_paw_kite-1",
@@ -2482,7 +2482,7 @@
       "imageKey": "sq1cs_kite_left_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/1,2/-1,0/",
       "algorithms": [
         {
           "id": "kite_left_paw-1",
@@ -2501,7 +2501,7 @@
       "imageKey": "sq1cs_shield_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/1,2/0,2/",
       "algorithms": [
         {
           "id": "shield_kite-1",
@@ -2520,7 +2520,7 @@
       "imageKey": "sq1cs_kite_shield",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,0/2,0/",
       "algorithms": [
         {
           "id": "kite_shield-1",
@@ -2539,7 +2539,7 @@
       "imageKey": "sq1cs_right_paw_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,-1/0,1/",
       "algorithms": [
         {
           "id": "right_paw_kite-1",
@@ -2558,7 +2558,7 @@
       "imageKey": "sq1cs_kite_right_paw",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/0,2/1,0/",
       "algorithms": [
         {
           "id": "kite_right_paw-1",
@@ -2577,7 +2577,7 @@
       "imageKey": "sq1cs_left_fist_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/2,0/-1,-2/4,0/",
       "algorithms": [
         {
           "id": "left_fist_square-1",
@@ -2596,7 +2596,7 @@
       "imageKey": "sq1cs_square_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/0,-2/2,1/0,-4/",
       "algorithms": [
         {
           "id": "square_left_fist-1",
@@ -2615,7 +2615,7 @@
       "imageKey": "sq1cs_right_fist_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-2,0/2,1/-4,0/0,-1/0,1",
       "algorithms": [
         {
           "id": "right_fist_square-1",
@@ -2634,7 +2634,7 @@
       "imageKey": "sq1cs_square_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/0,2/-1,-2/0,4/1,0/-1,0",
       "algorithms": [
         {
           "id": "square_right_fist-1",
@@ -2653,7 +2653,7 @@
       "imageKey": "sq1cs_barrel_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,0/-2,-2/2,1/-2,-2/",
       "algorithms": [
         {
           "id": "barrel_square-1",
@@ -2672,7 +2672,7 @@
       "imageKey": "sq1cs_square_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,1/-2,-2/1,-2/-2,-2/",
       "algorithms": [
         {
           "id": "square_barrel-1",
@@ -2691,7 +2691,7 @@
       "imageKey": "sq1cs_star_7_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/3,-2/2,1/2,0/",
       "algorithms": [
         {
           "id": "star_7_1-1",
@@ -2710,7 +2710,7 @@
       "imageKey": "sq1cs_7_1_star",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1 / 3,0 / 2,1 / -2,3 / 1,2 / 0,2 / -1,0",
       "algorithms": [
         {
           "id": "7_1_star-1",
@@ -2729,7 +2729,7 @@
       "imageKey": "sq1cs_star_5_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/3,-2/2,1/4,0/0,-3",
       "algorithms": [
         {
           "id": "star_5_3-1",
@@ -2748,7 +2748,7 @@
       "imageKey": "sq1cs_5_3_star",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/2,-3/-1,-2/0,-4/",
       "algorithms": [
         {
           "id": "5_3_star-1",
@@ -2767,7 +2767,7 @@
       "imageKey": "sq1cs_2_2_2_parallel_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,-1/-2,0/-6,3/",
       "algorithms": [
         {
           "id": "2_2_2_parallel_edges-1",
@@ -2786,7 +2786,7 @@
       "imageKey": "sq1cs_parallel_edges_2_2_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,-1/-2,0/0,-3/",
       "algorithms": [
         {
           "id": "parallel_edges_2_2_2-1",
@@ -2805,7 +2805,7 @@
       "imageKey": "sq1cs_2_2_2_perpendicular_edges",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/0,2/-2,0/1,0/",
       "algorithms": [
         {
           "id": "2_2_2_perpendicular_edges-1",
@@ -2824,7 +2824,7 @@
       "imageKey": "sq1cs_perpendicular_edges_2_2_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,-1/0,-2/0,1/",
       "algorithms": [
         {
           "id": "perpendicular_edges_2_2_2-1",
@@ -2843,7 +2843,7 @@
       "imageKey": "sq1cs_left_fist_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/0,2/0,-2/0,2/",
       "algorithms": [
         {
           "id": "left_fist_left_fist-1",
@@ -2862,7 +2862,7 @@
       "imageKey": "sq1cs_right_fist_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,0/2,0/-2,0/",
       "algorithms": [
         {
           "id": "right_fist_right_fist-1",
@@ -2881,7 +2881,7 @@
       "imageKey": "sq1cs_right_fist_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,-4/-2,0/2,1/-4,0/",
       "algorithms": [
         {
           "id": "right_fist_muffin-1",
@@ -2900,7 +2900,7 @@
       "imageKey": "sq1cs_muffin_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/4,-1/0,2/-1,-2/0,4/",
       "algorithms": [
         {
           "id": "muffin_right_fist-1",
@@ -2919,7 +2919,7 @@
       "imageKey": "sq1cs_left_fist_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,-4/-2,0/0,1/-4,0/",
       "algorithms": [
         {
           "id": "left_fist_muffin-1",
@@ -2938,7 +2938,7 @@
       "imageKey": "sq1cs_muffin_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/4,-1/0,2/-1,0/0,4/",
       "algorithms": [
         {
           "id": "muffin_left_fist-1",
@@ -2957,7 +2957,7 @@
       "imageKey": "sq1cs_right_fist_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/-1,-2/-2,0/1,0/2,0/",
       "algorithms": [
         {
           "id": "right_fist_barrel-1",
@@ -2976,7 +2976,7 @@
       "imageKey": "sq1cs_barrel_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/2,1/0,2/0,-1/0,-2/",
       "algorithms": [
         {
           "id": "barrel_right_fist-1",
@@ -2995,7 +2995,7 @@
       "imageKey": "sq1cs_left_fist_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,2/2,0/-1,0/-2,0/",
       "algorithms": [
         {
           "id": "left_fist_barrel-1",
@@ -3014,7 +3014,7 @@
       "imageKey": "sq1cs_barrel_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/-2,-1/0,-2/0,1/0,2/",
       "algorithms": [
         {
           "id": "barrel_left_fist-1",
@@ -3033,7 +3033,7 @@
       "imageKey": "sq1cs_muffin_barrel",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/-3,0/-1,0/2,0/-2,0/-2,-3/",
       "algorithms": [
         {
           "id": "muffin_barrel-1",
@@ -3052,7 +3052,7 @@
       "imageKey": "sq1cs_barrel_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "1,-1/0,3/0,1/0,-2/0,2/3,2/",
       "algorithms": [
         {
           "id": "barrel_muffin-1",
@@ -3071,7 +3071,7 @@
       "imageKey": "sq1cs_left_fist_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-2,0/0,1/2,0/",
       "algorithms": [
         {
           "id": "left_fist_kite-1",
@@ -3090,7 +3090,7 @@
       "imageKey": "sq1cs_kite_left_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,3/1,2/0,2/-1,0/0,-2/",
       "algorithms": [
         {
           "id": "kite_left_fist-1",
@@ -3109,7 +3109,7 @@
       "imageKey": "sq1cs_right_fist_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,2/-2,0/0,1/2,0/",
       "algorithms": [
         {
           "id": "right_fist_kite-1",
@@ -3128,7 +3128,7 @@
       "imageKey": "sq1cs_kite_right_fist",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/-2,-1/0,2/-1,0/0,-2/",
       "algorithms": [
         {
           "id": "kite_right_fist-1",
@@ -3147,7 +3147,7 @@
       "imageKey": "sq1cs_muffin_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,3/1,0/-2,0/2,0/-2,-3/",
       "algorithms": [
         {
           "id": "muffin_kite-1",
@@ -3166,7 +3166,7 @@
       "imageKey": "sq1cs_kite_muffin",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/-3,-3/0,1/0,-2/0,2/-3,-2/",
       "algorithms": [
         {
           "id": "kite_muffin-1",
@@ -3185,7 +3185,7 @@
       "imageKey": "sq1cs_kite_square",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/3,0/1,0/-2,0/2,0/-2,0/1,0/",
       "algorithms": [
         {
           "id": "kite_square-1",
@@ -3204,11 +3204,30 @@
       "imageKey": "sq1cs_square_kite",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "/0,-3/0,-1/0,2/0,-2/0,2/0,-1/",
       "algorithms": [
         {
           "id": "square_kite-1",
           "notation": "/0,1/0,-2/0,2/0,-2/0,1/0,3/",
+          "isPrimary": true,
+          "source": "SpeedCubeDB",
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": "square_square",
+      "displayName": "Square / Square",
+      "name": "Square / Square",
+      "subgroup": "Solved",
+      "imageKey": "sq1cs_square_square",
+      "recognition": "",
+      "notes": "",
+      "setup": "",
+      "algorithms": [
+        {
+          "id": "square_square-1",
+          "notation": "",
           "isPrimary": true,
           "source": "SpeedCubeDB",
           "tags": []

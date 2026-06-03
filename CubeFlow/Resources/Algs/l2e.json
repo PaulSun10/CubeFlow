@@ -12,7 +12,7 @@
       "imageKey": "l2e_l2e_1",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw' F R' F' R U' R U Rw",
       "algorithms": [
         {
           "id": "l2e_1-1",
@@ -31,7 +31,7 @@
       "imageKey": "l2e_l2e_2",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Lw F R' F' R U' R U Lw'",
       "algorithms": [
         {
           "id": "l2e_2-1",
@@ -50,7 +50,7 @@
       "imageKey": "l2e_l2e_3",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "x' M' F R' F' R U' R U M x",
       "algorithms": [
         {
           "id": "l2e_3-1",
@@ -69,7 +69,7 @@
       "imageKey": "l2e_l2e_4",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw2' F2' U2' Rw2' U2' F2' Rw2'",
       "algorithms": [
         {
           "id": "l2e_4-1",
@@ -88,7 +88,7 @@
       "imageKey": "l2e_l2e_5",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "x' U2' Rw2' U2 Rw U2' Rw' U2 Rw U2' x U2 Rw U2' Rw B2' Rw2'",
       "algorithms": [
         {
           "id": "l2e_5-1",
@@ -107,7 +107,7 @@
       "imageKey": "l2e_l2e_6",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F2' Rw2' F2' U2' Rw U2' Rw' U2' Rw2' F2' 3Rw U2' 3Rw' U2' Rw",
       "algorithms": [
         {
           "id": "l2e_6-1",
@@ -168,7 +168,7 @@
       "imageKey": "l2e_l2e_7",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw2' U2 Lw' U2' 3Rw U2 Rw' U2' x' U2 Rw' U2' Rw' y2'",
       "algorithms": [
         {
           "id": "l2e_7-1",
@@ -187,7 +187,7 @@
       "imageKey": "l2e_l2e_8",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "F2' Lw F2' U2' Lw2' U2' Lw F2' Lw2' U2' Lw U2' F2' Lw2'",
       "algorithms": [
         {
           "id": "l2e_8-1",
@@ -206,7 +206,7 @@
       "imageKey": "l2e_l2e_9",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw2' U2 Rw' U2' Rw U2 Rw' U2' Rw' B2' Rw' U2 Rw U2' Rw B2'",
       "algorithms": [
         {
           "id": "l2e_9-1",
@@ -225,7 +225,7 @@
       "imageKey": "l2e_l2e_10",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw U2' Rw2' U2' Rw' U2' Rw U2' Rw' U2' Rw2' U2' Rw",
       "algorithms": [
         {
           "id": "l2e_10-1",
@@ -244,7 +244,7 @@
       "imageKey": "l2e_l2e_11",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw' U2' Rw2' U2' Rw U2' Rw' U2' Rw U2' Rw2' U2' Rw'",
       "algorithms": [
         {
           "id": "l2e_11-1",
@@ -263,7 +263,7 @@
       "imageKey": "l2e_l2e_12",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "Rw2' U2' Rw' F2' Lw2' F2' Rw B2' Rw B2' U2' Rw U2' Rw",
       "algorithms": [
         {
           "id": "l2e_12-1",
@@ -282,7 +282,7 @@
       "imageKey": "l2e_l2e_13",
       "recognition": "",
       "notes": "",
-      "setup": "",
+      "setup": "r U R U' r2' U' R U r2' U R U' r'",
       "algorithms": [
         {
           "id": "l2e_13-1",
