@@ -5,9 +5,43 @@ enum AppLayoutLanguageCategory {
     case widerCJK
 }
 
+struct AppLanguageOption: Identifiable, Hashable {
+    let id: String
+    let displayNameKey: String
+    let nativeName: String
+}
+
+nonisolated func appLanguageOptions() -> [AppLanguageOption] {
+    [
+        AppLanguageOption(id: "en", displayNameKey: "settings.language_en", nativeName: "English"),
+        AppLanguageOption(id: "zh-Hans", displayNameKey: "settings.language_zh", nativeName: "简体中文"),
+        AppLanguageOption(id: "zh-Hant", displayNameKey: "settings.language_zh_hant", nativeName: "繁體中文"),
+        AppLanguageOption(id: "ja", displayNameKey: "settings.language_ja", nativeName: "日本語"),
+        AppLanguageOption(id: "ko", displayNameKey: "settings.language_ko", nativeName: "한국어"),
+        AppLanguageOption(id: "es", displayNameKey: "settings.language_es", nativeName: "Español"),
+        AppLanguageOption(id: "pt-BR", displayNameKey: "settings.language_pt_br", nativeName: "Português (Brasil)"),
+        AppLanguageOption(id: "fr", displayNameKey: "settings.language_fr", nativeName: "Français"),
+        AppLanguageOption(id: "de", displayNameKey: "settings.language_de", nativeName: "Deutsch"),
+        AppLanguageOption(id: "it", displayNameKey: "settings.language_it", nativeName: "Italiano"),
+        AppLanguageOption(id: "pl", displayNameKey: "settings.language_pl", nativeName: "Polski"),
+        AppLanguageOption(id: "pt-PT", displayNameKey: "settings.language_pt_pt", nativeName: "Português (Portugal)"),
+        AppLanguageOption(id: "id", displayNameKey: "settings.language_id", nativeName: "Bahasa Indonesia"),
+        AppLanguageOption(id: "tr", displayNameKey: "settings.language_tr", nativeName: "Türkçe"),
+        AppLanguageOption(id: "vi", displayNameKey: "settings.language_vi", nativeName: "Tiếng Việt"),
+        AppLanguageOption(id: "ru", displayNameKey: "settings.language_ru", nativeName: "Русский"),
+        AppLanguageOption(id: "th", displayNameKey: "settings.language_th", nativeName: "ไทย"),
+        AppLanguageOption(id: "hi", displayNameKey: "settings.language_hi", nativeName: "हिन्दी"),
+        AppLanguageOption(id: "ar", displayNameKey: "settings.language_ar", nativeName: "العربية")
+    ]
+}
+
 nonisolated func currentAppLanguageCode() -> String {
     let stored = UserDefaults.standard.string(forKey: "appLanguage") ?? "en"
     return stored.isEmpty ? "en" : stored
+}
+
+nonisolated func appLanguageDisplayKey(for languageCode: String) -> String {
+    appLanguageOptions().first(where: { $0.id == languageCode })?.displayNameKey ?? "settings.language_unknown"
 }
 
 nonisolated func appLocalizationCandidates(for languageCode: String) -> [String] {
@@ -80,8 +114,11 @@ nonisolated func appAcceptLanguageHeader(for languageCode: String) -> String {
 }
 
 nonisolated func cubingLanguageCode(for languageCode: String) -> String {
-    let candidates = appLocalizationCandidates(for: languageCode).map { $0.lowercased() }
-    if candidates.contains("zh-hans") || candidates.contains("zh") {
+    let normalized = languageCode
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .replacingOccurrences(of: "_", with: "-")
+        .lowercased()
+    if normalized == "zh-hans" {
         return "zh_cn"
     }
     return "en"
@@ -91,4 +128,10 @@ nonisolated func appLayoutLanguageCategory(for languageCode: String) -> AppLayou
     let candidates = Set(appLocalizationCandidates(for: languageCode).map { $0.lowercased() })
     let cjkLanguageCodes: Set<String> = ["zh", "zh-hans", "zh-hant", "ja", "ko"]
     return !cjkLanguageCodes.isDisjoint(with: candidates) ? .widerCJK : .compactLatin
+}
+
+nonisolated func appUsesRightToLeftLayout(for languageCode: String) -> Bool {
+    let candidates = Set(appLocalizationCandidates(for: languageCode).map { $0.lowercased() })
+    let rightToLeftLanguageCodes: Set<String> = ["ar"]
+    return !rightToLeftLanguageCodes.isDisjoint(with: candidates)
 }
