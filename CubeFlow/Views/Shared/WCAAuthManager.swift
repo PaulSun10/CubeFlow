@@ -49,13 +49,18 @@ final class WCAAuthManager: NSObject, ObservableObject {
     }
 
     func refreshProfile() async throws {
-        guard let authSession else {
-            throw WCAAuthError.notSignedIn
-        }
+        let authSession = try await validAuthSession()
 
         let fetchedProfile = try await fetchProfile(using: authSession.accessToken)
         profile = fetchedProfile
         Self.storeProfile(fetchedProfile)
+    }
+
+    func authorizedRequest(for url: URL) async throws -> URLRequest {
+        let authSession = try await validAuthSession()
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(authSession.accessToken)", forHTTPHeaderField: "Authorization")
+        return request
     }
 
     func signOut() {
@@ -160,6 +165,63 @@ final class WCAAuthManager: NSObject, ObservableObject {
         )
     }
 
+    private func validAuthSession() async throws -> WCAStoredAuthSession {
+        guard var authSession else {
+            throw WCAAuthError.notSignedIn
+        }
+
+        if let expiresAt = authSession.expiresAt,
+           expiresAt <= Date().addingTimeInterval(60),
+           let refreshToken = authSession.refreshToken,
+           !refreshToken.isEmpty {
+            authSession = try await refreshAuthSession(
+                refreshToken,
+                fallbackRefreshToken: authSession.refreshToken
+            )
+            self.authSession = authSession
+            try Self.storeAuthSession(authSession)
+        }
+
+        return authSession
+    }
+
+    private func refreshAuthSession(
+        _ refreshToken: String,
+        fallbackRefreshToken: String?
+    ) async throws -> WCAStoredAuthSession {
+        guard let tokenURL = URL(string: "https://www.worldcubeassociation.org/oauth/token") else {
+            throw WCAAuthError.invalidTokenURL
+        }
+
+        var request = URLRequest(url: tokenURL)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        let queryItems = [
+            URLQueryItem(name: "grant_type", value: "refresh_token"),
+            URLQueryItem(name: "refresh_token", value: refreshToken),
+            URLQueryItem(name: "client_id", value: Self.clientID),
+            URLQueryItem(name: "client_secret", value: Self.clientSecret)
+        ]
+
+        request.httpBody = Self.formEncodedBody(for: queryItems)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
+            throw WCAAuthError.tokenExchangeFailed
+        }
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let tokenResponse = try decoder.decode(WCATokenResponse.self, from: data)
+        let expirationDate = tokenResponse.expiresIn.map { Date().addingTimeInterval(TimeInterval($0)) }
+        return WCAStoredAuthSession(
+            accessToken: tokenResponse.accessToken,
+            refreshToken: tokenResponse.refreshToken ?? fallbackRefreshToken,
+            expiresAt: expirationDate
+        )
+    }
+
     private func fetchProfile(using accessToken: String) async throws -> WCAUserProfile {
         guard let profileURL = URL(string: "https://www.worldcubeassociation.org/api/v0/me") else {
             throw WCAAuthError.invalidProfileURL
@@ -218,6 +280,18 @@ final class WCAAuthManager: NSObject, ObservableObject {
 
     private static func deleteProfile() {
         UserDefaults.standard.removeObject(forKey: WCAStorageKey.profile.rawValue)
+    }
+
+    private static func formEncodedBody(for queryItems: [URLQueryItem]) -> Data? {
+        queryItems
+            .compactMap { item in
+                guard let value = item.value?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                    return nil
+                }
+                return "\(item.name)=\(value)"
+            }
+            .joined(separator: "&")
+            .data(using: .utf8)
     }
 }
 

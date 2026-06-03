@@ -91,19 +91,8 @@ struct SettingsTabView: View {
     @State private var showingCompetitionCalculator = false
     @StateObject private var wcaAuth = WCAAuthManager.shared
 
-    private func languageDisplayKey(for languageCode: String) -> String {
-        switch languageCode {
-        case "zh-Hans":
-            return "settings.language_zh"
-        case "en":
-            return "settings.language_en"
-        default:
-            return "settings.language_unknown"
-        }
-    }
-
-    private var currentLanguageKey: LocalizedStringKey {
-        LocalizedStringKey(languageDisplayKey(for: appLanguage))
+    private var currentLanguageOption: AppLanguageOption {
+        appLanguageOptions().first(where: { $0.id == appLanguage }) ?? appLanguageOptions()[0]
     }
 
     private var settingsCardBackgroundFillColor: Color {
@@ -123,454 +112,8 @@ struct SettingsTabView: View {
 
     var body: some View {
         CompatibleNavigationContainer {
-            ScrollView {
-                VStack(spacing: 14) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("settings.section.wca")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 4)
-
-                        VStack(spacing: 0) {
-                            if wcaAuth.isSignedIn {
-                                wcaStatusCard
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 18)
-                            } else {
-                                HStack(alignment: .center, spacing: 12) {
-                                    Image("wca_logo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 36, height: 36)
-
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("settings.wca_about_title")
-                                            .font(.system(size: 15, weight: .medium))
-
-                                        Text("settings.wca_about_message")
-                                            .font(.system(size: 13, weight: .medium))
-                                            .foregroundStyle(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                }
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 14)
-                            }
-
-                            Divider()
-
-                            VStack(spacing: 10) {
-                                Button {
-                                    authenticateWithWCA()
-                                } label: {
-                                    HStack {
-                                        Spacer()
-                                        if wcaAuth.isSigningIn {
-                                            ProgressView()
-                                                .tint(.white)
-                                        } else {
-                                            Text(LocalizedStringKey(wcaAuth.isSignedIn ? "settings.wca_refresh_profile" : "settings.wca_sign_in"))
-                                                .font(.system(size: 16, weight: .semibold))
-                                        }
-                                        Spacer()
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 14)
-                                    .contentShape(Rectangle())
-                                    .compatibleGlassFromIOS16(in: Capsule())
-                                }
-                                .buttonStyle(.plain)
-                                .disabled(wcaAuth.isSigningIn)
-
-                                if wcaAuth.isSignedIn {
-                                    Button("settings.wca_sign_out", role: .destructive) {
-                                        wcaAuth.signOut()
-                                    }
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .padding(.vertical, 6)
-                                }
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 14)
-                        }
-                        .background(settingsCardBackground)
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("settings.section.general")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 4)
-
-                        VStack(spacing: 0) {
-                            HStack {
-                                Text("settings.language_label")
-                                    .font(.system(size: 16, weight: .medium))
-
-                                Spacer()
-
-                                Menu {
-                                    Button(LocalizedStringKey(languageDisplayKey(for: "en"))) {
-                                        appLanguage = "en"
-                                    }
-                                    Button(LocalizedStringKey(languageDisplayKey(for: "zh-Hans"))) {
-                                        appLanguage = "zh-Hans"
-                                    }
-                                } label: {
-                                    HStack(spacing: 6) {
-                                        Text(currentLanguageKey)
-                                            .font(.system(size: 15, weight: .medium))
-                                        Image(systemName: "chevron.down")
-                                            .font(.system(size: 11, weight: .semibold))
-                                    }
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .compatibleGlassFromIOS16(in: Capsule())
-                                }
-                                .tint(.primary)
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-
-                            Divider()
-
-                            importDataRow
-
-                            Divider()
-
-                            exportDataRow
-                        }
-                        .background(settingsCardBackground)
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("settings.section.appearance")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 4)
-
-                        VStack(spacing: 12) {
-                            appearanceOverviewCard
-
-                            appearanceEditorCard(
-                                titleKey: "settings.timer_bg_label",
-                                configuration: $timerBackgroundAppearance,
-                                photoData: $timerBackgroundImageData,
-                                allowsPhoto: true
-                            )
-
-                            if CompetitionCardStyleOption(rawValue: competitionCardStyle) == .glass {
-                                appearanceEditorCard(
-                                    titleKey: "settings.competitions_bg_label",
-                                    configuration: $competitionsBackgroundAppearance,
-                                    photoData: $competitionsBackgroundImageData,
-                                    allowsPhoto: true
-                                )
-                                .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .opacity))
-                            }
-
-                            appearanceEditorCard(
-                                titleKey: "settings.timer_text_label",
-                                configuration: $timerTextAppearance,
-                                fontSize: $timerTextFontSize,
-                                fontSizeTitleKey: "settings.timer_text_size",
-                                defaultFontSize: 64,
-                                fontDesign: $timerTextFontDesign,
-                                fontDesignTarget: .timerFontDesign,
-                                defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                                fontWeight: $timerTextFontWeight,
-                                fontWeightTarget: .timerFontWeight,
-                                defaultFontWeight: TimerFontWeightOption.semibold.rawValue,
-                                previewKind: .timer
-                            )
-
-                            appearanceEditorCard(
-                                titleKey: "settings.scramble_text_label",
-                                configuration: $scrambleTextAppearance,
-                                fontSize: $scrambleTextFontSize,
-                                fontSizeTitleKey: "settings.scramble_text_size",
-                                defaultFontSize: 20,
-                                fontSizeMaximum: 45,
-                                fontDesign: $scrambleTextFontDesign,
-                                fontDesignTarget: .scrambleFontDesign,
-                                defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                                fontWeight: $scrambleTextFontWeight,
-                                fontWeightTarget: .scrambleFontWeight,
-                                defaultFontWeight: TimerFontWeightOption.medium.rawValue,
-                                previewKind: .scramble,
-                                scrambleDisplayMode: $scrambleDisplayMode
-                            )
-
-                            appearanceEditorCard(
-                                titleKey: "settings.average_text_label",
-                                configuration: $averageTextAppearance,
-                                fontSize: $averageTextFontSize,
-                                fontSizeTitleKey: "settings.average_text_size",
-                                defaultFontSize: 20,
-                                fontSizeMaximum: 56,
-                                fontDesign: $averageTextFontDesign,
-                                fontDesignTarget: .averageFontDesign,
-                                defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                                fontWeight: $averageTextFontWeight,
-                                fontWeightTarget: .averageFontWeight,
-                                defaultFontWeight: TimerFontWeightOption.medium.rawValue,
-                                previewKind: .average
-                            )
-                        }
-                        .animation(.spring(response: 0.28, dampingFraction: 0.9), value: competitionCardStyle)
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("settings.section.timer")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 4)
-
-                        VStack(spacing: 0) {
-                            Toggle(isOn: $wcaInspectionEnabled) {
-                                Text("settings.wca_inspection")
-                                    .font(.system(size: 16, weight: .medium))
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-
-                            Divider()
-
-                            settingsMenuRow(
-                                titleKey: "settings.inspection_alert",
-                                selectedKey: InspectionAlertVoiceMode(rawValue: inspectionAlertVoiceMode)?.localizedKey ?? "settings.inspection_alert_off"
-                            ) {
-                                ForEach(InspectionAlertVoiceMode.allCases) { mode in
-                                    Button(mode.localizedKey) {
-                                        inspectionAlertVoiceMode = mode.rawValue
-                                    }
-                                }
-                            }
-
-                            Divider()
-
-                            settingsMenuRow(
-                                titleKey: "settings.timer_updating",
-                                selectedKey: TimerUpdatingMode(rawValue: timerUpdatingMode)?.localizedKey ?? "settings.timer_updating_on"
-                            ) {
-                                ForEach(TimerUpdatingMode.allCases) { mode in
-                                    Button(mode.localizedKey) {
-                                        timerUpdatingMode = mode.rawValue
-                                    }
-                                }
-                            }
-
-                            Divider()
-
-                            settingsMenuRow(
-                                titleKey: "settings.timer_accuracy",
-                                selectedKey: TimerAccuracy(rawValue: timerAccuracy)?.localizedKey ?? "settings.timer_accuracy_001"
-                            ) {
-                                ForEach(TimerAccuracy.allCases) { accuracy in
-                                    Button(accuracy.localizedKey) {
-                                        timerAccuracy = accuracy.rawValue
-                                    }
-                                }
-                            }
-
-                            Divider()
-
-                            settingsMenuRow(
-                                titleKey: "settings.entering_times_with",
-                                selectedKey: TimeEntryMode(rawValue: enteringTimesWith)?.localizedKey ?? "settings.entering_times_timer"
-                            ) {
-                                ForEach(TimeEntryMode.allCases) { mode in
-                                    Button(mode.localizedKey) {
-                                        enteringTimesWith = mode.rawValue
-                                        if mode == .gan {
-                                            ganTimer.prepareIfNeeded()
-                                        }
-                                    }
-                                }
-                            }
-
-                            Divider()
-
-                            Toggle(isOn: $ganShowResultPopup) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("settings.result_popup")
-                                        .font(.system(size: 16, weight: .medium))
-
-                                    Text("settings.result_popup_help")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(.secondary)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-
-                            Divider()
-
-                            if enteringTimesWith == TimeEntryMode.gan.rawValue {
-                                HStack(alignment: .center, spacing: 12) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("settings.gan_timer")
-                                            .font(.system(size: 16, weight: .medium))
-
-                                        Text(LocalizedStringKey(ganTimer.statusLocalizedKey))
-                                            .font(.system(size: 13, weight: .medium))
-                                            .foregroundStyle(.secondary)
-                                    }
-
-                                    Spacer()
-
-                                    Button {
-                                        switch ganTimer.connectionState {
-                                        case .scanning, .connecting, .connected, .handsOn, .ready, .running, .finished:
-                                            ganTimer.performPrimaryAction()
-                                        default:
-                                            ganTimer.startDeviceDiscovery()
-                                            showingGANDevicePicker = true
-                                        }
-                                    } label: {
-                                        HStack(spacing: 6) {
-                                            if case .scanning = ganTimer.connectionState {
-                                                ProgressView()
-                                                    .controlSize(.small)
-                                            }
-                                            Text(LocalizedStringKey(ganTimer.actionLocalizedKey))
-                                                .font(.system(size: 15, weight: .medium))
-                                        }
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .compatibleGlassFromIOS16(in: Capsule())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .tint(.primary)
-                                }
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-
-                                if let deviceName = ganTimer.deviceName, !deviceName.isEmpty {
-                                    Divider()
-
-                                    HStack {
-                                        Text("settings.gan_device")
-                                            .font(.system(size: 16, weight: .medium))
-
-                                        Spacer()
-
-                                        Text(deviceName)
-                                            .font(.system(size: 15, weight: .medium))
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 12)
-                                }
-
-                                Divider()
-
-                                Toggle(isOn: $ganInspectionStartsOnPress) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("settings.gan_inspection_on_press")
-                                            .font(.system(size: 16, weight: .medium))
-
-                                        Text("settings.gan_inspection_on_press_help")
-                                            .font(.system(size: 13, weight: .medium))
-                                            .foregroundStyle(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                }
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-
-                                Divider()
-
-                                VStack(alignment: .leading, spacing: 8) {
-                                    settingsMenuRow(
-                                        titleKey: "settings.gan_result_input_mode",
-                                        selectedKey: GANResultInputMode(rawValue: ganResultInputMode)?.localizedKey ?? "settings.gan_result_mode_manual"
-                                    ) {
-                                        ForEach(GANResultInputMode.allCases) { mode in
-                                            Button(mode.localizedKey) {
-                                                ganResultInputMode = mode.rawValue
-                                            }
-                                        }
-                                    }
-
-                                    Text(GANResultInputMode(rawValue: ganResultInputMode)?.helpLocalizedKey ?? "settings.gan_result_mode_cycle_help")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(.secondary)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .padding(.horizontal, 14)
-                                        .padding(.bottom, 12)
-                                }
-
-                                Divider()
-                            }
-
-                            settingsMenuRow(
-                                titleKey: "settings.average_display",
-                                selectedKey: AverageDisplayOption(rawValue: averageDisplayOption)?.localizedKey ?? "settings.average_display_ao5_ao12"
-                            ) {
-                                ForEach(AverageDisplayOption.allCases) { option in
-                                    Button(option.localizedKey) {
-                                        averageDisplayOption = option.rawValue
-                                    }
-                                }
-                            }
-
-                            Divider()
-
-                            settingsMenuRow(
-                                titleKey: "settings.draw_scramble_position",
-                                selectedKey: DrawScramblePlacement(rawValue: drawScramblePlacement)?.localizedKey ?? "settings.draw_scramble_position_inline"
-                            ) {
-                                ForEach(DrawScramblePlacement.allCases) { placement in
-                                    Button(placement.localizedKey) {
-                                        drawScramblePlacement = placement.rawValue
-                                    }
-                                }
-                            }
-
-                            if (DrawScramblePlacement(rawValue: drawScramblePlacement) ?? .inline).isFloating {
-                                Divider()
-
-                                VStack(alignment: .leading, spacing: 10) {
-                                    HStack {
-                                        Text("settings.draw_scramble_size")
-                                            .font(.system(size: 16, weight: .medium))
-
-                                        Spacer()
-
-                                        Text("\(Int(drawScrambleFloatingSize.rounded()))")
-                                            .font(.system(size: 15, weight: .medium))
-                                            .foregroundStyle(.secondary)
-                                            .monospacedDigit()
-                                    }
-
-                                    Slider(value: $drawScrambleFloatingSize, in: 96...500, step: 1)
-                                }
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-
-                                Divider()
-                            } else {
-                                Divider()
-                            }
-
-                            Toggle(isOn: $hideElementsWhenSolving) {
-                                Text("settings.hide_elements_when_solving")
-                                    .font(.system(size: 16, weight: .medium))
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                        }
-                        .background(settingsCardBackground)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 20)
-            }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle(Text("tab.settings"))
+            settingsRootList
+            .navigationTitle(Text(appLocalizedString("tab.settings", languageCode: appLanguage)))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -708,8 +251,10 @@ struct SettingsTabView: View {
             }
             .compatibleNavigationDestination(item: $wcaDestination) { destination in
                 switch destination {
+                case .account:
+                    wcaAccountSettingsList
                 case .myCompetitions:
-                    WCAMyCompetitionsPlaceholderView()
+                    WCAMyCompetitionsView(profile: wcaAuth.profile)
                 case .myResults:
                     WCAMyResultsView(profile: wcaAuth.profile)
                 }
@@ -751,6 +296,647 @@ struct SettingsTabView: View {
 }
 
 private extension SettingsTabView {
+    var settingsRootList: some View {
+        List {
+            wcaSettingsSection
+
+            Section {
+                languageListRow
+                appIconListRow
+            } header: {
+                Text("settings.section.general")
+            }
+
+            Section {
+                NavigationLink {
+                    timerTabAppearanceSettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.timer_tab")
+                }
+
+                NavigationLink {
+                    competitionTabAppearanceSettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.competition_tab")
+                }
+            } header: {
+                Text("settings.section.appearance")
+            }
+
+            Section {
+                NavigationLink {
+                    timerSolvingSettingsList
+                } label: {
+                    settingsNavigationLabel(
+                        titleKey: "settings.wca_inspection",
+                        valueKey: wcaInspectionEnabled ? "settings.timer_updating_on" : "settings.timer_updating_off"
+                    )
+                }
+
+                NavigationLink {
+                    timerDisplaySettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.timer_updating")
+                }
+
+                NavigationLink {
+                    timerInputSettingsList
+                } label: {
+                    settingsNavigationLabel(
+                        titleKey: "settings.entering_times_with",
+                        valueKey: TimeEntryMode(rawValue: enteringTimesWith)?.localizedKey ?? "settings.entering_times_timer"
+                    )
+                }
+
+                NavigationLink {
+                    scrambleDiagramSettingsList
+                } label: {
+                    settingsNavigationLabel(
+                        titleKey: "settings.draw_scramble_position",
+                        valueKey: DrawScramblePlacement(rawValue: drawScramblePlacement)?.localizedKey ?? "settings.draw_scramble_position_inline"
+                    )
+                }
+            } header: {
+                Text("settings.section.timer")
+            }
+
+            Section {
+                importDataRow
+                exportDataRow
+            } header: {
+                Text("settings.data_transfer_title")
+            }
+
+        }
+        .listStyle(.insetGrouped)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    @ViewBuilder
+    var wcaSettingsSection: some View {
+        Section {
+            if wcaAuth.isSignedIn {
+                Button {
+                    wcaDestination = .account
+                } label: {
+                    wcaStatusCard(showsDisclosure: true)
+                }
+                .buttonStyle(.plain)
+                .padding(.vertical, 4)
+
+                Button {
+                    wcaDestination = .myCompetitions
+                } label: {
+                    settingsActionNavigationLabel(titleKey: "settings.wca_my_competitions")
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    wcaDestination = .myResults
+                } label: {
+                    settingsActionNavigationLabel(titleKey: "settings.wca_my_results")
+                }
+                .buttonStyle(.plain)
+            } else {
+                HStack(alignment: .center, spacing: 12) {
+                    Image("wca_logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 36, height: 36)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("settings.wca_about_title")
+                            .font(.system(size: 15, weight: .medium))
+
+                        Text("settings.wca_about_message")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.vertical, 4)
+                
+                Button {
+                    authenticateWithWCA()
+                } label: {
+                    HStack {
+                        if wcaAuth.isSigningIn {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text("settings.wca_sign_in")
+                    }
+                }
+                .disabled(wcaAuth.isSigningIn)
+            }
+        } header: {
+            Text("settings.section.wca")
+        }
+    }
+
+    var wcaAccountSettingsList: some View {
+        List {
+            Section {
+                wcaStatusCard(showsDisclosure: false)
+                    .padding(.vertical, 4)
+            }
+
+            Section {
+                Button("settings.wca_my_competitions") {
+                    wcaDestination = .myCompetitions
+                }
+
+                Button("settings.wca_my_results") {
+                    wcaDestination = .myResults
+                }
+            }
+
+            Section {
+                Button {
+                    authenticateWithWCA()
+                } label: {
+                    HStack {
+                        if wcaAuth.isSigningIn {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text("settings.wca_refresh_profile")
+                    }
+                }
+                .disabled(wcaAuth.isSigningIn)
+
+                Button("settings.wca_sign_out", role: .destructive) {
+                    wcaAuth.signOut()
+                    wcaDestination = nil
+                }
+            } footer: {
+                Text("settings.wca_sign_out_footer")
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.wca_title", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var languageListRow: some View {
+        HStack {
+            Text("settings.language_label")
+
+            Spacer()
+
+            Menu {
+                ForEach(appLanguageOptions()) { language in
+                    Button {
+                        appLanguage = language.id
+                    } label: {
+                        Text(verbatim: language.nativeName)
+                        Text(appLocalizedString(language.displayNameKey, languageCode: appLanguage))
+                    }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(verbatim: currentLanguageOption.nativeName)
+                        .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .tint(.primary)
+        }
+    }
+
+    var appIconListRow: some View {
+        listSettingsMenuRow(
+            titleKey: "settings.app_icon",
+            selectedKey: (AppIconOption(rawValue: selectedAppIcon) ?? .red).localizedKey
+        ) {
+            ForEach(AppIconOption.allCases) { option in
+                Button(option.localizedKey) {
+                    applyAppIcon(option)
+                }
+            }
+        }
+    }
+
+    var timerTabAppearanceSettingsList: some View {
+        List {
+            Section {
+                NavigationLink {
+                    timerBackgroundSettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.timer_bg_label")
+                }
+
+                NavigationLink {
+                    timerTextSettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.timer_text_label")
+                }
+
+                NavigationLink {
+                    scrambleTextSettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.scramble_text_label")
+                }
+
+                NavigationLink {
+                    averageTextSettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.average_text_label")
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.timer_tab", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var timerBackgroundSettingsList: some View {
+        List {
+            appearanceEditorSection {
+                appearanceEditorCard(
+                    titleKey: "settings.timer_bg_label",
+                    configuration: $timerBackgroundAppearance,
+                    photoData: $timerBackgroundImageData,
+                    allowsPhoto: true
+                )
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.timer_bg_label", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var timerTextSettingsList: some View {
+        List {
+            appearanceEditorSection {
+                appearanceEditorCard(
+                    titleKey: "settings.timer_text_label",
+                    configuration: $timerTextAppearance,
+                    fontSize: $timerTextFontSize,
+                    fontSizeTitleKey: "settings.timer_text_size",
+                    defaultFontSize: 64,
+                    fontDesign: $timerTextFontDesign,
+                    fontDesignTarget: .timerFontDesign,
+                    defaultFontDesign: TimerFontDesignOption.default.rawValue,
+                    fontWeight: $timerTextFontWeight,
+                    fontWeightTarget: .timerFontWeight,
+                    defaultFontWeight: TimerFontWeightOption.semibold.rawValue,
+                    previewKind: .timer
+                )
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.timer_text_label", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var scrambleTextSettingsList: some View {
+        List {
+            appearanceEditorSection {
+                appearanceEditorCard(
+                    titleKey: "settings.scramble_text_label",
+                    configuration: $scrambleTextAppearance,
+                    fontSize: $scrambleTextFontSize,
+                    fontSizeTitleKey: "settings.scramble_text_size",
+                    defaultFontSize: 20,
+                    fontSizeMaximum: 45,
+                    fontDesign: $scrambleTextFontDesign,
+                    fontDesignTarget: .scrambleFontDesign,
+                    defaultFontDesign: TimerFontDesignOption.default.rawValue,
+                    fontWeight: $scrambleTextFontWeight,
+                    fontWeightTarget: .scrambleFontWeight,
+                    defaultFontWeight: TimerFontWeightOption.medium.rawValue,
+                    previewKind: .scramble,
+                    scrambleDisplayMode: $scrambleDisplayMode
+                )
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.scramble_text_label", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var averageTextSettingsList: some View {
+        List {
+            Section {
+                listSettingsMenuRow(
+                    titleKey: "settings.average_display",
+                    selectedKey: AverageDisplayOption(rawValue: averageDisplayOption)?.localizedKey ?? "settings.average_display_ao5_ao12"
+                ) {
+                    ForEach(AverageDisplayOption.allCases) { option in
+                        Button(option.localizedKey) {
+                            averageDisplayOption = option.rawValue
+                        }
+                    }
+                }
+            }
+
+            appearanceEditorSection {
+                appearanceEditorCard(
+                    titleKey: "settings.average_text_label",
+                    configuration: $averageTextAppearance,
+                    fontSize: $averageTextFontSize,
+                    fontSizeTitleKey: "settings.average_text_size",
+                    defaultFontSize: 20,
+                    fontSizeMaximum: 56,
+                    fontDesign: $averageTextFontDesign,
+                    fontDesignTarget: .averageFontDesign,
+                    defaultFontDesign: TimerFontDesignOption.default.rawValue,
+                    fontWeight: $averageTextFontWeight,
+                    fontWeightTarget: .averageFontWeight,
+                    defaultFontWeight: TimerFontWeightOption.medium.rawValue,
+                    previewKind: .average
+                )
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.average_text_label", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var competitionTabAppearanceSettingsList: some View {
+        List {
+            Section {
+                listSettingsMenuRow(
+                    titleKey: "settings.competition_card_style",
+                    selectedKey: (CompetitionCardStyleOption(rawValue: competitionCardStyle) ?? .list).localizedKey
+                ) {
+                    ForEach(CompetitionCardStyleOption.allCases) { option in
+                        Button(option.localizedKey) {
+                            competitionCardStyle = option.rawValue
+                        }
+                    }
+                }
+            }
+
+            if CompetitionCardStyleOption(rawValue: competitionCardStyle) == .glass {
+                appearanceEditorSection {
+                    appearanceEditorCard(
+                        titleKey: "settings.competitions_bg_label",
+                        configuration: $competitionsBackgroundAppearance,
+                        photoData: $competitionsBackgroundImageData,
+                        allowsPhoto: true
+                    )
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .animation(.spring(response: 0.28, dampingFraction: 0.9), value: competitionCardStyle)
+        .navigationTitle(Text(appLocalizedString("settings.competition_tab", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var timerSolvingSettingsList: some View {
+        List {
+            Section {
+                Toggle("settings.wca_inspection", isOn: $wcaInspectionEnabled)
+
+                listSettingsMenuRow(
+                    titleKey: "settings.inspection_alert",
+                    selectedKey: InspectionAlertVoiceMode(rawValue: inspectionAlertVoiceMode)?.localizedKey ?? "settings.inspection_alert_off"
+                ) {
+                    ForEach(InspectionAlertVoiceMode.allCases) { mode in
+                        Button(mode.localizedKey) {
+                            inspectionAlertVoiceMode = mode.rawValue
+                        }
+                    }
+                }
+
+                Toggle("settings.hide_elements_when_solving", isOn: $hideElementsWhenSolving)
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.wca_inspection", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var timerDisplaySettingsList: some View {
+        List {
+            Section {
+                listSettingsMenuRow(
+                    titleKey: "settings.timer_updating",
+                    selectedKey: TimerUpdatingMode(rawValue: timerUpdatingMode)?.localizedKey ?? "settings.timer_updating_on"
+                ) {
+                    ForEach(TimerUpdatingMode.allCases) { mode in
+                        Button(mode.localizedKey) {
+                            timerUpdatingMode = mode.rawValue
+                        }
+                    }
+                }
+
+                listSettingsMenuRow(
+                    titleKey: "settings.timer_accuracy",
+                    selectedKey: TimerAccuracy(rawValue: timerAccuracy)?.localizedKey ?? "settings.timer_accuracy_001"
+                ) {
+                    ForEach(TimerAccuracy.allCases) { accuracy in
+                        Button(accuracy.localizedKey) {
+                            timerAccuracy = accuracy.rawValue
+                        }
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.timer_updating", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var timerInputSettingsList: some View {
+        List {
+            Section {
+                listSettingsMenuRow(
+                    titleKey: "settings.entering_times_with",
+                    selectedKey: TimeEntryMode(rawValue: enteringTimesWith)?.localizedKey ?? "settings.entering_times_timer"
+                ) {
+                    ForEach(TimeEntryMode.allCases) { mode in
+                        Button(mode.localizedKey) {
+                            enteringTimesWith = mode.rawValue
+                            if mode == .gan {
+                                ganTimer.prepareIfNeeded()
+                            }
+                        }
+                    }
+                }
+
+                Toggle(isOn: $ganShowResultPopup) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("settings.result_popup")
+                        Text("settings.result_popup_help")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+
+            if enteringTimesWith == TimeEntryMode.gan.rawValue {
+                Section {
+                    ganTimerConnectionRow
+
+                    if let deviceName = ganTimer.deviceName, !deviceName.isEmpty {
+                        HStack {
+                            Text("settings.gan_device")
+                            Spacer()
+                            Text(deviceName)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    Toggle(isOn: $ganInspectionStartsOnPress) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("settings.gan_inspection_on_press")
+                            Text("settings.gan_inspection_on_press_help")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+
+                    listSettingsMenuRow(
+                        titleKey: "settings.gan_result_input_mode",
+                        selectedKey: GANResultInputMode(rawValue: ganResultInputMode)?.localizedKey ?? "settings.gan_result_mode_manual"
+                    ) {
+                        ForEach(GANResultInputMode.allCases) { mode in
+                            Button(mode.localizedKey) {
+                                ganResultInputMode = mode.rawValue
+                            }
+                        }
+                    }
+
+                    Text(GANResultInputMode(rawValue: ganResultInputMode)?.helpLocalizedKey ?? "settings.gan_result_mode_cycle_help")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } header: {
+                    Text("settings.gan_timer")
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.entering_times_with", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var scrambleDiagramSettingsList: some View {
+        List {
+            Section {
+                listSettingsMenuRow(
+                    titleKey: "settings.draw_scramble_position",
+                    selectedKey: DrawScramblePlacement(rawValue: drawScramblePlacement)?.localizedKey ?? "settings.draw_scramble_position_inline"
+                ) {
+                    ForEach(DrawScramblePlacement.allCases) { placement in
+                        Button(placement.localizedKey) {
+                            drawScramblePlacement = placement.rawValue
+                        }
+                    }
+                }
+
+                if (DrawScramblePlacement(rawValue: drawScramblePlacement) ?? .inline).isFloating {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("settings.draw_scramble_size")
+                            Spacer()
+                            Text("\(Int(drawScrambleFloatingSize.rounded()))")
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+
+                        Slider(value: $drawScrambleFloatingSize, in: 96...500, step: 1)
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.draw_scramble_position", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var ganTimerConnectionRow: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("settings.gan_timer")
+                Text(LocalizedStringKey(ganTimer.statusLocalizedKey))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button {
+                switch ganTimer.connectionState {
+                case .scanning, .connecting, .connected, .handsOn, .ready, .running, .finished:
+                    ganTimer.performPrimaryAction()
+                default:
+                    ganTimer.startDeviceDiscovery()
+                    showingGANDevicePicker = true
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    if case .scanning = ganTimer.connectionState {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text(LocalizedStringKey(ganTimer.actionLocalizedKey))
+                }
+            }
+            .buttonStyle(.bordered)
+        }
+    }
+
+    func appearanceEditorSection<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        Section {
+            content()
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+        }
+    }
+
+    func settingsNavigationLabel(
+        titleKey: LocalizedStringKey,
+        valueKey: LocalizedStringKey? = nil
+    ) -> some View {
+        HStack {
+            Text(titleKey)
+            Spacer()
+            if let valueKey {
+                Text(valueKey)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    func listSettingsMenuRow<Content: View>(
+        titleKey: LocalizedStringKey,
+        selectedKey: LocalizedStringKey? = nil,
+        selectedText: String? = nil,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack {
+            Text(titleKey)
+
+            Spacer()
+
+            Menu {
+                content()
+            } label: {
+                HStack(spacing: 6) {
+                    if let selectedKey {
+                        Text(selectedKey)
+                            .foregroundStyle(.secondary)
+                    } else if let selectedText {
+                        Text(selectedText)
+                            .foregroundStyle(.secondary)
+                    }
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .tint(.primary)
+        }
+    }
+
     var ganDevicePickerSheet: some View {
         CompatibleNavigationContainer {
             List {
@@ -800,7 +986,7 @@ private extension SettingsTabView {
                     }
                 }
             }
-            .navigationTitle(Text("settings.gan_choose_device"))
+            .navigationTitle(Text(appLocalizedString("settings.gan_choose_device", languageCode: appLanguage)))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -823,7 +1009,7 @@ private extension SettingsTabView {
         .compatibleMediumLargeSheet()
     }
 
-    var wcaStatusCard: some View {
+    func wcaStatusCard(showsDisclosure: Bool) -> some View {
         HStack(spacing: 12) {
             if let avatarURLString = wcaAuth.profile?.avatarURL,
                let avatarURL = URL(string: avatarURLString) {
@@ -854,28 +1040,25 @@ private extension SettingsTabView {
 
             Spacer()
 
-            if wcaAuth.isSignedIn {
-                Menu {
-                    Button("settings.wca_my_competitions") {
-                        wcaDestination = .myCompetitions
-                    }
-                    Button("settings.wca_my_results") {
-                        wcaDestination = .myResults
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("settings.detail")
-                            .font(.system(size: 13, weight: .semibold))
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 11, weight: .semibold))
-                    }
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                }
-                .tint(.primary)
+            if showsDisclosure {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
         }
+    }
+
+    func settingsActionNavigationLabel(titleKey: LocalizedStringKey) -> some View {
+        HStack {
+            Text(titleKey)
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color(.tertiaryLabel))
+        }
+        .contentShape(Rectangle())
     }
 
     var importDataRow: some View {
@@ -885,7 +1068,6 @@ private extension SettingsTabView {
             HStack {
                 HStack(spacing: 6) {
                     Text("settings.import_data")
-                        .font(.system(size: 16, weight: .medium))
 
                     Button {
                         showingImportInfoAlert = true
@@ -915,10 +1097,8 @@ private extension SettingsTabView {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 18)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -930,16 +1110,13 @@ private extension SettingsTabView {
         } label: {
             HStack {
                 Text("settings.export_data")
-                    .font(.system(size: 16, weight: .medium))
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 18)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -1001,7 +1178,7 @@ private extension SettingsTabView {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 18)
@@ -1620,7 +1797,7 @@ private extension SettingsTabView {
                     }
                     .disabled(fontDesignBinding(for: target).wrappedValue == TimerFontDesignOption.default.rawValue)
                 }
-                .navigationTitle("settings.font_design_label")
+                .navigationTitle(appLocalizedString("settings.font_design_label", languageCode: appLanguage))
                 .navigationBarTitleDisplayMode(.inline)
             }
             .compatibleMediumLargeSheet()
@@ -1652,7 +1829,7 @@ private extension SettingsTabView {
                     }
                     .disabled(fontWeightBinding(for: target).wrappedValue == defaultFontWeightValue(for: target))
                 }
-                .navigationTitle("settings.font_weight_label")
+                .navigationTitle(appLocalizedString("settings.font_weight_label", languageCode: appLanguage))
                 .navigationBarTitleDisplayMode(.inline)
             }
             .compatibleMediumSheet()
@@ -1831,6 +2008,7 @@ private extension SettingsTabView {
 }
 
 private enum WCASettingsDestination: String, Identifiable, Hashable {
+    case account
     case myCompetitions
     case myResults
 
@@ -2108,7 +2286,7 @@ private struct CompetitionCalculatorSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("settings.competition_calculator_title")
+            .navigationTitle(appLocalizedString("settings.competition_calculator_title", languageCode: appLanguage))
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("common.done") {

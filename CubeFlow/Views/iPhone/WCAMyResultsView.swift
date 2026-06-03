@@ -125,7 +125,7 @@ struct WCAMyResultsView: View {
                 unavailableView(message: appLocalizedString("wca.results_error_missing_wca_id", languageCode: appLanguage))
             }
         }
-        .navigationTitle(Text("settings.wca_my_results"))
+        .navigationTitle(Text(appLocalizedString("settings.wca_my_results", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -148,7 +148,8 @@ struct WCAMyResultsView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 20)
+            .padding(.top, 0)
+            .padding(.bottom, 20)
         }
         .task(id: wcaId) {
             await viewModel.load(wcaId: wcaId, appLanguageCode: appLanguage)
@@ -170,6 +171,7 @@ struct WCAMyResultsView: View {
                             ProgressView()
                         } else {
                             Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 15, weight: .semibold))
                         }
                     }
                     .disabled(viewModel.isLoading)
@@ -717,25 +719,599 @@ struct WCAMyResultsView: View {
     }
 }
 
-struct WCAMyCompetitionsPlaceholderView: View {
+@MainActor
+final class WCAMyCompetitionsViewModel: ObservableObject {
+    @Published private(set) var page: WCAMyCompetitionsPage?
+    @Published private(set) var isLoading = false
+    @Published private(set) var errorMessage: String?
+
+    func load(forceRefresh: Bool = false) async {
+        if !forceRefresh, page != nil {
+            return
+        }
+
+        isLoading = true
+        if page == nil {
+            errorMessage = nil
+        }
+
+        do {
+            page = try await WCAMyCompetitionsService.fetchMyCompetitions(
+                authManager: WCAAuthManager.shared
+            )
+            errorMessage = nil
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        }
+
+        isLoading = false
+    }
+}
+
+struct WCAMyCompetitionsView: View {
+    let profile: WCAUserProfile?
+
+    @AppStorage("appLanguage") private var appLanguage: String = "en"
+    @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
+    @Environment(\.openURL) private var openURL
+    @StateObject private var viewModel = WCAMyCompetitionsViewModel()
+    @State private var isUpcomingExpanded = true
+    @State private var isPastExpanded = false
+
     var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                myCompetitionsIntro
+
+                if let page = viewModel.page {
+                    myCompetitionsSection(page: page)
+                    Divider()
+                    bookmarkedCompetitionsSection(page.bookmarkedCompetitions)
+                } else if viewModel.isLoading {
+                    loadingCard
+                } else {
+                    errorCard(message: viewModel.errorMessage ?? appLocalizedString("wca.competitions_error_request_failed", languageCode: appLanguage))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 0)
+            .padding(.bottom, 20)
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle(Text(appLocalizedString("settings.wca_my_competitions", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.large)
+        .task {
+            await viewModel.load()
+        }
+        .modifier(
+            WCAMyCompetitionsToolbarModifier(
+                isLoading: viewModel.isLoading,
+                profile: profile,
+                refresh: {
+                    Task {
+                        await viewModel.load(forceRefresh: true)
+                    }
+                }
+            )
+        )
+        .refreshable {
+            await viewModel.load(forceRefresh: true)
+        }
+    }
+
+    private var myCompetitionsIntro: some View {
+        Text("wca.competitions_intro")
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func myCompetitionsSection(page: WCAMyCompetitionsPage) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if page.futureCompetitions.isEmpty {
+                emptyUpcomingView
+            } else {
+                DisclosureGroup(isExpanded: $isUpcomingExpanded) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        competitionRows(
+                            page.futureCompetitions,
+                            registrationsByCompetition: page.registrationsByCompetition
+                        )
+                    }
+                    .padding(.top, 10)
+                } label: {
+                    disclosureLabel("wca.competitions_upcoming")
+                }
+                .tint(.primary)
+
+                Divider()
+            }
+
+            DisclosureGroup(isExpanded: $isPastExpanded) {
+                VStack(alignment: .leading, spacing: 10) {
+                    if page.pastCompetitions.isEmpty {
+                        emptyText("wca.competitions_empty_past")
+                    } else {
+                        competitionRows(
+                            page.pastCompetitions,
+                            registrationsByCompetition: page.registrationsByCompetition
+                        )
+                    }
+                }
+                .padding(.top, 10)
+            } label: {
+                Text(
+                    String(
+                        format: appLocalizedString("wca.competitions_past_format", languageCode: appLanguage),
+                        page.pastCompetitions.count
+                    )
+                )
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.primary)
+            }
+            .tint(.primary)
+        }
+    }
+
+    private func bookmarkedCompetitionsSection(_ competitions: [WCAMyCompetitionSummary]) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 8) {
+                Image(systemName: "bookmark.fill")
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(.primary)
+
+                prominentSectionHeader("wca.competitions_bookmarked")
+            }
+
+            Text("wca.competitions_bookmarked_intro")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if competitions.isEmpty {
+                emptyText("wca.competitions_empty_bookmarked")
+                    .padding(.top, 2)
+            } else {
+                competitionRows(competitions, registrationsByCompetition: [:])
+                    .padding(.top, 2)
+            }
+        }
+    }
+
+    private func sectionHeader(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundStyle(.primary)
+    }
+
+    private func prominentSectionHeader(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(.system(size: 22, weight: .bold))
+            .foregroundStyle(.primary)
+    }
+
+    private func disclosureLabel(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundStyle(.primary)
+    }
+
+    private func competitionRows(
+        _ competitions: [WCAMyCompetitionSummary],
+        registrationsByCompetition: [String: String]
+    ) -> some View {
+        VStack(spacing: 0) {
+            ForEach(Array(competitions.enumerated()), id: \.element.id) { index, competition in
+                Button {
+                    openCompetition(competition)
+                } label: {
+                    competitionRow(
+                        competition,
+                        registrationStatus: registrationsByCompetition[competition.id]
+                    )
+                }
+                .buttonStyle(.plain)
+
+                if index < competitions.count - 1 {
+                    Divider()
+                        .padding(.leading, 2)
+                }
+            }
+        }
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+    }
+
+    private func competitionRow(
+        _ competition: WCAMyCompetitionSummary,
+        registrationStatus: String?
+    ) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(competition.displayName)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if let registrationStatusText = localizedRegistrationStatus(registrationStatus) {
+                        Text(registrationStatusText)
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(statusColor(for: registrationStatus), in: Capsule())
+                    }
+                }
+
+                Text(competition.localizedLocation(languageCode: appLanguage))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+
+                Text(competition.localizedDateRange(languageCode: appLanguage))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 8)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color(.tertiaryLabel))
+        }
+        .padding(.horizontal, 13)
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
+    }
+
+    private var emptyUpcomingView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(emptyUpcomingAttributedMessage)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundStyle(Color(red: 60 / 255, green: 110 / 255, blue: 132 / 255))
+                .tint(Color(red: 230 / 255, green: 69 / 255, blue: 3 / 255))
+                .fixedSize(horizontal: false, vertical: true)
+                .environment(\.openURL, OpenURLAction { url in
+                    if url.scheme == "cubeflow", url.host == "competitions" {
+                        requestedIPhoneTab = "competitions"
+                        return .handled
+                    }
+                    openURL(url)
+                    return .handled
+                })
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 17)
+        .background(Color(red: 250 / 255, green: 255 / 255, blue: 255 / 255), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color(red: 178 / 255, green: 212 / 255, blue: 221 / 255), lineWidth: 1)
+        }
+    }
+
+    private var emptyUpcomingAttributedMessage: AttributedString {
+        let markdown = appLocalizedString("wca.competitions_empty_upcoming_markdown", languageCode: appLanguage)
+        return (try? AttributedString(markdown: markdown)) ?? AttributedString(markdown)
+    }
+
+    private var loadingCard: some View {
         VStack(spacing: 12) {
-            Image(systemName: "clock.arrow.circlepath")
+            ProgressView()
+            Text("wca.competitions_loading")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 48)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func errorCard(message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.circle")
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.secondary)
 
-            Text("wca.competitions_coming_soon")
+            Text(message)
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+
+            Button("wca.results_retry") {
+                Task {
+                    await viewModel.load(forceRefresh: true)
+                }
+            }
+            .buttonStyle(.borderedProminent)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
-        .background(Color(.systemGroupedBackground))
-        .navigationTitle(Text("settings.wca_my_competitions"))
-        .navigationBarTitleDisplayMode(.inline)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 28)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
+    private func emptyText(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 13)
+            .padding(.vertical, 12)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+    }
+
+    private func openCompetition(_ competition: WCAMyCompetitionSummary) {
+        guard let url = competition.officialURL else { return }
+        openURL(url)
+    }
+
+    private func localizedRegistrationStatus(_ status: String?) -> String? {
+        guard let status else { return nil }
+        switch status.lowercased() {
+        case "accepted":
+            return appLocalizedString("wca.competitions_status_accepted", languageCode: appLanguage)
+        case "pending":
+            return appLocalizedString("wca.competitions_status_pending", languageCode: appLanguage)
+        case "waiting_list", "waitlist", "waitlisted":
+            return appLocalizedString("wca.competitions_status_waitlisted", languageCode: appLanguage)
+        default:
+            return nil
+        }
+    }
+
+    private func statusColor(for status: String?) -> Color {
+        switch status?.lowercased() {
+        case "accepted":
+            return .green
+        case "pending":
+            return .orange
+        case "waiting_list", "waitlist", "waitlisted":
+            return .blue
+        default:
+            return .secondary
+        }
+    }
+}
+
+private struct WCAMyCompetitionsToolbarModifier: ViewModifier {
+    let isLoading: Bool
+    let profile: WCAUserProfile?
+    let refresh: () -> Void
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.modifier(
+                WCAMyCompetitionsToolbarWithSpacerModifier(
+                    isLoading: isLoading,
+                    profile: profile,
+                    refresh: refresh
+                )
+            )
+        } else {
+            content.modifier(
+                WCAMyCompetitionsToolbarDefaultModifier(
+                    isLoading: isLoading,
+                    profile: profile,
+                    refresh: refresh
+                )
+            )
+        }
+    }
+}
+
+private struct WCAMyCompetitionsToolbarDefaultModifier: ViewModifier {
+    let isLoading: Bool
+    let profile: WCAUserProfile?
+    let refresh: () -> Void
+
+    func body(content: Content) -> some View {
+        content.toolbar {
+            wcaCompetitionsRefreshToolbarItem(isLoading: isLoading, refresh: refresh)
+            wcaCompetitionsResultsToolbarItem(profile: profile)
+        }
+    }
+}
+
+@available(iOS 26.0, *)
+private struct WCAMyCompetitionsToolbarWithSpacerModifier: ViewModifier {
+    let isLoading: Bool
+    let profile: WCAUserProfile?
+    let refresh: () -> Void
+
+    func body(content: Content) -> some View {
+        content.toolbar {
+            wcaCompetitionsRefreshToolbarItem(isLoading: isLoading, refresh: refresh)
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            wcaCompetitionsResultsToolbarItem(profile: profile)
+        }
+    }
+}
+
+private func wcaCompetitionsRefreshToolbarItem(
+    isLoading: Bool,
+    refresh: @escaping () -> Void
+) -> ToolbarItem<(), some View> {
+    ToolbarItem(placement: .topBarTrailing) {
+        Button(action: refresh) {
+            if isLoading {
+                ProgressView()
+            } else {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 15, weight: .semibold))
+            }
+        }
+        .disabled(isLoading)
+    }
+}
+
+private func wcaCompetitionsResultsToolbarItem(
+    profile: WCAUserProfile?
+) -> ToolbarItem<(), some View> {
+    ToolbarItem(placement: .topBarTrailing) {
+        NavigationLink {
+            WCAMyResultsView(profile: profile)
+        } label: {
+            Text("settings.wca_my_results")
+        }
+    }
+}
+
+struct WCAMyCompetitionsPage: Sendable, Codable {
+    let futureCompetitions: [WCAMyCompetitionSummary]
+    let pastCompetitions: [WCAMyCompetitionSummary]
+    let bookmarkedCompetitions: [WCAMyCompetitionSummary]
+    let registrationsByCompetition: [String: String]
+
+    enum CodingKeys: String, CodingKey {
+        case futureCompetitions = "future_competitions"
+        case pastCompetitions = "past_competitions"
+        case bookmarkedCompetitions = "bookmarked_competitions"
+        case registrationsByCompetition = "registrations_by_competition"
+    }
+}
+
+struct WCAMyCompetitionSummary: Identifiable, Hashable, Sendable, Codable {
+    let id: String
+    let name: String
+    let website: String?
+    let startDate: String?
+    let endDate: String?
+    let registrationOpen: String?
+    let url: String?
+    let city: String?
+    let countryISO2: String?
+    let shortDisplayName: String?
+    let registrationStatus: String?
+
+    var displayName: String {
+        shortDisplayName?.isEmpty == false ? shortDisplayName! : name
+    }
+
+    var officialURL: URL? {
+        if let url, !url.isEmpty {
+            if url.hasPrefix("http") {
+                return URL(string: url)
+            }
+            return URL(string: "https://www.worldcubeassociation.org\(url.hasPrefix("/") ? "" : "/")\(url)")
+        }
+        return URL(string: "https://www.worldcubeassociation.org/competitions/\(id)")
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case website
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case registrationOpen = "registration_open"
+        case url
+        case city
+        case countryISO2 = "country_iso2"
+        case shortDisplayName = "short_display_name"
+        case registrationStatus = "registration_status"
+    }
+
+    func localizedLocation(languageCode: String) -> String {
+        let cityText = city?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let countryText = localizedCountryName(languageCode: languageCode)
+
+        if cityText.isEmpty {
+            return countryText
+        }
+        if countryText.isEmpty {
+            return cityText
+        }
+        return "\(cityText), \(countryText)"
+    }
+
+    func localizedDateRange(languageCode: String) -> String {
+        guard let start = parsedDate(from: startDate) else {
+            return startDate ?? ""
+        }
+
+        let locale = appLocale(for: languageCode)
+        if let end = parsedDate(from: endDate), !Calendar.current.isDate(start, inSameDayAs: end) {
+            let formatter = DateIntervalFormatter()
+            formatter.locale = locale
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .none
+            return formatter.string(from: start, to: end)
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: start)
+    }
+
+    private func localizedCountryName(languageCode: String) -> String {
+        guard let countryISO2, !countryISO2.isEmpty else { return "" }
+        let locale = appLocale(for: languageCode)
+        return locale.localizedString(forRegionCode: countryISO2) ?? countryISO2
+    }
+
+    private func parsedDate(from value: String?) -> Date? {
+        guard let value, !value.isEmpty else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: value)
+    }
+}
+
+enum WCAMyCompetitionsService {
+    static func fetchMyCompetitions(authManager: WCAAuthManager) async throws -> WCAMyCompetitionsPage {
+        guard let url = URL(string: "https://www.worldcubeassociation.org/api/v0/competitions/mine") else {
+            throw WCAMyCompetitionsFetchError.invalidURL
+        }
+
+        var request = try await authManager.authorizedRequest(for: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw WCAMyCompetitionsFetchError.requestFailed
+        }
+
+        if httpResponse.statusCode == 401 {
+            throw WCAMyCompetitionsFetchError.notSignedIn
+        }
+
+        guard 200..<300 ~= httpResponse.statusCode else {
+            throw WCAMyCompetitionsFetchError.requestFailed
+        }
+
+        do {
+            let decoder = JSONDecoder()
+            return try decoder.decode(WCAMyCompetitionsPage.self, from: data)
+        } catch {
+            throw WCAMyCompetitionsFetchError.invalidResponse
+        }
+    }
+}
+
+enum WCAMyCompetitionsFetchError: LocalizedError {
+    case invalidURL
+    case notSignedIn
+    case requestFailed
+    case invalidResponse
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return currentAppLocalizedString("wca.competitions_error_request_failed")
+        case .notSignedIn:
+            return currentAppLocalizedString("wca.competitions_error_sign_in")
+        case .requestFailed:
+            return currentAppLocalizedString("wca.competitions_error_request_failed")
+        case .invalidResponse:
+            return currentAppLocalizedString("wca.competitions_error_invalid_response")
+        }
+    }
 }
 
 private struct WCACompetitionGroup: Identifiable {

@@ -4,6 +4,7 @@ import SwiftUI
 struct IPhoneContentView: View {
     @State private var selectedTab: IPhoneTab = .timer
     @AppStorage("appLanguage") private var appLanguage: String = "en"
+    @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
 
     private var contentLocale: Locale {
         appLocale(for: appLanguage)
@@ -13,36 +14,61 @@ struct IPhoneContentView: View {
         TabView(selection: $selectedTab) {
             TimerTabView()
                 .tabItem {
-                    Label("tab.timer", systemImage: "clock.fill")
+                    Label {
+                        Text(appLocalizedString("tab.timer", languageCode: appLanguage))
+                    } icon: {
+                        Image(systemName: "clock.fill")
+                    }
                 }
                 .tag(IPhoneTab.timer)
 
             DataTabView()
                 .tabItem {
-                    Label("tab.data", systemImage: "chart.line.uptrend.xyaxis")
+                    Label {
+                        Text(appLocalizedString("tab.data", languageCode: appLanguage))
+                    } icon: {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                    }
                 }
                 .tag(IPhoneTab.data)
 
             AlgsTabView()
                 .tabItem {
-                    Label("tab.algs", systemImage: "book.closed.fill")
+                    Label {
+                        Text(appLocalizedString("tab.algs", languageCode: appLanguage))
+                    } icon: {
+                        Image(systemName: "book.closed.fill")
+                    }
                 }
                 .tag(IPhoneTab.algs)
 
             CompetitionTabView()
                 .tabItem {
-                    Label("tab.competitions", systemImage: competitionsTabSystemImage)
+                    Label {
+                        Text(appLocalizedString("tab.competitions", languageCode: appLanguage))
+                    } icon: {
+                        Image(systemName: competitionsTabSystemImage)
+                    }
                 }
                 .tag(IPhoneTab.competitions)
 
             SettingsTabView()
                 .tabItem {
-                    Label("tab.settings", systemImage: "gearshape.fill")
+                    Label {
+                        Text(appLocalizedString("tab.settings", languageCode: appLanguage))
+                    } icon: {
+                        Image(systemName: "gearshape.fill")
+                    }
                 }
                 .tag(IPhoneTab.settings)
         }
         .compatibleTabBarBackground()
         .environment(\.locale, contentLocale)
+        .environment(\.layoutDirection, appUsesRightToLeftLayout(for: appLanguage) ? .rightToLeft : .leftToRight)
+        .onAppear(perform: handleRequestedTab)
+        .onChange(of: requestedIPhoneTab) { _ in
+            handleRequestedTab()
+        }
     }
 
     private var competitionsTabSystemImage: String {
@@ -51,10 +77,16 @@ struct IPhoneContentView: View {
         }
         return "flag.2.crossed.fill"
     }
+
+    private func handleRequestedTab() {
+        guard let requested = IPhoneTab(rawValue: requestedIPhoneTab) else { return }
+        selectedTab = requested
+        requestedIPhoneTab = ""
+    }
 }
 #endif
 
-private enum IPhoneTab {
+private enum IPhoneTab: String {
     case timer
     case data
     case algs

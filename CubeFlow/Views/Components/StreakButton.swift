@@ -115,7 +115,7 @@ private struct StreakDetailSheet: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
         }
-        .navigationTitle(Text("streak.title"))
+        .navigationTitle(Text(appLocalizedString("streak.title", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
