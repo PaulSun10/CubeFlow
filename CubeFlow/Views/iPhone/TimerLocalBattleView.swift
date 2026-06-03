@@ -366,8 +366,18 @@ struct LocalBattleContent: View {
     private func localBattleEventPicker(event: PuzzleEvent, isEnabled: Bool, onSelect: @escaping (PuzzleEvent) -> Void) -> some View {
         Menu {
             ForEach(PuzzleEvent.regularCases, id: \.self) { event in
-                Button(LocalizedStringKey(event.localizationKey)) {
-                    onSelect(event)
+                if event == .fourByFour {
+                    Menu("timer.menu.4x4") {
+                        ForEach(PuzzleEvent.fourByFourCases, id: \.self) { event in
+                            Button(LocalizedStringKey(event == .fourByFour ? "event.4x4_standard" : event.localizationKey)) {
+                                onSelect(event)
+                            }
+                        }
+                    }
+                } else if event != .fourByFourFast {
+                    Button(LocalizedStringKey(event.localizationKey)) {
+                        onSelect(event)
+                    }
                 }
             }
 

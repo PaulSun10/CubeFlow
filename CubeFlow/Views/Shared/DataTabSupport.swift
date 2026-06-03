@@ -37,13 +37,15 @@ struct SessionSolveSample: Identifiable, Sendable {
     let time: Double
     let resultRaw: String
     let scramble: String
+    let eventRawValue: String
 
-    nonisolated init(id: UUID, date: Date, time: Double, resultRaw: String, scramble: String) {
+    nonisolated init(id: UUID, date: Date, time: Double, resultRaw: String, scramble: String, eventRawValue: String) {
         self.id = id
         self.date = date
         self.time = time
         self.resultRaw = resultRaw
         self.scramble = scramble
+        self.eventRawValue = eventRawValue
     }
 
     nonisolated var adjustedTime: Double? {
@@ -210,8 +212,30 @@ struct AverageListEntry: Identifiable, Sendable {
     let position: Int
     let date: Date
     let value: Double?
+    let isPersonalBest: Bool
+    let solves: [SessionSolveSample]
 
     nonisolated var id: Int { position }
+
+    nonisolated var bestSolveID: UUID? {
+        solves
+            .compactMap { solve -> (UUID, Double)? in
+                guard let adjustedTime = solve.adjustedTime else { return nil }
+                return (solve.id, adjustedTime)
+            }
+            .min { $0.1 < $1.1 }?.0
+    }
+
+    nonisolated var worstSolveID: UUID? {
+        let dnfs = solves.filter { $0.adjustedTime == nil }
+        if let firstDNF = dnfs.first { return firstDNF.id }
+        return solves
+            .compactMap { solve -> (UUID, Double)? in
+                guard let adjustedTime = solve.adjustedTime else { return nil }
+                return (solve.id, adjustedTime)
+            }
+            .max { $0.1 < $1.1 }?.0
+    }
 }
 
 nonisolated func dataTabLocalizedString(for key: String, languageCode: String) -> String {
@@ -291,11 +315,24 @@ enum DataTabComputation {
         let values = evaluation.windowValues
         let totalWindows = values.count
 
+        var personalBestIndices = Set<Int>()
+        var bestValue: Double?
+        for index in values.indices.reversed() {
+            guard let value = values[index], !value.isNaN else { continue }
+            if bestValue == nil || value < bestValue! {
+                bestValue = value
+                personalBestIndices.insert(index)
+            }
+        }
+
         return values.enumerated().map { index, value in
-            AverageListEntry(
+            let windowSolves = Array(solves[index..<(index + averageType.solveCount)])
+            return AverageListEntry(
                 position: totalWindows - index,
                 date: solves[index].date,
-                value: value
+                value: value,
+                isPersonalBest: personalBestIndices.contains(index),
+                solves: windowSolves
             )
         }
     }

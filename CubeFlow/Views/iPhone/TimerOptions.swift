@@ -206,6 +206,7 @@ enum PuzzleEvent: String, CaseIterable {
     case twoByTwo = "2x2"
     case threeByThree = "3x3"
     case fourByFour = "4x4"
+    case fourByFourFast = "4x4 fast"
     case fiveByFive = "5x5"
     case sixBySix = "6x6"
     case sevenBySeven = "7x7"
@@ -226,6 +227,7 @@ enum PuzzleEvent: String, CaseIterable {
         case .twoByTwo: return "event.2x2"
         case .threeByThree: return "event.3x3"
         case .fourByFour: return "event.4x4"
+        case .fourByFourFast: return "event.4x4fast"
         case .fiveByFive: return "event.5x5"
         case .sixBySix: return "event.6x6"
         case .sevenBySeven: return "event.7x7"
@@ -248,6 +250,7 @@ enum PuzzleEvent: String, CaseIterable {
             .twoByTwo,
             .threeByThree,
             .fourByFour,
+            .fourByFourFast,
             .fiveByFive,
             .sixBySix,
             .sevenBySeven,
@@ -259,6 +262,14 @@ enum PuzzleEvent: String, CaseIterable {
             .threeByThreeOH,
             .threeByThreeFM
         ]
+    }
+
+    static var regularTopLevelCases: [PuzzleEvent] {
+        regularCases.filter { $0 != .fourByFour && $0 != .fourByFourFast }
+    }
+
+    static var fourByFourCases: [PuzzleEvent] {
+        [.fourByFour, .fourByFourFast]
     }
 
     static var blindfoldedCases: [PuzzleEvent] {
@@ -276,7 +287,7 @@ enum PuzzleEvent: String, CaseIterable {
             return "222"
         case .threeByThree, .threeByThreeOH, .threeByThreeFM, .threeByThreeBLD:
             return "333"
-        case .fourByFour, .fourByFourBLD:
+        case .fourByFour, .fourByFourFast, .fourByFourBLD:
             return "444"
         case .fiveByFive, .fiveByFiveBLD:
             return "555"

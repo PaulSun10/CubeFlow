@@ -1,8 +1,8 @@
 import Foundation
 
 enum TNoodlePuzzleRegistry: Int, CaseIterable {
-    // TNoodleLibNative's C entrypoint appears to follow Main.puzzles[] ordering,
-    // which matches upstream PuzzleRegistry with FOUR_FAST omitted.
+    // This bundled TNoodleLibNative build omits upstream FOUR_FAST.
+    // Keep this order aligned to the embedded dylib, not the latest upstream source.
     case two = 0
     case three = 1
     case four = 2
@@ -158,17 +158,6 @@ private extension TNoodlePuzzleRegistry {
     }
 
     var preferredProbeIndices: [Int] {
-        switch self {
-        case .sq1:
-            return [rawValue, 12]
-        case .mega:
-            return [rawValue, 13]
-        case .clock:
-            return [rawValue, 14]
-        case .skewb:
-            return [rawValue]
-        default:
-            return [rawValue]
-        }
+        [rawValue]
     }
 }

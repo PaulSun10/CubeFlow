@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreData
 import Charts
+import UIKit
 
 #if os(iOS)
 private let sessionsWillDeleteNotification = Notification.Name("CubeFlowSessionsWillDelete")
@@ -25,18 +26,25 @@ struct DataTabView: View {
     @State private var selectedSolveIDs: Set<UUID> = []
     @State private var showingSessionSheet = false
     @State private var solveDetailSample: SessionSolveSample?
+    @State private var averageDetailEntry: AverageListEntry?
     @State private var showingTrendSheet = false
     @State private var selectedAverageType: AverageListType = .mo3
     @State private var recordSnapshot = RecordSnapshot.empty
     @State private var filteredSessionSolves: [SessionSolveSample] = []
     @State private var averageEntriesSnapshot: [AverageListEntry] = []
+    @State private var averageEntriesKey: AverageEntriesSnapshotKey?
     @State private var recordSnapshotKey: SessionSnapshotKey?
     @State private var isLoadingSessionSnapshot = false
     @State private var isComputingRecordSnapshot = false
     @State private var isComputingAverageEntries = false
+    @State private var measuredLeadingToolbarFrame: CGRect = .zero
+    @State private var measuredTrailingToolbarFrame: CGRect = .zero
+    @State private var measuredSegmentedFrame: CGRect = .zero
+    @State private var toolbarMeasurementGeneration = 0
     @State private var sessionSnapshotGeneration = 0
     @State private var recordComputationGeneration = 0
     @State private var averageComputationGeneration = 0
+    @State private var isShowingDeleteSelectedSolvesAlert = false
 
     private var selectedSession: Session? {
         sessions.first(where: { $0.id.uuidString == selectedSessionID }) ?? sessions.first
@@ -48,6 +56,27 @@ struct DataTabView: View {
 
     private var selectedSessionSolveCount: Int {
         filteredSessionSolves.count
+    }
+
+    private var personalBestSingleSolveIDs: Set<UUID> {
+        var bestTime: Double?
+        var recordIDs = Set<UUID>()
+
+        for solve in sessionSolves.reversed() {
+            guard let adjustedTime = solve.adjustedTime else { continue }
+            if bestTime == nil || adjustedTime < bestTime! {
+                bestTime = adjustedTime
+                recordIDs.insert(solve.id)
+            }
+        }
+
+        return recordIDs
+    }
+
+    private var selectedSessionPuzzleKey: String? {
+        guard let rawValue = selectedSession?.selectedEventRawValue,
+              let event = PuzzleEvent(rawValue: rawValue) else { return nil }
+        return event.scrambleDiagramPuzzleKey
     }
 
     private var availableAverageTypes: [AverageListType] {
@@ -82,17 +111,44 @@ struct DataTabView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    topBarControls
+                    segmentedControl
                 }
             }
+            .modifier(
+                DataTabLeadingToolbarModifier(frame: $measuredLeadingToolbarFrame) {
+                    showingSessionSheet = true
+                }
+            )
+            .modifier(
+                DataTabTrailingToolbarModifier(
+                    mode: trailingToolbarMode,
+                    frame: $measuredTrailingToolbarFrame,
+                    measurementGeneration: toolbarMeasurementGeneration,
+                    onSelect: beginSelecting,
+                    onCloseSelection: endSelecting,
+                    onShowGraph: { showingTrendSheet = true }
+                )
+            )
         }
         .sheet(isPresented: $showingSessionSheet) {
             SessionManagementSheet(selectedSessionID: $selectedSessionID)
                 .compatibleLargeSheet()
         }
         .sheet(item: $solveDetailSample) { sample in
-            SolveDetailSheet(sample: sample)
-                .compatibleMediumSheet()
+            SolveDetailSheet(sample: sample, fallbackPuzzleKey: selectedSessionPuzzleKey)
+                .compatibleLargeSheet()
+        }
+        .sheet(item: $averageDetailEntry) { entry in
+            AverageDetailSheet(entry: entry, averageType: selectedAverageType)
+                .compatibleLargeSheet()
+        }
+        .alert("delete.solves.title", isPresented: $isShowingDeleteSelectedSolvesAlert) {
+            Button("common.delete", role: .destructive) {
+                deleteSelectedSolves()
+            }
+            Button("common.cancel", role: .cancel) { }
+        } message: {
+            Text("delete.solves.message")
         }
         .sheet(isPresented: $showingTrendSheet) {
             TimeTrendSheet(solves: sessionSolves, appLanguage: appLanguage)
@@ -109,6 +165,9 @@ struct DataTabView: View {
             ensureSessionExists()
             refreshFilteredSessionSolves()
         }
+        .onAppear {
+            toolbarMeasurementGeneration += 1
+        }
         .onChange(of: selectedSegment) { newValue in
             if newValue != .time {
                 isSelecting = false
@@ -116,8 +175,9 @@ struct DataTabView: View {
             }
             if newValue == .average {
                 syncSelectedAverageType()
-                refreshAverageEntries()
-            } else if newValue == .record {
+                ensureAverageEntriesSnapshot()
+            }
+            if newValue == .record {
                 refreshRecordSnapshot()
             }
         }
@@ -133,8 +193,8 @@ struct DataTabView: View {
             refreshFilteredSessionSolves()
         }
         .onChange(of: selectedAverageType) { _ in
-            if selectedSegment == .average && !isLoadingSessionSnapshot {
-                refreshAverageEntries()
+            if !isLoadingSessionSnapshot {
+                ensureAverageEntriesSnapshot()
             }
         }
         .onChange(of: appLanguage) { _ in
@@ -145,20 +205,6 @@ struct DataTabView: View {
         }
     }
 
-    private var topBarControls: some View {
-        HStack(spacing: 6) {
-            sessionButton
-            segmentedControl
-            trailingButton
-        }
-    }
-
-    private var sessionButton: some View {
-        toolbarCapsuleButton(title: Text("common.session"), minWidth: toolbarTextButtonMinWidth) {
-            showingSessionSheet = true
-        }
-        .layoutPriority(2)
-    }
 
     private var segmentedControl: some View {
         Picker("Data Segment", selection: segmentSelection) {
@@ -167,29 +213,34 @@ struct DataTabView: View {
             Text("data.segment.record").tag(DataSegment.record)
         }
         .pickerStyle(.segmented)
-        .frame(width: segmentedWidth)
+        .modifier(
+            DataTabSegmentedWidthModifier(
+                fallbackWidth: segmentedWidth,
+                leadingToolbarFrame: measuredLeadingToolbarFrame,
+                trailingToolbarFrame: measuredTrailingToolbarFrame,
+                segmentedFrame: $measuredSegmentedFrame
+            )
+        )
     }
 
-    private var selectButton: some View {
-        toolbarCapsuleButton(
-            title: Text(isSelecting ? LocalizedStringKey("common.done") : LocalizedStringKey("common.select")),
-            minWidth: toolbarTextButtonMinWidth
-        ) {
-            withAnimation(.snappy(duration: 0.2, extraBounce: 0)) {
-                isSelecting.toggle()
-                if !isSelecting {
-                    selectedSolveIDs.removeAll()
-                }
-            }
+
+    private var trailingToolbarMode: DataTabTrailingToolbarMode {
+        if selectedSegment == .time {
+            return isSelecting ? .closeSelection : .select
         }
-            .id(isSelecting)
-            .transition(.opacity)
-            .layoutPriority(2)
+        return .graph
     }
 
-    private var graphButton: some View {
-        toolbarCapsuleButton(iconName: "chart.line.uptrend.xyaxis", minWidth: toolbarIconButtonMinWidth) {
-            showingTrendSheet = true
+    private func beginSelecting() {
+        withAnimation(.snappy(duration: 0.2, extraBounce: 0)) {
+            isSelecting = true
+        }
+    }
+
+    private func endSelecting() {
+        withAnimation(.snappy(duration: 0.2, extraBounce: 0)) {
+            isSelecting = false
+            selectedSolveIDs.removeAll()
         }
     }
 
@@ -246,59 +297,6 @@ struct DataTabView: View {
 
     private var segmentedWidth: CGFloat {
         200
-    }
-
-    private var toolbarTextButtonMinWidth: CGFloat {
-        appLayoutLanguageCategory(for: appLanguage) == .widerCJK ? 66 : 76
-    }
-
-    private var toolbarIconButtonMinWidth: CGFloat {
-        toolbarTextButtonMinWidth
-    }
-
-    private var trailingButton: some View {
-        Group {
-            if selectedSegment == .time {
-                selectButton
-            } else {
-                graphButton
-            }
-        }
-    }
-
-    private func toolbarCapsuleButton(
-        title: Text,
-        minWidth: CGFloat,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            title
-                .lineLimit(1)
-                .font(.system(size: 16, weight: .medium))
-                .frame(minWidth: minWidth)
-                .padding(.vertical, 12)
-                .contentShape(.capsule)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(.primary)
-        .compatibleGlassFromIOS16(in: Capsule())
-    }
-
-    private func toolbarCapsuleButton(
-        iconName: String,
-        minWidth: CGFloat,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: iconName)
-                .font(.system(size: 16, weight: .medium))
-                .frame(minWidth: minWidth)
-                .padding(.vertical, 11)
-                .contentShape(.capsule)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(.primary)
-        .compatibleGlassFromIOS16(in: Capsule())
     }
 
     private var averageContent: some View {
@@ -410,22 +408,27 @@ struct DataTabView: View {
     }
 
     private func averageRow(for entry: AverageListEntry) -> some View {
-        HStack(spacing: 12) {
-            Text("#\(entry.position)")
-                .font(.system(size: 17, weight: .regular))
-                .foregroundStyle(.primary)
+        Button {
+            averageDetailEntry = entry
+        } label: {
+            HStack(spacing: 12) {
+                Text("#\(entry.position)")
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(.primary)
 
-            Spacer()
+                Spacer()
 
-            Text(SolveMetrics.formatAverage(entry.value))
-                .font(.system(size: 24, weight: .semibold))
-                .monospacedDigit()
-                .foregroundStyle(.primary)
+                Text(SolveMetrics.formatAverage(entry.value))
+                    .font(.system(size: 24, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(entry.isPersonalBest ? .orange : .primary)
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.secondary)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
         }
+        .buttonStyle(.plain)
     }
 
     private func solveRow(for solve: SessionSolveSample, position: Int) -> some View {
@@ -445,7 +448,7 @@ struct DataTabView: View {
                     Text(SolveMetrics.displayTime(for: solve))
                         .font(.system(size: 28, weight: .semibold))
                         .monospacedDigit()
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(personalBestSingleSolveIDs.contains(solve.id) ? .orange : .primary)
 
                     Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
                         .font(.system(size: 14, weight: .medium))
@@ -498,7 +501,7 @@ struct DataTabView: View {
             Spacer()
 
             Button(role: .destructive) {
-                deleteSelectedSolves()
+                isShowingDeleteSelectedSolvesAlert = true
             } label: {
                     Text("common.delete")
                         .font(.system(size: 17, weight: .semibold))
@@ -589,7 +592,8 @@ struct DataTabView: View {
                     date: solve.date,
                     time: solve.time,
                     resultRaw: solve.resultRaw,
-                    scramble: solve.scramble
+                    scramble: solve.scramble,
+                    eventRawValue: solve.event
                 )
             }
 
@@ -599,9 +603,7 @@ struct DataTabView: View {
                 isLoadingSessionSnapshot = false
                 syncSelectedAverageType()
                 prewarmRecordSnapshotIfNeeded()
-                if selectedSegment == .average {
-                    refreshAverageEntries()
-                }
+                ensureAverageEntriesSnapshot()
                 if selectedSegment == .record {
                     refreshRecordSnapshot()
                 }
@@ -665,20 +667,40 @@ struct DataTabView: View {
         }
     }
 
-    private func refreshAverageEntries() {
-        guard availableAverageTypes.contains(selectedAverageType) else {
+
+    private var currentAverageEntriesKey: AverageEntriesSnapshotKey? {
+        guard let selectedSession else { return nil }
+        return AverageEntriesSnapshotKey(
+            sessionID: selectedSession.id,
+            solveCount: sessionSolves.count,
+            averageType: selectedAverageType
+        )
+    }
+
+    private func ensureAverageEntriesSnapshot() {
+        guard availableAverageTypes.contains(selectedAverageType), let snapshotKey = currentAverageEntriesKey else {
             averageEntriesSnapshot = []
+            averageEntriesKey = nil
             isComputingAverageEntries = false
             return
         }
 
+        guard averageEntriesKey != snapshotKey else {
+            isComputingAverageEntries = false
+            return
+        }
+
+        refreshAverageEntries(for: snapshotKey)
+    }
+
+    private func refreshAverageEntries(for snapshotKey: AverageEntriesSnapshotKey) {
         let samples = sessionSolves
         let averageType = selectedAverageType
         let generation = averageComputationGeneration + 1
         averageComputationGeneration = generation
-        isComputingAverageEntries = true
+        isComputingAverageEntries = selectedSegment == .average && averageEntriesSnapshot.isEmpty
 
-        Task.detached(priority: .userInitiated) {
+        Task.detached(priority: selectedSegment == .average ? .userInitiated : .utility) {
             let entries = DataTabComputation.buildAverageEntriesSnapshot(
                 from: samples,
                 averageType: averageType
@@ -687,7 +709,209 @@ struct DataTabView: View {
             await MainActor.run {
                 guard generation == averageComputationGeneration else { return }
                 averageEntriesSnapshot = entries
+                averageEntriesKey = snapshotKey
                 isComputingAverageEntries = false
+            }
+        }
+    }
+}
+
+
+private struct AverageEntriesSnapshotKey: Equatable {
+    let sessionID: UUID
+    let solveCount: Int
+    let averageType: AverageListType
+}
+
+private enum DataTabTrailingToolbarMode: Equatable {
+    case select
+    case closeSelection
+    case graph
+}
+
+private let dataTabDebugToolbarMarkerLeftInset: CGFloat = 14
+private let dataTabDebugToolbarMarkerRightInset: CGFloat = 16
+
+private struct DataTabToolbarFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        let nextFrame = nextValue()
+        if nextFrame != .zero {
+            value = nextFrame
+        }
+    }
+}
+
+private extension CGRect {
+    func isNearlyEqual(to other: CGRect, tolerance: CGFloat = 0.5) -> Bool {
+        abs(minX - other.minX) <= tolerance &&
+        abs(minY - other.minY) <= tolerance &&
+        abs(width - other.width) <= tolerance &&
+        abs(height - other.height) <= tolerance
+    }
+}
+
+private struct DataTabToolbarFrameReader: View {
+    @Binding var frame: CGRect
+
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear
+                .preference(
+                    key: DataTabToolbarFramePreferenceKey.self,
+                    value: proxy.frame(in: .global)
+                )
+        }
+        .onPreferenceChange(DataTabToolbarFramePreferenceKey.self) { newFrame in
+            guard newFrame != .zero else { return }
+            guard !frame.isNearlyEqual(to: newFrame) else { return }
+            frame = newFrame
+        }
+    }
+}
+
+
+private struct DataTabGraphToolbarFrameReader: View {
+    @Binding var frame: CGRect
+    let generation: Int
+    @State private var acceptedGeneration: Int?
+
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear
+                .preference(
+                    key: DataTabToolbarFramePreferenceKey.self,
+                    value: proxy.frame(in: .global)
+                )
+        }
+        .onPreferenceChange(DataTabToolbarFramePreferenceKey.self) { newFrame in
+            guard newFrame != .zero else { return }
+            if acceptedGeneration != generation {
+                acceptedGeneration = generation
+                frame = newFrame
+                return
+            }
+            if frame == .zero || newFrame.minX > frame.minX + 0.5 {
+                frame = newFrame
+            }
+        }
+    }
+}
+
+private struct DataTabLeadingToolbarModifier: ViewModifier {
+    @Binding var frame: CGRect
+    let onShowSessions: () -> Void
+
+    func body(content: Content) -> some View {
+        content.toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    onShowSessions()
+                } label: {
+                    Text("common.session")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .background(DataTabToolbarFrameReader(frame: $frame))
+            }
+        }
+    }
+}
+
+private struct DataTabSegmentedWidthModifier: ViewModifier {
+    let fallbackWidth: CGFloat
+    let leadingToolbarFrame: CGRect
+    let trailingToolbarFrame: CGRect
+    @Binding var segmentedFrame: CGRect
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            ZStack(alignment: .leading) {
+                Color.clear
+                    .frame(width: fallbackWidth)
+                    .background(DataTabToolbarFrameReader(frame: $segmentedFrame))
+
+                content
+                    .frame(width: measuredAvailableWidth)
+                    .offset(x: measuredLeftOffsetX)
+                    .transaction { transaction in
+                        transaction.animation = nil
+                    }
+            }
+            .frame(width: fallbackWidth, alignment: .leading)
+            .layoutPriority(1)
+        } else {
+            content
+                .frame(width: fallbackWidth)
+        }
+    }
+
+    private var measuredAvailableWidth: CGFloat {
+        guard hasMeasuredToolbarFrames else { return fallbackWidth }
+        return max(measuredRightX - measuredLeftX, 0)
+    }
+
+    private var measuredLeftOffsetX: CGFloat {
+        guard hasMeasuredToolbarFrames, segmentedFrame != .zero else { return 0 }
+        return measuredLeftX - segmentedFrame.minX
+    }
+
+
+    private var measuredLeftX: CGFloat {
+        leadingToolbarFrame.maxX + dataTabDebugToolbarMarkerLeftInset
+    }
+
+    private var measuredRightX: CGFloat {
+        trailingToolbarFrame.minX - dataTabDebugToolbarMarkerRightInset
+    }
+
+    private var hasMeasuredToolbarFrames: Bool {
+        leadingToolbarFrame != .zero && trailingToolbarFrame != .zero
+    }
+}
+
+private struct DataTabTrailingToolbarModifier: ViewModifier {
+    let mode: DataTabTrailingToolbarMode
+    @Binding var frame: CGRect
+    let measurementGeneration: Int
+    let onSelect: () -> Void
+    let onCloseSelection: () -> Void
+    let onShowGraph: () -> Void
+
+    func body(content: Content) -> some View {
+        content.toolbar {
+            trailingToolbarContent
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var trailingToolbarContent: some ToolbarContent {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            switch mode {
+            case .select:
+                Button {
+                    onSelect()
+                } label: {
+                    Text("common.select")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .background(DataTabToolbarFrameReader(frame: $frame))
+            case .closeSelection:
+                Button {
+                    onCloseSelection()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .medium))
+                }
+                .background(DataTabToolbarFrameReader(frame: $frame))
+            case .graph:
+                Button {
+                    onShowGraph()
+                } label: {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.system(size: 16, weight: .medium))
+                }
+                .background(DataTabGraphToolbarFrameReader(frame: $frame, generation: measurementGeneration))
             }
         }
     }
@@ -697,100 +921,76 @@ private struct SolveDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var modelContext
     private let sample: SessionSolveSample
+    private let fallbackPuzzleKey: String?
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @State private var showingScrambleDetail = false
+    @State private var isShowingDeleteSolveAlert = false
 
-    init(sample: SessionSolveSample) {
+    init(sample: SessionSolveSample, fallbackPuzzleKey: String?) {
         self.sample = sample
+        self.fallbackPuzzleKey = fallbackPuzzleKey
     }
- 
+
+    private var puzzleKey: String? {
+        if let event = PuzzleEvent(rawValue: sample.eventRawValue) {
+            return event.scrambleDiagramPuzzleKey
+        }
+        return fallbackPuzzleKey
+    }
+
     private var shouldShowScrambleDetail: Bool {
         let scramble = sample.scramble
         return !scramble.isEmpty && (scramble.count > 90 || scramble.contains("\n"))
     }
 
+    private var canShowScrambleDiagram: Bool {
+        puzzleKey != nil && !sample.scramble.isEmpty
+    }
+
     var body: some View {
         CompatibleNavigationContainer {
-            VStack(alignment: .leading, spacing: 14) {
-                detailRow(titleKey: "common.time_score", value: SolveMetrics.displayTime(for: sample))
-                detailRow(
-                    titleKey: "common.date",
-                    value: SolveMetrics.displayDate(sample.date, languageCode: appLanguage)
-                )
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text("common.scramble")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(SolveMetrics.displayDate(sample.date, languageCode: appLanguage))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.secondary)
-                        if shouldShowScrambleDetail {
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                        }
+
+                        Text(SolveMetrics.displayTime(for: sample))
+                            .font(.system(size: 44, weight: .semibold))
+                            .monospacedDigit()
                     }
-                    Text(sample.scramble.isEmpty ? "-" : sample.scramble)
-                        .font(.system(size: 18, weight: .semibold))
-                        .monospacedDigit()
-                        .lineLimit(shouldShowScrambleDetail ? 2 : nil)
-                        .fixedSize(horizontal: false, vertical: !shouldShowScrambleDetail)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if shouldShowScrambleDetail {
-                        showingScrambleDetail = true
-                    }
-                }
-            }
-            .padding(20)
-            .navigationTitle("common.solve")
-            .navigationBarTitleDisplayMode(.inline)
-            .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 10) {
-                    HStack(spacing: 10) {
-                        Button("common.solved") {
-                            updateResult(.solved)
-                        }
-                        .foregroundStyle(.blue)
-                        .compatibleProminentButtonFromIOS16(tint: .blue)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Button("+2") {
-                            updateResult(.plusTwo)
-                        }
-                        .foregroundStyle(.blue)
-                        .compatibleProminentButtonFromIOS16(tint: .blue)
+                    scrambleSection
 
-                        Button("common.dnf") {
-                            updateResult(.dnf)
-                        }
-                        .foregroundStyle(.blue)
-                        .compatibleProminentButtonFromIOS16(tint: .blue)
-
-                        Spacer(minLength: 0)
-                    }
-                    .controlSize(.large)
-
-                    Button {
-                        deleteSolve()
-                    } label: {
-                        Text("common.delete")
+                    if canShowScrambleDiagram, let puzzleKey {
+                        let aspectRatio = ScrambleDiagramView.diagramAspectRatio(for: puzzleKey)
+                        ScrambleDiagramView(puzzleKey: puzzleKey, scramble: sample.scramble)
+                            .aspectRatio(aspectRatio, contentMode: .fit)
                             .frame(maxWidth: .infinity)
                     }
-                    .compatibleProminentButtonFromIOS16(tint: .red)
-                    .foregroundStyle(.red)
-                    .controlSize(.large)
+
+                    actionSection
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 4)
-                .padding(.bottom, -48)
-                .ignoresSafeArea(edges: .bottom)
+                .padding(20)
             }
+            .navigationTitle(appLocalizedString("common.solve", languageCode: appLanguage))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("common.done") {
                         dismiss()
                     }
                 }
+            }
+            .alert("delete.solve.title", isPresented: $isShowingDeleteSolveAlert) {
+                Button("common.delete", role: .destructive) {
+                    deleteSolve()
+                }
+                Button("common.cancel", role: .cancel) { }
+            } message: {
+                Text("delete.solve.message")
             }
             .sheet(isPresented: $showingScrambleDetail) {
                 CompatibleNavigationContainer {
@@ -800,7 +1000,7 @@ private struct SolveDetailSheet: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(24)
                     }
-                    .navigationTitle("common.scramble")
+                    .navigationTitle(appLocalizedString("common.scramble", languageCode: appLanguage))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -812,6 +1012,69 @@ private struct SolveDetailSheet: View {
                 }
                 .compatibleLargeSheet()
             }
+        }
+    }
+
+    private var scrambleSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Text("common.scramble")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.secondary)
+                if shouldShowScrambleDetail {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Text(sample.scramble.isEmpty ? "-" : sample.scramble)
+                .font(.system(size: 18, weight: .semibold))
+                .monospacedDigit()
+                .lineLimit(shouldShowScrambleDetail ? 3 : nil)
+                .fixedSize(horizontal: false, vertical: !shouldShowScrambleDetail)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if shouldShowScrambleDetail {
+                showingScrambleDetail = true
+            }
+        }
+    }
+
+    private var actionSection: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Button("common.dnf") {
+                    updateResult(.dnf)
+                }
+                .foregroundStyle(.blue)
+                .compatibleProminentButtonFromIOS16(tint: .blue)
+
+                Button("+2") {
+                    updateResult(.plusTwo)
+                }
+                .foregroundStyle(.blue)
+                .compatibleProminentButtonFromIOS16(tint: .blue)
+
+                Button("common.solved") {
+                    updateResult(.solved)
+                }
+                .foregroundStyle(.blue)
+                .compatibleProminentButtonFromIOS16(tint: .blue)
+            }
+            .controlSize(.large)
+
+            Button {
+                isShowingDeleteSolveAlert = true
+            } label: {
+                Text("common.delete")
+                    .frame(maxWidth: .infinity)
+            }
+            .compatibleProminentButtonFromIOS16(tint: .red)
+            .foregroundStyle(.red)
+            .controlSize(.large)
         }
     }
 
@@ -835,17 +1098,250 @@ private struct SolveDetailSheet: View {
         }
         dismiss()
     }
+}
 
-    private func detailRow(titleKey: LocalizedStringKey, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(titleKey)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(size: 18, weight: .semibold))
-                .monospacedDigit()
+
+private struct AverageDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let entry: AverageListEntry
+    let averageType: AverageListType
+    @AppStorage("appLanguage") private var appLanguage: String = "en"
+
+    private var orderedSolves: [SessionSolveSample] {
+        Array(entry.solves.reversed())
+    }
+
+    private var bestSolve: SessionSolveSample? {
+        guard let bestSolveID = entry.bestSolveID else { return nil }
+        return entry.solves.first { $0.id == bestSolveID }
+    }
+
+    private var worstSolve: SessionSolveSample? {
+        guard let worstSolveID = entry.worstSolveID else { return nil }
+        return entry.solves.first { $0.id == worstSolveID }
+    }
+
+    var body: some View {
+        CompatibleNavigationContainer {
+            List {
+                Section {
+                    averageSummaryRow(
+                        title: dataTabLocalizedString(for: "data.segment.average", languageCode: appLanguage),
+                        value: SolveMetrics.formatAverage(entry.value),
+                        isPrimary: true
+                    )
+                    averageSummaryRow(
+                        title: dataTabLocalizedString(for: "data.best_time", languageCode: appLanguage),
+                        value: bestSolve.map { SolveMetrics.displayTime(for: $0) } ?? appLocalizedString("common.not_available", languageCode: appLanguage)
+                    )
+                    averageSummaryRow(
+                        title: dataTabLocalizedString(for: "data.worst_time", languageCode: appLanguage),
+                        value: worstSolve.map { SolveMetrics.displayTime(for: $0) } ?? appLocalizedString("common.not_available", languageCode: appLanguage)
+                    )
+                }
+
+                Section(String(format: dataTabLocalizedString(for: "common.solves_format", languageCode: appLanguage), entry.solves.count)) {
+                    ForEach(Array(orderedSolves.enumerated()), id: \.element.id) { index, solve in
+                        averageSolveRow(solve, position: index + 1)
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle(averageType.title(languageCode: appLanguage))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("common.done") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
+
+    private func averageSummaryRow(title: String, value: String, isPrimary: Bool = false) -> some View {
+        HStack(spacing: 12) {
+            Text(title)
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Text(value)
+                .font(.system(size: isPrimary ? 26 : 18, weight: isPrimary ? .semibold : .medium))
+                .monospacedDigit()
+                .foregroundStyle(isPrimary && entry.isPersonalBest ? .orange : .primary)
+        }
+        .padding(.vertical, isPrimary ? 6 : 3)
+    }
+
+    private func averageSolveRow(_ solve: SessionSolveSample, position: Int) -> some View {
+        HStack(spacing: 12) {
+            Text("#\(position)")
+                .font(.system(size: 16, weight: .regular))
+                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(SolveMetrics.displayTime(for: solve))
+                    .font(.system(size: 21, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(color(for: solve))
+
+                Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func color(for solve: SessionSolveSample) -> Color {
+        if solve.id == entry.bestSolveID { return .orange }
+        if solve.id == entry.worstSolveID { return .red }
+        return .primary
+    }
+}
+
+
+private struct SessionManagementToolbarConfigurator: UIViewControllerRepresentable {
+    let isEditing: Bool
+    let canRename: Bool
+    let languageCode: String
+    let onAdd: () -> Void
+    let onRename: () -> Void
+    let onEdit: () -> Void
+    let onDone: () -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+
+    func updateUIViewController(_ viewController: UIViewController, context: Context) {
+        context.coordinator.configuration = self
+        DispatchQueue.main.async {
+            context.coordinator.apply(to: viewController)
+        }
+    }
+
+    static func dismantleUIViewController(_ viewController: UIViewController, coordinator: Coordinator) {
+        coordinator.clear(from: viewController)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(configuration: self)
+    }
+
+    final class Coordinator: NSObject {
+        private struct ToolbarState: Equatable {
+            let isEditing: Bool
+            let canRename: Bool
+            let languageCode: String
+        }
+
+        var configuration: SessionManagementToolbarConfigurator
+        private var appliedState: ToolbarState?
+
+        init(configuration: SessionManagementToolbarConfigurator) {
+            self.configuration = configuration
+        }
+
+        func apply(to viewController: UIViewController) {
+            guard let navigationItem = navigationItem(for: viewController) else { return }
+
+            let state = ToolbarState(
+                isEditing: configuration.isEditing,
+                canRename: configuration.canRename,
+                languageCode: configuration.languageCode
+            )
+            let shouldAnimate = appliedState != nil && appliedState?.isEditing != state.isEditing
+
+            guard appliedState != state else { return }
+            appliedState = state
+
+            let secondaryItem: UIBarButtonItem
+            if configuration.isEditing {
+                secondaryItem = UIBarButtonItem(
+                    title: appLocalizedString("common.rename", languageCode: configuration.languageCode),
+                    style: .plain,
+                    target: self,
+                    action: #selector(renameTapped)
+                )
+                secondaryItem.isEnabled = configuration.canRename
+            } else {
+                secondaryItem = UIBarButtonItem(
+                    image: UIImage(systemName: "plus"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(addTapped)
+                )
+            }
+
+            let primaryItem = UIBarButtonItem(
+                title: appLocalizedString(configuration.isEditing ? "common.done" : "common.edit", languageCode: configuration.languageCode),
+                style: .plain,
+                target: self,
+                action: configuration.isEditing ? #selector(doneTapped) : #selector(editTapped)
+            )
+            primaryItem.tintColor = .systemBlue
+            if #available(iOS 26.0, *) {
+                primaryItem.style = .prominent
+            } else {
+                primaryItem.style = .done
+            }
+
+            navigationItem.setRightBarButtonItems([primaryItem, secondaryItem], animated: shouldAnimate)
+        }
+
+        func clear(from viewController: UIViewController) {
+            appliedState = nil
+            navigationItem(for: viewController)?.setRightBarButtonItems(nil, animated: false)
+        }
+
+        private func navigationItem(for viewController: UIViewController) -> UINavigationItem? {
+            if let navigationController = viewController.navigationController {
+                return navigationController.topViewController?.navigationItem
+            }
+            if let navigationController = viewController.parent?.navigationController {
+                return navigationController.topViewController?.navigationItem
+            }
+            var parent = viewController.parent
+            while let current = parent {
+                if let navigationController = current as? UINavigationController {
+                    return navigationController.topViewController?.navigationItem
+                }
+                if let navigationController = current.navigationController {
+                    return navigationController.topViewController?.navigationItem
+                }
+                parent = current.parent
+            }
+            return viewController.parent?.navigationItem
+        }
+
+        @objc private func addTapped() {
+            configuration.onAdd()
+        }
+
+        @objc private func renameTapped() {
+            configuration.onRename()
+        }
+
+        @objc private func editTapped() {
+            configuration.onEdit()
+        }
+
+        @objc private func doneTapped() {
+            configuration.onDone()
+        }
+    }
+}
+
+private struct SessionDeletionRequest: Identifiable {
+    let id = UUID()
+    let sessionIDs: Set<UUID>
+    let nextSelectedSessionID: UUID?
+    let isMultiple: Bool
 }
 
 private struct SessionManagementSheet: View {
@@ -871,6 +1367,7 @@ private struct SessionManagementSheet: View {
     @State private var isDeletingSessions = false
     @State private var deleteProgressCurrent = 0
     @State private var deleteProgressTotal = 1
+    @State private var pendingSessionDeletion: SessionDeletionRequest?
     private let animation = Animation.spring(response: 0.3, dampingFraction: 0.86)
 
     var body: some View {
@@ -927,6 +1424,16 @@ private struct SessionManagementSheet: View {
             .animation(animation, value: isEditing)
             .animation(animation, value: selectedSessionIDs)
             .animation(animation, value: selectedSessionID)
+            .alert(item: $pendingSessionDeletion) { request in
+                Alert(
+                    title: Text(request.isMultiple ? "delete.sessions.title" : "delete.session.title"),
+                    message: Text(request.isMultiple ? "delete.sessions.message" : "delete.session.message"),
+                    primaryButton: .destructive(Text("common.delete")) {
+                        performSessionDeletion(request)
+                    },
+                    secondaryButton: .cancel()
+                )
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -945,45 +1452,18 @@ private struct SessionManagementSheet: View {
                         .animation(animation, value: isEditing)
                 }
 
-                ToolbarItem(placement: .topBarTrailing) {
-                    if isEditing {
-                        Button {
-                            guard selectedSessionIDs.count == 1,
-                                  let selectedID = selectedSessionIDs.first,
-                                  let session = sessions.first(where: { $0.id == selectedID }) else { return }
-                            beginRenaming(session)
-                        } label: {
-                            Text("common.rename")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                        .disabled(selectedSessionIDs.count != 1)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                    } else {
-                        Button {
-                            addSession()
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .medium))
-                        }
-                        .transition(.scale.combined(with: .opacity))
-                    }
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        withAnimation(animation) {
-                            isEditing.toggle()
-                            if !isEditing {
-                                selectedSessionIDs.removeAll()
-                            }
-                        }
-                    } label: {
-                        Text(isEditing ? LocalizedStringKey("common.done") : LocalizedStringKey("common.edit"))
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(.blue)
-                    }
-                    .compatibleProminentButtonFromIOS16(tint: .blue)
-                }
+            }
+            .background {
+                SessionManagementToolbarConfigurator(
+                    isEditing: isEditing,
+                    canRename: selectedSessionIDs.count == 1,
+                    languageCode: appLanguage,
+                    onAdd: addSession,
+                    onRename: renameSelectedSession,
+                    onEdit: beginEditing,
+                    onDone: finishEditing
+                )
+                .frame(width: 0, height: 0)
             }
             .safeAreaInset(edge: .bottom) {
                 if isEditing {
@@ -1219,6 +1699,26 @@ private struct SessionManagementSheet: View {
         renameSessionName = session.name
     }
 
+    private func beginEditing() {
+        withAnimation(animation) {
+            isEditing = true
+        }
+    }
+
+    private func finishEditing() {
+        withAnimation(animation) {
+            isEditing = false
+            selectedSessionIDs.removeAll()
+        }
+    }
+
+    private func renameSelectedSession() {
+        guard selectedSessionIDs.count == 1,
+              let selectedID = selectedSessionIDs.first,
+              let session = sessions.first(where: { $0.id == selectedID }) else { return }
+        beginRenaming(session)
+    }
+
     private func applySessionRename() {
         let trimmed = renameSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let renamingSession, !trimmed.isEmpty else {
@@ -1248,20 +1748,25 @@ private struct SessionManagementSheet: View {
             $0.id.uuidString == selectedSessionID
         }
 
+        pendingSessionDeletion = SessionDeletionRequest(
+            sessionIDs: sessionIDsToDelete,
+            nextSelectedSessionID: deletingSelected ? nextSelectedSessionID : UUID(uuidString: selectedSessionID),
+            isMultiple: sessionsToDelete.count > 1
+        )
+    }
+
+    private func performSessionDeletion(_ request: SessionDeletionRequest) {
         isDeletingSessions = true
         deleteProgressCurrent = 0
-        deleteProgressTotal = max(sessionsToDelete.count, 1)
+        deleteProgressTotal = max(request.sessionIDs.count, 1)
         isEditing = false
         selectedSessionIDs.removeAll()
-        if deletingSelected, let nextSelectedSessionID {
+        if let nextSelectedSessionID = request.nextSelectedSessionID {
             selectedSessionID = nextSelectedSessionID.uuidString
         }
         NotificationCenter.default.post(name: sessionsWillDeleteNotification, object: nil)
 
-        deleteSessions(
-            sessionIDsToDelete,
-            nextSelectedSessionID: deletingSelected ? nextSelectedSessionID : UUID(uuidString: selectedSessionID)
-        )
+        deleteSessions(request.sessionIDs, nextSelectedSessionID: request.nextSelectedSessionID)
     }
 
     private func deleteSessions(_ sessionIDsToDelete: Set<UUID>, nextSelectedSessionID: UUID?) {
@@ -1470,7 +1975,7 @@ private struct TimeTrendSheet: View {
                     .padding(.bottom, 16)
                 }
             }
-            .navigationTitle("data.trend.title")
+            .navigationTitle(appLocalizedString("data.trend.title", languageCode: appLanguage))
             .navigationBarTitleDisplayMode(.inline)
         }
     }

@@ -121,15 +121,17 @@ final class NearbyBattleManager: NSObject, ObservableObject {
     @Published private(set) var connectedPeerName: String?
     @Published var receivedMessage: NearbyBattleReceivedMessage?
 
-    private let peerID = MCPeerID(displayName: UIDevice.current.name)
-    private lazy var session = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
+    private let multipeerQueue = DispatchQueue(label: "CubeFlow.NearbyBattleManager.multipeer", qos: .userInitiated)
+    private var peerID: MCPeerID?
+    private var session: MCSession?
+    private var pendingStackCompletions: [(MCPeerID, MCSession) -> Void] = []
+    private var isPreparingStack = false
     private var advertiser: MCNearbyServiceAdvertiser?
     private var browser: MCNearbyServiceBrowser?
     private var peersByID: [String: MCPeerID] = [:]
 
     override init() {
         super.init()
-        session.delegate = self
     }
 
     func startHosting() {
@@ -139,10 +141,13 @@ final class NearbyBattleManager: NSObject, ObservableObject {
         connectedPeerName = nil
         availablePeers = []
 
-        let advertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: Self.serviceType)
-        advertiser.delegate = self
-        advertiser.startAdvertisingPeer()
-        self.advertiser = advertiser
+        prepareMultipeerStack { [weak self] peerID, _ in
+            guard let self, self.role == .host else { return }
+            let advertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: Self.serviceType)
+            advertiser.delegate = self
+            advertiser.startAdvertisingPeer()
+            self.advertiser = advertiser
+        }
     }
 
     func startBrowsing() {
@@ -153,20 +158,23 @@ final class NearbyBattleManager: NSObject, ObservableObject {
         availablePeers = []
         peersByID = [:]
 
-        let browser = MCNearbyServiceBrowser(peer: peerID, serviceType: Self.serviceType)
-        browser.delegate = self
-        browser.startBrowsingForPeers()
-        self.browser = browser
+        prepareMultipeerStack { [weak self] peerID, _ in
+            guard let self, self.role == .guest else { return }
+            let browser = MCNearbyServiceBrowser(peer: peerID, serviceType: Self.serviceType)
+            browser.delegate = self
+            browser.startBrowsingForPeers()
+            self.browser = browser
+        }
     }
 
     func invite(_ peer: NearbyBattlePeer) {
-        guard let peerID = peersByID[peer.id], let browser else { return }
+        guard let peerID = peersByID[peer.id], let browser, let session else { return }
         phase = .connecting
         browser.invitePeer(peerID, to: session, withContext: nil, timeout: 15)
     }
 
     func send(_ message: NearbyBattleMessage, mode: MCSessionSendDataMode = .reliable) {
-        guard !session.connectedPeers.isEmpty else { return }
+        guard let session, !session.connectedPeers.isEmpty else { return }
         do {
             let data = try JSONEncoder().encode(message)
             try session.send(data, toPeers: session.connectedPeers, with: mode)
@@ -177,13 +185,41 @@ final class NearbyBattleManager: NSObject, ObservableObject {
 
     func stop() {
         stopDiscoveryOnly()
-        session.disconnect()
+        session?.disconnect()
         role = nil
         phase = .idle
         availablePeers = []
         connectedPeerName = nil
         peersByID = [:]
         receivedMessage = nil
+    }
+
+    private func prepareMultipeerStack(completion: @escaping (MCPeerID, MCSession) -> Void) {
+        if let peerID, let session {
+            completion(peerID, session)
+            return
+        }
+
+        pendingStackCompletions.append(completion)
+        guard !isPreparingStack else { return }
+        isPreparingStack = true
+
+        let displayName = UIDevice.current.name
+        multipeerQueue.async { [weak self] in
+            let peerID = MCPeerID(displayName: displayName)
+            let session = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
+
+            DispatchQueue.main.async {
+                guard let self else { return }
+                session.delegate = self
+                self.peerID = peerID
+                self.session = session
+                self.isPreparingStack = false
+                let completions = self.pendingStackCompletions
+                self.pendingStackCompletions = []
+                completions.forEach { $0(peerID, session) }
+            }
+        }
     }
 
     private func stopDiscoveryOnly() {
@@ -196,6 +232,10 @@ final class NearbyBattleManager: NSObject, ObservableObject {
 
 extension NearbyBattleManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        guard let session else {
+            invitationHandler(false, nil)
+            return
+        }
         invitationHandler(true, session)
         DispatchQueue.main.async {
             self.phase = .connecting

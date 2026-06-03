@@ -412,50 +412,6 @@ struct CompetitionMapView: View {
         }
     }
 
-    private var mapRefreshControl: some View {
-        Button {
-            withAnimation(.snappy(duration: 0.24)) {
-                showsRefreshProgress = true
-            }
-            Task {
-                await loadMapCompetitions()
-                try? await Task.sleep(for: .seconds(1.2))
-                await MainActor.run {
-                    withAnimation(.snappy(duration: 0.24)) {
-                        showsRefreshProgress = false
-                    }
-                }
-            }
-        } label: {
-            HStack(spacing: 8) {
-                Group {
-                    if isLoading || isLoadingMore {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .scaleEffect(0.9)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                }
-
-                if showsRefreshProgress || isLoading || isLoadingMore {
-                    Text(refreshProgressText)
-                        .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(1)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                }
-            }
-            .foregroundStyle(.primary)
-            .frame(minHeight: 40)
-            .padding(.horizontal, showsRefreshProgress || isLoading || isLoadingMore ? 16 : 0)
-            .frame(width: showsRefreshProgress || isLoading || isLoadingMore ? nil : 40)
-        }
-        .buttonStyle(.plain)
-        .disabled(isLoading || isLoadingMore)
-        .modifier(MapAccessoryGlassModifier(shape: showsRefreshProgress || isLoading || isLoadingMore ? .capsule : .circle))
-    }
-
     private var mapRefreshToolbarControl: some View {
         Button {
             withAnimation(.snappy(duration: 0.24)) {

@@ -189,7 +189,7 @@ struct TimerTabView: View {
                 }
                 .padding(24)
             }
-            .navigationTitle("timer.mblind.sheet_title")
+            .navigationTitle(appLocalizedString("timer.mblind.sheet_title", languageCode: appLanguage))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -215,7 +215,7 @@ struct TimerTabView: View {
                 .frame(maxWidth: .infinity)
             }
             .padding(24)
-            .navigationTitle("timer.mblind.count_title")
+            .navigationTitle(appLocalizedString("timer.mblind.count_title", languageCode: appLanguage))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -902,8 +902,18 @@ struct TimerTabView: View {
     private var eventMenu: some View {
         Menu {
             ForEach(PuzzleEvent.regularCases, id: \.self) { event in
-                Button(LocalizedStringKey(event.localizationKey)) {
-                    selectedEvent = event
+                if event == .fourByFour {
+                    Menu("timer.menu.4x4") {
+                        ForEach(PuzzleEvent.fourByFourCases, id: \.self) { event in
+                            Button(LocalizedStringKey(event == .fourByFour ? "event.4x4_standard" : event.localizationKey)) {
+                                selectedEvent = event
+                            }
+                        }
+                    }
+                } else if event != .fourByFourFast {
+                    Button(LocalizedStringKey(event.localizationKey)) {
+                        selectedEvent = event
+                    }
                 }
             }
 
@@ -1776,7 +1786,7 @@ struct TimerTabView: View {
                     isGenerating2x2 = false
                 }
             }
-        } else if selectedEvent == .fourByFour || selectedEvent == .fourByFourBLD {
+        } else if selectedEvent == .fourByFour || selectedEvent == .fourByFourFast || selectedEvent == .fourByFourBLD {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -1930,6 +1940,10 @@ struct TimerTabView: View {
     }
 
     private func preferredScramble(for event: PuzzleEvent) -> String {
+        if event == .fourByFourFast {
+            return fastFourByFourScramble()
+        }
+
         let registry = tnoodleRegistry(for: event)
         if let scramble = TNoodleScrambler.scramble(for: registry),
            !scramble.isEmpty {
@@ -1943,13 +1957,35 @@ struct TimerTabView: View {
         return appLocalizedString("timer.scramble_unavailable", languageCode: appLanguage)
     }
 
+    private func fastFourByFourScramble() -> String {
+        let moves: [(notation: String, axis: Int)] = [
+            ("R", 0), ("L", 0), ("Rw", 0), ("Lw", 0),
+            ("U", 1), ("D", 1), ("Uw", 1), ("Dw", 1),
+            ("F", 2), ("B", 2), ("Fw", 2), ("Bw", 2)
+        ]
+        let suffixes = ["", "'", "2"]
+        var generator = SystemRandomNumberGenerator()
+        var scramble: [String] = []
+        var previousAxis: Int?
+
+        while scramble.count < 40 {
+            guard let move = moves.randomElement(using: &generator) else { break }
+            guard move.axis != previousAxis else { continue }
+            let suffix = suffixes.randomElement(using: &generator) ?? ""
+            scramble.append(move.notation + suffix)
+            previousAxis = move.axis
+        }
+
+        return scramble.joined(separator: " ")
+    }
+
     private func tnoodleRegistry(for event: PuzzleEvent) -> TNoodlePuzzleRegistry {
         switch event {
         case .twoByTwo:
             return .two
         case .threeByThree, .threeByThreeOH, .threeByThreeMBLD:
             return .three
-        case .fourByFour:
+        case .fourByFour, .fourByFourFast:
             return .four
         case .fiveByFive:
             return .five
