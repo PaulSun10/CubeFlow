@@ -3,11 +3,23 @@ import SwiftUI
 #if os(iOS)
 struct IPhoneContentView: View {
     @State private var selectedTab: IPhoneTab = .timer
+    @State private var algsSearchRequestID = 0
+    @State private var competitionSearchRequestID = 0
+    @State private var isAlgsOverviewBottomAccessoryVisible = false
+    @State private var isCompetitionBottomAccessoryVisible = false
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
+    @AppStorage("algBrowseViewModeStore") private var algBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
 
     private var contentLocale: Locale {
         appLocale(for: appLanguage)
+    }
+
+    private var usesSystemTabBottomAccessory: Bool {
+        if #available(iOS 26.0, *) {
+            return true
+        }
+        return false
     }
 
     var body: some View {
@@ -32,7 +44,11 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.data)
 
-            AlgsTabView()
+            AlgsTabView(
+                usesSystemBottomAccessory: usesSystemTabBottomAccessory,
+                isOverviewBottomAccessoryVisible: $isAlgsOverviewBottomAccessoryVisible,
+                searchRequestID: $algsSearchRequestID
+            )
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.algs", languageCode: appLanguage))
@@ -42,7 +58,11 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.algs)
 
-            CompetitionTabView()
+            CompetitionTabView(
+                usesSystemBottomAccessory: usesSystemTabBottomAccessory,
+                isBottomAccessoryVisible: $isCompetitionBottomAccessoryVisible,
+                searchRequestID: $competitionSearchRequestID
+            )
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.competitions", languageCode: appLanguage))
@@ -62,6 +82,10 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.settings)
         }
+        .compatibleTabViewBottomAccessory(isEnabled: shouldShowTabBottomAccessory) {
+            tabBottomAccessoryContent
+        }
+        .compatibleTabBarMinimizeOnScrollDown(isEnabled: selectedTab == .algs || selectedTab == .competitions)
         .compatibleTabBarBackground()
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, appUsesRightToLeftLayout(for: appLanguage) ? .rightToLeft : .leftToRight)
@@ -69,6 +93,59 @@ struct IPhoneContentView: View {
         .onChange(of: requestedIPhoneTab) { _ in
             handleRequestedTab()
         }
+    }
+
+    private var shouldShowTabBottomAccessory: Bool {
+        shouldShowAlgsBottomAccessory || shouldShowCompetitionBottomAccessory
+    }
+
+    private var shouldShowAlgsBottomAccessory: Bool {
+        selectedTab == .algs && isAlgsOverviewBottomAccessoryVisible
+    }
+
+    private var shouldShowCompetitionBottomAccessory: Bool {
+        selectedTab == .competitions && isCompetitionBottomAccessoryVisible
+    }
+
+    @ViewBuilder
+    private var tabBottomAccessoryContent: some View {
+        switch selectedTab {
+        case .algs:
+            AlgOverviewBottomBar(
+                languageCode: appLanguage,
+                browseViewModeSelection: algsOverviewBrowseViewModeSelection,
+                usesContainerGlass: false
+            ) {
+                algsSearchRequestID += 1
+            }
+        case .competitions:
+            CompetitionBottomSearchBar(
+                languageCode: appLanguage,
+                usesContainerGlass: false
+            ) {
+                competitionSearchRequestID += 1
+            }
+        default:
+            EmptyView()
+        }
+    }
+
+    private var algsOverviewBrowseViewMode: AlgBrowseViewMode {
+        algBrowseViewMode(setID: "global", storage: algBrowseViewModeStore)
+    }
+
+    private var algsOverviewBrowseViewModeSelection: Binding<String> {
+        Binding(
+            get: { algsOverviewBrowseViewMode.rawValue },
+            set: { newValue in
+                guard let mode = AlgBrowseViewMode(rawValue: newValue) else { return }
+                algBrowseViewModeStore = updatedAlgBrowseViewModeStorage(
+                    storage: algBrowseViewModeStore,
+                    setID: "global",
+                    mode: mode
+                )
+            }
+        )
     }
 
     private var competitionsTabSystemImage: String {
@@ -82,6 +159,39 @@ struct IPhoneContentView: View {
         guard let requested = IPhoneTab(rawValue: requestedIPhoneTab) else { return }
         selectedTab = requested
         requestedIPhoneTab = ""
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func compatibleTabViewBottomAccessory<Content: View>(
+        isEnabled: Bool,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        if #available(iOS 26.1, *) {
+            self.tabViewBottomAccessory(isEnabled: isEnabled) {
+                content()
+            }
+        } else if #available(iOS 26.0, *) {
+            if isEnabled {
+                self.tabViewBottomAccessory {
+                    content()
+                }
+            } else {
+                self
+            }
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func compatibleTabBarMinimizeOnScrollDown(isEnabled: Bool) -> some View {
+        if #available(iOS 26.0, *) {
+            self.tabBarMinimizeBehavior(isEnabled ? .onScrollDown : .never)
+        } else {
+            self
+        }
     }
 }
 #endif

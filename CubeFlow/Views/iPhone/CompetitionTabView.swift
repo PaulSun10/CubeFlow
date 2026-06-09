@@ -382,6 +382,20 @@ struct CompetitionTabView: View {
     @State private var topCuberPreloadCompetitionIDs: [String] = []
     @State private var topCuberPrefetchCompetitionIDs: [String] = []
 
+    private let usesSystemBottomAccessory: Bool
+    @Binding private var isBottomAccessoryVisible: Bool
+    @Binding private var searchRequestID: Int
+
+    init(
+        usesSystemBottomAccessory: Bool = false,
+        isBottomAccessoryVisible: Binding<Bool> = .constant(false),
+        searchRequestID: Binding<Int> = .constant(0)
+    ) {
+        self.usesSystemBottomAccessory = usesSystemBottomAccessory
+        _isBottomAccessoryVisible = isBottomAccessoryVisible
+        _searchRequestID = searchRequestID
+    }
+
     var body: some View {
         CompatibleNavigationContainer {
             List {
@@ -421,7 +435,7 @@ struct CompetitionTabView: View {
             .compatibleScrollContentBackgroundHidden()
             .background(competitionsTabBackgroundView.ignoresSafeArea())
             .safeAreaInset(edge: .bottom) {
-                if !publishedVisibleCompetitions.isEmpty {
+                if !usesSystemBottomAccessory && shouldShowCompetitionBottomAccessory {
                     competitionBottomSearchBar
                         .padding(.horizontal, 16)
                         .padding(.bottom, 8)
@@ -433,6 +447,12 @@ struct CompetitionTabView: View {
             .background(CompetitionNavigationBarFontConfigurator(largeSubtitle: competitionNavigationSubtitle))
             .task {
                 areCompetitionEventIconsReady = CompetitionEventIconFont.ensureRegistered()
+            }
+            .onAppear(perform: updateBottomAccessoryVisibility)
+            .onDisappear {
+                if usesSystemBottomAccessory {
+                    isBottomAccessoryVisible = false
+                }
             }
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -454,6 +474,13 @@ struct CompetitionTabView: View {
             }
             .onChange(of: showsTopCubers) { _ in
                 updateCompetitionListDerivedState(for: publishedVisibleCompetitions)
+            }
+            .onChange(of: publishedVisibleCompetitions) { _ in
+                updateBottomAccessoryVisibility()
+            }
+            .onChange(of: searchRequestID) { _ in
+                guard usesSystemBottomAccessory else { return }
+                isShowingSearch = true
             }
             .task(id: filterSignature) {
                 await loadCompetitions()
@@ -660,34 +687,22 @@ struct CompetitionTabView: View {
         )
     }
 
-    private var competitionBottomSearchBar: some View {
-        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
+    private var shouldShowCompetitionBottomAccessory: Bool {
+        !publishedVisibleCompetitions.isEmpty
+    }
 
-        return Button {
+    private var competitionBottomSearchBar: some View {
+        CompetitionBottomSearchBar(
+            languageCode: appLanguage,
+            usesContainerGlass: true
+        ) {
             isShowingSearch = true
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 15, weight: .semibold))
-                Text(localizedCompetitionStringInView(key: "competitions.search_placeholder", languageCode: appLanguage))
-                    .font(.system(size: 16, weight: .medium))
-                    .lineLimit(1)
-                Spacer(minLength: 0)
-            }
-            .foregroundStyle(.secondary)
-            .padding(.leading, 16)
-            .padding(.trailing, 12)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(shape)
         }
-        .buttonStyle(.plain)
-        .background(
-            shape
-                .fill(.black.opacity(0.001))
-        )
-        .contentShape(shape)
-        .compatibleGlass(in: shape)
+    }
+
+    private func updateBottomAccessoryVisibility() {
+        guard usesSystemBottomAccessory else { return }
+        isBottomAccessoryVisible = shouldShowCompetitionBottomAccessory
     }
 
     private var competitionLoadingSkeletonRows: some View {
@@ -2022,6 +2037,54 @@ struct CompetitionTabView: View {
             .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
             .replacingOccurrences(of: #"[^A-Za-z0-9]+"#, with: "", options: .regularExpression)
             .lowercased()
+    }
+}
+
+struct CompetitionBottomSearchBar: View {
+    let languageCode: String
+    let usesContainerGlass: Bool
+    let searchAction: () -> Void
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
+
+        Button(action: searchAction) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 15, weight: .semibold))
+                Text(localizedCompetitionStringInView(key: "competitions.search_placeholder", languageCode: languageCode))
+                    .font(.system(size: 16, weight: .medium))
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(.secondary)
+            .padding(.leading, 16)
+            .padding(.trailing, 12)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(shape)
+        }
+        .buttonStyle(.plain)
+        .background(
+            shape
+                .fill(.black.opacity(0.001))
+        )
+        .contentShape(shape)
+        .modifier(CompetitionBottomSearchBarGlassModifier(isEnabled: usesContainerGlass, shape: shape))
+    }
+}
+
+private struct CompetitionBottomSearchBarGlassModifier: ViewModifier {
+    let isEnabled: Bool
+    let shape: RoundedRectangle
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.compatibleGlass(in: shape)
+        } else {
+            content
+        }
     }
 }
 

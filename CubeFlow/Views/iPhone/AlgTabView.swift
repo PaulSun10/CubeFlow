@@ -7,7 +7,39 @@ import UIKit
 #if os(iOS)
 private let showsAlgTrainingEntrypoints = false
 
+private struct AlgBottomAccessoryVisibilityActionKey: EnvironmentKey {
+    static let defaultValue: (Bool) -> Void = { _ in }
+}
+
+private extension EnvironmentValues {
+    var setAlgBottomAccessoryVisible: (Bool) -> Void {
+        get { self[AlgBottomAccessoryVisibilityActionKey.self] }
+        set { self[AlgBottomAccessoryVisibilityActionKey.self] = newValue }
+    }
+}
+
+private struct AlgBottomAccessoryVisibilityModifier: ViewModifier {
+    @Environment(\.setAlgBottomAccessoryVisible) private var setVisible
+    let isVisible: Bool
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            setVisible(isVisible)
+        }
+    }
+}
+
+private extension View {
+    func algBottomAccessoryVisible(_ isVisible: Bool) -> some View {
+        modifier(AlgBottomAccessoryVisibilityModifier(isVisible: isVisible))
+    }
+}
+
 struct AlgsTabView: View {
+    private let usesSystemBottomAccessory: Bool
+    @Binding private var isOverviewBottomAccessoryVisible: Bool
+    @Binding private var searchRequestID: Int
+
     @State private var selectedPuzzle: AlgPuzzle = .threeByThree
     @State private var isShowingRecentPractice = false
     @State private var isShowingSearch = false
@@ -18,6 +50,16 @@ struct AlgsTabView: View {
     @AppStorage("algBrowseViewModeStore") private var overviewBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
     @AppStorage("algTrainerAttemptStore") private var trainerAttemptStore: String = "[]"
     @AppStorage("algDismissedRecentPracticeRecordID") private var dismissedRecentPracticeRecordID: String = ""
+
+    init(
+        usesSystemBottomAccessory: Bool = false,
+        isOverviewBottomAccessoryVisible: Binding<Bool> = .constant(false),
+        searchRequestID: Binding<Int> = .constant(0)
+    ) {
+        self.usesSystemBottomAccessory = usesSystemBottomAccessory
+        self._isOverviewBottomAccessoryVisible = isOverviewBottomAccessoryVisible
+        self._searchRequestID = searchRequestID
+    }
 
     private var sections: [AlgSectionData] {
         AlgSectionData.sections(for: selectedPuzzle)
@@ -96,7 +138,7 @@ struct AlgsTabView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                if !sections.isEmpty {
+                if !usesSystemBottomAccessory && shouldShowOverviewBottomAccessory {
                     overviewBottomBar
                         .padding(.horizontal, 16)
                         .padding(.bottom, 8)
@@ -128,6 +170,40 @@ struct AlgsTabView: View {
                     puzzlePickerMenu
                 }
             }
+            .onAppear(perform: updateOverviewBottomAccessoryVisibility)
+            .onDisappear {
+                if usesSystemBottomAccessory {
+                    isOverviewBottomAccessoryVisible = false
+                }
+            }
+            .onChange(of: selectedPuzzle) { _ in
+                updateOverviewBottomAccessoryVisibility()
+            }
+            .onChange(of: searchRequestID) { _ in
+                guard usesSystemBottomAccessory else { return }
+                isShowingSearch = true
+            }
+        }
+        .environment(\.setAlgBottomAccessoryVisible) { isVisible in
+            guard usesSystemBottomAccessory else { return }
+            withAnimation(.smooth(duration: 0.22)) {
+                isOverviewBottomAccessoryVisible = isVisible
+            }
+        }
+    }
+
+    private var shouldShowOverviewBottomAccessory: Bool {
+        !sections.isEmpty
+    }
+
+    private var overviewBottomPadding: CGFloat {
+        usesSystemBottomAccessory ? 24 : 88
+    }
+
+    private func updateOverviewBottomAccessoryVisibility() {
+        guard usesSystemBottomAccessory else { return }
+        withAnimation(.smooth(duration: 0.22)) {
+            isOverviewBottomAccessoryVisible = shouldShowOverviewBottomAccessory
         }
     }
 
@@ -192,7 +268,7 @@ struct AlgsTabView: View {
                         .padding(.top, 16)
                 }
             }
-            .padding(.bottom, 88)
+            .padding(.bottom, overviewBottomPadding)
         }
     }
 
@@ -241,62 +317,18 @@ struct AlgsTabView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 4)
             }
-            .padding(.bottom, 88)
+            .padding(.bottom, overviewBottomPadding)
         }
     }
 
     private var overviewBottomBar: some View {
-        HStack(spacing: 0) {
-            Button {
-                isShowingSearch = true
-            } label: {
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 15, weight: .semibold))
-                    Text(localizedAlgString(key: "algs.search.placeholder", languageCode: appLanguage))
-                        .font(.system(size: 16, weight: .medium))
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                }
-                .foregroundStyle(.secondary)
-                .padding(.leading, 16)
-                .padding(.trailing, 12)
-                .padding(.vertical, 12)
-            }
-            .buttonStyle(.plain)
-
-            Divider()
-                .frame(height: 24)
-                .padding(.horizontal, 4)
-
-            overviewBrowseInlineButton
+        AlgOverviewBottomBar(
+            languageCode: appLanguage,
+            browseViewModeSelection: overviewBrowseViewModeSelection,
+            usesContainerGlass: true
+        ) {
+            isShowingSearch = true
         }
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(.clear)
-        )
-        .compatibleGlass(in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-    }
-
-    private var overviewBrowseInlineButton: some View {
-        Menu {
-            Section(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage)) {
-                Picker(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage), selection: overviewBrowseViewModeSelection) {
-                    Label(localizedAlgString(key: "algs.menu.grid_view", languageCode: appLanguage), systemImage: "square.grid.2x2")
-                        .tag(AlgBrowseViewMode.grid.rawValue)
-                    Label(localizedAlgString(key: "algs.menu.list_view", languageCode: appLanguage), systemImage: "list.bullet")
-                        .tag(AlgBrowseViewMode.list.rawValue)
-                }
-            }
-        } label: {
-            Image(systemName: "line.3.horizontal.decrease")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
     }
 
     private func sectionHeader(_ titleKey: LocalizedStringKey) -> some View {
@@ -678,6 +710,77 @@ struct AlgsTabView: View {
         )
     }
 }
+
+struct AlgOverviewBottomBar: View {
+    let languageCode: String
+    let browseViewModeSelection: Binding<String>
+    let usesContainerGlass: Bool
+    let searchAction: () -> Void
+
+    var body: some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(.clear)
+            )
+            .modifier(AlgOverviewBottomBarGlassModifier(isEnabled: usesContainerGlass))
+    }
+
+    private var content: some View {
+        HStack(spacing: 0) {
+            Button(action: searchAction) {
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 15, weight: .semibold))
+                    Text(localizedAlgString(key: "algs.search.placeholder", languageCode: languageCode))
+                        .font(.system(size: 16, weight: .medium))
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                }
+                .foregroundStyle(.secondary)
+                .padding(.leading, 16)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+
+            browseInlineButton
+        }
+    }
+
+    private var browseInlineButton: some View {
+        Menu {
+            Section(localizedAlgString(key: "algs.menu.view", languageCode: languageCode)) {
+                Picker(localizedAlgString(key: "algs.menu.view", languageCode: languageCode), selection: browseViewModeSelection) {
+                    Label(localizedAlgString(key: "algs.menu.grid_view", languageCode: languageCode), systemImage: "square.grid.2x2")
+                        .tag(AlgBrowseViewMode.grid.rawValue)
+                    Label(localizedAlgString(key: "algs.menu.list_view", languageCode: languageCode), systemImage: "list.bullet")
+                        .tag(AlgBrowseViewMode.list.rawValue)
+                }
+            }
+        } label: {
+            Image(systemName: "line.3.horizontal.decrease")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.primary)
+                .padding(.trailing, 16)
+                .padding(.vertical, 12)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct AlgOverviewBottomBarGlassModifier: ViewModifier {
+    let isEnabled: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.compatibleGlass(in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        } else {
+            content
+        }
+    }
+}
 #endif
 
 #if os(iOS)
@@ -767,6 +870,7 @@ struct AlgCaseListView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
         }
+        .algBottomAccessoryVisible(true)
         .compatibleNavigationDestination(isPresented: $isShowingTrainer) {
             trainerDestination
         }
@@ -1742,6 +1846,7 @@ struct AlgSubsetGroupListView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
         }
+        .algBottomAccessoryVisible(true)
         .sheet(isPresented: $isShowingInfoSheet) {
             AlgSetInfoSheet(
                 setID: "\(payload.set)_\(group.id)",
@@ -2292,6 +2397,7 @@ private struct AlgCaseGroupListView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
         }
+        .algBottomAccessoryVisible(true)
         .sheet(isPresented: $isShowingInfoSheet) {
             AlgSetInfoSheet(
                 setID: "\(payload.set)_\(group.id)",
@@ -2859,6 +2965,7 @@ struct AlgSubsetCaseListView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 16)
         }
+        .algBottomAccessoryVisible(true)
         .compatibleNavigationDestination(isPresented: $isShowingTrainer) {
             trainerDestination
         }
@@ -4983,6 +5090,7 @@ struct AlgCaseDetailView: View {
     let algCase: AlgCase
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("algLearnedCasesStore") private var learnedCasesStore: String = "{}"
+    @Environment(\.setAlgBottomAccessoryVisible) private var setAlgBottomAccessoryVisible
     @State private var selectedAlgorithmGroupID: String = ""
 
     var body: some View {
@@ -5045,9 +5153,13 @@ struct AlgCaseDetailView: View {
             }
         }
         .onAppear {
+            setAlgBottomAccessoryVisible(false)
             guard selectedAlgorithmGroupID.isEmpty,
                   let firstDirectionalGroup = directionalAlgorithmGroups?.first else { return }
             selectedAlgorithmGroupID = firstDirectionalGroup.id
+        }
+        .onDisappear {
+            setAlgBottomAccessoryVisible(true)
         }
     }
 

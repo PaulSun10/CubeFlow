@@ -1121,6 +1121,30 @@ private struct AverageDetailSheet: View {
         return entry.solves.first { $0.id == worstSolveID }
     }
 
+    private var trimmedSolveIDs: Set<UUID> {
+        let trimmingCount = averageType.trimmingCount
+        guard trimmingCount > 0 else { return [] }
+
+        let fastestFiniteIDs = entry.solves
+            .compactMap { solve -> (UUID, Double)? in
+                guard let adjustedTime = solve.adjustedTime else { return nil }
+                return (solve.id, adjustedTime)
+            }
+            .sorted { $0.1 < $1.1 }
+            .prefix(trimmingCount)
+            .map(\.0)
+
+        let slowestIDs = entry.solves
+            .map { solve -> (UUID, Double) in
+                (solve.id, solve.adjustedTime ?? .infinity)
+            }
+            .sorted { $0.1 > $1.1 }
+            .prefix(trimmingCount)
+            .map(\.0)
+
+        return Set(fastestFiniteIDs + slowestIDs)
+    }
+
     var body: some View {
         CompatibleNavigationContainer {
             List {
@@ -1176,13 +1200,16 @@ private struct AverageDetailSheet: View {
     }
 
     private func averageSolveRow(_ solve: SessionSolveSample, position: Int) -> some View {
-        HStack(spacing: 12) {
+        let timeText = SolveMetrics.displayTime(for: solve)
+        let displayText = trimmedSolveIDs.contains(solve.id) ? "(\(timeText))" : timeText
+
+        return HStack(spacing: 12) {
             Text("#\(position)")
                 .font(.system(size: 16, weight: .regular))
                 .foregroundStyle(.secondary)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(SolveMetrics.displayTime(for: solve))
+                Text(displayText)
                     .font(.system(size: 21, weight: .semibold))
                     .monospacedDigit()
                     .foregroundStyle(color(for: solve))
