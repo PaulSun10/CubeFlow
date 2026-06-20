@@ -118,8 +118,11 @@ nonisolated func cubingLanguageCode(for languageCode: String) -> String {
         .trimmingCharacters(in: .whitespacesAndNewlines)
         .replacingOccurrences(of: "_", with: "-")
         .lowercased()
-    if normalized == "zh-hans" {
+    if normalized == "zh-hans" || normalized == "zh-cn" {
         return "zh_cn"
+    }
+    if normalized == "zh-hant" || normalized == "zh-tw" || normalized == "zh-hk" {
+        return "zh_tw"
     }
     return "en"
 }

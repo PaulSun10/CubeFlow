@@ -380,6 +380,14 @@ struct CompetitionDetailTextBlock: Identifiable, Hashable, Sendable {
     let id: String
     let title: String?
     let body: String
+    let html: String?
+
+    init(id: String, title: String?, body: String, html: String? = nil) {
+        self.id = id
+        self.title = title
+        self.body = body
+        self.html = html
+    }
 }
 
 struct CompetitionScheduleEntry: Identifiable, Hashable, Sendable {
@@ -410,6 +418,13 @@ struct CompetitionScheduleDay: Identifiable, Hashable, Sendable {
     let venues: [CompetitionScheduleVenue]
 }
 
+struct CompetitionScheduleEventSummary: Identifiable, Hashable, Sendable {
+    let id: String
+    let eventCode: String?
+    let title: String
+    let detail: String
+}
+
 struct CompetitionScheduleDebugInfo: Hashable, Sendable {
     let source: String
     let slug: String?
@@ -423,6 +438,14 @@ struct CompetitionScheduleDebugInfo: Hashable, Sendable {
     let tableCount: Int
     let entryCount: Int
     let panelPreview: String?
+}
+
+struct CompetitionTravelMapLocation: Identifiable, Hashable, Sendable {
+    let id: String
+    let latitude: Double
+    let longitude: Double
+    let venue: String
+    let address: String
 }
 
 struct CompetitionCompetitorPreview: Identifiable, Hashable, Sendable {
@@ -595,13 +618,21 @@ enum CompetitionLiveAvailability: String, Hashable, Sendable {
 struct CompetitionDetailContent: Hashable, Sendable {
     let overviewBlocks: [CompetitionDetailTextBlock]
     let noteBlocks: [CompetitionDetailTextBlock]
+    let regulationBlocks: [CompetitionDetailTextBlock]
     let travelBlocks: [CompetitionDetailTextBlock]
+    let travelMapLocations: [CompetitionTravelMapLocation]
     let registerBlocks: [CompetitionDetailTextBlock]
     let scheduleDays: [CompetitionScheduleDay]
+    let scheduleEventSummaries: [CompetitionScheduleEventSummary]
+    let scheduleIntroHTML: String?
+    let scheduleCommentHTML: String?
     let scheduleDebugInfo: CompetitionScheduleDebugInfo?
+    let localizedName: String?
     let competitorsCount: Int?
     let competitorPreviews: [CompetitionCompetitorPreview]
     let registrationRequiresSignIn: Bool
+    let hasRegisterLink: Bool
+    let hasCompetitorsLink: Bool
     let liveAvailability: CompetitionLiveAvailability
     let liveURLOverride: URL?
     let liveContent: CompetitionLiveContent?
@@ -610,13 +641,21 @@ struct CompetitionDetailContent: Hashable, Sendable {
     nonisolated static let empty = CompetitionDetailContent(
         overviewBlocks: [],
         noteBlocks: [],
+        regulationBlocks: [],
         travelBlocks: [],
+        travelMapLocations: [],
         registerBlocks: [],
         scheduleDays: [],
+        scheduleEventSummaries: [],
+        scheduleIntroHTML: nil,
+        scheduleCommentHTML: nil,
         scheduleDebugInfo: nil,
+        localizedName: nil,
         competitorsCount: nil,
         competitorPreviews: [],
         registrationRequiresSignIn: false,
+        hasRegisterLink: false,
+        hasCompetitorsLink: false,
         liveAvailability: .upcoming,
         liveURLOverride: nil,
         liveContent: nil,
@@ -627,13 +666,21 @@ struct CompetitionDetailContent: Hashable, Sendable {
         CompetitionDetailContent(
             overviewBlocks: overviewBlocks,
             noteBlocks: noteBlocks,
+            regulationBlocks: regulationBlocks,
             travelBlocks: travelBlocks,
+            travelMapLocations: travelMapLocations,
             registerBlocks: registerBlocks,
             scheduleDays: scheduleDays,
+            scheduleEventSummaries: scheduleEventSummaries,
+            scheduleIntroHTML: scheduleIntroHTML,
+            scheduleCommentHTML: scheduleCommentHTML,
             scheduleDebugInfo: scheduleDebugInfo,
+            localizedName: localizedName,
             competitorsCount: other.competitorsCount,
             competitorPreviews: other.competitorPreviews,
             registrationRequiresSignIn: registrationRequiresSignIn,
+            hasRegisterLink: hasRegisterLink,
+            hasCompetitorsLink: hasCompetitorsLink,
             liveAvailability: liveAvailability,
             liveURLOverride: liveURLOverride,
             liveContent: liveContent,
@@ -645,13 +692,21 @@ struct CompetitionDetailContent: Hashable, Sendable {
         CompetitionDetailContent(
             overviewBlocks: overviewBlocks,
             noteBlocks: noteBlocks,
+            regulationBlocks: regulationBlocks,
             travelBlocks: travelBlocks,
+            travelMapLocations: travelMapLocations,
             registerBlocks: registerBlocks,
             scheduleDays: scheduleDays,
+            scheduleEventSummaries: scheduleEventSummaries,
+            scheduleIntroHTML: scheduleIntroHTML,
+            scheduleCommentHTML: scheduleCommentHTML,
             scheduleDebugInfo: scheduleDebugInfo,
+            localizedName: localizedName,
             competitorsCount: competitorsCount,
             competitorPreviews: competitorPreviews,
             registrationRequiresSignIn: registrationRequiresSignIn,
+            hasRegisterLink: other.hasRegisterLink || hasRegisterLink,
+            hasCompetitorsLink: other.hasCompetitorsLink || hasCompetitorsLink,
             liveAvailability: other.liveAvailability,
             liveURLOverride: other.liveURLOverride ?? liveURLOverride,
             liveContent: other.liveContent,
@@ -1664,6 +1719,8 @@ enum CompetitionService {
             : extractWCACompetitorCount(from: html)
         let registerBlocks = await registerBlocksTask
         let liveURLOverride = extractedLiveURL
+        let hasRegisterLink = hasWCARegisterLink(from: html, competitionID: competition.id)
+        let hasCompetitorsLink = hasWCACompetitorsLink(from: html, competitionID: competition.id)
         let wcaLiveContent = includeLive
             ? await fetchWCALiveContent(
                 for: competition,
@@ -1682,13 +1739,21 @@ enum CompetitionService {
         return CompetitionDetailContent(
             overviewBlocks: [],
             noteBlocks: noteBlocks,
+            regulationBlocks: [],
             travelBlocks: [],
+            travelMapLocations: [],
             registerBlocks: registerBlocks,
             scheduleDays: scheduleDays,
+            scheduleEventSummaries: [],
+            scheduleIntroHTML: nil,
+            scheduleCommentHTML: nil,
             scheduleDebugInfo: nil,
+            localizedName: nil,
             competitorsCount: competitorsCount,
             competitorPreviews: competitorPreviews,
             registrationRequiresSignIn: false,
+            hasRegisterLink: hasRegisterLink,
+            hasCompetitorsLink: hasCompetitorsLink,
             liveAvailability: liveAvailability,
             liveURLOverride: liveURLOverride,
             liveContent: nil,
@@ -1710,6 +1775,10 @@ enum CompetitionService {
             url: URL(string: "https://cubing.com/competition/\(slug)?lang=\(cubingLanguage)"),
             languageCode: languageCode
         )
+        async let regulationsHTML = fetchCompetitionHTML(
+            url: URL(string: "https://cubing.com/competition/\(slug)/regulations?lang=\(cubingLanguage)"),
+            languageCode: languageCode
+        )
         async let travelHTML = fetchCompetitionHTML(
             url: URL(string: "https://cubing.com/competition/\(slug)/travel?lang=\(cubingLanguage)"),
             languageCode: languageCode
@@ -1723,6 +1792,7 @@ enum CompetitionService {
             languageCode: languageCode
         )
         let main = await mainHTML
+        let regulations = await regulationsHTML
         let travel = await travelHTML
         let schedule = await scheduleHTML
         let register = await registerHTML
@@ -1742,7 +1812,9 @@ enum CompetitionService {
         guard main != nil || travel != nil || schedule != nil else { return nil }
 
         let overviewBlocks = main.map(extractCubingOverviewBlocks(from:)) ?? []
+        let regulationBlocks = regulations.map(extractCubingRegulationBlocks(from:)) ?? []
         let travelBlocks = travel.map(extractCubingTravelBlocks(from:)) ?? []
+        let travelMapLocations = travel.map(extractCubingTravelMapLocations(from:)) ?? []
         let scheduleParseStart = Date()
         let scheduleDays = await CompetitionScheduleParseStore.shared.scheduleDays(
             for: "cubing|\(cubingLanguage)|\(slug)",
@@ -1760,6 +1832,10 @@ enum CompetitionService {
             scheduleDays: scheduleDays,
             parseDurationMS: scheduleParseDurationMS
         )
+        let scheduleEventSummaries = schedule.map(extractCubingScheduleEventSummaries(from:)) ?? []
+        let scheduleIntroHTML = schedule.flatMap(extractCubingScheduleIntroHTML(from:))
+        let scheduleCommentHTML = schedule.flatMap(extractCubingScheduleCommentHTML(from:))
+        let localizedName = extractCubingLocalizedCompetitionName(from: main ?? schedule ?? regulations ?? travel ?? register)
         let registerBlocks = register.map(extractCubingRegistrationBlocks(from:)) ?? []
         let registrationRequiresSignIn = register.map(cubingPageRequiresLoginHTML(_:)) ?? false
         let competitorPreviews = includeCompetitors
@@ -1780,13 +1856,21 @@ enum CompetitionService {
         return CompetitionDetailContent(
             overviewBlocks: overviewBlocks,
             noteBlocks: [],
+            regulationBlocks: regulationBlocks,
             travelBlocks: travelBlocks,
+            travelMapLocations: travelMapLocations,
             registerBlocks: registerBlocks,
             scheduleDays: scheduleDays,
+            scheduleEventSummaries: scheduleEventSummaries,
+            scheduleIntroHTML: scheduleIntroHTML,
+            scheduleCommentHTML: scheduleCommentHTML,
             scheduleDebugInfo: scheduleDebugInfo,
+            localizedName: localizedName,
             competitorsCount: competitorsCount,
             competitorPreviews: competitorPreviews,
             registrationRequiresSignIn: registrationRequiresSignIn,
+            hasRegisterLink: true,
+            hasCompetitorsLink: true,
             liveAvailability: liveAvailability,
             liveURLOverride: liveAvailability == .unavailable ? nil : liveURL,
             liveContent: cubingLiveContent,
@@ -2736,26 +2820,108 @@ enum CompetitionService {
             .first { !$0.isEmpty }
     }
 
-    private static func extractWCATabBlocks(from html: String) -> [CompetitionDetailTextBlock] {
-        let captures = competitionHTMLCaptures(
-            in: html,
-            pattern: #"(?s)<div class=\"tab-pane\" id=\"[^\"]*-([^\"]+)\">(.*?)</div>"#
-        )
+    private static func hasWCARegisterLink(from html: String, competitionID: String) -> Bool {
+        let escapedID = NSRegularExpression.escapedPattern(for: competitionID)
+        let patterns = [
+            #"(?is)href=['\"]/competitions/\#(escapedID)/register(?:[?'\"]|$)"#,
+            #"(?is)href=['\"]https://www\.worldcubeassociation\.org/competitions/\#(escapedID)/register(?:[?'\"]|$)"#
+        ]
+        return patterns.contains { html.range(of: $0, options: .regularExpression) != nil }
+    }
 
-        return captures.compactMap { capture in
-            guard capture.count >= 2 else { return nil }
-            let rawID = capture[0]
-            let body = cleanedCompetitionHTMLText(capture[1])
-            guard !body.isEmpty else { return nil }
-            let title = rawID
-                .replacingOccurrences(of: "-", with: " ")
-                .capitalized
+    private static func hasWCACompetitorsLink(from html: String, competitionID: String) -> Bool {
+        let escapedID = NSRegularExpression.escapedPattern(for: competitionID)
+        let patterns = [
+            #"(?is)href=['\"]/competitions/\#(escapedID)/registrations(?:[?'\"]|$)"#,
+            #"(?is)href=['\"]https://www\.worldcubeassociation\.org/competitions/\#(escapedID)/registrations(?:[?'\"]|$)"#
+        ]
+        return patterns.contains { html.range(of: $0, options: .regularExpression) != nil }
+    }
+
+    private static func extractWCATabBlocks(from html: String) -> [CompetitionDetailTextBlock] {
+        let tabLinks = extractWCATabLinks(from: html)
+        let seenOrderedIDs = tabLinks.reduce(into: Set<String>()) { $0.insert($1.id) }
+        let fallbackTitles = extractWCATabTitleMap(from: html)
+        let paneIDs = tabLinks.map(\.id) + fallbackTitles.keys.filter { !seenOrderedIDs.contains($0) }.sorted()
+
+        return paneIDs.compactMap { paneID in
+            let body = extractWCATabPaneHTML(from: html, paneID: paneID)
+                .map(cleanedCompetitionHTMLText(_:)) ?? ""
+            let title = tabLinks.first { $0.id == paneID }?.title
+                ?? fallbackTitles[paneID]
+                ?? fallbackWCATabTitle(for: paneID)
+            let isKnownStructuralTab = ["general-info", "competition-events", "competition-schedule"].contains(paneID)
+            guard !body.isEmpty || isKnownStructuralTab else { return nil }
+
             return CompetitionDetailTextBlock(
-                id: "wca-\(rawID)",
+                id: "wca-\(paneID)",
                 title: title,
                 body: body
             )
         }
+    }
+
+    private static func extractWCATabLinks(from html: String) -> [(id: String, title: String)] {
+        let patterns = [
+            ##"(?is)<a[^>]+href="#([^"]+)"[^>]*data-toggle="tab"[^>]*>(.*?)</a>"##,
+            ##"(?is)<a[^>]+data-toggle="tab"[^>]+href="#([^"]+)"[^>]*>(.*?)</a>"##,
+            ##"(?is)<button[^>]+data-bs-target="#([^"]+)"[^>]*>(.*?)</button>"##,
+            ##"(?is)<button[^>]+data-target="#([^"]+)"[^>]*>(.*?)</button>"##
+        ]
+        var links: [(id: String, title: String)] = []
+        var seenIDs = Set<String>()
+
+        for pattern in patterns {
+            for capture in competitionHTMLCaptures(in: html, pattern: pattern) where capture.count >= 2 {
+                let paneID = capture[0].trimmingCharacters(in: .whitespacesAndNewlines)
+                let title = cleanedCompetitionHTMLText(capture[1])
+                guard !paneID.isEmpty, !title.isEmpty, !seenIDs.contains(paneID) else { continue }
+                seenIDs.insert(paneID)
+                links.append((paneID, title))
+            }
+        }
+
+        return links
+    }
+
+    private static func extractWCATabTitleMap(from html: String) -> [String: String] {
+        extractWCATabLinks(from: html).reduce(into: [String: String]()) { titlesByID, link in
+            titlesByID[link.id] = link.title
+        }
+    }
+
+    private static func extractWCATabPaneHTML(from html: String, paneID: String) -> String? {
+        let escapedID = NSRegularExpression.escapedPattern(for: paneID)
+        let pattern = #"(?is)<div[^>]*class=['\"][^'\"]*\btab-pane\b[^'\"]*['\"][^>]*id=['\"]\#(escapedID)['\"][^>]*>"#
+            + #"|(?is)<div[^>]*id=['\"]\#(escapedID)['\"][^>]*class=['\"][^'\"]*\btab-pane\b[^'\"]*['\"][^>]*>"#
+        guard let openingRange = html.range(of: pattern, options: .regularExpression) else { return nil }
+
+        var depth = 1
+        var searchIndex = openingRange.upperBound
+        let tagPattern = #"(?is)</?div\b[^>]*>"#
+
+        while let tagRange = html[searchIndex...].range(of: tagPattern, options: .regularExpression) {
+            let tag = html[tagRange].lowercased()
+            if tag.hasPrefix("</div") {
+                depth -= 1
+                if depth == 0 {
+                    return String(html[openingRange.upperBound..<tagRange.lowerBound])
+                }
+            } else {
+                depth += 1
+            }
+            searchIndex = tagRange.upperBound
+        }
+
+        return nil
+    }
+
+    private static func fallbackWCATabTitle(for paneID: String) -> String {
+        paneID
+            .replacingOccurrences(of: #"^[0-9]+-"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: "competition-", with: "")
+            .replacingOccurrences(of: "-", with: " ")
+            .capitalized
     }
 
     private static func extractWCARegisterBlocks(from html: String, languageCode: String) -> [CompetitionDetailTextBlock] {
@@ -2983,66 +3149,220 @@ enum CompetitionService {
     }
 
     private static func extractCubingOverviewBlocks(from html: String) -> [CompetitionDetailTextBlock] {
-        var blocks: [CompetitionDetailTextBlock] = []
+        appendingCubingDisclaimer(
+            from: html,
+            to: extractCubingDefinitionListBlocks(
+            from: html,
+            idPrefix: "cubing-main",
+            fallbackID: "cubing-main-page",
+            fallbackTitle: nil
+            ),
+            id: "cubing-main-disclaimer"
+        )
+    }
 
-        if let aboutHTML = firstCompetitionCapture(
-            in: html,
-            pattern: #"(?s)<dt[^>]*>\s*About the Competition\s*</dt>\s*<dd[^>]*>(.*?)</dd>"#
-        ) {
-            let body = cleanedCompetitionHTMLText(aboutHTML)
-            if !body.isEmpty {
-                blocks.append(CompetitionDetailTextBlock(id: "cubing-about", title: nil, body: body))
-            }
-        }
-
-        if let noteHTML = firstCompetitionCapture(
-            in: html,
-            pattern: #"(?s)<dd[^>]*>\s*(This competition is recognized as an official World Cube Association.*?)(?:</dd>|<dt)"#
-        ) {
-            let body = cleanedCompetitionHTMLText(noteHTML)
-            if !body.isEmpty {
-                blocks.append(CompetitionDetailTextBlock(id: "cubing-note", title: nil, body: body))
-            }
-        }
-
-        return blocks
+    private static func extractCubingRegulationBlocks(from html: String) -> [CompetitionDetailTextBlock] {
+        appendingCubingDisclaimer(
+            from: html,
+            to: extractCubingDefinitionListBlocks(
+                from: html,
+                idPrefix: "cubing-regulations",
+                fallbackID: "cubing-regulations",
+                fallbackTitle: nil
+            ),
+            id: "cubing-regulations-disclaimer"
+        )
     }
 
     private static func extractCubingTravelBlocks(from html: String) -> [CompetitionDetailTextBlock] {
-        var blocks: [CompetitionDetailTextBlock] = []
-
-        if let travelHTML = firstCompetitionCapture(
-            in: html,
-            pattern: #"(?s)<dt[^>]*>\s*Travel Info\s*</dt>\s*<dd[^>]*>(.*?)</dd>"#
-        ) {
-            let captures = competitionHTMLCaptures(
-                in: travelHTML,
-                pattern: #"(?s)<h[34][^>]*>(.*?)</h[34]>\s*(.*?)(?=<h[34][^>]*>|$)"#
-            )
-
-            let extractedBlocks = captures.compactMap { capture -> CompetitionDetailTextBlock? in
-                guard capture.count >= 2 else { return nil }
-                let title = cleanedCompetitionHTMLText(capture[0])
-                let body = cleanedCompetitionHTMLText(capture[1])
-                guard !body.isEmpty else { return nil }
-                return CompetitionDetailTextBlock(
-                    id: "cubing-travel-\(blocks.count)-\(title)",
-                    title: title.isEmpty ? nil : title,
-                    body: body
-                )
-            }
-
-            if !extractedBlocks.isEmpty {
-                blocks.append(contentsOf: extractedBlocks)
-            } else {
-                let body = cleanedCompetitionHTMLText(travelHTML)
-                if !body.isEmpty {
-                    blocks.append(CompetitionDetailTextBlock(id: "cubing-travel", title: nil, body: body))
-                }
-            }
+        let definitionBlocks = extractCubingDefinitionListBlocks(
+            from: html,
+            idPrefix: "cubing-travel",
+            fallbackID: "cubing-travel",
+            fallbackTitle: nil
+        )
+        if !definitionBlocks.isEmpty {
+            return appendingCubingDisclaimer(from: html, to: definitionBlocks, id: "cubing-travel-disclaimer")
         }
 
-        return blocks
+        let contentHTML = primaryCubingPageContentHTML(from: html) ?? html
+        return appendingCubingDisclaimer(
+            from: html,
+            to: extractCubingHeadingBlocks(
+                from: contentHTML,
+                idPrefix: "cubing-travel",
+                fallbackID: "cubing-travel",
+                fallbackTitle: nil
+            ),
+            id: "cubing-travel-disclaimer"
+        )
+    }
+
+    private static func extractCubingTravelMapLocations(from html: String) -> [CompetitionTravelMapLocation] {
+        let captures = competitionHTMLCaptures(
+            in: html,
+            pattern: #"(?is)(<div\b[^>]*class=['\"][^'\"]*\blocation-map\b[^'\"]*['\"][^>]*>)"#
+        )
+
+        return captures.enumerated().compactMap { index, capture -> CompetitionTravelMapLocation? in
+            guard let tagHTML = capture.first else { return nil }
+            let attributes = htmlAttributes(from: tagHTML)
+            guard let latitudeText = attributes["data-latitude"],
+                  let longitudeText = attributes["data-longitude"],
+                  let latitude = Double(latitudeText),
+                  let longitude = Double(longitudeText) else {
+                return nil
+            }
+
+            let venue = cleanedCompetitionHTMLText(attributes["data-venue"] ?? "")
+            let address = cleanedCompetitionHTMLText(attributes["data-address"] ?? "")
+            return CompetitionTravelMapLocation(
+                id: "cubing-travel-map-\(index)-\(latitude)-\(longitude)",
+                latitude: latitude,
+                longitude: longitude,
+                venue: venue,
+                address: address
+            )
+        }
+    }
+
+    private static func htmlAttributes(from tagHTML: String) -> [String: String] {
+        let captures = competitionHTMLCaptures(
+            in: tagHTML,
+            pattern: #"(?is)\b([A-Za-z_:][-A-Za-z0-9_:.]*)\s*=\s*(['\"])(.*?)\2"#
+        )
+        var attributes: [String: String] = [:]
+        for capture in captures where capture.count >= 3 {
+            attributes[capture[0].lowercased()] = decodeCompetitionHTMLEntities(capture[2])
+        }
+        return attributes
+    }
+
+    private static func appendingCubingDisclaimer(
+        from html: String,
+        to blocks: [CompetitionDetailTextBlock],
+        id: String
+    ) -> [CompetitionDetailTextBlock] {
+        guard let disclaimer = extractCubingDisclaimerBlock(from: html, id: id) else {
+            return blocks
+        }
+        guard !blocks.contains(where: { $0.body == disclaimer.body }) else {
+            return blocks
+        }
+        return blocks + [disclaimer]
+    }
+
+    private static func extractCubingDisclaimerBlock(from html: String, id: String) -> CompetitionDetailTextBlock? {
+        guard let disclaimerHTML = firstCompetitionCapture(
+            in: html,
+            pattern: #"(?is)<p>\s*Cubing China is an information sharing platform.*?</p>"#
+        ) else {
+            return nil
+        }
+        let sanitizedHTML = sanitizedCubingContentHTML(disclaimerHTML)
+        let body = cleanedCompetitionHTMLText(sanitizedHTML)
+        guard !body.isEmpty else { return nil }
+        return CompetitionDetailTextBlock(id: id, title: nil, body: body, html: sanitizedHTML)
+    }
+
+    private static func extractCubingDefinitionListBlocks(
+        from html: String,
+        idPrefix: String,
+        fallbackID: String,
+        fallbackTitle: String?
+    ) -> [CompetitionDetailTextBlock] {
+        let contentHTML = primaryCubingPageContentHTML(from: html) ?? html
+        let captures = competitionHTMLCaptures(
+            in: contentHTML,
+            pattern: #"(?is)<dt[^>]*>(.*?)</dt>\s*<dd[^>]*>(.*?)(?=<dt\b|</dl>)"#
+        )
+
+        let blocks = captures.enumerated().compactMap { index, capture -> CompetitionDetailTextBlock? in
+            guard capture.count >= 2 else { return nil }
+            let title = cleanedCompetitionHTMLText(sanitizedCubingContentHTML(capture[0]))
+            let bodyHTML = sanitizedCubingContentHTML(capture[1])
+            let body = cleanedCompetitionHTMLText(bodyHTML)
+            guard !body.isEmpty else { return nil }
+            return CompetitionDetailTextBlock(
+                id: "\(idPrefix)-\(index)",
+                title: title.isEmpty ? nil : title,
+                body: body,
+                html: bodyHTML
+            )
+        }
+
+        if !blocks.isEmpty {
+            return blocks
+        }
+
+        let fallbackHTML = sanitizedCubingContentHTML(contentHTML)
+        let fallbackBody = cleanedCompetitionHTMLText(fallbackHTML)
+        guard !fallbackBody.isEmpty else { return [] }
+        return [
+            CompetitionDetailTextBlock(
+                id: fallbackID,
+                title: fallbackTitle,
+                body: fallbackBody,
+                html: fallbackHTML
+            )
+        ]
+    }
+
+    private static func extractCubingHeadingBlocks(
+        from html: String,
+        idPrefix: String,
+        fallbackID: String,
+        fallbackTitle: String?
+    ) -> [CompetitionDetailTextBlock] {
+        let contentHTML = sanitizedCubingContentHTML(html)
+        let captures = competitionHTMLCaptures(
+            in: contentHTML,
+            pattern: #"(?is)<h([1-4])[^>]*>(.*?)</h\1>\s*(.*?)(?=<h[1-4]\b|</dl>|$)"#
+        )
+
+        let blocks = captures.enumerated().compactMap { index, capture -> CompetitionDetailTextBlock? in
+            guard capture.count >= 3 else { return nil }
+            let title = cleanedCompetitionHTMLText(capture[1])
+            let bodyHTML = sanitizedCubingContentHTML(capture[2])
+            let body = cleanedCompetitionHTMLText(bodyHTML)
+            guard !title.isEmpty || !body.isEmpty else { return nil }
+            return CompetitionDetailTextBlock(
+                id: "\(idPrefix)-\(index)",
+                title: title.isEmpty ? nil : title,
+                body: body,
+                html: bodyHTML
+            )
+        }
+
+        if !blocks.isEmpty {
+            return blocks
+        }
+
+        let fallbackBody = cleanedCompetitionHTMLText(contentHTML)
+        guard !fallbackBody.isEmpty else { return [] }
+        return [
+            CompetitionDetailTextBlock(
+                id: fallbackID,
+                title: fallbackTitle,
+                body: fallbackBody,
+                html: contentHTML
+            )
+        ]
+    }
+
+    private static func primaryCubingPageContentHTML(from html: String) -> String? {
+        firstCompetitionCapture(
+            in: html,
+            pattern: #"(?is)<div class=\"page-content\">(.*?)(?:<footer\b|</body>)"#
+        )
+    }
+
+    private static func sanitizedCubingContentHTML(_ html: String) -> String {
+        html
+            .replacingOccurrences(of: #"(?is)<script\b.*?</script>"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"(?is)<style\b.*?</style>"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"(?is)<div[^>]*class=\"[^\"]*countdown-timer[^\"]*\".*?(?=<dt\b|</dd>|</dl>|$)"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"(?is)<span[^>]*class=\"btn[^\"]*\"[^>]*>.*?</span>"#, with: "", options: .regularExpression)
     }
 
     private static func extractCubingRegistrationBlocks(from html: String) -> [CompetitionDetailTextBlock] {
@@ -3388,6 +3708,84 @@ enum CompetitionService {
         )
         let values = captures.compactMap { Int($0.first ?? "") }
         return values.max()
+    }
+
+    private static func extractCubingScheduleEventSummaries(from html: String) -> [CompetitionScheduleEventSummary] {
+        guard let scheduleEventsHTML = firstCompetitionCapture(
+            in: html,
+            pattern: #"(?is)<div\b[^>]*class=[\"'][^\"']*\bschedule-event\b[^\"']*[\"'][^>]*>(.*?)(?=<p\b|<div\b[^>]*class=[\"'][^\"']*\bpanel\b)"#
+        ) else {
+            return []
+        }
+
+        let labelCaptures = competitionHTMLCaptures(
+            in: scheduleEventsHTML,
+            pattern: #"(?is)<label[^>]*>\s*<input[^>]*data-event=[\"']([^\"']+)[\"'][^>]*>\s*(.*?)</label>"#
+        )
+
+        return labelCaptures.enumerated().compactMap { index, capture -> CompetitionScheduleEventSummary? in
+            guard capture.count >= 2 else { return nil }
+            let eventCode = normalizedCubingScheduleEventCode(capture[0])
+            let labelHTML = capture[1]
+            let title = cleanedCompetitionHTMLText(
+                firstCompetitionCapture(in: labelHTML, pattern: #"(?is)<i[^>]*title=[\"']([^\"']+)[\"'][^>]*>"#) ?? ""
+            )
+            let detailHTML = labelHTML
+                .replacingOccurrences(of: #"(?is)<i[^>]*class=[\"'][^\"']*event-icon[^\"']*[\"'][^>]*></i>"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: #"(?is)<i[^>]*class=[\"'][^\"']*fa-rmb[^\"']*[\"'][^>]*></i>"#, with: "¥", options: .regularExpression)
+            let detail = cleanedCompetitionHTMLText(detailHTML)
+            guard !detail.isEmpty else { return nil }
+            return CompetitionScheduleEventSummary(
+                id: "cubing-schedule-event-\(eventCode ?? String(index))-\(index)",
+                eventCode: eventCode,
+                title: title.isEmpty ? (eventCode ?? "") : title,
+                detail: detail
+            )
+        }
+    }
+
+    private static func extractCubingScheduleIntroHTML(from html: String) -> String? {
+        let contentHTML = primaryCubingPageContentHTML(from: html) ?? html
+        guard let paragraphHTML = firstCompetitionCapture(
+            in: contentHTML,
+            pattern: #"(?is)</div>\s*<p>(.*?)</p>\s*<div[^>]*class=[\"'][^\"']*\bpanel\b"#
+        ) else {
+            return nil
+        }
+        let sanitized = sanitizedCubingContentHTML("<p>\(paragraphHTML)</p>")
+        return cleanedCompetitionHTMLText(sanitized).isEmpty ? nil : sanitized
+    }
+
+    private static func extractCubingScheduleCommentHTML(from html: String) -> String? {
+        guard let commentHTML = firstCompetitionCapture(
+            in: html,
+            pattern: #"(?is)<div\b[^>]*class=[\"'][^\"']*\bschedule-comment\b[^\"']*[\"'][^>]*>(.*?)</div>"#
+        ) else {
+            return nil
+        }
+        let sanitized = sanitizedCubingContentHTML(commentHTML)
+        return cleanedCompetitionHTMLText(sanitized).isEmpty ? nil : sanitized
+    }
+
+    private static func extractCubingLocalizedCompetitionName(from html: String?) -> String? {
+        guard let html else { return nil }
+        let rawTitle = firstCompetitionCapture(
+            in: html,
+            pattern: #"(?is)<h1\b[^>]*class=[\"'][^\"']*\bheading-title\b[^\"']*[\"'][^>]*>(.*?)</h1>"#
+        ) ?? firstCompetitionCapture(in: html, pattern: #"(?is)<title>(.*?)</title>"#)
+        guard let rawTitle else { return nil }
+        let cleaned = cleanedCompetitionHTMLText(rawTitle)
+        guard !cleaned.isEmpty else { return nil }
+        let separators = [" - ", "-赛程安排", "-Schedule", "-规则", "-规程", "-Regulations", "-交通", "-Travel", "-报名", "-Registration", "-选手", "-Competitors"]
+        var name = cleaned
+        for separator in separators {
+            if let range = name.range(of: separator, options: [.caseInsensitive]) {
+                name = String(name[..<range.lowerBound])
+                break
+            }
+        }
+        name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? nil : name
     }
 
     private static func extractCubingScheduleDays(from html: String) -> [CompetitionScheduleDay] {

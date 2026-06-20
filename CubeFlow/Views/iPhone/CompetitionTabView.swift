@@ -30,6 +30,14 @@ private extension View {
     }
 }
 
+private struct CompetitionDetailScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 private struct CompetitionCardSurfaceModifier: ViewModifier {
     let isGlass: Bool
     let shape: RoundedRectangle
@@ -2088,27 +2096,107 @@ private struct CompetitionBottomSearchBarGlassModifier: ViewModifier {
     }
 }
 
-enum CompetitionDetailTab: String, CaseIterable, Identifiable {
+private struct CompetitionNavigationSubtitleModifier: ViewModifier {
+    let subtitle: String?
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *), let subtitle, !subtitle.isEmpty {
+            content.navigationSubtitle(Text(subtitle))
+        } else {
+            content
+        }
+    }
+}
+
+enum CompetitionDetailTabKind: Hashable {
     case info
+    case rules
     case register
     case competitors
     case schedule
+    case events
+    case travel
     case live
+    case custom(String)
+}
+
+struct CompetitionDetailTab: Identifiable, Hashable {
+    let kind: CompetitionDetailTabKind
+    let titleOverride: String?
+
+    static func == (lhs: CompetitionDetailTab, rhs: CompetitionDetailTab) -> Bool {
+        lhs.rawValue == rhs.rawValue
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(rawValue)
+    }
+
+    static let info = CompetitionDetailTab(kind: .info)
+    static let rules = CompetitionDetailTab(kind: .rules)
+    static let register = CompetitionDetailTab(kind: .register)
+    static let competitors = CompetitionDetailTab(kind: .competitors)
+    static let schedule = CompetitionDetailTab(kind: .schedule)
+    static let events = CompetitionDetailTab(kind: .events)
+    static let travel = CompetitionDetailTab(kind: .travel)
+    static let live = CompetitionDetailTab(kind: .live)
+
+    static let standardCases: [CompetitionDetailTab] = [.info, .register, .competitors, .schedule, .live]
+
+    init(kind: CompetitionDetailTabKind, titleOverride: String? = nil) {
+        self.kind = kind
+        self.titleOverride = titleOverride
+    }
+
+    static func custom(id: String, title: String) -> CompetitionDetailTab {
+        CompetitionDetailTab(kind: .custom(id), titleOverride: title)
+    }
+
+    func titled(_ title: String?) -> CompetitionDetailTab {
+        CompetitionDetailTab(kind: kind, titleOverride: title)
+    }
 
     var id: String { rawValue }
 
+    var rawValue: String {
+        switch kind {
+        case .info: return "info"
+        case .rules: return "rules"
+        case .register: return "register"
+        case .competitors: return "competitors"
+        case .schedule: return "schedule"
+        case .events: return "events"
+        case .travel: return "travel"
+        case .live: return "live"
+        case .custom(let id): return "custom-\(id)"
+        }
+    }
+
     func localizedTitle(languageCode: String) -> String {
-        switch self {
+        if let titleOverride, !titleOverride.isEmpty {
+            return titleOverride
+        }
+
+        switch kind {
         case .info:
             return localizedCompetitionStringInView(key: "competitions.detail.tab.info", languageCode: languageCode)
+        case .rules:
+            return localizedCompetitionStringInView(key: "competitions.detail.tab.rules", languageCode: languageCode)
         case .register:
             return localizedCompetitionStringInView(key: "competitions.detail.tab.register", languageCode: languageCode)
         case .competitors:
             return localizedCompetitionStringInView(key: "competitions.detail.tab.competitors", languageCode: languageCode)
         case .schedule:
             return localizedCompetitionStringInView(key: "competitions.detail.tab.schedule", languageCode: languageCode)
+        case .events:
+            return localizedCompetitionStringInView(key: "competitions.detail.section.events", languageCode: languageCode)
+        case .travel:
+            return localizedCompetitionStringInView(key: "competitions.detail.section.travel", languageCode: languageCode)
         case .live:
             return localizedCompetitionStringInView(key: "competitions.detail.tab.live", languageCode: languageCode)
+        case .custom:
+            return localizedCompetitionStringInView(key: "competitions.detail.tab.info", languageCode: languageCode)
         }
     }
 }
@@ -2116,23 +2204,7 @@ enum CompetitionDetailTab: String, CaseIterable, Identifiable {
 struct CompetitionDetailTabStrip: View {
     let tabs: [CompetitionDetailTab]
     let languageCode: String
-    let draggedMaskScale: CGFloat
-    let showsMaskDebugOverlay: Bool
     @Binding var selection: CompetitionDetailTab
-
-    init(
-        tabs: [CompetitionDetailTab],
-        languageCode: String,
-        draggedMaskScale: CGFloat = 1.10,
-        showsMaskDebugOverlay: Bool = false,
-        selection: Binding<CompetitionDetailTab>
-    ) {
-        self.tabs = tabs
-        self.languageCode = languageCode
-        self.draggedMaskScale = draggedMaskScale
-        self.showsMaskDebugOverlay = showsMaskDebugOverlay
-        self._selection = selection
-    }
 
     @State private var tabWidths: [String: CGFloat] = [:]
     @State private var dragOffset: CGFloat = 0
@@ -2141,6 +2213,7 @@ struct CompetitionDetailTabStrip: View {
 
     private let spacing: CGFloat = 8
     private let horizontalPadding: CGFloat = 6
+    private let labelHorizontalPadding: CGFloat = 14
     private let selectedHeight: CGFloat = 34
 
     var body: some View {
@@ -2149,19 +2222,19 @@ struct CompetitionDetailTabStrip: View {
                 selectionIndicator
                     .zIndex(0)
 
-                tabTextLayers
-
-                if showsMaskDebugOverlay {
-                    capsuleMaskDebugOverlay
-                        .allowsHitTesting(false)
-                        .zIndex(1.75)
-                }
+                tabLabelsLayer
+                    .zIndex(1)
 
                 dragOverlay
                     .zIndex(2)
             }
             .onPreferenceChange(CompetitionTabWidthPreferenceKey.self) { widths in
-                tabWidths = widths
+                let cleanedWidths = widths.filter { $0.value.isFinite && $0.value > 0 }
+                guard !cleanedWidths.isApproximatelyEqual(to: tabWidths) else { return }
+                DispatchQueue.main.async {
+                    guard !cleanedWidths.isApproximatelyEqual(to: tabWidths) else { return }
+                    tabWidths = cleanedWidths
+                }
             }
             .padding(.horizontal, 16)
         }
@@ -2170,122 +2243,45 @@ struct CompetitionDetailTabStrip: View {
 
     private var selectionIndicator: some View {
         Capsule()
-            .fill(Color.primary.opacity(0.08))
+            .fill(Color.primary.opacity(isDragging ? 0.12 : 0.08))
             .overlay {
                 Capsule()
-                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+                    .strokeBorder(Color.primary.opacity(0.10), lineWidth: 0.6)
             }
             .compatibleGlassFromIOS16(in: Capsule())
             .frame(width: selectedWidth, height: selectedHeight)
+            .scaleEffect(isDragging ? 1.04 : 1.0)
             .offset(x: clampedIndicatorOffset)
-            .animation(.spring(response: 0.28, dampingFraction: 0.78), value: selection)
-            .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isDragging)
+            .shadow(color: .black.opacity(0.08), radius: isDragging ? 10 : 6, y: 3)
+            .animation(.spring(response: 0.32, dampingFraction: 0.76), value: selection)
+            .animation(.spring(response: 0.22, dampingFraction: 0.72), value: isDragging)
             .allowsHitTesting(false)
     }
 
-    @ViewBuilder
-    private var tabTextLayers: some View {
-        if #available(iOS 26.0, *) {
-            tabLabelsLayer(isMaskedBoldLayer: false)
-                .mask(alignment: .leading) {
-                    regularTextMask
-                }
-                .zIndex(1)
-
-            tabLabelsLayer(isMaskedBoldLayer: true)
-                .mask(alignment: .leading) {
-                    capsuleMask
-                }
-                .opacity(isDragging ? 1 : 0)
-                .allowsHitTesting(false)
-                .zIndex(1.5)
-        } else {
-            tabLabelsLayer(isMaskedBoldLayer: false)
-                .zIndex(1)
-        }
-    }
-
-    private var capsuleMask: some View {
-        Capsule()
-            .frame(width: selectedWidth * capsuleMaskScale, height: selectedHeight * capsuleMaskScale)
-            .offset(x: clampedIndicatorOffset - selectedWidth * (capsuleMaskScale - 1) / 2,
-                    y: -selectedHeight * (capsuleMaskScale - 1) / 2)
-            .animation(.spring(response: 0.28, dampingFraction: 0.78), value: selection)
-            .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isDragging)
-    }
-
-    private var capsuleMaskDebugOverlay: some View {
-        Capsule()
-            .fill(Color.red.opacity(0.18))
-            .frame(width: selectedWidth * capsuleMaskScale, height: selectedHeight * capsuleMaskScale)
-            .overlay {
-                Capsule()
-                    .stroke(Color.red.opacity(0.85), lineWidth: 1)
-            }
-            .offset(x: clampedIndicatorOffset - selectedWidth * (capsuleMaskScale - 1) / 2,
-                    y: -selectedHeight * (capsuleMaskScale - 1) / 2)
-            .animation(.spring(response: 0.28, dampingFraction: 0.78), value: selection)
-            .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isDragging)
-    }
-
-    private var capsuleMaskScale: CGFloat {
-        isDragging ? draggedMaskScale : 1.0
-    }
-
-    private var regularTextMask: some View {
-        Color.white
-            .overlay(alignment: .leading) {
-                if isDragging {
-                    capsuleMask
-                        .blendMode(.destinationOut)
-                }
-            }
-            .compositingGroup()
-    }
-
-    private func tabLabelsLayer(isMaskedBoldLayer: Bool) -> some View {
+    private var tabLabelsLayer: some View {
         HStack(spacing: spacing) {
             ForEach(tabs) { tab in
-                tabLabel(for: tab, isMaskedBoldLayer: isMaskedBoldLayer)
+                tabLabel(for: tab)
             }
         }
         .padding(.horizontal, horizontalPadding)
         .padding(.vertical, 5)
     }
 
-    @ViewBuilder
-    private func tabLabel(for tab: CompetitionDetailTab, isMaskedBoldLayer: Bool) -> some View {
-        let label = Text(tab.localizedTitle(languageCode: languageCode))
-            .font(.system(size: 15, weight: fontWeight(for: tab, isMaskedBoldLayer: isMaskedBoldLayer)))
-            .foregroundStyle(foregroundStyle(for: tab, isMaskedBoldLayer: isMaskedBoldLayer))
+    private func tabLabel(for tab: CompetitionDetailTab) -> some View {
+        Text(tab.localizedTitle(languageCode: languageCode))
+            .font(.system(size: 15, weight: fontWeight(for: tab)))
+            .foregroundStyle(foregroundStyle(for: tab))
             .lineLimit(1)
-            .padding(.horizontal, 14)
+            .padding(.horizontal, labelHorizontalPadding)
             .padding(.vertical, 9)
-            .modifier(CompetitionDetailTabMeasurementModifier(tabID: tab.id, isEnabled: !isMaskedBoldLayer))
-
-        if isMaskedBoldLayer {
-            label
-                .allowsHitTesting(false)
-        } else {
-            label
-                .contentShape(Rectangle())
-                .gesture(tabPressGesture(for: tab))
-        }
-    }
-
-    private func tabPressGesture(for tab: CompetitionDetailTab) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { _ in
-                guard !isDragging else { return }
-                if pressedTab != tab {
-                    withAnimation(.spring(response: 0.18, dampingFraction: 0.72)) {
-                        pressedTab = tab
-                    }
-                }
-            }
-            .onEnded { _ in
+            .scaleEffect(pressedTab == tab ? 0.97 : 1.0)
+            .contentShape(Rectangle())
+            .modifier(CompetitionDetailTabMeasurementModifier(tabID: tab.id))
+            .onTapGesture {
                 pressThenSelect(tab)
             }
+            .animation(.spring(response: 0.18, dampingFraction: 0.78), value: pressedTab)
     }
 
     private var dragOverlay: some View {
@@ -2302,9 +2298,11 @@ struct CompetitionDetailTabStrip: View {
                     }
                     .onEnded { gesture in
                         snapToNearestTab(dragDistance: gesture.translation.width)
-                        dragOffset = 0
-                        isDragging = false
-                        pressedTab = nil
+                        withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
+                            dragOffset = 0
+                            isDragging = false
+                            pressedTab = nil
+                        }
                     }
             )
     }
@@ -2317,13 +2315,10 @@ struct CompetitionDetailTabStrip: View {
         offset(for: selection)
     }
 
-    private var isPressingSelection: Bool {
-        isDragging || pressedTab == selection
-    }
-
     private var clampedIndicatorOffset: CGFloat {
         let proposed = selectedBaseOffset + dragOffset
-        return min(max(proposed, horizontalPadding), max(horizontalPadding, totalTabsWidth - selectedWidth + horizontalPadding))
+        let maximum = max(horizontalPadding, totalTabsWidth - selectedWidth + horizontalPadding)
+        return min(max(proposed, horizontalPadding), maximum)
     }
 
     private var totalTabsWidth: CGFloat {
@@ -2346,31 +2341,25 @@ struct CompetitionDetailTabStrip: View {
 
     private func fallbackWidth(for tab: CompetitionDetailTab) -> CGFloat {
         let title = tab.localizedTitle(languageCode: languageCode)
-        return max(CGFloat(title.count) * 8.5 + 28, 54)
+        return max(CGFloat(title.count) * 8.5 + labelHorizontalPadding * 2, 54)
     }
 
-    private func fontWeight(for tab: CompetitionDetailTab, isMaskedBoldLayer: Bool) -> Font.Weight {
-        if isMaskedBoldLayer {
-            return .bold
-        }
-        return selection == tab ? .semibold : .regular
+    private func fontWeight(for tab: CompetitionDetailTab) -> Font.Weight {
+        selection == tab ? .semibold : .regular
     }
 
-    private func foregroundStyle(for tab: CompetitionDetailTab, isMaskedBoldLayer: Bool) -> Color {
-        if isMaskedBoldLayer {
-            return .black
-        }
-        return selection == tab ? .primary : .secondary
+    private func foregroundStyle(for tab: CompetitionDetailTab) -> Color {
+        selection == tab ? .primary : .secondary
     }
 
     private func pressThenSelect(_ tab: CompetitionDetailTab) {
-        withAnimation(.spring(response: 0.16, dampingFraction: 0.7)) {
+        withAnimation(.spring(response: 0.16, dampingFraction: 0.74)) {
             pressedTab = tab
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
             select(tab)
-            withAnimation(.spring(response: 0.22, dampingFraction: 0.82)) {
+            withAnimation(.spring(response: 0.20, dampingFraction: 0.84)) {
                 pressedTab = nil
             }
         }
@@ -2378,7 +2367,7 @@ struct CompetitionDetailTabStrip: View {
 
     private func select(_ tab: CompetitionDetailTab) {
         guard selection != tab else { return }
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.78)) {
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.76)) {
             selection = tab
         }
         UISelectionFeedbackGenerator().selectionChanged()
@@ -2406,23 +2395,28 @@ private struct CompetitionTabWidthPreferenceKey: PreferenceKey {
     }
 }
 
+private extension Dictionary where Key == String, Value == CGFloat {
+    func isApproximatelyEqual(to other: [String: CGFloat]) -> Bool {
+        guard count == other.count else { return false }
+        return allSatisfy { entry in
+            guard let otherValue = other[entry.key] else { return false }
+            return abs(entry.value - otherValue) < 0.5
+        }
+    }
+}
+
 private struct CompetitionDetailTabMeasurementModifier: ViewModifier {
     let tabID: String
-    let isEnabled: Bool
 
     func body(content: Content) -> some View {
-        if isEnabled {
-            content.background(
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: CompetitionTabWidthPreferenceKey.self,
-                        value: [tabID: proxy.size.width]
-                    )
-                }
-            )
-        } else {
-            content
-        }
+        content.background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: CompetitionTabWidthPreferenceKey.self,
+                    value: [tabID: proxy.size.width]
+                )
+            }
+        )
     }
 }
 
@@ -3726,9 +3720,19 @@ struct CompetitionDetailView: View {
     @State private var displayedPsychCompetitorsSnapshot: [CompetitionCompetitorPsychPreview] = []
     @State private var psychOverallRankByCompetitorIDSnapshot: [String: Int] = [:]
     @State private var psychMatrixEventIDsSnapshot: [String] = []
+    @State private var showsCollapsedNavigationTitle = false
+    @State private var navigationTitleBaselineY: CGFloat?
 
     private var selectedScheduleTableStyle: CompetitionScheduleTableStyle {
         CompetitionScheduleTableStyle(rawValue: selectedScheduleTableStyleRaw) ?? .cards
+    }
+
+    private var displayCompetitionName: String {
+        guard let localizedName = detailContent.localizedName?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !localizedName.isEmpty else {
+            return competition.name
+        }
+        return localizedName
     }
 
     private var sourceTitle: String {
@@ -3793,6 +3797,41 @@ struct CompetitionDetailView: View {
         return URL(string: "http://maps.apple.com/?q=\(encoded)")
     }
 
+    private var travelMapLocations: [CompetitionTravelMapLocation] {
+        if !detailContent.travelMapLocations.isEmpty {
+            return detailContent.travelMapLocations
+        }
+
+        guard let latitude = competition.latitude,
+              let longitude = competition.longitude else {
+            return []
+        }
+
+        return [
+            CompetitionTravelMapLocation(
+                id: "competition-location-\(competition.id)",
+                latitude: latitude,
+                longitude: longitude,
+                venue: competition.venue,
+                address: [competition.venueAddress, competition.city].filter { !$0.isEmpty }.joined(separator: ", ")
+            )
+        ]
+    }
+
+    private var travelMapURL: URL? {
+        guard let location = travelMapLocations.first else { return mapsURL }
+        let query = [location.venue, location.address]
+            .filter { !$0.isEmpty }
+            .joined(separator: ", ")
+
+        if !query.isEmpty {
+            let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+            return URL(string: "http://maps.apple.com/?q=\(encoded)&ll=\(location.latitude),\(location.longitude)")
+        }
+
+        return URL(string: "http://maps.apple.com/?ll=\(location.latitude),\(location.longitude)")
+    }
+
     private var liveURL: URL? {
         if isMainlandChinaCompetition,
            let website = competition.website,
@@ -3800,11 +3839,7 @@ struct CompetitionDetailView: View {
             return liveURL
         }
 
-        if let liveURLOverride = detailContent.liveURLOverride {
-            return liveURLOverride
-        }
-
-        return URL(string: "https://live.worldcubeassociation.org/link/competitions/\(competition.id)")
+        return detailContent.liveURLOverride
     }
 
     private var effectiveWCALiveContent: CompetitionWCALiveContent? {
@@ -3838,7 +3873,7 @@ struct CompetitionDetailView: View {
 
     private var shouldShowLiveLink: Bool {
         if !isMainlandChinaCompetition {
-            return true
+            return liveURL != nil
         }
 
         switch detailContent.liveAvailability {
@@ -3899,7 +3934,103 @@ struct CompetitionDetailView: View {
     }
 
     private var visibleTabs: [CompetitionDetailTab] {
-        CompetitionDetailTab.allCases
+        if isMainlandChinaCompetition {
+            return [
+                .info.titled(localizedCompetitionStringInView(key: "competitions.detail.tab.main_page", languageCode: appLanguage)),
+                .rules.titled(localizedCompetitionStringInView(key: "competitions.detail.tab.regulations", languageCode: appLanguage)),
+                .schedule,
+                .travel,
+                .competitors,
+                .register.titled(localizedCompetitionStringInView(key: "competitions.detail.tab.registration", languageCode: appLanguage))
+            ]
+        }
+
+        let wcaTabs = detailContent.noteBlocks.compactMap(wcaTab(for:))
+        if wcaTabs.isEmpty {
+            return [.info, .register, .competitors, .schedule]
+        }
+
+        var tabs = wcaTabs
+        if wcaHasRegisterLink, !tabs.contains(where: { $0.kind == .register }) {
+            tabs.append(.register.titled("Register"))
+        }
+        if wcaHasCompetitorsLink, !tabs.contains(where: { $0.kind == .competitors }) {
+            tabs.append(.competitors.titled("Competitors"))
+        }
+        if shouldShowLiveTab, !tabs.contains(where: { $0.kind == .live }) {
+            tabs.append(.live.titled("Live"))
+        }
+        return tabs
+    }
+
+    private var effectiveSelectedTab: CompetitionDetailTab {
+        visibleTabs.first(where: { $0.rawValue == selectedTab.rawValue }) ?? selectedTab
+    }
+
+    private var selectedCustomTabBlock: CompetitionDetailTextBlock? {
+        guard case .custom(let id) = selectedTab.kind else { return nil }
+        return detailContent.noteBlocks.first { $0.id == id }
+    }
+
+    private var selectedWCASourceBlock: CompetitionDetailTextBlock? {
+        wcaSourceBlock(for: selectedTab.kind)
+    }
+
+    private var wcaHasRegisterLink: Bool {
+        detailContent.hasRegisterLink
+    }
+
+    private var wcaHasCompetitorsLink: Bool {
+        detailContent.hasCompetitorsLink
+    }
+
+    private var shouldShowLiveTab: Bool {
+        detailContent.liveURLOverride != nil || detailContent.wcaLiveContent != nil
+    }
+
+    private func wcaTab(for block: CompetitionDetailTextBlock) -> CompetitionDetailTab? {
+        guard let title = block.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty else {
+            return nil
+        }
+
+        switch normalizedWCASourceID(block.id) {
+        case "general-info": return .info.titled(title)
+        case "competition-events": return .events.titled(title)
+        case "competition-schedule": return .schedule.titled(title)
+        case "register", "registration", "registrations": return .register.titled(title)
+        case "competitors", "registrations-list": return .competitors.titled(title)
+        case "live": return .live.titled(title)
+        default: return .custom(id: block.id, title: title)
+        }
+    }
+
+    private func wcaSourceBlock(for kind: CompetitionDetailTabKind) -> CompetitionDetailTextBlock? {
+        let candidates: Set<String>
+        switch kind {
+        case .info:
+            candidates = ["general-info"]
+        case .events:
+            candidates = ["competition-events"]
+        case .schedule:
+            candidates = ["competition-schedule"]
+        case .register:
+            candidates = ["register", "registration", "registrations"]
+        case .competitors:
+            candidates = ["competitors", "registrations-list"]
+        case .travel:
+            candidates = ["travel"]
+        case .rules, .live, .custom:
+            return nil
+        }
+
+        return detailContent.noteBlocks.first { block in
+            let normalizedID = normalizedWCASourceID(block.id)
+            return candidates.contains(normalizedID) || candidates.contains(where: { normalizedID.hasSuffix("-\($0)") })
+        }
+    }
+
+    private func normalizedWCASourceID(_ id: String) -> String {
+        id.replacingOccurrences(of: "wca-", with: "")
     }
 
     private var overviewDescription: String {
@@ -3999,11 +4130,28 @@ struct CompetitionDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                heroCard
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(
+                            key: CompetitionDetailScrollOffsetPreferenceKey.self,
+                            value: proxy.frame(in: .global).minY
+                        )
+                }
+                .frame(height: 0)
+
+                if !isMainlandChinaCompetition {
+                    heroCard
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                }
 
                 tabStrip
+                    .padding(.top, isMainlandChinaCompetition ? 8 : 0)
+
+                if isMainlandChinaCompetition {
+                    cubingPageHeader
+                        .padding(.horizontal, 16)
+                }
 
                 tabContent
                     .padding(.horizontal, 16)
@@ -4011,8 +4159,20 @@ struct CompetitionDetailView: View {
             }
         }
         .background(Color(uiColor: .systemGroupedBackground))
-        .navigationTitle(competition.name)
+        .navigationTitle(isMainlandChinaCompetition ? "" : displayCompetitionName)
         .navigationBarTitleDisplayMode(.inline)
+        .onPreferenceChange(CompetitionDetailScrollOffsetPreferenceKey.self) { currentY in
+            if navigationTitleBaselineY == nil {
+                navigationTitleBaselineY = currentY
+            }
+
+            let scrollDistance = (navigationTitleBaselineY ?? currentY) - currentY
+            let shouldShowTitle = isMainlandChinaCompetition && scrollDistance > 72
+            guard shouldShowTitle != showsCollapsedNavigationTitle else { return }
+            withAnimation(.easeInOut(duration: 0.16)) {
+                showsCollapsedNavigationTitle = shouldShowTitle
+            }
+        }
         .task(id: "\(competition.id)|\(appLanguage)") {
             areCompetitionEventIconsReady = CompetitionEventIconFont.ensureRegistered()
             await loadDetailContent()
@@ -4034,6 +4194,16 @@ struct CompetitionDetailView: View {
             updateCompetitionDetailDerivedState()
         }
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                if isMainlandChinaCompetition {
+                    Text(displayCompetitionName)
+                        .font(.headline)
+                        .lineLimit(1)
+                        .opacity(showsCollapsedNavigationTitle ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.16), value: showsCollapsedNavigationTitle)
+                }
+            }
+
             ToolbarItem(placement: .topBarTrailing) {
                 if isMainlandChinaCompetition {
                     if isRefreshingDetail {
@@ -4058,7 +4228,7 @@ struct CompetitionDetailView: View {
 
     private var heroCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(competition.name)
+            Text(displayCompetitionName)
                 .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -4124,48 +4294,158 @@ struct CompetitionDetailView: View {
         )
     }
 
+    private var cubingPageHeader: some View {
+        VStack(spacing: 8) {
+            Text(displayCompetitionName)
+                .font(.system(size: 26, weight: .bold))
+                .foregroundStyle(.primary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(effectiveSelectedTab.localizedTitle(languageCode: appLanguage))
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Divider()
+                .padding(.top, 6)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 4)
+    }
+
     @ViewBuilder
     private var tabContent: some View {
-        switch selectedTab {
+        switch selectedTab.kind {
         case .info:
             detailSectionStack {
                 if isLoadingDetail && detailContent == .empty {
                     detailLoadingCard
                 }
 
-                detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.overview", languageCode: appLanguage)) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        if detailContent.overviewBlocks.isEmpty {
-                            Text(overviewDescription)
+                if isMainlandChinaCompetition {
+                    if detailContent.overviewBlocks.isEmpty {
+                        detailSectionCard(title: selectedTab.localizedTitle(languageCode: appLanguage)) {
+                            Text(localizedCompetitionStringInView(key: "competitions.detail.unavailable", languageCode: appLanguage))
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        } else {
-                            detailTextBlocks(detailContent.overviewBlocks)
                         }
+                    } else {
+                        cubingDetailDocument(
+                            detailContent.overviewBlocks,
+                            fallbackTitle: selectedTab.localizedTitle(languageCode: appLanguage)
+                        )
+                    }
+                } else if let sourceBlock = selectedWCASourceBlock {
+                    detailSectionCard(title: sourceBlock.title ?? selectedTab.localizedTitle(languageCode: appLanguage)) {
+                        detailTextBlocks([sourceBlock])
+                    }
+                } else {
+                    detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.overview", languageCode: appLanguage)) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            if detailContent.overviewBlocks.isEmpty {
+                                Text(overviewDescription)
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            } else {
+                                detailTextBlocks(detailContent.overviewBlocks)
+                            }
 
-                        detailLine(systemImage: "calendar", text: localizedCompetitionDateRange(for: competition))
-                        detailLine(systemImage: "location", text: competition.locationLine)
-                        detailLine(systemImage: "square.grid.2x2", text: eventSummaryText)
+                            detailLine(systemImage: "calendar", text: localizedCompetitionDateRange(for: competition))
+                            detailLine(systemImage: "location", text: competition.locationLine)
+                            detailLine(systemImage: "square.grid.2x2", text: eventSummaryText)
+                        }
+                    }
+
+                    detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.venue", languageCode: appLanguage)) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            detailLine(systemImage: "building.2", text: competition.venue)
+                            if !competition.venueAddress.isEmpty {
+                                detailLine(systemImage: "map", text: competition.venueAddress)
+                            }
+                            if let venueDetails = competition.venueDetails, !venueDetails.isEmpty {
+                                detailLine(systemImage: "info.circle", text: venueDetails)
+                            }
+
+                            if let mapsURL {
+                                Link(destination: mapsURL) {
+                                    detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_maps", languageCode: appLanguage))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    if !eventTitles.isEmpty {
+                        detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.events", languageCode: appLanguage)) {
+                            FlexibleTagFlow(items: eventTitles)
+                        }
+                    }
+
+                    detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.travel", languageCode: appLanguage)) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            if detailContent.travelBlocks.isEmpty {
+                                Text(travelDescription)
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            } else {
+                                detailTextBlocks(detailContent.travelBlocks)
+                            }
+
+                            if let officialURL {
+                                Link(destination: officialURL) {
+                                    detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_official", languageCode: appLanguage))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
                 }
+            }
 
-                detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.venue", languageCode: appLanguage)) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        detailLine(systemImage: "building.2", text: competition.venue)
-                        if !competition.venueAddress.isEmpty {
-                            detailLine(systemImage: "map", text: competition.venueAddress)
-                        }
-                        if let venueDetails = competition.venueDetails, !venueDetails.isEmpty {
-                            detailLine(systemImage: "info.circle", text: venueDetails)
-                        }
+        case .rules:
+            detailSectionStack {
+                if isLoadingDetail && detailContent == .empty {
+                    detailLoadingCard
+                }
 
-                        if let mapsURL {
-                            Link(destination: mapsURL) {
-                                detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_maps", languageCode: appLanguage))
-                            }
-                            .buttonStyle(.plain)
+                if isMainlandChinaCompetition {
+                    if detailContent.regulationBlocks.isEmpty {
+                        detailSectionCard(title: selectedTab.localizedTitle(languageCode: appLanguage)) {
+                            Text(localizedCompetitionStringInView(key: "competitions.detail.unavailable", languageCode: appLanguage))
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.secondary)
                         }
+                    } else {
+                        cubingDetailDocument(
+                            detailContent.regulationBlocks,
+                            fallbackTitle: selectedTab.localizedTitle(languageCode: appLanguage)
+                        )
+                    }
+                } else {
+                    detailSectionCard(title: selectedTab.localizedTitle(languageCode: appLanguage)) {
+                        if detailContent.registerBlocks.isEmpty {
+                            Text(localizedCompetitionStringInView(key: "competitions.detail.unavailable", languageCode: appLanguage))
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        } else {
+                            detailTextBlocks(detailContent.registerBlocks)
+                        }
+                    }
+                }
+            }
+
+        case .events:
+            detailSectionStack {
+                if isLoadingDetail && detailContent == .empty {
+                    detailLoadingCard
+                }
+
+                if let sourceBlock = selectedWCASourceBlock, !sourceBlock.body.isEmpty {
+                    detailSectionCard(title: sourceBlock.title ?? selectedTab.localizedTitle(languageCode: appLanguage)) {
+                        detailTextBlocks([sourceBlock])
                     }
                 }
 
@@ -4174,10 +4454,19 @@ struct CompetitionDetailView: View {
                         FlexibleTagFlow(items: eventTitles)
                     }
                 }
+            }
 
-                detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.travel", languageCode: appLanguage)) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        if detailContent.travelBlocks.isEmpty {
+        case .travel:
+            detailSectionStack {
+                if isLoadingDetail && detailContent == .empty {
+                    detailLoadingCard
+                }
+
+                if !isMainlandChinaCompetition {
+                    detailSectionCard(title: selectedTab.localizedTitle(languageCode: appLanguage)) {
+                        if let sourceBlock = selectedWCASourceBlock {
+                            detailTextBlocks([sourceBlock])
+                        } else if detailContent.travelBlocks.isEmpty {
                             Text(travelDescription)
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundStyle(.secondary)
@@ -4185,19 +4474,44 @@ struct CompetitionDetailView: View {
                         } else {
                             detailTextBlocks(detailContent.travelBlocks)
                         }
-
-                        if let officialURL {
-                            Link(destination: officialURL) {
-                                detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_official", languageCode: appLanguage))
-                            }
-                            .buttonStyle(.plain)
-                        }
                     }
+                } else if detailContent.travelBlocks.isEmpty {
+                    Text(travelDescription)
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    cubingDetailDocumentBody(
+                        detailContent.travelBlocks,
+                        fallbackTitle: selectedTab.localizedTitle(languageCode: appLanguage),
+                        mapLocations: travelMapLocations,
+                        mapURL: travelMapURL
+                    )
                 }
 
-                if !detailContent.noteBlocks.isEmpty {
-                    detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.notes", languageCode: appLanguage)) {
-                        detailTextBlocks(detailContent.noteBlocks)
+                if let officialURL {
+                    Link(destination: officialURL) {
+                        detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_official", languageCode: appLanguage))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+        case .custom:
+            detailSectionStack {
+                if isLoadingDetail && detailContent == .empty {
+                    detailLoadingCard
+                }
+
+                if let selectedCustomTabBlock {
+                    detailSectionCard(title: selectedCustomTabBlock.title ?? selectedTab.localizedTitle(languageCode: appLanguage)) {
+                        detailTextBlocks([selectedCustomTabBlock])
+                    }
+                } else {
+                    detailSectionCard(title: selectedTab.localizedTitle(languageCode: appLanguage)) {
+                        Text(localizedCompetitionStringInView(key: "competitions.detail.unavailable", languageCode: appLanguage))
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -4242,13 +4556,13 @@ struct CompetitionDetailView: View {
                     }
                 }
 
-                if !detailContent.registerBlocks.isEmpty {
+                if !isMainlandChinaCompetition && !detailContent.registerBlocks.isEmpty {
                     detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.notes", languageCode: appLanguage)) {
                         detailTextBlocks(detailContent.registerBlocks)
                     }
                 }
 
-                if !eventTitles.isEmpty {
+                if !isMainlandChinaCompetition, !eventTitles.isEmpty {
                     detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.events", languageCode: appLanguage)) {
                         FlexibleTagFlow(items: eventTitles)
                     }
@@ -4392,8 +4706,16 @@ struct CompetitionDetailView: View {
                             } else {
                                 scheduleTableStyleMenu
 
+                                if isMainlandChinaCompetition, selectedScheduleTableStyle == .table {
+                                    cubingScheduleWebsiteIntro
+                                }
+
                                 ForEach(detailContent.scheduleDays) { day in
                                     detailScheduleDayCard(day)
+                                }
+
+                                if isMainlandChinaCompetition, selectedScheduleTableStyle == .table {
+                                    cubingScheduleWebsiteComment
                                 }
                             }
                         }
@@ -4967,6 +5289,72 @@ struct CompetitionDetailView: View {
         }
     }
 
+    private func detailTextBlockCards(_ blocks: [CompetitionDetailTextBlock], fallbackTitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ForEach(blocks) { block in
+                detailSectionCard(title: block.title?.isEmpty == false ? block.title! : fallbackTitle) {
+                    detailTextBlockBody(block)
+                }
+            }
+        }
+    }
+
+    private func cubingDetailDocument(_ blocks: [CompetitionDetailTextBlock], fallbackTitle: String) -> some View {
+        cubingDetailDocumentBody(blocks, fallbackTitle: fallbackTitle)
+    }
+
+    private func cubingDetailDocumentBody(
+        _ blocks: [CompetitionDetailTextBlock],
+        fallbackTitle: String,
+        mapLocations: [CompetitionTravelMapLocation] = [],
+        mapURL: URL? = nil
+    ) -> some View {
+        let visibleBlocks = blocks.filter { !$0.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let mapBlockID = cubingTravelMapAnchorBlockID(in: visibleBlocks, mapLocations: mapLocations)
+
+        return VStack(alignment: .leading, spacing: 14) {
+            ForEach(visibleBlocks) { block in
+                CubingDetailDocumentBlock(
+                    block: block,
+                    fallbackTitle: fallbackTitle,
+                    areEventIconsReady: areCompetitionEventIconsReady
+                )
+
+                if block.id == mapBlockID {
+                    CompetitionTravelMapCard(
+                        locations: mapLocations,
+                        openMapsURL: mapURL
+                    )
+                }
+            }
+        }
+    }
+
+    private func cubingTravelMapAnchorBlockID(
+        in blocks: [CompetitionDetailTextBlock],
+        mapLocations: [CompetitionTravelMapLocation]
+    ) -> String? {
+        guard !mapLocations.isEmpty else { return nil }
+
+        if let block = blocks.first(where: { $0.html?.contains("location-map") == true }) {
+            return block.id
+        }
+
+        if let block = blocks.first(where: { block in
+            let title = block.title ?? ""
+            return title.localizedCaseInsensitiveContains("location")
+                || title.localizedCaseInsensitiveContains("venue")
+                || title.contains("地点")
+                || title.contains("地址")
+                || title.contains("地點")
+                || title.contains("場地")
+        }) {
+            return block.id
+        }
+
+        return blocks.first?.id
+    }
+
     private func detailTextBlocks(_ blocks: [CompetitionDetailTextBlock]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             ForEach(blocks) { block in
@@ -4977,12 +5365,21 @@ struct CompetitionDetailView: View {
                             .foregroundStyle(.primary)
                     }
 
-                    Text(block.body)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    detailTextBlockBody(block)
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func detailTextBlockBody(_ block: CompetitionDetailTextBlock) -> some View {
+        if let html = block.html, !html.isEmpty {
+            CompetitionRichHTMLContent(html: html)
+        } else {
+            Text(block.body)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -5017,40 +5414,111 @@ struct CompetitionDetailView: View {
         }
     }
 
+    @ViewBuilder
     private func detailScheduleDayCard(_ day: CompetitionScheduleDay) -> some View {
+        if selectedScheduleTableStyle == .table, isMainlandChinaCompetition {
+            detailScheduleWebsiteDayPanel(day)
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.orange)
+
+                    Text(day.title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+
+                    Spacer(minLength: 8)
+
+                    Text(String(format: "%d", day.entries.count))
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.secondary.opacity(0.10), in: Capsule())
+                }
+
+                switch selectedScheduleTableStyle {
+                case .cards:
+                    ForEach(day.entries) { entry in
+                        detailScheduleEntryCard(entry, showsVenue: true)
+                    }
+                case .table:
+                    detailScheduleTraditionalTable(day, showsVenue: true)
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.background)
+            )
+        }
+    }
+
+    private var cubingScheduleWebsiteIntro: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.orange)
+            if !detailContent.scheduleEventSummaries.isEmpty {
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 148), alignment: .leading)],
+                    alignment: .leading,
+                    spacing: 10
+                ) {
+                    ForEach(detailContent.scheduleEventSummaries) { summary in
+                        HStack(alignment: .firstTextBaseline, spacing: 7) {
+                            Image(systemName: "square")
+                                .font(.system(size: 10, weight: .regular))
+                                .foregroundStyle(.secondary)
 
-                Text(day.title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.primary)
+                            if let code = summary.eventCode,
+                               !code.isEmpty,
+                               let glyph = CompetitionEventIconFont.glyph(for: code) {
+                                Text(glyph)
+                                    .font(.custom(CompetitionEventIconFont.fontName, size: 15))
+                                    .foregroundStyle(.primary)
+                                    .frame(width: 18, alignment: .center)
+                                    .offset(y: 1)
+                            }
 
-                Spacer(minLength: 8)
-
-                Text(String(format: "%d", day.entries.count))
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.secondary.opacity(0.10), in: Capsule())
+                            Text(summary.detail)
+                                .font(.system(size: 13, weight: .regular))
+                                .foregroundStyle(.primary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
             }
 
-            switch selectedScheduleTableStyle {
-            case .cards:
-                ForEach(day.entries) { entry in
-                    detailScheduleEntryCard(entry, showsVenue: true)
-                }
-            case .table:
-                detailScheduleTraditionalTable(day, showsVenue: true)
+            if let html = detailContent.scheduleIntroHTML, !html.isEmpty {
+                CompetitionRichHTMLContent(html: html, areEventIconsReady: areCompetitionEventIconsReady)
+                    .font(.system(size: 13, weight: .regular))
             }
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.background)
+    }
+
+    @ViewBuilder
+    private var cubingScheduleWebsiteComment: some View {
+        if let html = detailContent.scheduleCommentHTML, !html.isEmpty {
+            CompetitionRichHTMLContent(html: html, areEventIconsReady: areCompetitionEventIconsReady)
+                .padding(.top, 2)
+        }
+    }
+
+    private func detailScheduleWebsiteDayPanel(_ day: CompetitionScheduleDay) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(day.title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(detailScheduleWebsiteDateTextColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(detailScheduleWebsiteDateBarColor)
+
+            detailScheduleTraditionalTable(day, showsVenue: false)
+        }
+        .overlay(
+            Rectangle()
+                .stroke(detailScheduleWebsitePanelBorderColor, lineWidth: 1)
         )
     }
 
@@ -5329,45 +5797,52 @@ struct CompetitionDetailView: View {
     }
 
     private func detailScheduleTraditionalTable(_ day: CompetitionScheduleDay, showsVenue: Bool) -> some View {
-        ScrollView(.horizontal, showsIndicators: true) {
-            VStack(spacing: 0) {
-                detailScheduleTraditionalHeader(showsVenue: showsVenue)
+        let isWebsiteTable = selectedScheduleTableStyle == .table && isMainlandChinaCompetition
 
-                ForEach(Array(day.entries.enumerated()), id: \.element.id) { index, entry in
-                    detailScheduleHorizontalDivider
-                    detailScheduleTraditionalRow(entry, index: index, showsVenue: showsVenue)
+        return ScrollView(.horizontal, showsIndicators: true) {
+            ZStack(alignment: .topTrailing) {
+                if isWebsiteTable {
+                    detailScheduleWebsiteWatermark
+                        .padding(.top, 20)
+                        .padding(.trailing, 20)
                 }
+
+                VStack(spacing: 0) {
+                    detailScheduleTraditionalHeader(showsVenue: showsVenue)
+
+                    ForEach(Array(day.entries.enumerated()), id: \.element.id) { index, entry in
+                        detailScheduleHorizontalDivider
+                        detailScheduleTraditionalRow(entry, index: index, showsVenue: showsVenue)
+                    }
+                }
+                .frame(minWidth: detailScheduleTraditionalTableWidth(showsVenue: showsVenue), alignment: .leading)
             }
-            .frame(minWidth: detailScheduleTraditionalTableWidth(showsVenue: showsVenue), alignment: .leading)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
-        )
+        .background(isWebsiteTable ? Color.white : Color(uiColor: .secondarySystemGroupedBackground))
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(.secondary.opacity(0.12), lineWidth: 1)
+            Rectangle()
+                .stroke(isWebsiteTable ? detailScheduleWebsitePanelBorderColor : Color.secondary.opacity(0.12), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .clipShape(Rectangle())
     }
 
     private func detailScheduleTraditionalHeader(showsVenue: Bool) -> some View {
         HStack(spacing: 0) {
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.start), width: 74)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.start), width: detailScheduleStartColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.end), width: 74)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.end), width: detailScheduleEndColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.event), width: 230)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.event), width: detailScheduleEventColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.round), width: 108)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.round), width: detailScheduleRoundColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.format), width: 132)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.format), width: detailScheduleFormatColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.cutoff), width: 132)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.cutoff), width: detailScheduleCutoffColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.timeLimit), width: 132)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.timeLimit), width: detailScheduleTimeLimitColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.proceed), width: 92)
+            detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.proceed), width: detailScheduleCompetitorsColumnWidth)
 
             if showsVenue {
                 detailScheduleVerticalDivider
@@ -5376,7 +5851,7 @@ struct CompetitionDetailView: View {
                 detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.group), width: 96)
             }
         }
-        .background(.secondary.opacity(0.08))
+        .background(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? detailScheduleWebsiteHeaderColor : Color.secondary.opacity(0.08))
     }
 
     private func detailScheduleTraditionalRow(_ entry: CompetitionScheduleEntry, index: Int, showsVenue: Bool) -> some View {
@@ -5389,22 +5864,24 @@ struct CompetitionDetailView: View {
         let timeLimitValue = detailScheduleOptionalValue(entry.timeLimit)
         let proceedValue = detailScheduleOptionalValue(entry.advancingCount)
 
+        let blankValue = selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? "" : "—"
+
         return HStack(spacing: 0) {
-            detailScheduleTraditionalCell(times.start, width: 74, role: .time)
+            detailScheduleTraditionalCell(times.start, width: detailScheduleStartColumnWidth, role: .time)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalCell(times.end ?? "—", width: 74, role: .time)
+            detailScheduleTraditionalCell(times.end ?? blankValue, width: detailScheduleEndColumnWidth, role: .time)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalEventCell(entry, width: 230)
+            detailScheduleTraditionalEventCell(entry, width: detailScheduleEventColumnWidth)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalCell(roundValue ?? "—", width: 108, role: .secondary)
+            detailScheduleTraditionalCell(roundValue ?? blankValue, width: detailScheduleRoundColumnWidth, role: .secondary)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalCell(formatValue ?? "—", width: 132, role: .secondary)
+            detailScheduleTraditionalCell(formatValue ?? blankValue, width: detailScheduleFormatColumnWidth, role: .secondary)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalCell(cutoffValue ?? "—", width: 132, role: .secondary)
+            detailScheduleTraditionalCell(cutoffValue ?? blankValue, width: detailScheduleCutoffColumnWidth, role: .secondary)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalCell(timeLimitValue ?? "—", width: 132, role: .secondary)
+            detailScheduleTraditionalCell(timeLimitValue ?? blankValue, width: detailScheduleTimeLimitColumnWidth, role: .secondary)
             detailScheduleVerticalDivider
-            detailScheduleTraditionalCell(proceedValue ?? "—", width: 92, role: .secondary)
+            detailScheduleTraditionalCell(proceedValue ?? blankValue, width: detailScheduleCompetitorsColumnWidth, role: .secondary)
 
             if showsVenue {
                 detailScheduleVerticalDivider
@@ -5413,7 +5890,7 @@ struct CompetitionDetailView: View {
                 detailScheduleTraditionalCell(groupValue ?? "—", width: 96, role: .secondary)
             }
         }
-        .background(index.isMultiple(of: 2) ? Color.clear : Color.primary.opacity(0.025))
+        .background(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? Color.clear : (index.isMultiple(of: 2) ? Color.clear : Color.primary.opacity(0.025)))
     }
 
     private func detailScheduleCapsule(_ text: String, color: Color) -> some View {
@@ -5462,24 +5939,23 @@ struct CompetitionDetailView: View {
 
     private func detailScheduleTraditionalHeaderCell(_ text: String, width: CGFloat) -> some View {
         Text(text)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundStyle(.secondary)
-            .textCase(.uppercase)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? Color.white : Color.secondary)
             .lineLimit(1)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 9)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 8)
             .frame(width: width, alignment: .leading)
     }
 
     private func detailScheduleTraditionalCell(_ text: String, width: CGFloat, role: DetailScheduleCellRole) -> some View {
         Text(text)
             .font(detailScheduleCellValueFont(for: role))
-            .foregroundStyle(role == .event ? Color.primary : Color.primary.opacity(0.86))
+            .foregroundStyle(Color.primary.opacity(role == .secondary ? 0.88 : 1))
             .lineLimit(role == .event ? 2 : 1)
             .minimumScaleFactor(0.75)
             .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 9)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 7)
             .frame(width: width, alignment: .leading)
     }
 
@@ -5495,8 +5971,8 @@ struct CompetitionDetailView: View {
                 .minimumScaleFactor(0.75)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 9)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 7)
         .frame(width: width, alignment: .leading)
     }
 
@@ -5504,83 +5980,67 @@ struct CompetitionDetailView: View {
     private func detailScheduleEventIcon(for entry: CompetitionScheduleEntry) -> some View {
         let code = entry.eventCode?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
 
-        if let code, let systemName = cubingScheduleCustomSystemIconName(for: code) {
-            Image(systemName: systemName)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(cubingScheduleEventColor(for: entry))
-                .accessibilityLabel(entry.title)
-        } else if let code, !code.isEmpty {
+        if let code, !code.isEmpty {
             competitionEventIconLabel(for: code, isEmphasized: true)
                 .accessibilityLabel(entry.title)
-        } else if let systemName = cubingScheduleCustomSystemIconName(forTitle: entry.title) {
-            Image(systemName: systemName)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(cubingScheduleEventColor(for: entry))
-                .accessibilityLabel(entry.title)
         }
-    }
-
-    private func cubingScheduleCustomSystemIconName(for code: String) -> String? {
-        switch code {
-        case "registration":
-            return "checkmark.circle"
-        case "lunch":
-            return "fork.knife"
-        case "intro":
-            return "info.circle"
-        case "ceremony":
-            return "star.circle"
-        case "smart":
-            return "iphone"
-        default:
-            return nil
-        }
-    }
-
-    private func cubingScheduleCustomSystemIconName(forTitle title: String) -> String? {
-        if title.contains("签到") || title.localizedCaseInsensitiveContains("registration") {
-            return "checkmark.circle"
-        }
-        if title.contains("午餐") || title.localizedCaseInsensitiveContains("lunch") {
-            return "fork.knife"
-        }
-        if title.contains("开场") || title.localizedCaseInsensitiveContains("intro") {
-            return "info.circle"
-        }
-        if title.contains("颁奖") || title.localizedCaseInsensitiveContains("ceremony") {
-            return "star.circle"
-        }
-        if title.contains("智能") || title.localizedCaseInsensitiveContains("smart") {
-            return "iphone"
-        }
-        return nil
     }
 
     private var detailScheduleHorizontalDivider: some View {
         Rectangle()
-            .fill(.secondary.opacity(0.10))
+            .fill(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? detailScheduleWebsiteGridColor : Color.secondary.opacity(0.10))
             .frame(height: 1)
     }
 
     private var detailScheduleVerticalDivider: some View {
         Rectangle()
-            .fill(.secondary.opacity(0.10))
+            .fill(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? detailScheduleWebsiteGridColor : Color.secondary.opacity(0.10))
             .frame(width: 1)
     }
 
     private func detailScheduleCellValueFont(for role: DetailScheduleCellRole) -> Font {
         switch role {
         case .time:
-            return .system(size: 14, weight: .semibold, design: .monospaced)
+            return .system(size: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 12 : 14, weight: .regular, design: .default)
         case .event:
-            return .system(size: 15, weight: .semibold)
+            return .system(size: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 12 : 15, weight: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? .regular : .semibold)
         case .secondary:
-            return .system(size: 13, weight: .medium)
+            return .system(size: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 12 : 13, weight: .regular)
         }
     }
 
+    private var detailScheduleStartColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 72 : 74 }
+    private var detailScheduleEndColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 72 : 74 }
+    private var detailScheduleEventColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 236 : 230 }
+    private var detailScheduleRoundColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 102 : 108 }
+    private var detailScheduleFormatColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 156 : 132 }
+    private var detailScheduleCutoffColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 145 : 132 }
+    private var detailScheduleTimeLimitColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 145 : 132 }
+    private var detailScheduleCompetitorsColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 72 : 92 }
+
+    private var detailScheduleWebsiteHeaderColor: Color { Color(red: 0.38, green: 0.57, blue: 0.73) }
+    private var detailScheduleWebsiteDateBarColor: Color { Color(red: 0.84, green: 0.94, blue: 0.98) }
+    private var detailScheduleWebsiteDateTextColor: Color { Color(red: 0.22, green: 0.51, blue: 0.66) }
+    private var detailScheduleWebsiteGridColor: Color { Color(red: 0.86, green: 0.86, blue: 0.86) }
+    private var detailScheduleWebsitePanelBorderColor: Color { Color(red: 0.70, green: 0.88, blue: 0.94) }
+
+    private var detailScheduleWebsiteWatermark: some View {
+        Image(systemName: "circle.hexagongrid.circle")
+            .font(.system(size: 180, weight: .light))
+            .foregroundStyle(Color(red: 0.38, green: 0.57, blue: 0.73).opacity(0.06))
+            .allowsHitTesting(false)
+    }
+
     private func detailScheduleTraditionalTableWidth(showsVenue: Bool) -> CGFloat {
-        let baseWidth: CGFloat = 74 + 74 + 230 + 108 + 132 + 132 + 132 + 92 + 7
+        let baseWidth = detailScheduleStartColumnWidth
+            + detailScheduleEndColumnWidth
+            + detailScheduleEventColumnWidth
+            + detailScheduleRoundColumnWidth
+            + detailScheduleFormatColumnWidth
+            + detailScheduleCutoffColumnWidth
+            + detailScheduleTimeLimitColumnWidth
+            + detailScheduleCompetitorsColumnWidth
+            + 7
         return showsVenue ? baseWidth + 120 + 96 + 2 : baseWidth
     }
 
@@ -6249,6 +6709,1104 @@ struct CompetitionDetailView: View {
     }
 }
 
+private struct CubingDetailDocumentBlock: View {
+    let block: CompetitionDetailTextBlock
+    let fallbackTitle: String
+    let areEventIconsReady: Bool
+
+    @State private var isExpanded = false
+
+    private var title: String? {
+        guard let title = block.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty else {
+            return nil
+        }
+        return title
+    }
+
+    private var isEntryFeeBlock: Bool {
+        title?.localizedCaseInsensitiveContains("entry fee") == true
+            || title?.contains("报名费") == true
+            || title?.contains("報名費") == true
+    }
+
+    private var isContactBlock: Bool {
+        guard let title else { return false }
+        return title.localizedCaseInsensitiveContains("organizer")
+            || title.localizedCaseInsensitiveContains("delegate")
+            || title.contains("主办")
+            || title.contains("主辦")
+            || title.contains("代表")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let title {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer(minLength: 8)
+
+                    if isEntryFeeBlock {
+                        Button {
+                            withAnimation(.snappy(duration: 0.18)) {
+                                isExpanded.toggle()
+                            }
+                        } label: {
+                            Text(isExpanded ? "less" : "more")
+                                .font(.system(size: 13, weight: .semibold))
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.blue)
+                    }
+                }
+            }
+
+            if isContactBlock, let html = block.html {
+                let contacts = CubingContactLink.links(from: html)
+                if contacts.isEmpty {
+                    richContent
+                } else {
+                    CubingContactLinksView(contacts: contacts)
+                }
+            } else {
+                richContent
+            }
+        }
+    }
+
+    private var richContent: some View {
+        CompetitionRichHTMLContent(
+            html: block.html ?? block.body,
+            tableRowLimit: isEntryFeeBlock && !isExpanded ? 2 : nil,
+            areEventIconsReady: areEventIconsReady
+        )
+    }
+}
+
+private struct CubingContactLink: Identifiable {
+    let id: String
+    let name: String
+    let email: String
+
+    var url: URL? {
+        URL(string: "mailto:\(email)")
+    }
+
+    static func links(from html: String) -> [CubingContactLink] {
+        guard let regex = try? NSRegularExpression(pattern: #"(?is)<a\b[^>]*href=['\"]mailto:([^'\"]+)['\"][^>]*>(.*?)</a>"#) else {
+            return []
+        }
+        let nsHTML = html as NSString
+        return regex.matches(in: html, range: NSRange(location: 0, length: nsHTML.length)).compactMap { match in
+            guard match.numberOfRanges > 2 else { return nil }
+            let email = simpleHTMLDecode(nsHTML.substring(with: match.range(at: 1))).trimmingCharacters(in: .whitespacesAndNewlines)
+            let rawName = nsHTML.substring(with: match.range(at: 2))
+            let name = simpleHTMLDecode(
+                rawName.replacingOccurrences(of: #"<[^>]+>"#, with: "", options: .regularExpression)
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !email.isEmpty, !name.isEmpty else { return nil }
+            return CubingContactLink(id: "\(email)-\(name)", name: name, email: email)
+        }
+    }
+}
+
+private struct CubingContactLinksView: View {
+    let contacts: [CubingContactLink]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(contacts) { contact in
+                if let url = contact.url {
+                    Link(destination: url) {
+                        contactLabel(contact.name)
+                    }
+                } else {
+                    contactLabel(contact.name)
+                }
+            }
+        }
+    }
+
+    private func contactLabel(_ name: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "envelope.fill")
+                .font(.system(size: 13, weight: .semibold))
+            Text(name)
+                .font(.system(size: 15, weight: .regular))
+        }
+        .foregroundStyle(.blue)
+    }
+}
+
+private struct CompetitionTravelMapAnnotation: Identifiable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let coordinate: CLLocationCoordinate2D
+}
+
+private struct CompetitionTravelMapCard: View {
+    let locations: [CompetitionTravelMapLocation]
+    let openMapsURL: URL?
+
+    @State private var region: MKCoordinateRegion
+
+    init(locations: [CompetitionTravelMapLocation], openMapsURL: URL?) {
+        self.locations = locations
+        self.openMapsURL = openMapsURL
+        _region = State(initialValue: Self.initialRegion(for: locations))
+    }
+
+    private var annotationItems: [CompetitionTravelMapAnnotation] {
+        locations.map { location in
+            CompetitionTravelMapAnnotation(
+                id: location.id,
+                title: location.venue.isEmpty ? location.address : location.venue,
+                subtitle: location.address,
+                coordinate: CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
+            )
+        }
+    }
+
+    var body: some View {
+        Map(coordinateRegion: $region, annotationItems: annotationItems) { item in
+            MapAnnotation(coordinate: item.coordinate) {
+                Image(systemName: "mappin")
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(.red)
+                    .shadow(color: .black.opacity(0.16), radius: 4, y: 2)
+            }
+        }
+        .frame(height: 220)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(Color.secondary.opacity(0.16), lineWidth: 1)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if let openMapsURL {
+                Link(destination: openMapsURL) {
+                    Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.blue)
+                        .frame(width: 34, height: 34)
+                        .background(.regularMaterial, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .padding(10)
+            }
+        }
+    }
+
+    private static func initialRegion(for locations: [CompetitionTravelMapLocation]) -> MKCoordinateRegion {
+        let coordinates = locations.map {
+            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+        }
+
+        guard let first = coordinates.first else {
+            return MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: 31.2304, longitude: 121.4737),
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            )
+        }
+
+        guard coordinates.count > 1 else {
+            return MKCoordinateRegion(
+                center: first,
+                span: MKCoordinateSpan(latitudeDelta: 0.012, longitudeDelta: 0.012)
+            )
+        }
+
+        let latitudes = coordinates.map(\.latitude)
+        let longitudes = coordinates.map(\.longitude)
+        let minLatitude = latitudes.min() ?? first.latitude
+        let maxLatitude = latitudes.max() ?? first.latitude
+        let minLongitude = longitudes.min() ?? first.longitude
+        let maxLongitude = longitudes.max() ?? first.longitude
+
+        return MKCoordinateRegion(
+            center: CLLocationCoordinate2D(
+                latitude: (minLatitude + maxLatitude) / 2,
+                longitude: (minLongitude + maxLongitude) / 2
+            ),
+            span: MKCoordinateSpan(
+                latitudeDelta: max((maxLatitude - minLatitude) * 1.6, 0.012),
+                longitudeDelta: max((maxLongitude - minLongitude) * 1.6, 0.012)
+            )
+        )
+    }
+}
+
+private func simpleHTMLDecode(_ text: String) -> String {
+    text
+        .replacingOccurrences(of: "&nbsp;", with: " ")
+        .replacingOccurrences(of: "&amp;", with: "&")
+        .replacingOccurrences(of: "&lt;", with: "<")
+        .replacingOccurrences(of: "&gt;", with: ">")
+        .replacingOccurrences(of: "&quot;", with: "\"")
+        .replacingOccurrences(of: "&#39;", with: "'")
+        .replacingOccurrences(of: "&apos;", with: "'")
+}
+
+private struct CompetitionRichHTMLContent: View {
+    let elements: [CompetitionRichHTMLElement]
+    let tableRowLimit: Int?
+    let areEventIconsReady: Bool
+
+    init(html: String, tableRowLimit: Int? = nil, areEventIconsReady: Bool = false) {
+        self.elements = CompetitionRichHTMLElement.parse(html)
+        self.tableRowLimit = tableRowLimit
+        self.areEventIconsReady = areEventIconsReady
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(elements.enumerated()), id: \.offset) { _, element in
+                switch element.kind {
+                case .heading(let text, let level):
+                    Text(text)
+                        .font(.system(size: level <= 2 ? 18 : 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, level <= 2 ? 4 : 2)
+                case .paragraph(let text):
+                    Text(text)
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(.primary)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                case .linkedText(let runs):
+                    LinkedTextFlow(runs: runs)
+                case .list(let items):
+                    richList(items: items)
+                case .eventLine(let eventID, let text):
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        if areEventIconsReady, let glyph = CompetitionEventIconFont.glyph(for: eventID) {
+                            richEventIcon(glyph, size: 15)
+                        }
+
+                        Text(text)
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundStyle(.primary)
+                            .lineSpacing(3)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                case .info(let text):
+                    Text(text)
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(.blue)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.vertical, 2)
+                case .table(let table):
+                    richTable(table)
+                case .image(let source):
+                    CompetitionRichHTMLImage(source: source)
+                case .separator:
+                    Divider()
+                        .padding(.vertical, 4)
+                }
+            }
+        }
+    }
+
+    private func richList(items: [CompetitionRichHTMLListItem]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                HStack(alignment: .top, spacing: 8) {
+                    Text(item.marker)
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(.primary)
+                        .frame(width: item.markerWidth, alignment: .trailing)
+                        .padding(.top, 1)
+
+                    VStack(alignment: .leading, spacing: 7) {
+                        HStack(alignment: .firstTextBaseline, spacing: 7) {
+                            if let eventID = item.eventID,
+                               areEventIconsReady,
+                               let glyph = CompetitionEventIconFont.glyph(for: eventID) {
+                                richEventIcon(glyph, size: 15)
+                            }
+
+                            if !item.runs.isEmpty {
+                                LinkedTextFlow(runs: item.runs)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+
+                        ForEach(Array(item.imageSources.enumerated()), id: \.offset) { _, source in
+                            CompetitionRichHTMLImage(source: source)
+                        }
+                    }
+                }
+                .padding(.leading, CGFloat(item.depth) * 20)
+            }
+        }
+        .padding(.vertical, 1)
+    }
+
+    private func richEventIcon(_ glyph: String, size: CGFloat) -> some View {
+        Text(glyph)
+            .font(.custom(CompetitionEventIconFont.fontName, size: size))
+            .foregroundStyle(.primary)
+            .frame(width: 20, alignment: .center)
+            .offset(y: 1)
+    }
+
+    private func richTable(_ table: CompetitionRichHTMLTable) -> some View {
+        let rows = tableRowLimit.map { Array(table.rows.prefix($0)) } ?? table.rows
+        return VStack(spacing: 0) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
+                HStack(alignment: .top, spacing: 0) {
+                    ForEach(Array(row.enumerated()), id: \.offset) { _, cell in
+                        Text(cell)
+                            .font(.system(size: 14, weight: rowIndex == 0 ? .semibold : .regular))
+                            .foregroundStyle(.primary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 10)
+                    }
+                }
+                .background(rowIndex == 0 ? Color.secondary.opacity(0.08) : Color.clear)
+
+                if rowIndex < rows.count - 1 {
+                    Divider()
+                }
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.secondary.opacity(0.18), lineWidth: 0.7)
+        }
+    }
+}
+
+private struct CompetitionRichHTMLImage: View {
+    let source: String
+
+    var body: some View {
+        Group {
+            if let image = dataImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else if let url = resolvedURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    case .failure:
+                        imagePlaceholder(systemImage: "photo.badge.exclamationmark")
+                    case .empty:
+                        imagePlaceholder(systemImage: "photo")
+                    @unknown default:
+                        imagePlaceholder(systemImage: "photo")
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private var dataImage: UIImage? {
+        guard source.lowercased().hasPrefix("data:image"),
+              let commaIndex = source.firstIndex(of: ",") else { return nil }
+        let payload = String(source[source.index(after: commaIndex)...])
+        guard let data = Data(base64Encoded: payload) else { return nil }
+        return UIImage(data: data)
+    }
+
+    private var resolvedURL: URL? {
+        if source.hasPrefix("//") {
+            return URL(string: "https:\(source)")
+        }
+        if source.hasPrefix("/") {
+            return URL(string: "https://cubing.com\(source)")
+        }
+        return URL(string: source)
+    }
+
+    private func imagePlaceholder(systemImage: String) -> some View {
+        RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .fill(Color.secondary.opacity(0.08))
+            .overlay {
+                Image(systemName: systemImage)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(height: 120)
+    }
+}
+
+private struct CompetitionRichHTMLElement {
+    enum Kind {
+        case heading(String, Int)
+        case paragraph(String)
+        case linkedText([CompetitionRichHTMLTextRun])
+        case list([CompetitionRichHTMLListItem])
+        case eventLine(eventID: String, text: String)
+        case info(String)
+        case table(CompetitionRichHTMLTable)
+        case image(String)
+        case separator
+    }
+
+    let kind: Kind
+
+    static func parse(_ html: String) -> [CompetitionRichHTMLElement] {
+        let cleanedHTML = normalizeCubingIconHTML(html)
+            .replacingOccurrences(of: #"(?is)<script\b.*?</script>"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"(?is)<style\b.*?</style>"#, with: "", options: .regularExpression)
+
+        let pattern = #"(?is)<table\b[^>]*>(.*?)</table>|<div\b[^>]*class=['\"][^'\"]*text-info[^'\"]*['\"][^>]*>(.*?)</div>|<h([1-6])[^>]*>(.*?)</h\3>|<ol\b[^>]*>(.*?)</ol>|<ul\b[^>]*>(.*?)</ul>|<p\b[^>]*>(.*?)</p>|<li\b[^>]*>(.*?)</li>|<hr\b[^>]*>|<img\b[^>]*src=['\"]([^'\"]+)['\"][^>]*>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return paragraphElements(from: cleanedHTML)
+        }
+
+        let nsHTML = cleanedHTML as NSString
+        let matches = regex.matches(in: cleanedHTML, range: NSRange(location: 0, length: nsHTML.length))
+        var elements: [CompetitionRichHTMLElement] = []
+        var cursor = 0
+
+        for match in matches {
+            if match.range.location > cursor {
+                let fragment = nsHTML.substring(with: NSRange(location: cursor, length: match.range.location - cursor))
+                elements.append(contentsOf: paragraphElements(from: fragment))
+            }
+
+            if match.range(at: 1).location != NSNotFound {
+                if let table = table(from: nsHTML.substring(with: match.range(at: 1))) {
+                    elements.append(CompetitionRichHTMLElement(kind: .table(table)))
+                }
+            } else if match.range(at: 2).location != NSNotFound {
+                let infoHTML = nsHTML.substring(with: match.range(at: 2))
+                let plain = plainText(from: infoHTML)
+                if !plain.isEmpty {
+                    elements.append(CompetitionRichHTMLElement(kind: .info(plain)))
+                }
+            } else if match.range(at: 4).location != NSNotFound {
+                let levelText = nsHTML.substring(with: match.range(at: 3))
+                let level = Int(levelText) ?? 3
+                let title = plainText(from: nsHTML.substring(with: match.range(at: 4)))
+                if !title.isEmpty {
+                    elements.append(CompetitionRichHTMLElement(kind: .heading(title, level)))
+                }
+            } else if match.range(at: 5).location != NSNotFound {
+                if let list = listElement(from: nsHTML.substring(with: match.range(at: 5)), ordered: true, depth: 0) {
+                    elements.append(list)
+                }
+            } else if match.range(at: 6).location != NSNotFound {
+                if let list = listElement(from: nsHTML.substring(with: match.range(at: 6)), ordered: false, depth: 0) {
+                    elements.append(list)
+                }
+            } else if match.range(at: 7).location != NSNotFound {
+                elements.append(contentsOf: inlineElements(from: nsHTML.substring(with: match.range(at: 7))))
+            } else if match.range(at: 8).location != NSNotFound {
+                let itemHTML = "• " + nsHTML.substring(with: match.range(at: 8))
+                elements.append(contentsOf: inlineElements(from: itemHTML))
+            } else if match.range(at: 9).location != NSNotFound {
+                let source = decodeHTMLText(nsHTML.substring(with: match.range(at: 9)))
+                if !source.isEmpty {
+                    elements.append(CompetitionRichHTMLElement(kind: .image(source)))
+                }
+            } else {
+                elements.append(CompetitionRichHTMLElement(kind: .separator))
+            }
+
+            cursor = match.range.location + match.range.length
+        }
+
+        if cursor < nsHTML.length {
+            let fragment = nsHTML.substring(with: NSRange(location: cursor, length: nsHTML.length - cursor))
+            elements.append(contentsOf: paragraphElements(from: fragment))
+        }
+
+        return coalesced(elements)
+    }
+
+    private static func listElement(from html: String, ordered: Bool, depth: Int) -> CompetitionRichHTMLElement? {
+        let items = listItems(from: html, ordered: ordered, depth: depth)
+
+        guard !items.isEmpty else { return nil }
+        return CompetitionRichHTMLElement(kind: .list(items))
+    }
+
+    private static func listItems(from html: String, ordered: Bool, depth: Int) -> [CompetitionRichHTMLListItem] {
+        let trimmedHTML = html.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let nestedList = leadingNestedList(in: trimmedHTML) {
+            return listItems(
+                from: nestedList.body,
+                ordered: nestedList.ordered,
+                depth: depth + 1
+            )
+        }
+
+        let itemHTMLs = htmlCaptures(in: html, pattern: #"(?is)<li\b[^>]*>(.*?)</li>"#)
+            .compactMap(\.first)
+        if itemHTMLs.isEmpty {
+            return nestedListItems(in: html, depth: depth + 1)
+        }
+
+        return itemHTMLs.enumerated().flatMap { index, itemHTML -> [CompetitionRichHTMLListItem] in
+            var result: [CompetitionRichHTMLListItem] = []
+            let contentHTML = removingNestedListContainers(from: itemHTML)
+            let marker = ordered ? "\(index + 1)." : "•"
+
+            if let item = listItem(from: contentHTML, marker: marker, depth: depth) {
+                result.append(item)
+            }
+
+            result.append(contentsOf: nestedListItems(in: itemHTML, depth: depth + 1))
+            return result
+        }
+    }
+
+    private static func listItem(from html: String, marker: String, depth: Int) -> CompetitionRichHTMLListItem? {
+        let runs = textRuns(from: html)
+            .filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let imageSources = imageSources(from: html)
+        guard !runs.isEmpty || !imageSources.isEmpty else { return nil }
+
+        return CompetitionRichHTMLListItem(
+            marker: marker,
+            depth: depth,
+            eventID: eventIconID(in: html),
+            runs: runs,
+            imageSources: imageSources
+        )
+    }
+
+    private static func leadingNestedList(in html: String) -> (ordered: Bool, body: String)? {
+        let lowercased = html.lowercased()
+        guard lowercased.hasPrefix("<ul") || lowercased.hasPrefix("<ol"),
+              let closeBracket = html.firstIndex(of: ">") else {
+            return nil
+        }
+
+        let ordered = lowercased.hasPrefix("<ol")
+        let body = String(html[html.index(after: closeBracket)...])
+            .replacingOccurrences(of: #"(?is)</(?:ol|ul)>\s*$"#, with: "", options: .regularExpression)
+        return (ordered, body)
+    }
+
+    private static func nestedListItems(in html: String, depth: Int) -> [CompetitionRichHTMLListItem] {
+        let pattern = #"(?is)<(ol|ul)\b[^>]*>(.*?)</\1>"#
+        let captures = htmlCaptures(in: html, pattern: pattern)
+        return captures.flatMap { capture -> [CompetitionRichHTMLListItem] in
+            guard capture.count >= 2 else { return [] }
+            return listItems(
+                from: capture[1],
+                ordered: capture[0].lowercased() == "ol",
+                depth: depth
+            )
+        }
+    }
+
+    private static func removingNestedListContainers(from html: String) -> String {
+        html.replacingOccurrences(
+            of: #"(?is)<(?:ol|ul)\b[^>]*>.*?</(?:ol|ul)>"#,
+            with: "",
+            options: .regularExpression
+        )
+    }
+
+    private static func inlineElements(from html: String) -> [CompetitionRichHTMLElement] {
+        let pattern = #"(?is)<img\b[^>]*src=['\"]([^'\"]+)['\"][^>]*>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return paragraphElements(from: html)
+        }
+
+        let nsHTML = html as NSString
+        let matches = regex.matches(in: html, range: NSRange(location: 0, length: nsHTML.length))
+        var elements: [CompetitionRichHTMLElement] = []
+        var cursor = 0
+
+        for match in matches {
+            if match.range.location > cursor {
+                let fragment = nsHTML.substring(with: NSRange(location: cursor, length: match.range.location - cursor))
+                elements.append(contentsOf: paragraphElements(from: fragment))
+            }
+            let source = decodeHTMLText(nsHTML.substring(with: match.range(at: 1)))
+            if !source.isEmpty {
+                elements.append(CompetitionRichHTMLElement(kind: .image(source)))
+            }
+            cursor = match.range.location + match.range.length
+        }
+
+        if cursor < nsHTML.length {
+            let fragment = nsHTML.substring(with: NSRange(location: cursor, length: nsHTML.length - cursor))
+            elements.append(contentsOf: paragraphElements(from: fragment))
+        }
+        return elements
+    }
+
+    private static func paragraphElements(from html: String) -> [CompetitionRichHTMLElement] {
+        normalizeCubingIconHTML(html)
+            .replacingOccurrences(of: #"(?i)<br\s*/?>"#, with: "\n", options: .regularExpression)
+            .components(separatedBy: .newlines)
+            .compactMap { fragment -> CompetitionRichHTMLElement? in
+                if let eventLine = eventLineElement(from: fragment) {
+                    return eventLine
+                }
+                if let linkedText = linkedTextElement(from: fragment) {
+                    return linkedText
+                }
+                let plain = plainText(from: fragment)
+                guard !plain.isEmpty else { return nil }
+                return CompetitionRichHTMLElement(kind: .paragraph(plain))
+            }
+    }
+
+    private static func linkedTextElement(from html: String) -> CompetitionRichHTMLElement? {
+        let runs = textRuns(from: html)
+        guard runs.contains(where: { $0.url != nil || $0.isBold || $0.color != .primary }) else { return nil }
+        let nonEmptyRuns = runs.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        guard !nonEmptyRuns.isEmpty else { return nil }
+        return CompetitionRichHTMLElement(kind: .linkedText(nonEmptyRuns))
+    }
+
+    private static func textRuns(from html: String) -> [CompetitionRichHTMLTextRun] {
+        coalescedTextRuns(
+            from: inlineTextRuns(
+                from: normalizeCubingIconHTML(html),
+                style: CompetitionRichHTMLInlineStyle()
+            )
+        )
+    }
+
+    private static func inlineTextRuns(
+        from html: String,
+        style: CompetitionRichHTMLInlineStyle
+    ) -> [CompetitionRichHTMLTextRun] {
+        let pattern = #"(?is)<(a|strong|b|span)\b([^>]*)>(.*?)</\1>|<br\s*/?>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return plainInlineRuns(from: html, style: style)
+        }
+
+        let nsHTML = html as NSString
+        let matches = regex.matches(in: html, range: NSRange(location: 0, length: nsHTML.length))
+        var runs: [CompetitionRichHTMLTextRun] = []
+        var cursor = 0
+
+        for match in matches {
+            if match.range.location > cursor {
+                let prefix = nsHTML.substring(with: NSRange(location: cursor, length: match.range.location - cursor))
+                runs.append(contentsOf: plainInlineRuns(from: prefix, style: style))
+            }
+
+            if match.range(at: 1).location != NSNotFound {
+                let tag = nsHTML.substring(with: match.range(at: 1)).lowercased()
+                let attributes = nsHTML.substring(with: match.range(at: 2))
+                let body = nsHTML.substring(with: match.range(at: 3))
+                runs.append(contentsOf: inlineTextRuns(from: body, style: style.applying(tag: tag, attributes: attributes)))
+            } else {
+                runs.append(CompetitionRichHTMLTextRun(text: "\n", url: style.url, isBold: style.isBold, color: style.color))
+            }
+
+            cursor = match.range.location + match.range.length
+        }
+
+        if cursor < nsHTML.length {
+            let suffix = nsHTML.substring(with: NSRange(location: cursor, length: nsHTML.length - cursor))
+            runs.append(contentsOf: plainInlineRuns(from: suffix, style: style))
+        }
+
+        return runs
+    }
+
+    private static func plainInlineRuns(
+        from html: String,
+        style: CompetitionRichHTMLInlineStyle
+    ) -> [CompetitionRichHTMLTextRun] {
+        let text = plainText(from: html)
+        guard !text.isEmpty else { return [] }
+        return [
+            CompetitionRichHTMLTextRun(
+                text: text,
+                url: style.url,
+                isBold: style.isBold,
+                color: style.color
+            )
+        ]
+    }
+
+    private static func coalescedTextRuns(from runs: [CompetitionRichHTMLTextRun]) -> [CompetitionRichHTMLTextRun] {
+        var result: [CompetitionRichHTMLTextRun] = []
+        for run in runs where !run.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if let last = result.last,
+               last.url == run.url,
+               last.isBold == run.isBold,
+               last.color == run.color {
+                result[result.count - 1] = CompetitionRichHTMLTextRun(
+                    text: last.text + run.text,
+                    url: last.url,
+                    isBold: last.isBold,
+                    color: last.color
+                )
+            } else {
+                result.append(run)
+            }
+        }
+        return result
+    }
+
+    fileprivate static func resolvedURL(from href: String) -> URL? {
+        if href.hasPrefix("mailto:") {
+            return URL(string: href)
+        }
+        if href.hasPrefix("//") {
+            return URL(string: "https:\(href)")
+        }
+        if href.hasPrefix("/") {
+            return URL(string: "https://cubing.com\(href)")
+        }
+        return URL(string: href)
+    }
+
+    private static func imageSources(from html: String) -> [String] {
+        htmlCaptures(in: html, pattern: #"(?is)<img\b[^>]*src=['\"]([^'\"]+)['\"][^>]*>"#)
+            .compactMap(\.first)
+            .map(decodeHTMLText)
+            .filter { !$0.isEmpty }
+    }
+
+    private static func eventLineElement(from html: String) -> CompetitionRichHTMLElement? {
+        guard let eventID = eventIconID(in: html) else { return nil }
+        let text = plainText(
+            from: html.replacingOccurrences(of: #"\[\[event-icon:[A-Za-z0-9_]+\]\]"#, with: "", options: .regularExpression)
+        )
+        guard !eventID.isEmpty, !text.isEmpty else { return nil }
+        return CompetitionRichHTMLElement(kind: .eventLine(eventID: eventID, text: text))
+    }
+
+    private static func eventIconID(in html: String) -> String? {
+        let pattern = #"\[\[event-icon:([A-Za-z0-9_]+)\]\]"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let nsHTML = html as NSString
+        guard let match = regex.firstMatch(in: html, range: NSRange(location: 0, length: nsHTML.length)),
+              match.numberOfRanges > 1 else {
+            return nil
+        }
+        return nsHTML.substring(with: match.range(at: 1)).lowercased()
+    }
+
+    private static func table(from html: String) -> CompetitionRichHTMLTable? {
+        let rowCaptures = htmlCaptures(in: html, pattern: #"(?is)<tr\b[^>]*>(.*?)</tr>"#)
+        let rows = rowCaptures.compactMap { rowCapture -> [String]? in
+            guard let rowHTML = rowCapture.first else { return nil }
+            let cellCaptures = htmlCaptures(in: rowHTML, pattern: #"(?is)<t[hd]\b[^>]*>(.*?)</t[hd]>"#)
+            let cells = cellCaptures.compactMap { cellCapture -> String? in
+                guard let cellHTML = cellCapture.first else { return nil }
+                let plain = plainText(from: cellHTML.replacingOccurrences(of: #"(?i)<br\s*/?>"#, with: "\n", options: .regularExpression))
+                guard !plain.isEmpty else { return nil }
+                return plain
+            }
+            return cells.isEmpty ? nil : cells
+        }
+        guard !rows.isEmpty else { return nil }
+        return CompetitionRichHTMLTable(rows: rows)
+    }
+
+    private static func htmlCaptures(in text: String, pattern: String) -> [[String]] {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let nsText = text as NSString
+        return regex.matches(in: text, range: NSRange(location: 0, length: nsText.length)).map { match in
+            (1..<match.numberOfRanges).compactMap { index in
+                let range = match.range(at: index)
+                guard range.location != NSNotFound else { return nil }
+                return nsText.substring(with: range)
+            }
+        }
+    }
+
+    private static func plainText(from html: String) -> String {
+        decodeHTMLText(
+            normalizeCubingIconHTML(html)
+                .replacingOccurrences(of: #"(?i)<br\s*/?>"#, with: "\n", options: .regularExpression)
+                .replacingOccurrences(of: #"\[\[event-icon:[A-Za-z0-9_]+\]\]"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: #"<[^>]+>"#, with: "", options: .regularExpression)
+        )
+        .replacingOccurrences(of: #"[ \t\r\f]+"#, with: " ", options: .regularExpression)
+        .replacingOccurrences(of: #"\n{3,}"#, with: "\n\n", options: .regularExpression)
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    nonisolated fileprivate static func decodeHTMLText(_ text: String) -> String {
+        var decoded = text
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .replacingOccurrences(of: "&apos;", with: "'")
+            .replacingOccurrences(of: "&yen;", with: "¥")
+            .replacingOccurrences(of: "&rmb;", with: "¥")
+            .replacingOccurrences(of: "&ndash;", with: "–")
+            .replacingOccurrences(of: "&mdash;", with: "—")
+            .replacingOccurrences(of: "&hellip;", with: "…")
+
+        decoded = decodeNumericHTMLEntities(in: decoded, pattern: #"&#(\d+);"#, radix: 10)
+        decoded = decodeNumericHTMLEntities(in: decoded, pattern: #"&#x([0-9A-Fa-f]+);"#, radix: 16)
+        return decoded
+    }
+
+    nonisolated private static func decodeNumericHTMLEntities(in text: String, pattern: String, radix: Int) -> String {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
+        let nsText = text as NSString
+        let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsText.length)).reversed()
+        let result = NSMutableString(string: text)
+
+        for match in matches {
+            guard match.numberOfRanges > 1 else { continue }
+            let fullRange = match.range(at: 0)
+            let valueRange = match.range(at: 1)
+            guard valueRange.location != NSNotFound else { continue }
+            let valueText = nsText.substring(with: valueRange)
+            guard let value = Int(valueText, radix: radix),
+                  let scalar = UnicodeScalar(value) else { continue }
+            result.replaceCharacters(in: fullRange, with: String(scalar))
+        }
+
+        return result as String
+    }
+
+    private static func normalizeCubingIconHTML(_ html: String) -> String {
+        injectEventIconMarkers(in: html)
+            .replacingOccurrences(of: #"(?is)<i\b[^>]*class=['\"][^'\"]*fa-rmb[^'\"]*['\"][^>]*>\s*</i>"#, with: "¥", options: .regularExpression)
+            .replacingOccurrences(of: #"(?is)<i\b[^>]*class=['\"][^'\"]*(?:fa|event-icon)[^'\"]*['\"][^>]*>\s*</i>"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "　", with: " ")
+    }
+
+    private static func injectEventIconMarkers(in html: String) -> String {
+        guard let regex = try? NSRegularExpression(
+            pattern: #"(?is)<i\b[^>]*class=['\"][^'\"]*event-icon-([A-Za-z0-9_]+)[^'\"]*['\"][^>]*>\s*</i>"#
+        ) else {
+            return html
+        }
+
+        let nsHTML = html as NSString
+        let result = NSMutableString(string: html)
+        for match in regex.matches(in: html, range: NSRange(location: 0, length: nsHTML.length)).reversed() {
+            guard match.numberOfRanges > 1 else { continue }
+            let eventID = nsHTML.substring(with: match.range(at: 1))
+            result.replaceCharacters(in: match.range(at: 0), with: " [[event-icon:\(eventID)]] ")
+        }
+        return result as String
+    }
+
+    private static func coalesced(_ elements: [CompetitionRichHTMLElement]) -> [CompetitionRichHTMLElement] {
+        var result: [CompetitionRichHTMLElement] = []
+        var previousWasSeparator = false
+
+        for element in elements {
+            if case .separator = element.kind {
+                guard !previousWasSeparator, !result.isEmpty else { continue }
+                previousWasSeparator = true
+            } else {
+                previousWasSeparator = false
+            }
+            result.append(element)
+        }
+
+        if result.last.map({ if case .separator = $0.kind { return true }; return false }) == true {
+            result.removeLast()
+        }
+        return result
+    }
+}
+
+private struct CompetitionRichHTMLInlineStyle {
+    var url: URL?
+    var isBold = false
+    var color: CompetitionRichHTMLTextColor = .primary
+
+    func applying(tag: String, attributes: String) -> CompetitionRichHTMLInlineStyle {
+        var copy = self
+        switch tag {
+        case "a":
+            if let href = Self.attribute("href", in: attributes) {
+                copy.url = CompetitionRichHTMLElement.resolvedURL(from: href)
+            }
+        case "strong", "b":
+            copy.isBold = true
+        case "span":
+            if let color = Self.colorRole(from: attributes) {
+                copy.color = color
+            }
+        default:
+            break
+        }
+        return copy
+    }
+
+    private static func attribute(_ name: String, in attributes: String) -> String? {
+        let patterns = [
+            #"\#(name)\s*=\s*"([^"]*)""#,
+            #"\#(name)\s*=\s*'([^']*)'"#
+        ]
+        let nsAttributes = attributes as NSString
+
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(in: attributes, range: NSRange(location: 0, length: nsAttributes.length)),
+                  match.numberOfRanges > 1 else {
+                continue
+            }
+            return CompetitionRichHTMLElement.decodeHTMLText(nsAttributes.substring(with: match.range(at: 1)))
+        }
+
+        return nil
+    }
+
+    private static func colorRole(from attributes: String) -> CompetitionRichHTMLTextColor? {
+        let lowercased = attributes.lowercased()
+        if lowercased.contains("text-danger")
+            || lowercased.contains("color:#e53333")
+            || lowercased.contains("color: #e53333")
+            || lowercased.contains("color:red")
+            || lowercased.contains("color: red") {
+            return .danger
+        }
+        if lowercased.contains("text-info") || lowercased.contains("color:#31708f") {
+            return .info
+        }
+        return nil
+    }
+}
+
+private struct CompetitionRichHTMLTable {
+    let rows: [[String]]
+}
+
+private struct CompetitionRichHTMLListItem: Hashable {
+    let marker: String
+    let depth: Int
+    let eventID: String?
+    let runs: [CompetitionRichHTMLTextRun]
+    let imageSources: [String]
+
+    var markerWidth: CGFloat {
+        marker == "•" ? 16 : 24
+    }
+}
+
+private enum CompetitionRichHTMLTextColor: Hashable {
+    case primary
+    case info
+    case danger
+
+    var swiftUIColor: Color {
+        switch self {
+        case .primary:
+            return .primary
+        case .info:
+            return .blue
+        case .danger:
+            return Color(red: 229 / 255, green: 51 / 255, blue: 51 / 255)
+        }
+    }
+
+    var uiColor: UIColor {
+        switch self {
+        case .primary:
+            return .label
+        case .info:
+            return .systemBlue
+        case .danger:
+            return UIColor(red: 229 / 255, green: 51 / 255, blue: 51 / 255, alpha: 1)
+        }
+    }
+}
+
+private struct CompetitionRichHTMLTextRun: Hashable {
+    let text: String
+    let url: URL?
+    let isBold: Bool
+    let color: CompetitionRichHTMLTextColor
+
+    init(
+        text: String,
+        url: URL?,
+        isBold: Bool = false,
+        color: CompetitionRichHTMLTextColor = .primary
+    ) {
+        self.text = text
+        self.url = url
+        self.isBold = isBold
+        self.color = color
+    }
+}
+
+private struct LinkedTextFlow: View {
+    let runs: [CompetitionRichHTMLTextRun]
+
+    var body: some View {
+        Text(attributedString)
+            .foregroundStyle(.primary)
+            .tint(.blue)
+            .lineSpacing(3)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var attributedString: AttributedString {
+        var result = AttributedString()
+        var plainText = ""
+        for run in runs {
+            let text = resolvedText(for: run, after: plainText)
+            guard !text.isEmpty else { continue }
+
+            var part = AttributedString(text)
+            part.font = Font.system(size: 15, weight: run.isBold ? .semibold : .regular)
+            part.foregroundColor = run.url == nil ? run.color.swiftUIColor : .blue
+            if let url = run.url {
+                part.link = url
+            }
+
+            result.append(part)
+            plainText += text
+        }
+        return result
+    }
+
+    private func resolvedText(for run: CompetitionRichHTMLTextRun, after currentText: String) -> String {
+        if !currentText.isEmpty, shouldInsertSpace(before: run.text, after: currentText) {
+            return " " + run.text
+        }
+        return run.text
+    }
+
+    private func shouldInsertSpace(before nextText: String, after currentText: String) -> Bool {
+        guard !nextText.isEmpty else { return false }
+        let previous = String(currentText.suffix(1))
+        guard !previous.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+        if nextText.hasPrefix(" ") { return false }
+
+        let noSpacePrefixes = [".", ",", ";", ":", "!", "?", ")", "]", "}", "。", "，", "；", "：", "！", "？", "、"]
+        if noSpacePrefixes.contains(where: { nextText.hasPrefix($0) }) {
+            return false
+        }
+
+        let noSpaceAfter = ["(", "[", "{"]
+        if noSpaceAfter.contains(previous) {
+            return false
+        }
+
+        return true
+    }
+}
+
 private struct FlexibleTagFlow: View {
     let items: [String]
 
@@ -6277,26 +7835,48 @@ private struct FlexibleTagFlow: View {
 }
 
 private enum CompetitionEventIconFont {
-    static let fontName = "cubing-icons"
+    static let fontName = "event-icon"
 
     private static let glyphs: [String: String] = [
-        "222": "\u{f10a}",
-        "333": "\u{f106}",
-        "444": "\u{f101}",
-        "555": "\u{f10c}",
-        "666": "\u{f113}",
-        "777": "\u{f111}",
-        "333oh": "\u{f115}",
-        "clock": "\u{f108}",
-        "minx": "\u{f103}",
-        "pyram": "\u{f112}",
-        "skewb": "\u{f105}",
-        "sq1": "\u{f102}",
-        "333bf": "\u{f107}",
-        "444bf": "\u{f104}",
-        "555bf": "\u{f114}",
-        "333fm": "\u{f10d}",
-        "333mbf": "\u{f10e}"
+        "333": "\u{e900}",
+        "222": "\u{e901}",
+        "444": "\u{e902}",
+        "555": "\u{e903}",
+        "666": "\u{e904}",
+        "777": "\u{e905}",
+        "333bf": "\u{e906}",
+        "333bfcheck": "\u{e906}",
+        "333fm": "\u{e907}",
+        "333oh": "\u{e908}",
+        "333ft": "\u{e909}",
+        "minx": "\u{e90a}",
+        "pyram": "\u{e90b}",
+        "clock": "\u{e90c}",
+        "skewb": "\u{e90d}",
+        "sq1": "\u{e90e}",
+        "444bf": "\u{e90f}",
+        "444bfcheck": "\u{e90f}",
+        "555bf": "\u{e910}",
+        "555bfcheck": "\u{e910}",
+        "333mbf": "\u{e911}",
+        "333mbo": "\u{e911}",
+        "submission": "\u{e911}",
+        "magic": "\u{e912}",
+        "mmagic": "\u{e913}",
+        "stack": "\u{e914}",
+        "registration": "\u{e915}",
+        "intro": "\u{e916}",
+        "break": "\u{e917}",
+        "lunch": "\u{e918}",
+        "ceremony": "\u{e919}",
+        "lucky": "\u{e91a}",
+        "funny": "\u{e91b}",
+        "333relay": "\u{e91c}",
+        "redi": "\u{e91d}",
+        "kilominx": "\u{e91e}",
+        "mirror": "\u{e91f}",
+        "ivy": "\u{e920}",
+        "custom": "\u{f00c}"
     ]
 
     static var isAvailable: Bool {
@@ -6304,7 +7884,7 @@ private enum CompetitionEventIconFont {
     }
 
     static func glyph(for eventID: String) -> String? {
-        glyphs[eventID]
+        glyphs[eventID.lowercased()]
     }
 
     @discardableResult
@@ -6328,13 +7908,13 @@ private enum CompetitionEventIconFont {
     }
 
     private static func bundleFontURL() -> URL? {
-        if let url = Bundle.main.url(forResource: "cubing-icons", withExtension: "woff2") {
+        if let url = Bundle.main.url(forResource: "event-icon", withExtension: "ttf") {
             return url
         }
-        if let url = Bundle.main.url(forResource: "cubing-icons", withExtension: "woff2", subdirectory: "CompetitionIcons") {
+        if let url = Bundle.main.url(forResource: "event-icon", withExtension: "ttf", subdirectory: "CompetitionIcons") {
             return url
         }
-        if let url = Bundle.main.url(forResource: "cubing-icons", withExtension: "woff2", subdirectory: "Resources/CompetitionIcons") {
+        if let url = Bundle.main.url(forResource: "event-icon", withExtension: "ttf", subdirectory: "Resources/CompetitionIcons") {
             return url
         }
         guard let resourceURL = Bundle.main.resourceURL,
@@ -6345,7 +7925,7 @@ private enum CompetitionEventIconFont {
             return nil
         }
 
-        for case let url as URL in enumerator where url.lastPathComponent == "cubing-icons.woff2" {
+        for case let url as URL in enumerator where url.lastPathComponent == "event-icon.ttf" {
             return url
         }
         return nil

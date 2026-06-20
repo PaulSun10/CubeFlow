@@ -367,6 +367,15 @@ private extension SettingsTabView {
                 Text("settings.data_transfer_title")
             }
 
+            Section {
+                NavigationLink {
+                    AboutCubeFlowView()
+                } label: {
+                    settingsNavigationLabel(titleKey: "about.title")
+                }
+            } header: {
+                Text("settings.section.about")
+            }
         }
         .listStyle(.insetGrouped)
         .background(Color(.systemGroupedBackground))
