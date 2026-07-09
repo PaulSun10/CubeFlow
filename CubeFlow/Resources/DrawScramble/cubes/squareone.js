@@ -219,4 +219,4 @@ module.exports.genImage = (scramble, colorsIn) => {
     return sq1Image(scramble, colorsIn);
 }
 
-var colre = /#[0-9a-fA-F]{3}/g;
+var colre = /#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}/g;

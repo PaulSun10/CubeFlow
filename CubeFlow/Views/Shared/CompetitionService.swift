@@ -3,6 +3,7 @@ import Foundation
 struct CompetitionSummary: Identifiable, Hashable, Sendable, Codable {
     let id: String
     let name: String
+    let shortDisplayName: String?
     let startDate: Date
     let endDate: Date
     let registrationOpen: Date?
@@ -45,6 +46,29 @@ struct CompetitionSummary: Identifiable, Hashable, Sendable, Codable {
     var localizedCountryName: String {
         Locale.current.localizedString(forRegionCode: countryISO2) ?? countryISO2
     }
+
+    var compactDisplayName: String {
+        guard let shortDisplayName,
+              !shortDisplayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return name
+        }
+        return shortDisplayName
+    }
+
+    static func == (lhs: CompetitionSummary, rhs: CompetitionSummary) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+
+struct CompetitionRegistrationSummary: Hashable, Sendable, Codable {
+    let acceptedCount: Int
+    let waitlistedCount: Int
+
+    var hasWaitlist: Bool { waitlistedCount > 0 }
 }
 
 struct CompetitionRecognizedCountry: Identifiable, Hashable, Sendable, Codable {
@@ -756,11 +780,33 @@ enum CompetitionService {
         _ = try? await CompetitionRecognizedCountryStore.shared.recognizedCountries()
     }
 
-    static func warmCompetitionLocalizedNamesCache(languageCode: String) async {
-        guard cubingLanguageCode(for: languageCode) == "zh_cn" else { return }
-        _ = await CompetitionLocalizedNameStore.shared.localizedCompetitionNames {
-            await fetchCompetitionNameMapFromCubing(languageCode: languageCode)
-        }
+    static func clearCompetitionListCache() async {
+        await CompetitionQueryCacheStore.shared.clear()
+        await CompetitionInFlightRequestStore.shared.clear()
+    }
+
+    static func clearCompetitionSupportCache() async {
+        await CompetitionLocalizedNameStore.shared.clear()
+        await CompetitionRecognizedCountryStore.shared.clear()
+    }
+
+    static func clearCompetitionDetailCache() async {
+        await CompetitionDetailContentStore.shared.clear()
+        await CompetitionScheduleParseStore.shared.clear()
+        await CompetitionRegistrationSummaryStore.shared.clear()
+        await CompetitionInFlightRequestStore.shared.clear()
+    }
+
+    static func clearCompetitionTopCubersCache() async {
+        await CompetitionTopCuberStore.shared.clear()
+        await CompetitionInFlightRequestStore.shared.clear()
+    }
+
+    static func clearAllCompetitionCaches() async {
+        await clearCompetitionListCache()
+        await clearCompetitionSupportCache()
+        await clearCompetitionDetailCache()
+        await clearCompetitionTopCubersCache()
     }
 
     static func fetchCompetitionDetail(
@@ -828,6 +874,70 @@ enum CompetitionService {
             for: competition,
             languageCode: languageCode,
             eventID: targetEventID
+        )
+    }
+
+
+    static func fetchCompetitionRegistrationSummary(
+        for competition: CompetitionSummary,
+        languageCode: String
+    ) async -> CompetitionRegistrationSummary? {
+        guard competition.countryISO2.uppercased() != "CN" else { return nil }
+        let key = competition.id
+        if let cached = await CompetitionRegistrationSummaryStore.shared.summary(for: key) {
+            return cached
+        }
+
+        guard let fetched = await CompetitionInFlightRequestStore.shared.registrationSummary(for: key, loader: {
+            await fetchWCARegistrationSummary(for: competition, languageCode: languageCode)
+        }) else {
+            return nil
+        }
+        await CompetitionRegistrationSummaryStore.shared.store(fetched, for: key)
+        return fetched
+    }
+
+    private static func fetchWCARegistrationSummary(
+        for competition: CompetitionSummary,
+        languageCode: String
+    ) async -> CompetitionRegistrationSummary? {
+        guard let url = URL(string: "https://www.worldcubeassociation.org/api/v0/competitions/\(competition.id)/wcif/public") else {
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 20
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue(appAcceptLanguageHeader(for: languageCode), forHTTPHeaderField: "Accept-Language")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let httpResponse = response as? HTTPURLResponse,
+              200 ..< 300 ~= httpResponse.statusCode else {
+            return nil
+        }
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        guard let wcif = try? decoder.decode(WCAPublicWCIF.self, from: data) else {
+            return nil
+        }
+
+        var acceptedCount = 0
+        var waitlistedCount = 0
+        for person in wcif.persons {
+            guard let registration = person.registration else { continue }
+            let status = registration.status?.lowercased() ?? ""
+            if registration.isCompeting == true || status == "accepted" {
+                acceptedCount += 1
+            } else if status == "waiting_list" || status == "waitlisted" || status == "waiting-list" {
+                waitlistedCount += 1
+            }
+        }
+
+        return CompetitionRegistrationSummary(
+            acceptedCount: acceptedCount,
+            waitlistedCount: waitlistedCount
         )
     }
 
@@ -1144,6 +1254,7 @@ enum CompetitionService {
             return CompetitionSummary(
                 id: competition.id,
                 name: localizedName,
+                shortDisplayName: localizedName == competition.name ? competition.shortDisplayName : localizedName,
                 startDate: competition.startDate,
                 endDate: competition.endDate,
                 registrationOpen: competition.registrationOpen,
@@ -1592,36 +1703,6 @@ enum CompetitionService {
                 reopenRegistration: nil,
                 registrationClose: nil
             )
-        }
-
-        guard cubingLanguageCode(for: languageCode) == "zh_cn", !lookup.isEmpty else {
-            return lookup
-        }
-
-        await withTaskGroup(of: (String, CubingCompetitionRegistrationInfo?).self) { group in
-            for info in lookup.values {
-                guard let slug = info.slug, !slug.isEmpty else { continue }
-                group.addTask {
-                    (slug, await fetchCompetitionRegistrationInfoFromCubing(slug: slug, languageCode: languageCode))
-                }
-            }
-
-            for await (slug, registrationInfo) in group {
-                guard let registrationInfo else { continue }
-                let key = normalizeCompetitionLookupKey(slug)
-                guard let existing = lookup[key] else { continue }
-                lookup[key] = LocalizedCompetitionInfo(
-                    slug: existing.slug,
-                    name: existing.name,
-                    regionPrimary: existing.regionPrimary,
-                    regionSecondary: existing.regionSecondary,
-                    address: existing.address,
-                    registrationStart: registrationInfo.registrationStart,
-                    pauseRegistrationStart: registrationInfo.pauseRegistrationStart,
-                    reopenRegistration: registrationInfo.reopenRegistration,
-                    registrationClose: registrationInfo.registrationClose
-                )
-            }
         }
 
         return lookup
@@ -4067,6 +4148,7 @@ enum CompetitionService {
         CompetitionSummary(
             id: competition.id,
             name: competition.name,
+            shortDisplayName: competition.shortDisplayName,
             startDate: competition.startDate,
             endDate: competition.endDate,
             registrationOpen: competition.registrationOpen,
@@ -4121,6 +4203,7 @@ private actor CompetitionInFlightRequestStore {
     private var pageTasks: [String: Task<CompetitionPageResult, Error>] = [:]
     private var detailTasks: [String: Task<CompetitionDetailContent, Never>] = [:]
     private var topCuberTasks: [String: Task<[CompetitionTopCuberPreview]?, Never>] = [:]
+    private var registrationSummaryTasks: [String: Task<CompetitionRegistrationSummary?, Never>] = [:]
     private var htmlTasks: [String: Task<String?, Never>] = [:]
 
     func competitionsPage(
@@ -4171,6 +4254,22 @@ private actor CompetitionInFlightRequestStore {
         return await task.value
     }
 
+    func registrationSummary(
+        for key: String,
+        loader: @escaping @Sendable () async -> CompetitionRegistrationSummary?
+    ) async -> CompetitionRegistrationSummary? {
+        if let task = registrationSummaryTasks[key] {
+            return await task.value
+        }
+
+        let task = Task {
+            await loader()
+        }
+        registrationSummaryTasks[key] = task
+        defer { registrationSummaryTasks[key] = nil }
+        return await task.value
+    }
+
     func html(
         for key: String,
         loader: @escaping @Sendable () async -> String?
@@ -4186,6 +4285,14 @@ private actor CompetitionInFlightRequestStore {
         defer { htmlTasks[key] = nil }
         return await task.value
     }
+
+    func clear() {
+        pageTasks.removeAll()
+        detailTasks.removeAll()
+        topCuberTasks.removeAll()
+        registrationSummaryTasks.removeAll()
+        htmlTasks.removeAll()
+    }
 }
 
 private actor CompetitionDetailContentStore {
@@ -4199,6 +4306,10 @@ private actor CompetitionDetailContentStore {
 
     func store(_ content: CompetitionDetailContent, for key: String) {
         contentByKey[key] = content
+    }
+
+    func clear() {
+        contentByKey.removeAll()
     }
 }
 
@@ -4219,6 +4330,10 @@ private actor CompetitionScheduleParseStore {
         let parsed = await parser()
         scheduleDaysByKey[key] = parsed
         return parsed
+    }
+
+    func clear() {
+        scheduleDaysByKey.removeAll()
     }
 }
 
@@ -4273,6 +4388,12 @@ private actor CompetitionRecognizedCountryStore {
         )
         try? data.write(to: cacheFileURL, options: [.atomic])
     }
+
+    func clear() {
+        cachedCountries = nil
+        hasLoadedFromDisk = false
+        try? FileManager.default.removeItem(at: cacheFileURL())
+    }
 }
 
 private actor CompetitionLocalizedNameStore {
@@ -4317,6 +4438,15 @@ private actor CompetitionLocalizedNameStore {
         return loaded
     }
 
+    func merge(_ localizedNames: [String: LocalizedCompetitionInfo]) {
+        guard !localizedNames.isEmpty else { return }
+        loadFromDiskIfNeeded()
+        var merged = cachedLocalizedNames ?? [:]
+        merged.merge(localizedNames) { _, new in new }
+        cachedLocalizedNames = merged
+        saveToDisk(merged)
+    }
+
     private func loadFromDiskIfNeeded() {
         guard !hasLoadedFromDisk else { return }
         hasLoadedFromDisk = true
@@ -4340,6 +4470,13 @@ private actor CompetitionLocalizedNameStore {
             withIntermediateDirectories: true
         )
         try? data.write(to: cacheFileURL, options: [.atomic])
+    }
+
+    func clear() {
+        cachedLocalizedNames = nil
+        loadingTask = nil
+        hasLoadedFromDisk = false
+        try? FileManager.default.removeItem(at: cacheFileURL())
     }
 }
 
@@ -4409,6 +4546,31 @@ private actor CompetitionQueryCacheStore {
         )
         try? data.write(to: cacheFileURL, options: [.atomic])
     }
+
+    func clear() {
+        inMemorySnapshots.removeAll()
+        hasLoadedFromDisk = false
+        try? FileManager.default.removeItem(at: cacheFileURL())
+    }
+}
+
+
+private actor CompetitionRegistrationSummaryStore {
+    static let shared = CompetitionRegistrationSummaryStore()
+
+    private var summariesByCompetitionID: [String: CompetitionRegistrationSummary] = [:]
+
+    func summary(for competitionID: String) -> CompetitionRegistrationSummary? {
+        summariesByCompetitionID[competitionID]
+    }
+
+    func store(_ summary: CompetitionRegistrationSummary, for competitionID: String) {
+        summariesByCompetitionID[competitionID] = summary
+    }
+
+    func clear() {
+        summariesByCompetitionID.removeAll()
+    }
 }
 
 private actor CompetitionTopCuberStore {
@@ -4460,6 +4622,12 @@ private actor CompetitionTopCuberStore {
             withIntermediateDirectories: true
         )
         try? data.write(to: cacheFileURL, options: [.atomic])
+    }
+
+    func clear() {
+        previewsByKey.removeAll()
+        hasLoadedFromDisk = false
+        try? FileManager.default.removeItem(at: cacheFileURL())
     }
 }
 
@@ -4754,6 +4922,8 @@ private let recognizedCountryCodeOverrides: [String: String] = [
 private struct WCACompetitionPayload: Decodable {
     let id: String
     let name: String
+    let shortName: String?
+    let shortDisplayName: String?
     let startDate: Date
     let endDate: Date
     let registrationOpen: Date?
@@ -4775,6 +4945,7 @@ private struct WCACompetitionPayload: Decodable {
         CompetitionSummary(
             id: id,
             name: name,
+            shortDisplayName: shortDisplayName ?? shortName,
             startDate: startDate,
             endDate: endDate,
             registrationOpen: registrationOpen,

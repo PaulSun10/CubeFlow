@@ -380,4 +380,4 @@ module.exports.genImage = (size, scramble, colorsIn) => {
     return nnnImage(size, scramble, colorsIn);
 }
 
-var colre = /#[0-9a-fA-F]{3}/g;
+var colre = /#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}/g;

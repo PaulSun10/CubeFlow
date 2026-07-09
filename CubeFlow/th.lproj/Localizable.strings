@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "รูปแบบการ์ดการแข่งขัน";
 "settings.competition_card_style_list" = "รายการ";
 "settings.competition_card_style_glass" = "แก้ว";
+"settings.competition_card_style_compact" = "กะทัดรัด";
 "settings.competitions_bg_label" = "ความเป็นมาการแข่งขัน";
 "settings.result_popup" = "แสดงป๊อปอัปผลลัพธ์";
 "settings.result_popup_help" = "แสดงตัวเลือกผลลัพธ์หลังจากการแก้โจทย์แต่ละครั้ง โดยไม่คำนึงถึงวิธีการป้อนข้อมูล";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "กลางล่าง";
 "settings.draw_scramble_position_off" = "ปิด";
 "settings.draw_scramble_size" = "วาดขนาดช่วงชิง";
+"settings.draw_scramble_colors" = "สีแผนภาพสแครมเบิล";
+"settings.draw_scramble_colors_help" = "ปรับแต่งสีที่ใช้ในแผนภาพสแครมเบิล";
+"settings.draw_scramble_colors_reset" = "รีเซ็ตสี";
 "settings.hide_elements_when_solving" = "ซ่อนองค์ประกอบเมื่อทำการแก้ไข";
 "settings.import_preparing" = "กำลังเตรียมนำเข้า...";
 "settings.import_in_progress" = "กำลังนำเข้าข้อมูล...";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA competition, ranking, and result information may change. The official WCA website is the authoritative source.";
 "about.wca_disclaimer_identity" = "WCA names, marks, and services belong to their respective owners. WCA sign-in is used only for features you authorize.";
 "about.visit_wca" = "Visit the WCA Website";
+
+// Storage & Cache
+"settings.section.storage_cache" = "พื้นที่จัดเก็บและแคช";
+"settings.cache_title" = "พื้นที่จัดเก็บและแคช";
+"settings.cache_total" = "ข้อมูลแคช";
+"settings.cache_description" = "ข้อมูลแคชสามารถดาวน์โหลดใหม่ได้ การล้างแคชจะไม่ลบสถิติ เซสชัน การตั้งค่า หรือบัญชีของคุณ";
+"settings.cache_section_competitions" = "การแข่งขัน";
+"settings.cache_competition_list" = "แคชรายการแข่งขัน";
+"settings.cache_competition_list_detail" = "รายการแข่งขัน WCA และ Cubing China ที่แคชไว้";
+"settings.cache_competition_support" = "แคชข้อมูลช่วยการแข่งขัน";
+"settings.cache_competition_support_detail" = "ชื่อการแข่งขันที่แปลแล้ว ประเทศ และข้อมูลช่วยเหลือ";
+"settings.cache_competition_details" = "แคชรายละเอียดการแข่งขัน";
+"settings.cache_competition_details_detail" = "หน้า ตาราง แผนที่ สถานะลงทะเบียน และเนื้อหาที่ประมวลผลในเซสชันนี้";
+"settings.cache_top_cubers" = "แคชนักบิดชั้นนำ";
+"settings.cache_top_cubers_detail" = "ตัวอย่างนักบิดชั้นนำที่แสดงบนการ์ดการแข่งขัน";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "แคชผล WCA";
+"settings.cache_wca_results_detail" = "ผลโปรไฟล์ WCA และข้อมูลค้นหาที่เกี่ยวข้อง";
+"settings.cache_section_all" = "แคชทั้งหมด";
+"settings.cache_clear_all" = "ล้างแคชทั้งหมด";
+"settings.cache_clear_all_detail" = "ลบแคชทั้งหมดที่ CubeFlow สามารถสร้างใหม่ภายหลัง";
+"settings.cache_clear_all_footer" = "ไม่ลบสถิติ เซสชัน การตั้งค่า การนำเข้า หรือการเข้าสู่ระบบ WCA";
+"settings.cache_session_only" = "เฉพาะเซสชัน";
+"settings.cache_clear_confirm_title" = "ล้างแคชหรือไม่";
+"settings.cache_clear_confirm_message" = "ข้อมูลแคชนี้สามารถดาวน์โหลดใหม่ได้ สถิติ เซสชัน การตั้งค่า และบัญชีจะไม่ถูกลบ";
+"settings.cache_clear_button" = "ล้างแคช";
+"settings.cache_cleared_message" = "ล้างแคชแล้ว";

@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "比賽卡片样式";
 "settings.competition_card_style_list" = "列表";
 "settings.competition_card_style_glass" = "玻璃";
+"settings.competition_card_style_compact" = "緊湊列表";
 "settings.competitions_bg_label" = "比賽頁背景";
 "settings.result_popup" = "顯示結果弹窗";
 "settings.result_popup_help" = "無論使用哪種成績輸入方式，每次完成後都顯示結果選擇彈窗。";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "底部中央";
 "settings.draw_scramble_position_off" = "關闭";
 "settings.draw_scramble_size" = "打乱圖示大小";
+"settings.draw_scramble_colors" = "打亂圖示配色";
+"settings.draw_scramble_colors_help" = "自訂打亂圖示使用的顏色。";
+"settings.draw_scramble_colors_reset" = "重置配色";
 "settings.hide_elements_when_solving" = "計時時隱藏元素";
 "settings.import_preparing" = "正在準備匯入…";
 "settings.import_in_progress" = "正在匯入資料…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA 比賽、排名與成績資訊可能變更，應以 WCA 官方網站為準。";
 "about.wca_disclaimer_identity" = "WCA 的名稱、標誌與服務歸其各自權利人所有。WCA 登入僅用於你授權的功能。";
 "about.visit_wca" = "造訪 WCA 網站";
+
+// Storage & Cache
+"settings.section.storage_cache" = "儲存與快取";
+"settings.cache_title" = "儲存與快取";
+"settings.cache_total" = "已快取資料";
+"settings.cache_description" = "快取資料可以重新下載。清除快取不會刪除你的成績、分組、設定或帳號。";
+"settings.cache_section_competitions" = "比賽";
+"settings.cache_competition_list" = "比賽列表快取";
+"settings.cache_competition_list_detail" = "已快取的 WCA 和粗餅比賽列表。";
+"settings.cache_competition_support" = "比賽輔助快取";
+"settings.cache_competition_support_detail" = "本地化比賽名稱、國家和輔助中繼資料。";
+"settings.cache_competition_details" = "比賽詳情快取";
+"settings.cache_competition_details_detail" = "本次 App 工作階段中的詳情頁、賽程、地圖、報名狀態和解析內容。";
+"settings.cache_top_cubers" = "高手預覽快取";
+"settings.cache_top_cubers_detail" = "比賽卡片中顯示的高手預覽快取。";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "WCA 成績快取";
+"settings.cache_wca_results_detail" = "已快取的 WCA 個人成績和相關查詢資料。";
+"settings.cache_section_all" = "所有快取";
+"settings.cache_clear_all" = "清除所有快取";
+"settings.cache_clear_all_detail" = "移除 CubeFlow 之後可以重新產生的所有快取。";
+"settings.cache_clear_all_footer" = "不會刪除成績、分組、自訂設定、匯入資料或 WCA 登入狀態。";
+"settings.cache_session_only" = "僅本次工作階段";
+"settings.cache_clear_confirm_title" = "清除快取？";
+"settings.cache_clear_confirm_message" = "這些快取資料可以重新下載。你的成績、分組、設定和帳號不會被刪除。";
+"settings.cache_clear_button" = "清除快取";
+"settings.cache_cleared_message" = "快取已清除。";

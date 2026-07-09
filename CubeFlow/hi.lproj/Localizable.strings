@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "प्रतियोगिता कार्ड शैली";
 "settings.competition_card_style_list" = "सूची";
 "settings.competition_card_style_glass" = "कांच";
+"settings.competition_card_style_compact" = "कॉम्पैक्ट";
 "settings.competitions_bg_label" = "प्रतियोगिता पृष्ठभूमि";
 "settings.result_popup" = "परिणाम पॉपअप दिखाएँ";
 "settings.result_popup_help" = "इनपुट विधि की परवाह किए बिना, प्रत्येक समाधान के बाद एक परिणाम चयनकर्ता दिखाएं।";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "निचला केंद्र";
 "settings.draw_scramble_position_off" = "बंद";
 "settings.draw_scramble_size" = "हाथापाई का आकार बनाएं";
+"settings.draw_scramble_colors" = "स्क्रैम्बल आरेख के रंग";
+"settings.draw_scramble_colors_help" = "स्क्रैम्बल आरेखों में इस्तेमाल होने वाले रंग बदलें।";
+"settings.draw_scramble_colors_reset" = "रंग रीसेट करें";
 "settings.hide_elements_when_solving" = "हल करते समय तत्वों को छिपाएँ";
 "settings.import_preparing" = "आयात की तैयारी...";
 "settings.import_in_progress" = "डेटा आयात किया जा रहा है...";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA competition, ranking, and result information may change. The official WCA website is the authoritative source.";
 "about.wca_disclaimer_identity" = "WCA names, marks, and services belong to their respective owners. WCA sign-in is used only for features you authorize.";
 "about.visit_wca" = "Visit the WCA Website";
+
+// Storage & Cache
+"settings.section.storage_cache" = "स्टोरेज और कैश";
+"settings.cache_title" = "स्टोरेज और कैश";
+"settings.cache_total" = "कैश किया गया डेटा";
+"settings.cache_description" = "कैश डेटा फिर से डाउनलोड किया जा सकता है। आपके solve, sessions, settings या account नहीं हटेंगे।";
+"settings.cache_section_competitions" = "प्रतियोगिताएं";
+"settings.cache_competition_list" = "प्रतियोगिता सूची कैश";
+"settings.cache_competition_list_detail" = "WCA और Cubing China प्रतियोगिता सूचियों का कैश।";
+"settings.cache_competition_support" = "प्रतियोगिता सहायक कैश";
+"settings.cache_competition_support_detail" = "स्थानीयकृत प्रतियोगिता नाम, देश और सहायक मेटाडेटा।";
+"settings.cache_competition_details" = "प्रतियोगिता विवरण कैश";
+"settings.cache_competition_details_detail" = "इस ऐप session के विवरण, schedules, maps, registration status और parsed content।";
+"settings.cache_top_cubers" = "Top Cubers कैश";
+"settings.cache_top_cubers_detail" = "प्रतियोगिता cards में दिखने वाले top-cuber previews।";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "WCA परिणाम कैश";
+"settings.cache_wca_results_detail" = "कैश किए गए WCA profile results और संबंधित lookup data।";
+"settings.cache_section_all" = "सभी कैश";
+"settings.cache_clear_all" = "सभी कैश साफ करें";
+"settings.cache_clear_all_detail" = "CubeFlow बाद में फिर बना सकता है ऐसे सभी caches हटाएं।";
+"settings.cache_clear_all_footer" = "Solves, sessions, custom settings, imports या WCA sign-in नहीं हटेंगे।";
+"settings.cache_session_only" = "केवल session";
+"settings.cache_clear_confirm_title" = "कैश साफ करें?";
+"settings.cache_clear_confirm_message" = "यह cached data फिर से डाउनलोड किया जा सकता है। आपके solves, sessions, settings और account नहीं हटेंगे।";
+"settings.cache_clear_button" = "कैश साफ करें";
+"settings.cache_cleared_message" = "कैश साफ हो गया।";

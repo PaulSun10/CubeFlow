@@ -1,5 +1,61 @@
 import Foundation
 
+private final class AppLocalizationCache: @unchecked Sendable {
+    nonisolated static let shared = AppLocalizationCache()
+
+    private let lock = NSLock()
+    nonisolated(unsafe) private var candidates: [String: [String]] = [:]
+    nonisolated(unsafe) private var bundles: [String: Bundle] = [:]
+    nonisolated(unsafe) private var missingBundles = Set<String>()
+    nonisolated(unsafe) private var localizedStrings: [String: String] = [:]
+
+    nonisolated func candidates(for key: String) -> [String]? {
+        lock.lock()
+        defer { lock.unlock() }
+        return candidates[key]
+    }
+
+    nonisolated func setCandidates(_ value: [String], for key: String) {
+        lock.lock()
+        candidates[key] = value
+        lock.unlock()
+    }
+
+    nonisolated func bundle(for key: String) -> Bundle? {
+        lock.lock()
+        defer { lock.unlock() }
+        if missingBundles.contains(key) {
+            return nil
+        }
+        return bundles[key]
+    }
+
+    nonisolated func setBundle(_ value: Bundle, for key: String) {
+        lock.lock()
+        bundles[key] = value
+        missingBundles.remove(key)
+        lock.unlock()
+    }
+
+    nonisolated func setMissingBundle(for key: String) {
+        lock.lock()
+        missingBundles.insert(key)
+        lock.unlock()
+    }
+
+    nonisolated func localizedString(for key: String) -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return localizedStrings[key]
+    }
+
+    nonisolated func setLocalizedString(_ value: String, for key: String) {
+        lock.lock()
+        localizedStrings[key] = value
+        lock.unlock()
+    }
+}
+
 enum AppLayoutLanguageCategory {
     case compactLatin
     case widerCJK
@@ -45,6 +101,11 @@ nonisolated func appLanguageDisplayKey(for languageCode: String) -> String {
 }
 
 nonisolated func appLocalizationCandidates(for languageCode: String) -> [String] {
+    let cacheKey = languageCode
+    if let cached = AppLocalizationCache.shared.candidates(for: cacheKey) {
+        return cached
+    }
+
     let trimmed = languageCode.trimmingCharacters(in: .whitespacesAndNewlines)
     let normalized = trimmed.replacingOccurrences(of: "_", with: "-")
     let baseLanguage = normalized.split(separator: "-").first.map(String.init) ?? normalized
@@ -54,29 +115,48 @@ nonisolated func appLocalizationCandidates(for languageCode: String) -> [String]
         guard !candidate.isEmpty, !candidates.contains(candidate) else { continue }
         candidates.append(candidate)
     }
+    AppLocalizationCache.shared.setCandidates(candidates, for: cacheKey)
     return candidates
 }
 
 nonisolated func appLocalizedBundle(for languageCode: String) -> Bundle? {
+    let cacheKey = languageCode
+    if let cached = AppLocalizationCache.shared.bundle(for: cacheKey) {
+        return cached
+    }
+
     for candidate in appLocalizationCandidates(for: languageCode) {
         if let path = Bundle.main.path(forResource: candidate, ofType: "lproj"),
            let bundle = Bundle(path: path) {
+            AppLocalizationCache.shared.setBundle(bundle, for: cacheKey)
             return bundle
         }
     }
+    AppLocalizationCache.shared.setMissingBundle(for: cacheKey)
     return nil
 }
 
 nonisolated func appLocalizedString(_ key: String, languageCode: String, defaultValue: String? = nil) -> String {
     let fallbackValue = defaultValue ?? key
+    let cacheKey = "\(languageCode)\u{1F}\(key)\u{1F}\(fallbackValue)"
+    if let cached = AppLocalizationCache.shared.localizedString(for: cacheKey) {
+        return cached
+    }
+
+    let resolved: String
     if let bundle = appLocalizedBundle(for: languageCode) {
         let localized = bundle.localizedString(forKey: key, value: fallbackValue, table: nil)
         if localized != key || fallbackValue == key {
-            return localized
+            resolved = localized
+        } else {
+            resolved = Bundle.main.localizedString(forKey: key, value: fallbackValue, table: nil)
         }
+    } else {
+        resolved = Bundle.main.localizedString(forKey: key, value: fallbackValue, table: nil)
     }
 
-    return Bundle.main.localizedString(forKey: key, value: fallbackValue, table: nil)
+    AppLocalizationCache.shared.setLocalizedString(resolved, for: cacheKey)
+    return resolved
 }
 
 nonisolated func currentAppLocalizedString(_ key: String, defaultValue: String? = nil) -> String {

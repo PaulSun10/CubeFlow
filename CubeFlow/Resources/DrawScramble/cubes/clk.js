@@ -76,7 +76,13 @@ var clkImage = (function() {
     var movere = /([UD][RL]|ALL|[UDRLy])(\d[+-]?)?/
     var movestr = ['UR', 'DR', 'DL', 'UL', 'U', 'R', 'D', 'L', 'ALL']
 
-    return function(moveseq, colors) {
+    return function(moveseq, colorsIn) {
+        var cols = "";
+        if(colorsIn === "default") {
+            cols = "#ffffff#000000#000000#ffffff#919191#4c4c4c".match(colre);
+        } else {
+            cols = colorsIn.match(colre);
+        }
         var moves = moveseq.split(/\s+/);
         var moveArr = [
             [0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], //UR
@@ -130,16 +136,16 @@ var clkImage = (function() {
         var x = [10, 30, 50, 75, 95, 115];
         for (var i = 0; i < 18; i++) {
             if(i < 9) {
-                drawClock(['#ffffff', '#ffffff'][~~(i / 9)], [width, x[~~(i / 3)], y[i % 3]], clks[i], "#000000");
+                drawClock(cols[0], [width, x[~~(i / 3)], y[i % 3]], clks[i], cols[2]);
             } else {
-                drawClock(['#000000', '#000000'][~~(i / 9)], [width, x[~~(i / 3)], y[i % 3]], clks[i], "#ffffff");
+                drawClock(cols[1], [width, x[~~(i / 3)], y[i % 3]], clks[i], cols[3]);
             }
         }
 
         var y = [20, 40];
         var x = [20, 40, 85, 105];
         for (var i = 0; i < 8; i++) {
-            drawButton(['#919191', '#4c4c4c'][buttons[i]], [width, x[~~(i / 2)], y[i % 2]]);
+            drawButton([cols[4], cols[5]][buttons[i]], [width, x[~~(i / 2)], y[i % 2]]);
         }
         return clkCanvas.toBuffer();
     };
@@ -149,4 +155,4 @@ module.exports.genImage = (scramble, colorsIn) => {
     return clkImage(scramble, colorsIn);
 }
 
-var colre = /#[0-9a-fA-F]{3}/g;
+var colre = /#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}/g;

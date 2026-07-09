@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "대회 카드 스타일";
 "settings.competition_card_style_list" = "목록";
 "settings.competition_card_style_glass" = "Glass";
+"settings.competition_card_style_compact" = "컴팩트";
 "settings.competitions_bg_label" = "대회 배경";
 "settings.result_popup" = "결과 팝업 표시";
 "settings.result_popup_help" = "입력 방법에 관계없이 각 해결 후에 결과 선택기를 표시합니다.";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "아래 가운데";
 "settings.draw_scramble_position_off" = "끔";
 "settings.draw_scramble_size" = "스크램블 그림 크기";
+"settings.draw_scramble_colors" = "스크램블 그림 색상";
+"settings.draw_scramble_colors_help" = "스크램블 그림에 사용되는 색상을 사용자화합니다.";
+"settings.draw_scramble_colors_reset" = "색상 재설정";
 "settings.hide_elements_when_solving" = "솔브 중 요소 숨기기";
 "settings.import_preparing" = "가져오기 준비 중…";
 "settings.import_in_progress" = "데이터 가져오는 중…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA 대회, 순위 및 결과 정보는 변경될 수 있습니다. WCA 공식 웹사이트가 최종 정보 출처입니다.";
 "about.wca_disclaimer_identity" = "WCA의 이름, 표장 및 서비스는 각 권리자에게 속합니다. WCA 로그인은 사용자가 승인한 기능에만 사용됩니다.";
 "about.visit_wca" = "WCA 웹사이트 방문";
+
+// Storage & Cache
+"settings.section.storage_cache" = "저장 공간 및 캐시";
+"settings.cache_title" = "저장 공간 및 캐시";
+"settings.cache_total" = "캐시된 데이터";
+"settings.cache_description" = "캐시 데이터는 다시 다운로드할 수 있습니다. 캐시를 지워도 솔브, 세션, 설정 또는 계정은 삭제되지 않습니다.";
+"settings.cache_section_competitions" = "대회";
+"settings.cache_competition_list" = "대회 목록 캐시";
+"settings.cache_competition_list_detail" = "WCA 및 Cubing China 대회 목록 캐시.";
+"settings.cache_competition_support" = "대회 보조 캐시";
+"settings.cache_competition_support_detail" = "현지화된 대회 이름, 국가 및 보조 메타데이터.";
+"settings.cache_competition_details" = "대회 상세 캐시";
+"settings.cache_competition_details_detail" = "이번 앱 세션의 상세 페이지, 일정, 지도, 등록 상태 및 파싱된 내용.";
+"settings.cache_top_cubers" = "상위 큐버 캐시";
+"settings.cache_top_cubers_detail" = "대회 카드에 표시되는 상위 큐버 미리보기 캐시.";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "WCA 결과 캐시";
+"settings.cache_wca_results_detail" = "캐시된 WCA 프로필 결과와 관련 조회 데이터.";
+"settings.cache_section_all" = "모든 캐시";
+"settings.cache_clear_all" = "모든 캐시 지우기";
+"settings.cache_clear_all_detail" = "CubeFlow가 나중에 다시 만들 수 있는 모든 캐시를 제거합니다.";
+"settings.cache_clear_all_footer" = "솔브, 세션, 사용자 설정, 가져오기 또는 WCA 로그인은 삭제되지 않습니다.";
+"settings.cache_session_only" = "세션 전용";
+"settings.cache_clear_confirm_title" = "캐시를 지울까요?";
+"settings.cache_clear_confirm_message" = "이 캐시 데이터는 다시 다운로드할 수 있습니다. 솔브, 세션, 설정 및 계정은 삭제되지 않습니다.";
+"settings.cache_clear_button" = "캐시 지우기";
+"settings.cache_cleared_message" = "캐시를 지웠습니다.";

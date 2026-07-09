@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "Gaya Kartu Kompetisi";
 "settings.competition_card_style_list" = "Daftar";
 "settings.competition_card_style_glass" = "Glass";
+"settings.competition_card_style_compact" = "Ringkas";
 "settings.competitions_bg_label" = "Latar Kompetisi";
 "settings.result_popup" = "Tampilkan popup hasil";
 "settings.result_popup_help" = "Tampilkan pemilih hasil setelah setiap solve, terlepas dari metode input.";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "Tengah Bawah";
 "settings.draw_scramble_position_off" = "Mati";
 "settings.draw_scramble_size" = "Ukuran Gambar Acakan";
+"settings.draw_scramble_colors" = "Warna Diagram Acakan";
+"settings.draw_scramble_colors_help" = "Sesuaikan warna yang digunakan oleh diagram acakan.";
+"settings.draw_scramble_colors_reset" = "Atur Ulang Warna";
 "settings.hide_elements_when_solving" = "Sembunyikan Elemen Saat Solve";
 "settings.import_preparing" = "Preparing import…";
 "settings.import_in_progress" = "Importing data…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA competition, ranking, and result information may change. The official WCA website is the authoritative source.";
 "about.wca_disclaimer_identity" = "WCA names, marks, and services belong to their respective owners. WCA sign-in is used only for features you authorize.";
 "about.visit_wca" = "Visit the WCA Website";
+
+// Storage & Cache
+"settings.section.storage_cache" = "Penyimpanan & Cache";
+"settings.cache_title" = "Penyimpanan & Cache";
+"settings.cache_total" = "Data Cache";
+"settings.cache_description" = "Data cache dapat diunduh lagi. Solve, sesi, pengaturan, dan akun tidak akan dihapus.";
+"settings.cache_section_competitions" = "Kompetisi";
+"settings.cache_competition_list" = "Cache Daftar Kompetisi";
+"settings.cache_competition_list_detail" = "Daftar kompetisi WCA dan Cubing China yang tersimpan.";
+"settings.cache_competition_support" = "Cache Dukungan Kompetisi";
+"settings.cache_competition_support_detail" = "Nama kompetisi lokal, negara, dan metadata pendukung.";
+"settings.cache_competition_details" = "Cache Detail Kompetisi";
+"settings.cache_competition_details_detail" = "Halaman, jadwal, peta, status registrasi, dan konten yang diproses untuk sesi aplikasi ini.";
+"settings.cache_top_cubers" = "Cache Top Cubers";
+"settings.cache_top_cubers_detail" = "Pratinjau top cuber yang tampil di kartu kompetisi.";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "Cache Hasil WCA";
+"settings.cache_wca_results_detail" = "Hasil profil WCA dan data lookup terkait yang tersimpan.";
+"settings.cache_section_all" = "Semua Cache";
+"settings.cache_clear_all" = "Hapus Semua Cache";
+"settings.cache_clear_all_detail" = "Menghapus semua cache yang dapat dibuat ulang oleh CubeFlow nanti.";
+"settings.cache_clear_all_footer" = "Tidak menghapus solve, sesi, pengaturan khusus, impor, atau login WCA.";
+"settings.cache_session_only" = "Sesi saja";
+"settings.cache_clear_confirm_title" = "Hapus cache?";
+"settings.cache_clear_confirm_message" = "Data cache ini dapat diunduh lagi. Solve, sesi, pengaturan, dan akun tidak akan dihapus.";
+"settings.cache_clear_button" = "Hapus Cache";
+"settings.cache_cleared_message" = "Cache dihapus.";

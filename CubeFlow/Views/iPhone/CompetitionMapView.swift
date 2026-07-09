@@ -17,6 +17,11 @@ private struct CompetitionMapDisplayItem: Identifiable {
     let kind: Kind
 }
 
+private struct CompetitionMapClusterKey: Hashable {
+    let latitudeBucket: Int
+    let longitudeBucket: Int
+}
+
 @available(iOS 17.0, *)
 struct CompetitionMapView: View {
     let query: CompetitionQuery
@@ -50,6 +55,7 @@ struct CompetitionMapView: View {
     @State private var showsRefreshProgress = false
     @State private var expectedCompetitionCount: Int?
     @State private var selectedCompetitionForDetail: CompetitionSummary?
+    @State private var mapDisplayItems: [CompetitionMapDisplayItem] = []
 
     private var mappableCompetitions: [CompetitionSummary] {
         competitions.filter { $0.latitude != nil && $0.longitude != nil }
@@ -67,10 +73,6 @@ struct CompetitionMapView: View {
     private var mapLookSelection: CompetitionMapLook {
         get { CompetitionMapLook(rawValue: storedMapLookRawValue) ?? .globe }
         nonmutating set { storedMapLookRawValue = newValue.rawValue }
-    }
-
-    private var mapDisplayItems: [CompetitionMapDisplayItem] {
-        clusteredMapDisplayItems(from: mappableCompetitions, in: currentMapRegion)
     }
 
     var body: some View {
@@ -93,6 +95,7 @@ struct CompetitionMapView: View {
             .ignoresSafeArea(edges: .bottom)
             .onMapCameraChange(frequency: .onEnd) { context in
                 currentMapRegion = context.region
+                updateMapDisplayItems()
             }
             .simultaneousGesture(
                 TapGesture().onEnded {
@@ -195,6 +198,12 @@ struct CompetitionMapView: View {
         .onPreferenceChange(CompetitionMapCardHeightPreferenceKey.self) { height in
             selectedCardHeight = height
         }
+        .onChange(of: competitions) { _ in
+            updateMapDisplayItems()
+        }
+        .onAppear {
+            updateMapDisplayItems()
+        }
     }
 
     private var bottomControlsSpacing: CGFloat {
@@ -219,63 +228,71 @@ struct CompetitionMapView: View {
         }
     }
 
+    private func updateMapDisplayItems() {
+        mapDisplayItems = clusteredMapDisplayItems(from: mappableCompetitions, in: currentMapRegion)
+    }
+
     private func clusteredMapDisplayItems(
         from competitions: [CompetitionSummary],
         in region: MKCoordinateRegion
     ) -> [CompetitionMapDisplayItem] {
         let latitudeThreshold = max(region.span.latitudeDelta * 0.04, 0.0012)
         let longitudeThreshold = max(region.span.longitudeDelta * 0.04, 0.0012)
-        var remaining = competitions
-        var items: [CompetitionMapDisplayItem] = []
+        var bucketOrder: [CompetitionMapClusterKey] = []
+        var buckets: [CompetitionMapClusterKey: [CompetitionSummary]] = [:]
 
-        while let seed = remaining.first {
-            remaining.removeFirst()
-
-            let nearby = remaining.filter { candidate in
-                guard let seedLatitude = seed.latitude,
-                      let seedLongitude = seed.longitude,
-                      let candidateLatitude = candidate.latitude,
-                      let candidateLongitude = candidate.longitude else {
-                    return false
-                }
-
-                return abs(seedLatitude - candidateLatitude) <= latitudeThreshold
-                    && abs(seedLongitude - candidateLongitude) <= longitudeThreshold
+        for competition in competitions {
+            guard let latitude = competition.latitude,
+                  let longitude = competition.longitude else {
+                continue
             }
 
-            let nearbyIDs = Set(nearby.map(\.id))
-            remaining.removeAll { nearbyIDs.contains($0.id) }
+            let key = CompetitionMapClusterKey(
+                latitudeBucket: Int((latitude / latitudeThreshold).rounded(.down)),
+                longitudeBucket: Int((longitude / longitudeThreshold).rounded(.down))
+            )
 
-            let group = [seed] + nearby
+            if buckets[key] == nil {
+                bucketOrder.append(key)
+                buckets[key] = []
+            }
+            buckets[key]?.append(competition)
+        }
+
+        return bucketOrder.compactMap { key in
+            guard let group = buckets[key], !group.isEmpty else { return nil }
 
             if group.count == 1,
                let competition = group.first,
                let latitude = competition.latitude,
                let longitude = competition.longitude {
-                items.append(
-                    CompetitionMapDisplayItem(
-                        id: competition.id,
-                        title: competition.name,
-                        coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
-                        kind: .competition(competition.id)
-                    )
-                )
-            } else {
-                let averagedLatitude = group.compactMap(\.latitude).reduce(0, +) / Double(group.count)
-                let averagedLongitude = group.compactMap(\.longitude).reduce(0, +) / Double(group.count)
-                let combinedTitle = group.map(\.name).joined(separator: " & ")
-                items.append(
-                    CompetitionMapDisplayItem(
-                        id: "cluster:" + group.map(\.id).sorted().joined(separator: ","),
-                        title: combinedTitle,
-                        coordinate: CLLocationCoordinate2D(latitude: averagedLatitude, longitude: averagedLongitude),
-                        kind: .cluster(group)
-                    )
+                return CompetitionMapDisplayItem(
+                    id: competition.id,
+                    title: competition.name,
+                    coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+                    kind: .competition(competition.id)
                 )
             }
-        }
 
-        return items
+            let coordinates = group.compactMap { competition -> CLLocationCoordinate2D? in
+                guard let latitude = competition.latitude,
+                      let longitude = competition.longitude else {
+                    return nil
+                }
+                return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+            }
+            guard !coordinates.isEmpty else { return nil }
+
+            let averagedLatitude = coordinates.map(\.latitude).reduce(0, +) / Double(coordinates.count)
+            let averagedLongitude = coordinates.map(\.longitude).reduce(0, +) / Double(coordinates.count)
+            let combinedTitle = group.map(\.name).joined(separator: " & ")
+            return CompetitionMapDisplayItem(
+                id: "cluster:" + group.map(\.id).sorted().joined(separator: ","),
+                title: combinedTitle,
+                coordinate: CLLocationCoordinate2D(latitude: averagedLatitude, longitude: averagedLongitude),
+                kind: .cluster(group)
+            )
+        }
     }
 
     private func zoomToCluster(_ competitions: [CompetitionSummary]) {

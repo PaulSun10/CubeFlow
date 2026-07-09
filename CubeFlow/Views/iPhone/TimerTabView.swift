@@ -75,6 +75,11 @@ struct TimerTabView: View {
     @State private var inspectionStartDate: Date?
     @State private var inspectionElapsed: Double = 0
     @State private var ganDisplayRefreshDate: Date = .now
+    @State private var timerBackgroundAppearance = AppearanceConfiguration.defaultBackground
+    @State private var timerTextAppearance = AppearanceConfiguration.defaultTimerText
+    @State private var scrambleTextAppearance = AppearanceConfiguration.defaultScrambleText
+    @State private var averageTextAppearance = AppearanceConfiguration.defaultAverageText
+    @State private var decodedTimerBackgroundImage: UIImage?
     @State private var announcedInspectionCheckpoints: Set<InspectionSpeechCheckpoint> = []
     @State private var currentSolveInspectionPenalty: SolveResult?
     @State private var pendingInspectionPenalty: SolveResult?
@@ -310,22 +315,6 @@ struct TimerTabView: View {
 
     private var ao12: Double? {
         SolveMetrics.trimmedAverage(from: filteredSolves, count: 12)
-    }
-
-    private var timerBackgroundAppearance: AppearanceConfiguration {
-        AppearanceConfiguration.decode(from: timerBackgroundAppearanceData, fallback: .defaultBackground)
-    }
-
-    private var timerTextAppearance: AppearanceConfiguration {
-        AppearanceConfiguration.decode(from: timerTextAppearanceData, fallback: .defaultTimerText)
-    }
-
-    private var scrambleTextAppearance: AppearanceConfiguration {
-        AppearanceConfiguration.decode(from: scrambleTextAppearanceData, fallback: .defaultScrambleText)
-    }
-
-    private var averageTextAppearance: AppearanceConfiguration {
-        AppearanceConfiguration.decode(from: averageTextAppearanceData, fallback: .defaultAverageText)
     }
 
     private var timerTextStyle: AnyShapeStyle {
@@ -761,6 +750,10 @@ struct TimerTabView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.18), value: showsGANResultPopup)
+            .onAppear {
+                updateTimerAppearances()
+                updateTimerBackgroundImage()
+            }
             .overlay {
                 if localBattleMode == .solo && enteringTimesWith == "timer" {
                     GeometryReader { _ in
@@ -792,6 +785,22 @@ struct TimerTabView: View {
             ganTimer.prepareIfNeeded()
         }
     }
+        .onChange(of: timerBackgroundAppearanceData) { _ in
+            updateTimerBackgroundAppearance()
+            updateTimerBackgroundImage()
+        }
+        .onChange(of: timerTextAppearanceData) { _ in
+            updateTimerTextAppearance()
+        }
+        .onChange(of: scrambleTextAppearanceData) { _ in
+            updateScrambleTextAppearance()
+        }
+        .onChange(of: averageTextAppearanceData) { _ in
+            updateAverageTextAppearance()
+        }
+        .onChange(of: timerBackgroundImageData) { _ in
+            updateTimerBackgroundImage()
+        }
         .onDisappear {
             invalidateTimer()
             invalidateLocalBattleTimer()
@@ -2031,8 +2040,7 @@ struct TimerTabView: View {
             )
         case .photo:
             #if os(iOS)
-            if let data = timerBackgroundImageData,
-               let image = UIImage(data: data) {
+            if let image = decodedTimerBackgroundImage {
                 return AnyView(
                     Image(uiImage: image)
                         .resizable()
@@ -2042,6 +2050,51 @@ struct TimerTabView: View {
             #endif
             return AnyView(Color.clear)
         }
+    }
+
+    private func updateTimerAppearances() {
+        updateTimerBackgroundAppearance()
+        updateTimerTextAppearance()
+        updateScrambleTextAppearance()
+        updateAverageTextAppearance()
+    }
+
+    private func updateTimerBackgroundAppearance() {
+        let decoded = AppearanceConfiguration.decode(from: timerBackgroundAppearanceData, fallback: .defaultBackground)
+        if timerBackgroundAppearance != decoded {
+            timerBackgroundAppearance = decoded
+        }
+    }
+
+    private func updateTimerTextAppearance() {
+        let decoded = AppearanceConfiguration.decode(from: timerTextAppearanceData, fallback: .defaultTimerText)
+        if timerTextAppearance != decoded {
+            timerTextAppearance = decoded
+        }
+    }
+
+    private func updateScrambleTextAppearance() {
+        let decoded = AppearanceConfiguration.decode(from: scrambleTextAppearanceData, fallback: .defaultScrambleText)
+        if scrambleTextAppearance != decoded {
+            scrambleTextAppearance = decoded
+        }
+    }
+
+    private func updateAverageTextAppearance() {
+        let decoded = AppearanceConfiguration.decode(from: averageTextAppearanceData, fallback: .defaultAverageText)
+        if averageTextAppearance != decoded {
+            averageTextAppearance = decoded
+        }
+    }
+
+    private func updateTimerBackgroundImage() {
+        guard timerBackgroundAppearance.style == .photo,
+              let data = timerBackgroundImageData else {
+            decodedTimerBackgroundImage = nil
+            return
+        }
+
+        decodedTimerBackgroundImage = UIImage(data: data)
     }
 
     private func gradientStartPoint(angle: Double) -> UnitPoint {

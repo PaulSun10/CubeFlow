@@ -37,6 +37,7 @@ private extension View {
 
 struct AlgsTabView: View {
     private let usesSystemBottomAccessory: Bool
+    private let isActive: Bool
     @Binding private var isOverviewBottomAccessoryVisible: Bool
     @Binding private var searchRequestID: Int
 
@@ -45,6 +46,8 @@ struct AlgsTabView: View {
     @State private var isShowingSearch = false
     @State private var isShowingTrainerHome = false
     @State private var recentPracticeNavigationContext: AlgRecentPracticeContext?
+    @State private var overviewSearchItemsCache: [AlgSearchItem] = []
+    @State private var overviewSearchItemsSignature = ""
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("algLearnedCasesStore") private var learnedCasesStore: String = "{}"
     @AppStorage("algBrowseViewModeStore") private var overviewBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
@@ -53,10 +56,12 @@ struct AlgsTabView: View {
 
     init(
         usesSystemBottomAccessory: Bool = false,
+        isActive: Bool = true,
         isOverviewBottomAccessoryVisible: Binding<Bool> = .constant(false),
         searchRequestID: Binding<Int> = .constant(0)
     ) {
         self.usesSystemBottomAccessory = usesSystemBottomAccessory
+        self.isActive = isActive
         self._isOverviewBottomAccessoryVisible = isOverviewBottomAccessoryVisible
         self._searchRequestID = searchRequestID
     }
@@ -129,6 +134,24 @@ struct AlgsTabView: View {
     }
 
     var body: some View {
+        Group {
+            if isActive {
+                activeContent
+            } else {
+                Color.clear
+            }
+        }
+        .onChange(of: isActive) { newValue in
+            guard usesSystemBottomAccessory else { return }
+            if newValue {
+                updateOverviewBottomAccessoryVisibility()
+            } else {
+                isOverviewBottomAccessoryVisible = false
+            }
+        }
+    }
+
+    private var activeContent: some View {
         CompatibleNavigationContainer {
             Group {
                 if sections.isEmpty || overviewBrowseViewMode == .list {
@@ -150,7 +173,7 @@ struct AlgsTabView: View {
                 }
             }
             .compatibleNavigationDestination(isPresented: $isShowingSearch) {
-                AlgSearchView(items: overviewSearchItems, languageCode: appLanguage)
+                AlgSearchView(items: overviewSearchItemsCache, languageCode: appLanguage)
             }
             .compatibleNavigationDestination(isPresented: $isShowingTrainerHome) {
                 AlgTrainerHomeView()
@@ -177,11 +200,17 @@ struct AlgsTabView: View {
                 }
             }
             .onChange(of: selectedPuzzle) { _ in
+                overviewSearchItemsCache = []
+                overviewSearchItemsSignature = ""
                 updateOverviewBottomAccessoryVisibility()
             }
             .onChange(of: searchRequestID) { _ in
                 guard usesSystemBottomAccessory else { return }
-                isShowingSearch = true
+                showOverviewSearch()
+            }
+            .onChange(of: appLanguage) { _ in
+                overviewSearchItemsCache = []
+                overviewSearchItemsSignature = ""
             }
         }
         .environment(\.setAlgBottomAccessoryVisible) { isVisible in
@@ -327,8 +356,24 @@ struct AlgsTabView: View {
             browseViewModeSelection: overviewBrowseViewModeSelection,
             usesContainerGlass: true
         ) {
-            isShowingSearch = true
+            showOverviewSearch()
         }
+    }
+
+    private var overviewSearchSignature: String {
+        "\(appLanguage)|\(selectedPuzzle.rawValue)"
+    }
+
+    private func showOverviewSearch() {
+        prepareOverviewSearchItemsIfNeeded()
+        isShowingSearch = true
+    }
+
+    private func prepareOverviewSearchItemsIfNeeded() {
+        let signature = overviewSearchSignature
+        guard overviewSearchItemsSignature != signature || overviewSearchItemsCache.isEmpty else { return }
+        overviewSearchItemsCache = makeOverviewSearchItems()
+        overviewSearchItemsSignature = signature
     }
 
     private func sectionHeader(_ titleKey: LocalizedStringKey) -> some View {
@@ -415,7 +460,7 @@ struct AlgsTabView: View {
         .padding(.vertical, 4)
     }
 
-    private var overviewSearchItems: [AlgSearchItem] {
+    private func makeOverviewSearchItems() -> [AlgSearchItem] {
         var items: [AlgSearchItem] = []
 
         for section in sections {

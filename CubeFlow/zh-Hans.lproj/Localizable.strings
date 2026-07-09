@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "比赛卡片样式";
 "settings.competition_card_style_list" = "列表";
 "settings.competition_card_style_glass" = "玻璃";
+"settings.competition_card_style_compact" = "紧凑列表";
 "settings.competitions_bg_label" = "比赛页背景";
 "settings.result_popup" = "显示结果弹窗";
 "settings.result_popup_help" = "无论使用哪种成绩输入方式，每次完成后都显示结果选择弹窗。";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "底部中央";
 "settings.draw_scramble_position_off" = "关闭";
 "settings.draw_scramble_size" = "打乱图示大小";
+"settings.draw_scramble_colors" = "打乱图示配色";
+"settings.draw_scramble_colors_help" = "自定义打乱图示使用的颜色。";
+"settings.draw_scramble_colors_reset" = "重置配色";
 "settings.hide_elements_when_solving" = "计时时隐藏元素";
 "settings.import_preparing" = "正在准备导入…";
 "settings.import_in_progress" = "正在导入数据…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA 比赛、排名和成绩信息可能发生变化，应以 WCA 官方网站为准。";
 "about.wca_disclaimer_identity" = "WCA 的名称、标识和服务归其各自权利方所有。WCA 登录仅用于你授权的功能。";
 "about.visit_wca" = "访问 WCA 网站";
+
+// Storage & Cache
+"settings.section.storage_cache" = "存储与缓存";
+"settings.cache_title" = "存储与缓存";
+"settings.cache_total" = "已缓存数据";
+"settings.cache_description" = "缓存数据可以重新下载。清理缓存不会删除你的成绩、分组、设置或账号。";
+"settings.cache_section_competitions" = "比赛";
+"settings.cache_competition_list" = "比赛列表缓存";
+"settings.cache_competition_list_detail" = "已缓存的 WCA 和粗饼比赛列表。";
+"settings.cache_competition_support" = "比赛辅助缓存";
+"settings.cache_competition_support_detail" = "本地化比赛名、国家和辅助元数据。";
+"settings.cache_competition_details" = "比赛详情缓存";
+"settings.cache_competition_details_detail" = "本次 App 会话中的详情页、赛程、地图、报名状态和解析内容。";
+"settings.cache_top_cubers" = "高手预览缓存";
+"settings.cache_top_cubers_detail" = "比赛卡片中显示的高手预览缓存。";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "WCA 成绩缓存";
+"settings.cache_wca_results_detail" = "已缓存的 WCA 个人成绩和相关查询数据。";
+"settings.cache_section_all" = "所有缓存";
+"settings.cache_clear_all" = "清除所有缓存";
+"settings.cache_clear_all_detail" = "移除 CubeFlow 之后可以重新生成的所有缓存。";
+"settings.cache_clear_all_footer" = "不会删除成绩、分组、自定义设置、导入数据或 WCA 登录状态。";
+"settings.cache_session_only" = "仅本次会话";
+"settings.cache_clear_confirm_title" = "清除缓存？";
+"settings.cache_clear_confirm_message" = "这些缓存数据可以重新下载。你的成绩、分组、设置和账号不会被删除。";
+"settings.cache_clear_button" = "清除缓存";
+"settings.cache_cleared_message" = "缓存已清除。";

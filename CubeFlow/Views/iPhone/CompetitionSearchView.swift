@@ -17,16 +17,37 @@ func competitionFlagEmoji(for countryCode: String) -> String {
 
 
 struct CompetitionSearchView: View {
-    let competitions: [CompetitionSummary]
+    let competitionsProvider: @MainActor () -> [CompetitionSummary]
+    let competitionProvider: @MainActor (String) -> CompetitionSummary?
     let appLanguage: String
 
     @State private var searchText = ""
+
+    init(
+        competitions: [CompetitionSummary],
+        appLanguage: String
+    ) {
+        self.competitionsProvider = { competitions }
+        self.competitionProvider = { id in competitions.first { $0.id == id } }
+        self.appLanguage = appLanguage
+    }
+
+    init(
+        competitionsProvider: @escaping @MainActor () -> [CompetitionSummary],
+        competitionProvider: @escaping @MainActor (String) -> CompetitionSummary?,
+        appLanguage: String
+    ) {
+        self.competitionsProvider = competitionsProvider
+        self.competitionProvider = competitionProvider
+        self.appLanguage = appLanguage
+    }
 
     private var normalizedSearchText: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
     private var filteredCompetitions: [CompetitionSummary] {
+        let competitions = competitionsProvider()
         guard !normalizedSearchText.isEmpty else { return competitions }
 
         return competitions.filter { competition in
@@ -73,8 +94,9 @@ struct CompetitionSearchView: View {
             } else {
                 ForEach(filteredCompetitions) { competition in
                     NavigationLink {
+                        let selectedCompetition = competitionProvider(competition.id) ?? competition
                         CompetitionDetailView(
-                            competition: competition,
+                            competition: selectedCompetition,
                             appLanguage: appLanguage
                         )
                     } label: {

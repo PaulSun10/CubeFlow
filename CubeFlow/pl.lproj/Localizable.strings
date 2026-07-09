@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "Styl karty zawodów";
 "settings.competition_card_style_list" = "Lista";
 "settings.competition_card_style_glass" = "Szkło";
+"settings.competition_card_style_compact" = "Kompaktowy";
 "settings.competitions_bg_label" = "Tło zawodów";
 "settings.result_popup" = "Pokaż okno wyniku";
 "settings.result_popup_help" = "Pokazuje wybór wyniku po każdym solve, niezależnie od metody wprowadzania.";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "Dolny środek";
 "settings.draw_scramble_position_off" = "Wył.";
 "settings.draw_scramble_size" = "Rozmiar rysunku scramble’a";
+"settings.draw_scramble_colors" = "Kolory diagramu scramble’a";
+"settings.draw_scramble_colors_help" = "Dostosuj kolory używane w diagramach scramble’a.";
+"settings.draw_scramble_colors_reset" = "Resetuj kolory";
 "settings.hide_elements_when_solving" = "Ukryj elementy podczas solve’a";
 "settings.import_preparing" = "Przygotowywanie importu…";
 "settings.import_in_progress" = "Importowanie danych…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA competition, ranking, and result information may change. The official WCA website is the authoritative source.";
 "about.wca_disclaimer_identity" = "WCA names, marks, and services belong to their respective owners. WCA sign-in is used only for features you authorize.";
 "about.visit_wca" = "Visit the WCA Website";
+
+// Storage & Cache
+"settings.section.storage_cache" = "Pamięć i cache";
+"settings.cache_title" = "Pamięć i cache";
+"settings.cache_total" = "Dane w cache";
+"settings.cache_description" = "Dane w cache można pobrać ponownie. Czasy, sesje, ustawienia i konto nie zostaną usunięte.";
+"settings.cache_section_competitions" = "Zawody";
+"settings.cache_competition_list" = "Cache listy zawodów";
+"settings.cache_competition_list_detail" = "Listy zawodów WCA i Cubing China zapisane w cache.";
+"settings.cache_competition_support" = "Cache pomocniczy zawodów";
+"settings.cache_competition_support_detail" = "Zlokalizowane nazwy, kraje i metadane pomocnicze.";
+"settings.cache_competition_details" = "Cache szczegółów zawodów";
+"settings.cache_competition_details_detail" = "Strony, harmonogramy, mapy, status rejestracji i przetworzona treść tej sesji.";
+"settings.cache_top_cubers" = "Cache najlepszych zawodników";
+"settings.cache_top_cubers_detail" = "Podglądy najlepszych zawodników na kartach zawodów.";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "Cache wyników WCA";
+"settings.cache_wca_results_detail" = "Wyniki profilu WCA i powiązane dane w cache.";
+"settings.cache_section_all" = "Wszystkie cache";
+"settings.cache_clear_all" = "Wyczyść wszystkie cache";
+"settings.cache_clear_all_detail" = "Usuwa wszystkie cache, które CubeFlow może później odtworzyć.";
+"settings.cache_clear_all_footer" = "Nie usuwa czasów, sesji, ustawień, importów ani logowania WCA.";
+"settings.cache_session_only" = "Tylko sesja";
+"settings.cache_clear_confirm_title" = "Wyczyścić cache?";
+"settings.cache_clear_confirm_message" = "Te dane można pobrać ponownie. Czasy, sesje, ustawienia i konto nie zostaną usunięte.";
+"settings.cache_clear_button" = "Wyczyść cache";
+"settings.cache_cleared_message" = "Cache wyczyszczony.";

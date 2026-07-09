@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "Kiểu thẻ cuộc thi";
 "settings.competition_card_style_list" = "Danh sách";
 "settings.competition_card_style_glass" = "Glass";
+"settings.competition_card_style_compact" = "Gọn";
 "settings.competitions_bg_label" = "Nền cuộc thi";
 "settings.result_popup" = "Hiển thị popup kết quả";
 "settings.result_popup_help" = "Hiển thị bộ chọn kết quả sau mỗi lần giải, bất kể phương thức nhập.";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "Dưới giữa";
 "settings.draw_scramble_position_off" = "Tắt";
 "settings.draw_scramble_size" = "Kích thước hình xáo trộn";
+"settings.draw_scramble_colors" = "Màu sơ đồ xáo trộn";
+"settings.draw_scramble_colors_help" = "Tùy chỉnh màu dùng trong sơ đồ xáo trộn.";
+"settings.draw_scramble_colors_reset" = "Đặt lại màu";
 "settings.hide_elements_when_solving" = "Ẩn thành phần khi đang giải";
 "settings.import_preparing" = "Preparing import…";
 "settings.import_in_progress" = "Importing data…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA competition, ranking, and result information may change. The official WCA website is the authoritative source.";
 "about.wca_disclaimer_identity" = "WCA names, marks, and services belong to their respective owners. WCA sign-in is used only for features you authorize.";
 "about.visit_wca" = "Visit the WCA Website";
+
+// Storage & Cache
+"settings.section.storage_cache" = "Dung lượng & bộ nhớ đệm";
+"settings.cache_title" = "Dung lượng & bộ nhớ đệm";
+"settings.cache_total" = "Dữ liệu đã lưu đệm";
+"settings.cache_description" = "Dữ liệu bộ nhớ đệm có thể tải lại. Việc xoá không xoá solve, session, cài đặt hoặc tài khoản của bạn.";
+"settings.cache_section_competitions" = "Cuộc thi";
+"settings.cache_competition_list" = "Bộ nhớ đệm danh sách cuộc thi";
+"settings.cache_competition_list_detail" = "Danh sách cuộc thi WCA và Cubing China đã lưu đệm.";
+"settings.cache_competition_support" = "Bộ nhớ đệm hỗ trợ cuộc thi";
+"settings.cache_competition_support_detail" = "Tên cuộc thi bản địa hoá, quốc gia và metadata hỗ trợ.";
+"settings.cache_competition_details" = "Bộ nhớ đệm chi tiết cuộc thi";
+"settings.cache_competition_details_detail" = "Trang, lịch, bản đồ, trạng thái đăng ký và nội dung đã phân tích trong phiên này.";
+"settings.cache_top_cubers" = "Bộ nhớ đệm top cuber";
+"settings.cache_top_cubers_detail" = "Bản xem trước top cuber hiển thị trên thẻ cuộc thi.";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "Bộ nhớ đệm kết quả WCA";
+"settings.cache_wca_results_detail" = "Kết quả hồ sơ WCA và dữ liệu tra cứu liên quan đã lưu đệm.";
+"settings.cache_section_all" = "Tất cả bộ nhớ đệm";
+"settings.cache_clear_all" = "Xoá tất cả bộ nhớ đệm";
+"settings.cache_clear_all_detail" = "Xoá mọi bộ nhớ đệm mà CubeFlow có thể tạo lại sau.";
+"settings.cache_clear_all_footer" = "Không xoá solve, session, cài đặt tuỳ chỉnh, dữ liệu nhập hoặc đăng nhập WCA.";
+"settings.cache_session_only" = "Chỉ phiên này";
+"settings.cache_clear_confirm_title" = "Xoá bộ nhớ đệm?";
+"settings.cache_clear_confirm_message" = "Dữ liệu này có thể tải lại. Solve, session, cài đặt và tài khoản sẽ không bị xoá.";
+"settings.cache_clear_button" = "Xoá bộ nhớ đệm";
+"settings.cache_cleared_message" = "Đã xoá bộ nhớ đệm.";

@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "Yarışma Kartı Stili";
 "settings.competition_card_style_list" = "Liste";
 "settings.competition_card_style_glass" = "Glass";
+"settings.competition_card_style_compact" = "Kompakt";
 "settings.competitions_bg_label" = "Yarışmalar Arka Planı";
 "settings.result_popup" = "Sonuç popup’ını göster";
 "settings.result_popup_help" = "Giriş yöntemi ne olursa olsun her çözümden sonra sonuç seçiciyi göster.";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "Alt Orta";
 "settings.draw_scramble_position_off" = "Kapalı";
 "settings.draw_scramble_size" = "Karıştırma Çizimi Boyutu";
+"settings.draw_scramble_colors" = "Karıştırma Diyagramı Renkleri";
+"settings.draw_scramble_colors_help" = "Karıştırma diyagramlarında kullanılan renkleri özelleştirin.";
+"settings.draw_scramble_colors_reset" = "Renkleri Sıfırla";
 "settings.hide_elements_when_solving" = "Çözerken Öğeleri Gizle";
 "settings.import_preparing" = "Preparing import…";
 "settings.import_in_progress" = "Importing data…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA competition, ranking, and result information may change. The official WCA website is the authoritative source.";
 "about.wca_disclaimer_identity" = "WCA names, marks, and services belong to their respective owners. WCA sign-in is used only for features you authorize.";
 "about.visit_wca" = "Visit the WCA Website";
+
+// Storage & Cache
+"settings.section.storage_cache" = "Depolama ve Önbellek";
+"settings.cache_title" = "Depolama ve Önbellek";
+"settings.cache_total" = "Önbellekteki Veri";
+"settings.cache_description" = "Önbellek verileri tekrar indirilebilir. Çözümler, oturumlar, ayarlar ve hesabın silinmez.";
+"settings.cache_section_competitions" = "Yarışmalar";
+"settings.cache_competition_list" = "Yarışma Listesi Önbelleği";
+"settings.cache_competition_list_detail" = "WCA ve Cubing China yarışma listeleri önbelleği.";
+"settings.cache_competition_support" = "Yarışma Destek Önbelleği";
+"settings.cache_competition_support_detail" = "Yerelleştirilmiş yarışma adları, ülkeler ve yardımcı meta veriler.";
+"settings.cache_competition_details" = "Yarışma Detay Önbelleği";
+"settings.cache_competition_details_detail" = "Bu uygulama oturumundaki sayfalar, programlar, haritalar, kayıt durumu ve işlenmiş içerik.";
+"settings.cache_top_cubers" = "Top Cuber Önbelleği";
+"settings.cache_top_cubers_detail" = "Yarışma kartlarında gösterilen top cuber önizlemeleri.";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "WCA Sonuç Önbelleği";
+"settings.cache_wca_results_detail" = "Önbellekteki WCA profil sonuçları ve ilgili arama verileri.";
+"settings.cache_section_all" = "Tüm Önbellekler";
+"settings.cache_clear_all" = "Tüm Önbellekleri Temizle";
+"settings.cache_clear_all_detail" = "CubeFlow’un daha sonra yeniden oluşturabileceği tüm önbellekleri kaldırır.";
+"settings.cache_clear_all_footer" = "Çözümler, oturumlar, özel ayarlar, içe aktarımlar veya WCA oturumu silinmez.";
+"settings.cache_session_only" = "Yalnızca oturum";
+"settings.cache_clear_confirm_title" = "Önbellek temizlensin mi?";
+"settings.cache_clear_confirm_message" = "Bu veriler tekrar indirilebilir. Çözümler, oturumlar, ayarlar ve hesabın silinmez.";
+"settings.cache_clear_button" = "Önbelleği Temizle";
+"settings.cache_cleared_message" = "Önbellek temizlendi.";

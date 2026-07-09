@@ -52,6 +52,7 @@ struct SettingsTabView: View {
     @AppStorage("competitionsBackgroundImageData") private var competitionsBackgroundImageData: Data?
     @AppStorage("drawScramblePlacement") private var drawScramblePlacement: String = DrawScramblePlacement.inline.rawValue
     @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = 132
+    @AppStorage("scrambleDiagramColorSchemeData") private var scrambleDiagramColorSchemeData: Data?
     @AppStorage("timerTextFontSize") private var timerTextFontSize: Double = 64
     @AppStorage("scrambleTextFontSize") private var scrambleTextFontSize: Double = 20
     @AppStorage("averageTextFontSize") private var averageTextFontSize: Double = 20
@@ -69,6 +70,7 @@ struct SettingsTabView: View {
     @State private var timerTextAppearance = AppearanceConfiguration.defaultTimerText
     @State private var scrambleTextAppearance = AppearanceConfiguration.defaultScrambleText
     @State private var averageTextAppearance = AppearanceConfiguration.defaultAverageText
+    @State private var scrambleDiagramColorScheme = ScrambleColorConfiguration.default
     @State private var showingImportPicker = false
     @State private var showingExportFormatDialog = false
     @State private var showingExportPicker = false
@@ -91,6 +93,12 @@ struct SettingsTabView: View {
     @State private var showingCompetitionCalculator = false
     @StateObject private var wcaAuth = WCAAuthManager.shared
 
+    let isActive: Bool
+
+    init(isActive: Bool = true) {
+        self.isActive = isActive
+    }
+
     private var currentLanguageOption: AppLanguageOption {
         appLanguageOptions().first(where: { $0.id == appLanguage }) ?? appLanguageOptions()[0]
     }
@@ -111,6 +119,14 @@ struct SettingsTabView: View {
     }
 
     var body: some View {
+        if !isActive {
+            Color.clear
+        } else {
+            settingsContent
+        }
+    }
+
+    private var settingsContent: some View {
         CompatibleNavigationContainer {
             settingsRootList
             .navigationTitle(Text(appLocalizedString("tab.settings", languageCode: appLanguage)))
@@ -158,6 +174,7 @@ struct SettingsTabView: View {
                     from: averageTextAppearanceData,
                     fallback: .defaultAverageText
                 )
+                scrambleDiagramColorScheme = ScrambleColorConfiguration.decode(from: scrambleDiagramColorSchemeData)
                 selectedAppIcon = AppIconOption.fromCurrentSystemIcon()?.rawValue ?? AppIconOption.red.rawValue
             }
             .onChange(of: timerBackgroundAppearance) { newValue in
@@ -174,6 +191,9 @@ struct SettingsTabView: View {
             }
             .onChange(of: averageTextAppearance) { newValue in
                 averageTextAppearanceData = try? JSONEncoder().encode(newValue)
+            }
+            .onChange(of: scrambleDiagramColorScheme) { newValue in
+                scrambleDiagramColorSchemeData = newValue.encodedData()
             }
             .fileImporter(
                 isPresented: $showingImportPicker,
@@ -297,13 +317,23 @@ struct SettingsTabView: View {
 
 private extension SettingsTabView {
     var settingsRootList: some View {
-        List {
-            wcaSettingsSection
+            List {
+                wcaSettingsSection
 
-            Section {
-                languageListRow
-                appIconListRow
-            } header: {
+                Section {
+                    NavigationLink {
+                        CacheSettingsView()
+                    } label: {
+                        settingsNavigationLabel(titleKey: "settings.cache_title")
+                    }
+                } header: {
+                    Text("settings.section.storage_cache")
+                }
+
+                Section {
+                    languageListRow
+                    appIconListRow
+                } header: {
                 Text("settings.section.general")
             }
 
@@ -358,6 +388,18 @@ private extension SettingsTabView {
                 }
             } header: {
                 Text("settings.section.timer")
+            }
+
+            Section {
+                NavigationLink {
+                    SmartCubeLabView()
+                } label: {
+                    settingsNavigationLabel(titleKey: "Smart Cube Lab", valueKey: "Experimental")
+                }
+            } header: {
+                Text("Smart Cubes")
+            } footer: {
+                Text("Connect GAN smart cubes, inspect raw BLE packets, and verify move tracking before the full trainer UI ships.")
             }
 
             Section {
@@ -855,10 +897,63 @@ private extension SettingsTabView {
                     }
                 }
             }
+
+            Section {
+                NavigationLink {
+                    scrambleDiagramColorSettingsList
+                } label: {
+                    settingsNavigationLabel(titleKey: "settings.draw_scramble_colors")
+                }
+            } footer: {
+                Text("settings.draw_scramble_colors_help")
+            }
         }
         .listStyle(.insetGrouped)
         .navigationTitle(Text(appLocalizedString("settings.draw_scramble_position", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var scrambleDiagramColorSettingsList: some View {
+        List {
+            ForEach(ScrambleColorPuzzle.allCases) { puzzle in
+                Section {
+                    ScrambleColorPreviewStrip(colors: scrambleDiagramColorScheme.colors(for: puzzle))
+                        .padding(.vertical, 4)
+
+                    ForEach(Array(puzzle.faceLabels.enumerated()), id: \.offset) { index, label in
+                        ColorPicker(selection: scrambleColorBinding(for: puzzle, index: index), supportsOpacity: false) {
+                            Text(label)
+                        }
+                    }
+                } header: {
+                    Text(puzzle.title)
+                } footer: {
+                    Text(puzzle.helpText)
+                }
+            }
+
+            Section {
+                Button("settings.draw_scramble_colors_reset", role: .destructive) {
+                    scrambleDiagramColorScheme = .default
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(Text(appLocalizedString("settings.draw_scramble_colors", languageCode: appLanguage)))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    func scrambleColorBinding(for puzzle: ScrambleColorPuzzle, index: Int) -> Binding<Color> {
+        Binding {
+            let colors = scrambleDiagramColorScheme.colors(for: puzzle)
+            let fallback = ScrambleColorConfiguration.default.colors(for: puzzle)
+            return Color(scrambleHex: colors.indices.contains(index) ? colors[index] : fallback[index])
+        } set: { newColor in
+            var colors = scrambleDiagramColorScheme.colors(for: puzzle)
+            guard colors.indices.contains(index) else { return }
+            colors[index] = newColor.scrambleHexString()
+            scrambleDiagramColorScheme.setColors(colors, for: puzzle)
+        }
     }
 
     var ganTimerConnectionRow: some View {
@@ -2013,6 +2108,305 @@ private extension SettingsTabView {
                 configuration.wrappedValue.setGradientAngle(newValue, for: variant)
             }
         )
+    }
+}
+
+
+private struct ScrambleColorPreviewStrip: View {
+    let colors: [String]
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(Array(colors.enumerated()), id: \.offset) { _, hex in
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(Color(scrambleHex: hex))
+                    .frame(height: 32)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .stroke(Color(.separator).opacity(0.45), lineWidth: 0.5)
+                    }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+private struct CacheSettingsView: View {
+    @AppStorage("appLanguage") private var appLanguage: String = "en"
+
+    @State private var report = AppCacheReport.empty
+    @State private var isClearing = false
+    @State private var pendingClearTarget: CacheClearTarget?
+    @State private var alertMessageKey: String?
+
+    var body: some View {
+        List {
+            Section {
+                HStack(spacing: 12) {
+                    Image(systemName: "internaldrive")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(.blue)
+                        .frame(width: 34, height: 34)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("settings.cache_total")
+                            .font(.system(size: 16, weight: .semibold))
+
+                        Text(AppCacheManager.formattedSize(report.totalBytes))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Spacer()
+
+                    if isClearing {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                }
+                .padding(.vertical, 4)
+            } footer: {
+                Text("settings.cache_description")
+            }
+
+            Section {
+                cacheActionRow(
+                    target: .competitionList,
+                    sizeText: AppCacheManager.formattedSize(report.competitionListBytes)
+                )
+                cacheActionRow(
+                    target: .competitionSupport,
+                    sizeText: AppCacheManager.formattedSize(report.competitionSupportBytes)
+                )
+                cacheActionRow(
+                    target: .competitionDetails,
+                    sizeText: appLocalizedString("settings.cache_session_only", languageCode: appLanguage)
+                )
+                cacheActionRow(
+                    target: .topCubers,
+                    sizeText: AppCacheManager.formattedSize(report.competitionTopCubersBytes)
+                )
+            } header: {
+                Text("settings.cache_section_competitions")
+            }
+
+            Section {
+                cacheActionRow(
+                    target: .wcaResults,
+                    sizeText: AppCacheManager.formattedSize(report.wcaResultsBytes)
+                )
+            } header: {
+                Text("settings.cache_section_wca")
+            }
+
+            Section {
+                Button(role: .destructive) {
+                    pendingClearTarget = .all
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: CacheClearTarget.all.systemImage)
+                            .font(.system(size: 18, weight: .semibold))
+                            .frame(width: 26)
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(LocalizedStringKey(CacheClearTarget.all.titleKey))
+                                .font(.system(size: 16, weight: .semibold))
+                            Text(LocalizedStringKey(CacheClearTarget.all.detailKey))
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 3)
+                }
+                .disabled(isClearing)
+            } footer: {
+                Text("settings.cache_clear_all_footer")
+            }
+        }
+        .navigationTitle(Text("settings.cache_title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await refreshReport()
+        }
+        .refreshable {
+            await refreshReport()
+        }
+        .confirmationDialog(
+            appLocalizedString("settings.cache_clear_confirm_title", languageCode: appLanguage),
+            isPresented: Binding(
+                get: { pendingClearTarget != nil },
+                set: { newValue in
+                    if !newValue {
+                        pendingClearTarget = nil
+                    }
+                }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let pendingClearTarget {
+                Button(appLocalizedString(pendingClearTarget.clearButtonKey, languageCode: appLanguage), role: .destructive) {
+                    Task {
+                        await clear(pendingClearTarget)
+                    }
+                }
+            }
+            Button("common.cancel", role: .cancel) {
+                pendingClearTarget = nil
+            }
+        } message: {
+            Text("settings.cache_clear_confirm_message")
+        }
+        .alert(
+            appLocalizedString("settings.cache_title", languageCode: appLanguage),
+            isPresented: Binding(
+                get: { alertMessageKey != nil },
+                set: { newValue in
+                    if !newValue {
+                        alertMessageKey = nil
+                    }
+                }
+            )
+        ) {
+            Button("common.done", role: .cancel) {
+                alertMessageKey = nil
+            }
+        } message: {
+            Text(LocalizedStringKey(alertMessageKey ?? "settings.cache_cleared_message"))
+        }
+    }
+
+    private func cacheActionRow(target: CacheClearTarget, sizeText: String) -> some View {
+        Button {
+            pendingClearTarget = target
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: target.systemImage)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(target.tint)
+                    .frame(width: 26)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(LocalizedStringKey(target.titleKey))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+
+                    Text(LocalizedStringKey(target.detailKey))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 10)
+
+                Text(sizeText)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            .padding(.vertical, 3)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isClearing)
+    }
+
+    @MainActor
+    private func clear(_ target: CacheClearTarget) async {
+        pendingClearTarget = nil
+        isClearing = true
+        defer {
+            isClearing = false
+        }
+
+        switch target {
+        case .competitionList:
+            await AppCacheManager.clearCompetitionListCache()
+        case .competitionSupport:
+            await AppCacheManager.clearCompetitionSupportCache()
+        case .competitionDetails:
+            await AppCacheManager.clearCompetitionDetailCache()
+        case .topCubers:
+            await AppCacheManager.clearCompetitionTopCubersCache()
+        case .wcaResults:
+            await AppCacheManager.clearWCAResultsCache()
+        case .all:
+            await AppCacheManager.clearAllCaches()
+        }
+        alertMessageKey = "settings.cache_cleared_message"
+        await refreshReport()
+    }
+
+    @MainActor
+    private func refreshReport() async {
+        let currentReport = await Task.detached(priority: .utility) {
+            AppCacheManager.currentReport()
+        }.value
+        report = currentReport
+    }
+}
+
+private enum CacheClearTarget: Identifiable, Hashable {
+    case competitionList
+    case competitionSupport
+    case competitionDetails
+    case topCubers
+    case wcaResults
+    case all
+
+    var id: String { titleKey }
+
+    var titleKey: String {
+        switch self {
+        case .competitionList: return "settings.cache_competition_list"
+        case .competitionSupport: return "settings.cache_competition_support"
+        case .competitionDetails: return "settings.cache_competition_details"
+        case .topCubers: return "settings.cache_top_cubers"
+        case .wcaResults: return "settings.cache_wca_results"
+        case .all: return "settings.cache_clear_all"
+        }
+    }
+
+    var detailKey: String {
+        switch self {
+        case .competitionList: return "settings.cache_competition_list_detail"
+        case .competitionSupport: return "settings.cache_competition_support_detail"
+        case .competitionDetails: return "settings.cache_competition_details_detail"
+        case .topCubers: return "settings.cache_top_cubers_detail"
+        case .wcaResults: return "settings.cache_wca_results_detail"
+        case .all: return "settings.cache_clear_all_detail"
+        }
+    }
+
+    var clearButtonKey: String {
+        switch self {
+        case .all:
+            return "settings.cache_clear_all"
+        default:
+            return "settings.cache_clear_button"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .competitionList: return "list.bullet.rectangle"
+        case .competitionSupport: return "globe.asia.australia"
+        case .competitionDetails: return "doc.text.magnifyingglass"
+        case .topCubers: return "trophy"
+        case .wcaResults: return "person.text.rectangle"
+        case .all: return "trash"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .competitionList: return .blue
+        case .competitionSupport: return .green
+        case .competitionDetails: return .orange
+        case .topCubers: return .yellow
+        case .wcaResults: return .indigo
+        case .all: return .red
+        }
     }
 }
 

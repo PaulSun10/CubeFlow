@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "Стиль карты соревнования";
 "settings.competition_card_style_list" = "Список";
 "settings.competition_card_style_glass" = "Стекло";
+"settings.competition_card_style_compact" = "Компактный";
 "settings.competitions_bg_label" = "Предыстория соревнований";
 "settings.result_popup" = "Показать всплывающее окно с результатами";
 "settings.result_popup_help" = "Показывать средство выбора результата после каждого решения, независимо от метода ввода.";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "Внизу по центру";
 "settings.draw_scramble_position_off" = "Выкл.";
 "settings.draw_scramble_size" = "Размер скремблирования";
+"settings.draw_scramble_colors" = "Цвета схемы скрамбла";
+"settings.draw_scramble_colors_help" = "Настройте цвета, используемые в схемах скрамбла.";
+"settings.draw_scramble_colors_reset" = "Сбросить цвета";
 "settings.hide_elements_when_solving" = "Скрыть элементы при решении";
 "settings.import_preparing" = "Подготовка импорта...";
 "settings.import_in_progress" = "Импорт данных...";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA competition, ranking, and result information may change. The official WCA website is the authoritative source.";
 "about.wca_disclaimer_identity" = "WCA names, marks, and services belong to their respective owners. WCA sign-in is used only for features you authorize.";
 "about.visit_wca" = "Visit the WCA Website";
+
+// Storage & Cache
+"settings.section.storage_cache" = "Хранилище и кэш";
+"settings.cache_title" = "Хранилище и кэш";
+"settings.cache_total" = "Данные в кэше";
+"settings.cache_description" = "Кэш можно загрузить снова. Ваши сборки, сессии, настройки и аккаунт не будут удалены.";
+"settings.cache_section_competitions" = "Соревнования";
+"settings.cache_competition_list" = "Кэш списка соревнований";
+"settings.cache_competition_list_detail" = "Кэшированные списки соревнований WCA и Cubing China.";
+"settings.cache_competition_support" = "Вспомогательный кэш соревнований";
+"settings.cache_competition_support_detail" = "Локализованные названия, страны и вспомогательные метаданные.";
+"settings.cache_competition_details" = "Кэш деталей соревнования";
+"settings.cache_competition_details_detail" = "Страницы, расписания, карты, статус регистрации и разобранный контент этой сессии.";
+"settings.cache_top_cubers" = "Кэш топ-куберов";
+"settings.cache_top_cubers_detail" = "Кэш превью топ-куберов на карточках соревнований.";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "Кэш результатов WCA";
+"settings.cache_wca_results_detail" = "Кэшированные результаты профиля WCA и связанные данные.";
+"settings.cache_section_all" = "Все кэши";
+"settings.cache_clear_all" = "Очистить все кэши";
+"settings.cache_clear_all_detail" = "Удаляет все кэши, которые CubeFlow сможет создать заново.";
+"settings.cache_clear_all_footer" = "Сборки, сессии, пользовательские настройки, импорты и вход WCA не удаляются.";
+"settings.cache_session_only" = "Только сессия";
+"settings.cache_clear_confirm_title" = "Очистить кэш?";
+"settings.cache_clear_confirm_message" = "Эти данные можно загрузить снова. Сборки, сессии, настройки и аккаунт не будут удалены.";
+"settings.cache_clear_button" = "Очистить кэш";
+"settings.cache_cleared_message" = "Кэш очищен.";

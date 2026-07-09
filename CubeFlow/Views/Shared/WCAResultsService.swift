@@ -164,6 +164,15 @@ enum WCAResultsService {
         return CachedPersonResultsSnapshot(page: snapshot.page, lastUpdated: snapshot.lastUpdated)
     }
 
+    static func clearPersonResultsCache() async {
+        await WCAResultsPageCacheStore.shared.clear()
+    }
+
+    static func clearAllCaches() async {
+        await WCAResultsSupplementalStore.shared.clear()
+        await WCAResultsPageCacheStore.shared.clear()
+    }
+
     static func enrichPersonResults(
         _ page: WCAPersonResultsPage,
         appLanguageCode: String
@@ -381,6 +390,11 @@ private actor WCAResultsSupplementalStore {
         cachedLocalizedCompetitionNames = loaded
         return loaded
     }
+
+    func clear() {
+        cachedCompetitionCountryCodes.removeAll()
+        cachedLocalizedCompetitionNames = nil
+    }
 }
 
 private actor WCAResultsPageCacheStore {
@@ -433,6 +447,12 @@ private actor WCAResultsPageCacheStore {
             withIntermediateDirectories: true
         )
         try? data.write(to: fileURL, options: [.atomic])
+    }
+
+    func clear() {
+        inMemorySnapshots.removeAll()
+        hasLoadedFromDisk = false
+        try? FileManager.default.removeItem(at: cacheFileURL())
     }
 }
 

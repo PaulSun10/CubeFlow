@@ -30,11 +30,28 @@ private extension View {
     }
 }
 
-private struct CompetitionDetailScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
+private struct CompetitionDetailHeaderSeparatorPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = .greatestFiniteMagnitude
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+private struct CompetitionDetailScrollTopInsetModifier: ViewModifier {
+    @Binding var topInset: CGFloat
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.onScrollGeometryChange(for: CGFloat.self) { geometry in
+                geometry.contentInsets.top
+            } action: { _, newValue in
+                topInset = newValue
+            }
+        } else {
+            content
+        }
     }
 }
 
@@ -71,9 +88,50 @@ private struct CompetitionListRowBackgroundModifier: ViewModifier {
     }
 }
 
+private struct CompetitionConditionalAsyncTaskModifier: ViewModifier {
+    let isEnabled: Bool
+    let id: String
+    let action: () async -> Void
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.task(id: id) {
+                await action()
+            }
+        } else {
+            content
+        }
+    }
+}
+
 private extension ShapeStyle where Self == Color {
     static var competitionSkeletonFill: Color {
         Color(uiColor: .secondarySystemFill)
+    }
+}
+
+@MainActor
+private enum CompetitionDateRangeFormatterCache {
+    private static let calendar = Calendar(identifier: .gregorian)
+    private static var formatters: [String: DateFormatter] = [:]
+
+    static func string(from date: Date, locale: Locale, format: String) -> String {
+        formatter(locale: locale, format: format).string(from: date)
+    }
+
+    private static func formatter(locale: Locale, format: String) -> DateFormatter {
+        let key = "\(locale.identifier)|\(format)"
+        if let formatter = formatters[key] {
+            return formatter
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = calendar
+        formatter.dateFormat = format
+        formatters[key] = formatter
+        return formatter
     }
 }
 
@@ -297,20 +355,6 @@ private enum CompetitionTopCuberLoadState: Equatable {
     case failed
 }
 
-private enum CompetitionScheduleDisplayMode: String, CaseIterable, Identifiable {
-    case calendar
-    case table
-
-    var id: String { rawValue }
-}
-
-private enum CompetitionScheduleTableStyle: String, CaseIterable, Identifiable {
-    case cards
-    case table
-
-    var id: String { rawValue }
-}
-
 @MainActor
 private final class CompetitionListRuntimeCache {
     struct Snapshot {
@@ -334,9 +378,59 @@ private final class CompetitionListRuntimeCache {
     }
 }
 
+@MainActor
+private final class CompetitionListLookupStore: ObservableObject {
+    private(set) var competitions: [CompetitionSummary] = []
+    private(set) var visibleCompetitionsSnapshot: [CompetitionSummary] = []
+    private(set) var competitionsByID: [String: CompetitionSummary] = [:]
+    private(set) var publishedCompetitions: [CompetitionSummary] = []
+
+    func setCompetitions(_ competitions: [CompetitionSummary]) {
+        self.competitions = competitions
+        rebuildLookup()
+    }
+
+    func setVisibleCompetitionsSnapshot(_ visibleCompetitionsSnapshot: [CompetitionSummary]) {
+        self.visibleCompetitionsSnapshot = visibleCompetitionsSnapshot
+    }
+
+    func setPublishedCompetitions(_ publishedCompetitions: [CompetitionSummary]) {
+        self.publishedCompetitions = publishedCompetitions
+        rebuildLookup()
+    }
+
+    private func rebuildLookup() {
+        var nextByID: [String: CompetitionSummary] = [:]
+
+        for competition in competitions {
+            nextByID[competition.id] = competition
+        }
+        for competition in publishedCompetitions {
+            nextByID[competition.id] = competition
+        }
+        competitionsByID = nextByID
+    }
+
+    func clear() {
+        competitions = []
+        visibleCompetitionsSnapshot = []
+        competitionsByID = [:]
+        publishedCompetitions = []
+    }
+
+    func competition(id: String) -> CompetitionSummary? {
+        competitionsByID[id]
+    }
+}
+
+private struct CompetitionDetailSelection: Identifiable, Hashable {
+    let id: String
+}
+
 enum CompetitionCardStyleOption: String, CaseIterable, Identifiable {
     case list
     case glass
+    case compact
 
     var id: String { rawValue }
 
@@ -346,15 +440,78 @@ enum CompetitionCardStyleOption: String, CaseIterable, Identifiable {
             return "settings.competition_card_style_list"
         case .glass:
             return "settings.competition_card_style_glass"
+        case .compact:
+            return "settings.competition_card_style_compact"
         }
     }
 }
 
-struct CompetitionTabView: View {
-    private static let initialTopCuberPreloadCount = 8
-    private static let nextTopCuberPrefetchCount = 16
-    private static let topCuberLoadConcurrency = 3
+private struct CompetitionStatusAlert: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+}
 
+private enum CompactRegistrationDisplayStatus: Hashable {
+    case open
+    case closed
+    case limitReached
+    case notOpenYet
+}
+
+private enum CompetitionRowStatusTint: Hashable {
+    case orange
+    case yellow
+    case green
+    case mint
+    case blue
+    case teal
+    case secondary
+
+    var color: Color {
+        switch self {
+        case .orange:
+            return .orange
+        case .yellow:
+            return .yellow
+        case .green:
+            return .green
+        case .mint:
+            return .mint
+        case .blue:
+            return .blue
+        case .teal:
+            return .teal
+        case .secondary:
+            return .secondary
+        }
+    }
+}
+
+private struct CompetitionRowModel: Identifiable, Equatable {
+    let id: String
+    let rowIndex: Int
+    let contentHash: Int
+    let name: String
+    let compactDisplayName: String
+    let flagEmoji: String
+    let dateRangeText: String
+    let locationLine: String
+    let venueLine: String
+    let competitorLimit: Int?
+    let statusBadgeTitle: String
+    let statusTint: CompetitionRowStatusTint
+    let compactStatus: CompactRegistrationDisplayStatus
+    let compactStatusMessage: String
+    let compactAddressCountry: String
+    let compactAddressRemainder: String
+
+    static func == (lhs: CompetitionRowModel, rhs: CompetitionRowModel) -> Bool {
+        lhs.id == rhs.id && lhs.contentHash == rhs.contentHash
+    }
+}
+
+struct CompetitionTabView: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("competitionCardStyle") private var competitionCardStyle: String = CompetitionCardStyleOption.list.rawValue
@@ -368,38 +525,58 @@ struct CompetitionTabView: View {
     @AppStorage("competition_filter_year") private var storedYearRawValue: String = CompetitionYearFilter.all.rawValue
     @AppStorage("competition_filter_status") private var storedStatusRawValue: String = CompetitionStatusFilter.upcoming.rawValue
     @AppStorage("competition_show_top_cubers") private var showsTopCubers: Bool = false
+    @StateObject private var competitionLookupStore = CompetitionListLookupStore()
     @State private var showsFilterPopover = false
-    @State private var competitions: [CompetitionSummary] = []
-    @State private var visibleCompetitionsSnapshot: [CompetitionSummary] = []
-    @State private var publishedVisibleCompetitions: [CompetitionSummary] = []
+    @State private var publishedCompetitionRowModels: [CompetitionRowModel] = []
     @State private var isLoading = true
     @State private var isLoadingMore = false
-    @State private var isPrefetchingRemainingCompetitions = false
     @State private var errorMessage: String?
     @State private var nextPage: Int? = 1
     @State private var showsMapView = false
     @State private var isShowingSearch = false
-    @State private var selectedCompetitionForDetail: CompetitionSummary?
+    @State private var selectedCompetitionForDetail: CompetitionDetailSelection?
     @State private var cubingRowClassesByKey: [String: String] = [:]
     @State private var showsRefreshSuccessBanner = false
     @State private var topCuberStatesByCompetitionID: [String: CompetitionTopCuberLoadState] = [:]
     @State private var topCuberRefreshingIDs: Set<String> = []
     @State private var areCompetitionEventIconsReady = CompetitionEventIconFont.isAvailable
     @State private var competitionNavigationSubtitleText = ""
-    @State private var topCubersTaskSignatureText = "off"
-    @State private var topCuberPreloadCompetitionIDs: [String] = []
-    @State private var topCuberPrefetchCompetitionIDs: [String] = []
+    @State private var compactStatusAlert: CompetitionStatusAlert?
+    @State private var compactStatusTapCompetitionID: String?
+    @State private var competitionsBackgroundAppearance = AppearanceConfiguration.defaultBackground
+    @State private var decodedCompetitionsBackgroundImage: UIImage?
+    @State private var activeLoadSignature: String?
+    @State private var lastLoadedFilterSignature: String?
+    @State private var lastLoadedFilterDate: Date?
 
     private let usesSystemBottomAccessory: Bool
+    private let isActive: Bool
     @Binding private var isBottomAccessoryVisible: Bool
     @Binding private var searchRequestID: Int
 
+    private var competitions: [CompetitionSummary] {
+        get { competitionLookupStore.competitions }
+        nonmutating set { competitionLookupStore.setCompetitions(newValue) }
+    }
+
+    private var visibleCompetitionsSnapshot: [CompetitionSummary] {
+        get { competitionLookupStore.visibleCompetitionsSnapshot }
+        nonmutating set { competitionLookupStore.setVisibleCompetitionsSnapshot(newValue) }
+    }
+
+    private var publishedVisibleCompetitions: [CompetitionSummary] {
+        get { competitionLookupStore.publishedCompetitions }
+        nonmutating set { competitionLookupStore.setPublishedCompetitions(newValue) }
+    }
+
     init(
         usesSystemBottomAccessory: Bool = false,
+        isActive: Bool = true,
         isBottomAccessoryVisible: Binding<Bool> = .constant(false),
         searchRequestID: Binding<Int> = .constant(0)
     ) {
         self.usesSystemBottomAccessory = usesSystemBottomAccessory
+        self.isActive = isActive
         _isBottomAccessoryVisible = isBottomAccessoryVisible
         _searchRequestID = searchRequestID
     }
@@ -413,15 +590,15 @@ struct CompetitionTabView: View {
 
                 if isLoading {
                     competitionLoadingSkeletonRows
-                } else if publishedVisibleCompetitions.isEmpty {
+                } else if publishedCompetitionRowModels.isEmpty {
                     if let errorMessage {
                         errorRow(message: errorMessage)
                     } else {
                         emptyRow
                     }
                 } else {
-                    ForEach(publishedVisibleCompetitions) { competition in
-                        competitionListRow(competition)
+                    ForEach(publishedCompetitionRowModels) { rowModel in
+                        competitionListRow(rowModel, rowIndex: rowModel.rowIndex)
                     }
 
                     if isLoadingMore {
@@ -452,11 +629,20 @@ struct CompetitionTabView: View {
             .navigationTitle(Text(localizedCompetitionStringInView(key: "tab.competitions", languageCode: appLanguage)))
             .compatibleNavigationSubtitle(Text(competitionNavigationSubtitle))
             .navigationBarTitleDisplayMode(.large)
-            .background(CompetitionNavigationBarFontConfigurator(largeSubtitle: competitionNavigationSubtitle))
-            .task {
+            .background {
+                if isActive {
+                    CompetitionNavigationBarFontConfigurator(largeSubtitle: competitionNavigationSubtitle)
+                }
+            }
+            .task(id: isActive) {
+                guard isActive else { return }
                 areCompetitionEventIconsReady = CompetitionEventIconFont.ensureRegistered()
             }
-            .onAppear(perform: updateBottomAccessoryVisibility)
+            .onAppear {
+                updateBottomAccessoryVisibility()
+                updateCompetitionsBackgroundAppearance()
+                updateCompetitionsBackgroundImage()
+            }
             .onDisappear {
                 if usesSystemBottomAccessory {
                     isBottomAccessoryVisible = false
@@ -471,54 +657,76 @@ struct CompetitionTabView: View {
             .refreshable {
                 await refreshCompetitionsForPullToRefresh()
             }
-            .task(id: appLanguage) {
+            .alert(item: $compactStatusAlert) { alert in
+                Alert(
+                    title: Text(alert.title),
+                    message: Text(alert.message),
+                    dismissButton: .default(Text(localizedCompetitionStringInView(key: "common.done", languageCode: appLanguage)))
+                )
+            }
+            .task(id: "\(isActive)|\(appLanguage)") {
+                guard isActive else { return }
                 await CompetitionService.warmRecognizedCountriesCache()
-                await CompetitionService.warmCompetitionLocalizedNamesCache(languageCode: appLanguage)
-                cubingRowClassesByKey = await fetchCubingRowClasses(languageCode: appLanguage)
+                do {
+                    try await Task.sleep(nanoseconds: 700_000_000)
+                } catch {
+                    return
+                }
+                guard isActive, !Task.isCancelled else { return }
+                let rowClasses = await fetchCubingRowClasses(languageCode: appLanguage)
+                guard isActive, !Task.isCancelled, cubingRowClassesByKey != rowClasses else { return }
+                cubingRowClassesByKey = rowClasses
             }
             .onChange(of: cubingRowClassesByKey) { _ in
                 syncVisibleCompetitionsSnapshot(query: competitionQuery)
                 publishVisibleCompetitionsSnapshot()
             }
             .onChange(of: showsTopCubers) { _ in
-                updateCompetitionListDerivedState(for: publishedVisibleCompetitions)
+                if !showsTopCubers {
+                    topCuberStatesByCompetitionID = [:]
+                    topCuberRefreshingIDs = []
+                }
+                updateCompetitionListDerivedState(for: competitionLookupStore.publishedCompetitions)
             }
-            .onChange(of: publishedVisibleCompetitions) { _ in
-                updateBottomAccessoryVisibility()
+            .onChange(of: competitionCardStyle) { _ in
+                updateCompetitionsBackgroundImage()
+            }
+            .onChange(of: competitionsBackgroundAppearanceData) { _ in
+                updateCompetitionsBackgroundAppearance()
+                updateCompetitionsBackgroundImage()
+            }
+            .onChange(of: competitionsBackgroundImageData) { _ in
+                updateCompetitionsBackgroundImage()
             }
             .onChange(of: searchRequestID) { _ in
                 guard usesSystemBottomAccessory else { return }
                 isShowingSearch = true
             }
-            .task(id: filterSignature) {
+            .task(id: "\(isActive)|\(filterSignature)") {
+                guard isActive else { return }
                 await loadCompetitions()
-            }
-            .task(id: topCubersTaskSignature) {
-                await loadVisibleTopCuberPreviewsIfNeeded()
             }
             .compatibleNavigationDestination(isPresented: $showsMapView) {
                 competitionMapDestination
             }
             .compatibleNavigationDestination(isPresented: $isShowingSearch) {
                 CompetitionSearchView(
-                    competitions: publishedVisibleCompetitions,
+                    competitionsProvider: { competitionLookupStore.publishedCompetitions },
+                    competitionProvider: { competitionLookupStore.competition(id: $0) },
                     appLanguage: appLanguage
                 )
             }
-            .compatibleNavigationDestination(item: $selectedCompetitionForDetail) { competition in
-                CompetitionDetailView(
-                    competition: competition,
-                    appLanguage: appLanguage
-                )
+            .compatibleNavigationDestination(item: $selectedCompetitionForDetail) { selection in
+                if let competition = competitionLookupStore.competition(id: selection.id) {
+                    CompetitionDetailView(
+                        competition: competition,
+                        appLanguage: appLanguage
+                    )
+                } else {
+                    competitionDetailMissingView
+                }
             }
         }
-    }
-
-    private var competitionsBackgroundAppearance: AppearanceConfiguration {
-        AppearanceConfiguration.decode(
-            from: competitionsBackgroundAppearanceData,
-            fallback: .defaultBackground
-        )
     }
 
     private var competitionsTabBackgroundView: some View {
@@ -544,8 +752,7 @@ struct CompetitionTabView: View {
             )
         case .photo:
             #if os(iOS)
-            if let data = competitionsBackgroundImageData,
-               let image = UIImage(data: data) {
+            if let image = decodedCompetitionsBackgroundImage {
                 return AnyView(
                     Image(uiImage: image)
                         .resizable()
@@ -555,6 +762,28 @@ struct CompetitionTabView: View {
             #endif
             return AnyView(Color.clear)
         }
+    }
+
+    private func updateCompetitionsBackgroundAppearance() {
+        let decoded = AppearanceConfiguration.decode(
+            from: competitionsBackgroundAppearanceData,
+            fallback: .defaultBackground
+        )
+        if competitionsBackgroundAppearance != decoded {
+            competitionsBackgroundAppearance = decoded
+        }
+    }
+
+    private func updateCompetitionsBackgroundImage() {
+        let usesGlassStyle = CompetitionCardStyleOption(rawValue: competitionCardStyle) == .glass
+        guard usesGlassStyle,
+              competitionsBackgroundAppearance.style == .photo,
+              let data = competitionsBackgroundImageData else {
+            decodedCompetitionsBackgroundImage = nil
+            return
+        }
+
+        decodedCompetitionsBackgroundImage = UIImage(data: data)
     }
 
     private func competitionsGradientStartPoint(angle: Double) -> UnitPoint {
@@ -664,6 +893,18 @@ struct CompetitionTabView: View {
         }
     }
 
+    private var competitionDetailMissingView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text(localizedCompetitionStringInView(key: "competitions.detail.unavailable", languageCode: appLanguage))
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.primary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     private var competitionNavigationSubtitle: String {
         competitionNavigationSubtitleText
     }
@@ -681,10 +922,6 @@ struct CompetitionTabView: View {
         ].joined(separator: "|")
     }
 
-    private var topCubersTaskSignature: String {
-        topCubersTaskSignatureText
-    }
-
     private var competitionQuery: CompetitionQuery {
         CompetitionQuery(
             languageCode: appLanguage,
@@ -696,7 +933,7 @@ struct CompetitionTabView: View {
     }
 
     private var shouldShowCompetitionBottomAccessory: Bool {
-        !publishedVisibleCompetitions.isEmpty
+        !publishedCompetitionRowModels.isEmpty
     }
 
     private var competitionBottomSearchBar: some View {
@@ -811,7 +1048,7 @@ struct CompetitionTabView: View {
         Text(localizedCompetitionStringInView(key: "competitions.refresh_success", languageCode: appLanguage))
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 30)
             .padding(.vertical, 8)
             .background(
                 Capsule()
@@ -824,28 +1061,95 @@ struct CompetitionTabView: View {
             .transition(.move(edge: .top).combined(with: .opacity))
     }
 
-    private func competitionRow(_ competition: CompetitionSummary) -> some View {
-        let usesGlassStyle = CompetitionCardStyleOption(rawValue: competitionCardStyle) == .glass
-        return usesGlassStyle ? AnyView(glassCompetitionRow(competition)) : AnyView(listCompetitionRow(competition))
+    @ViewBuilder
+    private func competitionRow(_ row: CompetitionRowModel, rowIndex: Int) -> some View {
+        switch CompetitionCardStyleOption(rawValue: competitionCardStyle) ?? .list {
+        case .list:
+            listCompetitionRow(row)
+        case .glass:
+            glassCompetitionRow(row)
+        case .compact:
+            compactCompetitionRow(row, rowIndex: rowIndex)
+        }
     }
 
-    private func listCompetitionRow(_ competition: CompetitionSummary) -> some View {
+    private func compactCompetitionRow(_ row: CompetitionRowModel, rowIndex: Int) -> some View {
+        ZStack(alignment: .leading) {
+            if !rowIndex.isMultiple(of: 2) {
+                Rectangle()
+                    .fill(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.05))
+                    .padding(.horizontal, 8)
+            }
+
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: 7) {
+                    Text(row.flagEmoji)
+                        .font(.system(size: 14))
+                        .fixedSize()
+
+                    Text(row.compactDisplayName)
+                        .font(.system(size: 14, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.76)
+                        .allowsTightening(true)
+                        .layoutPriority(1)
+
+                    Spacer(minLength: 8)
+
+                    Image(systemName: compactRegistrationStatusSymbol(for: row.compactStatus))
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(compactRegistrationStatusColor(for: row.compactStatus))
+                        .frame(width: 19, alignment: .center)
+                        .contentShape(Rectangle())
+                        .highPriorityGesture(
+                            TapGesture().onEnded {
+                                compactStatusTapCompetitionID = row.id
+                                compactStatusAlert = compactRegistrationStatusAlert(for: row)
+                                DispatchQueue.main.async {
+                                    if compactStatusTapCompetitionID == row.id {
+                                        compactStatusTapCompetitionID = nil
+                                    }
+                                }
+                            }
+                        )
+                        .accessibilityLabel(Text(compactRegistrationStatusAccessibilityTitle(for: row.compactStatus)))
+
+                    Text(row.dateRangeText)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                compactAddressText(for: row)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func listCompetitionRow(_ row: CompetitionRowModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(competitionFlagEmoji(for: competition.countryISO2))
+                        Text(row.flagEmoji)
                             .font(.system(size: 18))
-                        Text(competition.name)
+                        Text(row.name)
                             .font(.system(size: 18, weight: .semibold))
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
-                    Text(localizedCompetitionDateRange(for: competition))
+                    Text(row.dateRangeText)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.secondary)
 
-                    Text(competition.locationLine)
+                    Text(row.locationLine)
                         .font(.system(size: 15, weight: .regular))
                         .foregroundStyle(.secondary)
                 }
@@ -853,13 +1157,9 @@ struct CompetitionTabView: View {
                 Spacer(minLength: 12)
 
                 VStack(alignment: .trailing, spacing: 8) {
-                    statusBadge(
-                        for: competitionAvailabilityStatus(for: competition),
-                        competition: competition,
-                        languageCode: appLanguage
-                    )
+                    statusBadge(title: row.statusBadgeTitle, tint: row.statusTint)
 
-                    if let competitorLimit = competition.competitorLimit {
+                    if let competitorLimit = row.competitorLimit {
                         Text(String(format: localizedCompetitionStringInView(key: "competitions.competitor_limit_format", languageCode: appLanguage), competitorLimit))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.secondary)
@@ -868,25 +1168,26 @@ struct CompetitionTabView: View {
                 }
             }
 
-            if !competition.venueLine.isEmpty {
-                Text(competition.venueLine)
+            if !row.venueLine.isEmpty {
+                Text(row.venueLine)
                     .font(.system(size: 15, weight: .regular))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             if showsTopCubers {
-                competitionTopCubersContent(for: competition)
+                competitionTopCubersContent(for: row.id)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
-        .task(id: showsTopCubers ? "\(competition.id)|\(appLanguage)" : "off") {
+        .modifier(CompetitionConditionalAsyncTaskModifier(isEnabled: showsTopCubers, id: "\(row.id)|\(appLanguage)") {
+            guard let competition = competitionForRow(id: row.id) else { return }
             await loadTopCuberPreviewIfNeeded(for: competition)
-        }
+        })
     }
 
-    private func glassCompetitionRow(_ competition: CompetitionSummary) -> some View {
+    private func glassCompetitionRow(_ row: CompetitionRowModel) -> some View {
         let shape = RoundedRectangle(cornerRadius: 18, style: .continuous)
 
         return ZStack(alignment: .topTrailing) {
@@ -894,18 +1195,18 @@ struct CompetitionTabView: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text(competitionFlagEmoji(for: competition.countryISO2))
+                            Text(row.flagEmoji)
                                 .font(.system(size: 18))
-                            Text(competition.name)
+                            Text(row.name)
                                 .font(.system(size: 18, weight: .semibold))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
 
-                        Text(localizedCompetitionDateRange(for: competition))
+                        Text(row.dateRangeText)
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.secondary)
 
-                        Text(competition.locationLine)
+                        Text(row.locationLine)
                             .font(.system(size: 15, weight: .regular))
                             .foregroundStyle(.secondary)
                     }
@@ -913,13 +1214,9 @@ struct CompetitionTabView: View {
                     Spacer(minLength: 12)
 
                     VStack(alignment: .trailing, spacing: 8) {
-                        statusBadge(
-                            for: competitionAvailabilityStatus(for: competition),
-                            competition: competition,
-                            languageCode: appLanguage
-                        )
+                        statusBadge(title: row.statusBadgeTitle, tint: row.statusTint)
 
-                        if let competitorLimit = competition.competitorLimit {
+                        if let competitorLimit = row.competitorLimit {
                             Text(String(format: localizedCompetitionStringInView(key: "competitions.competitor_limit_format", languageCode: appLanguage), competitorLimit))
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundStyle(.secondary)
@@ -929,15 +1226,15 @@ struct CompetitionTabView: View {
                 }
                 .padding(.trailing, 18)
 
-                if !competition.venueLine.isEmpty {
-                    Text(competition.venueLine)
+                if !row.venueLine.isEmpty {
+                    Text(row.venueLine)
                         .font(.system(size: 15, weight: .regular))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if showsTopCubers {
-                    competitionTopCubersContent(for: competition)
+                    competitionTopCubersContent(for: row.id)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -951,14 +1248,15 @@ struct CompetitionTabView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .modifier(CompetitionCardSurfaceModifier(isGlass: true, shape: shape))
         .modifier(CompetitionListRowBackgroundModifier(isGlass: true, shape: shape))
-        .task(id: showsTopCubers ? "\(competition.id)|\(appLanguage)" : "off") {
+        .modifier(CompetitionConditionalAsyncTaskModifier(isEnabled: showsTopCubers, id: "\(row.id)|\(appLanguage)") {
+            guard let competition = competitionForRow(id: row.id) else { return }
             await loadTopCuberPreviewIfNeeded(for: competition)
-        }
+        })
     }
 
     @ViewBuilder
-    private func competitionTopCubersContent(for competition: CompetitionSummary) -> some View {
-        if let state = topCuberStatesByCompetitionID[competition.id] {
+    private func competitionTopCubersContent(for competitionID: String) -> some View {
+        if let state = topCuberStatesByCompetitionID[competitionID] {
             switch state {
             case .loading:
                 Divider()
@@ -978,7 +1276,7 @@ struct CompetitionTabView: View {
     private func competitionTopCubersSection(previews: [CompetitionTopCuberPreview]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizedCompetitionStringInView(key: "competitions.top_cubers", languageCode: appLanguage))
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.secondary)
 
             if #available(iOS 16.0, *) {
@@ -1078,7 +1376,7 @@ struct CompetitionTabView: View {
     private var competitionTopCubersSkeletonSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizedCompetitionStringInView(key: "competitions.top_cubers", languageCode: appLanguage))
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.secondary)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -1167,30 +1465,72 @@ struct CompetitionTabView: View {
         }
     }
 
-    private func competitionListRow(_ competition: CompetitionSummary) -> some View {
-        let usesGlassStyle = CompetitionCardStyleOption(rawValue: competitionCardStyle) == .glass
+    @ViewBuilder
+    private func competitionListRow(_ rowModel: CompetitionRowModel, rowIndex: Int) -> some View {
+        let cardStyle = CompetitionCardStyleOption(rawValue: competitionCardStyle) ?? .list
+        let row = competitionListRowBase(rowModel, rowIndex: rowIndex, cardStyle: cardStyle)
 
-        return Button {
-            selectedCompetitionForDetail = competition
+        if cardStyle == .compact {
+            if #available(iOS 16.0, *) {
+                row
+                    .alignmentGuide(.listRowSeparatorLeading) { dimensions in
+                        dimensions[.leading] + 8
+                    }
+                    .alignmentGuide(.listRowSeparatorTrailing) { dimensions in
+                        dimensions[.trailing] - 8
+                    }
+            } else {
+                row
+            }
+        } else {
+            row
+        }
+    }
+
+    private func competitionListRowBase(
+        _ rowModel: CompetitionRowModel,
+        rowIndex: Int,
+        cardStyle: CompetitionCardStyleOption
+    ) -> some View {
+        Button {
+            if cardStyle == .compact, compactStatusTapCompetitionID == rowModel.id {
+                compactStatusTapCompetitionID = nil
+                return
+            }
+            selectedCompetitionForDetail = CompetitionDetailSelection(id: rowModel.id)
         } label: {
-            competitionRow(competition)
+            competitionRow(rowModel, rowIndex: rowIndex)
         }
         .buttonStyle(.plain)
-        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-        .listRowSeparator(usesGlassStyle ? .hidden : .visible)
+        .listRowInsets(EdgeInsets(top: cardStyle == .compact ? 0 : 4, leading: cardStyle == .compact ? 8 : 16, bottom: cardStyle == .compact ? 0 : 4, trailing: cardStyle == .compact ? 8 : 16))
+        .listRowSeparator(cardStyle == .glass ? .hidden : .visible)
         .listRowBackground(Color.clear)
         .onAppear {
-            guard competition.id == publishedVisibleCompetitions.last?.id else { return }
+            guard rowModel.id == publishedCompetitionRowModels.last?.id else { return }
             Task {
                 await loadMoreCompetitionsIfNeeded()
             }
         }
     }
 
+    private func competitionForRow(id: String) -> CompetitionSummary? {
+        competitionLookupStore.competition(id: id)
+    }
+
     private func statusBadge(for status: CompetitionAvailabilityStatus, competition: CompetitionSummary, languageCode: String) -> some View {
         let badgeColor = statusColor(for: status, competition: competition)
         return Text(statusBadgeTitle(for: status, competition: competition, languageCode: languageCode))
-            .font(.system(size: 12, weight: .semibold))
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(badgeColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(badgeColor.opacity(0.12), in: Capsule())
+    }
+
+    private func statusBadge(title: String, tint: CompetitionRowStatusTint) -> some View {
+        let badgeColor = tint.color
+        return Text(title)
+            .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(badgeColor)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
@@ -1198,7 +1538,21 @@ struct CompetitionTabView: View {
     }
 
     private func statusBadgeTitle(for status: CompetitionAvailabilityStatus, competition: CompetitionSummary, languageCode: String) -> String {
-        if let rowClass = cubingRowClass(for: competition) {
+        statusBadgeTitle(
+            for: status,
+            competition: competition,
+            rowClass: cubingRowClass(for: competition),
+            languageCode: languageCode
+        )
+    }
+
+    private func statusBadgeTitle(
+        for status: CompetitionAvailabilityStatus,
+        competition: CompetitionSummary,
+        rowClass: String?,
+        languageCode: String
+    ) -> String {
+        if let rowClass {
             switch rowClass {
             case "info":
                 if let waitlistStart = competition.localizedWaitlistStartOverride, Date() < waitlistStart {
@@ -1282,6 +1636,204 @@ struct CompetitionTabView: View {
         return max(calendar.dateComponents([.day], from: now, to: target).day ?? 0, 0)
     }
 
+    private func compactRegistrationDisplayStatus(for competition: CompetitionSummary) -> CompactRegistrationDisplayStatus {
+        compactRegistrationDisplayStatus(
+            for: competition,
+            availabilityStatus: competitionAvailabilityStatus(for: competition)
+        )
+    }
+
+    private func compactRegistrationDisplayStatus(
+        for competition: CompetitionSummary,
+        availabilityStatus status: CompetitionAvailabilityStatus
+    ) -> CompactRegistrationDisplayStatus {
+        let now = Date()
+
+        switch status {
+        case .registrationOpen:
+            return .open
+        case .waitlist:
+            return competition.countryISO2.uppercased() == "CN" ? .limitReached : .open
+        case .registrationNotOpenYet:
+            return .notOpenYet
+        case .ended, .ongoing:
+            return .closed
+        case .upcoming:
+            let registrationOpenDate = competition.localizedRegistrationStartOverride ?? competition.registrationOpen
+            if let registrationOpenDate, registrationOpenDate > now {
+                return .notOpenYet
+            }
+            if let registrationClose = competition.registrationClose, registrationClose < now {
+                return .closed
+            }
+            return .notOpenYet
+        }
+    }
+
+    private func compactRegistrationStatusSymbol(for status: CompactRegistrationDisplayStatus) -> String {
+        switch status {
+        case .open:
+            return "person.fill.checkmark"
+        case .closed:
+            return "person.fill.xmark"
+        case .limitReached:
+            return "person.badge.clock.fill"
+        case .notOpenYet:
+            return "clock.fill"
+        }
+    }
+
+    private func compactRegistrationStatusColor(for status: CompactRegistrationDisplayStatus) -> Color {
+        switch status {
+        case .open:
+            return .green
+        case .closed:
+            return .red
+        case .limitReached:
+            return .orange
+        case .notOpenYet:
+            return Color(red: 0.05, green: 0.24, blue: 0.55)
+        }
+    }
+
+    private func compactRegistrationStatusAccessibilityTitle(for status: CompactRegistrationDisplayStatus) -> String {
+        switch status {
+        case .open:
+            return "Registration open"
+        case .closed:
+            return "Registration closed"
+        case .limitReached:
+            return "Competitor limit reached"
+        case .notOpenYet:
+            return "Registration not open yet"
+        }
+    }
+
+    private func compactRegistrationStatusAlert(
+        for status: CompactRegistrationDisplayStatus,
+        competition: CompetitionSummary
+    ) -> CompetitionStatusAlert {
+        CompetitionStatusAlert(
+            title: "Registration",
+            message: compactRegistrationStatusMessage(for: status, competition: competition)
+        )
+    }
+
+    private func compactRegistrationStatusMessage(
+        for status: CompactRegistrationDisplayStatus,
+        competition: CompetitionSummary
+    ) -> String {
+        switch status {
+        case .open:
+            return "Registration is open!"
+        case .limitReached:
+            return "Competitor limit reached, new registrations will go to the waiting list."
+        case .notOpenYet:
+            let registrationOpenDate = competition.localizedRegistrationStartOverride ?? competition.registrationOpen
+            if let registrationOpenDate, registrationOpenDate > Date() {
+                return "Registration will open in \(compactRelativeTimeDescription(until: registrationOpenDate))."
+            }
+            return "Registration details are not available yet."
+        case .closed:
+            let now = Date()
+            if competition.endDate < Calendar.current.startOfDay(for: now) {
+                return "Registration has closed. Competition has ended."
+            }
+            if competition.startDate <= now {
+                return "Registration has closed. Competition has started."
+            }
+            return "Registration has closed. Competition will start in \(compactRelativeTimeDescription(until: competition.startDate))."
+        }
+    }
+
+    private func compactRelativeTimeDescription(until date: Date) -> String {
+        let calendar = Calendar.current
+        let now = calendar.startOfDay(for: Date())
+        let target = calendar.startOfDay(for: date)
+        let components = calendar.dateComponents([.month, .weekOfYear, .day], from: now, to: target)
+        let months = max(components.month ?? 0, 0)
+        let weeks = max(components.weekOfYear ?? 0, 0)
+        let days = max(components.day ?? 0, 0)
+
+        if months > 0 {
+            return months == 1 ? "1 month" : "\(months) months"
+        }
+        if weeks > 0 {
+            return weeks == 1 ? "1 week" : "\(weeks) weeks"
+        }
+        return days == 1 ? "1 day" : "\(days) days"
+    }
+
+
+    private func compactRegistrationStatusAlert(for row: CompetitionRowModel) -> CompetitionStatusAlert {
+        CompetitionStatusAlert(
+            title: "Registration",
+            message: row.compactStatusMessage
+        )
+    }
+
+    private func compactAddressText(for row: CompetitionRowModel) -> Text {
+        guard !row.compactAddressCountry.isEmpty else {
+            return Text("")
+        }
+
+        return Text(row.compactAddressCountry).fontWeight(.semibold) + Text(row.compactAddressRemainder)
+    }
+
+    private func compactAddressParts(for competition: CompetitionSummary) -> [String] {
+        let countryName = appLocale(for: appLanguage).localizedString(forRegionCode: competition.countryISO2) ?? competition.countryISO2
+        var parts = [countryName]
+        parts.append(contentsOf: compactLocationParts(for: competition, countryName: countryName))
+        parts.append(contentsOf: compactVenueParts(for: competition))
+        return compactDeduplicatedParts(parts)
+    }
+
+    private func compactLocationParts(for competition: CompetitionSummary, countryName: String) -> [String] {
+        if let localizedRegionLine = competition.localizedRegionLineOverride, !localizedRegionLine.isEmpty {
+            let region = localizedRegionLine.components(separatedBy: "·").first ?? localizedRegionLine
+            let regionParts = compactSplitAddressComponent(region)
+            if competition.countryISO2 == "CN", regionParts.count >= 2 {
+                return [regionParts[1], regionParts[0]] + Array(regionParts.dropFirst(2))
+            }
+            return regionParts.filter { $0.caseInsensitiveCompare(countryName) != .orderedSame }
+        }
+
+        return compactSplitAddressComponent(competition.city)
+    }
+
+    private func compactVenueParts(for competition: CompetitionSummary) -> [String] {
+        if let localizedAddressLine = competition.localizedAddressLineOverride, !localizedAddressLine.isEmpty {
+            return compactSplitAddressComponent(localizedAddressLine)
+        }
+        if !competition.venue.isEmpty {
+            return compactSplitAddressComponent(competition.venue)
+        }
+        return compactSplitAddressComponent(competition.venueAddress)
+    }
+
+    private func compactSplitAddressComponent(_ component: String) -> [String] {
+        component
+            .replacingOccurrences(of: " · ", with: ",")
+            .replacingOccurrences(of: "·", with: ",")
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private func compactDeduplicatedParts(_ parts: [String]) -> [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+
+        for part in parts {
+            let normalized = part.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !normalized.isEmpty, !seen.contains(normalized) else { continue }
+            seen.insert(normalized)
+            result.append(part.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+
+        return result
+    }
+
     private func statusColor(for status: CompetitionAvailabilityStatus, competition: CompetitionSummary) -> Color {
         if let rowClass = cubingRowClass(for: competition) {
             switch rowClass {
@@ -1308,6 +1860,39 @@ struct CompetitionTabView: View {
         }
 
         return statusColor(for: status)
+    }
+
+    private func statusTint(for status: CompetitionAvailabilityStatus, competition: CompetitionSummary) -> CompetitionRowStatusTint {
+        statusTint(for: status, competition: competition, rowClass: cubingRowClass(for: competition))
+    }
+
+    private func statusTint(
+        for status: CompetitionAvailabilityStatus,
+        competition: CompetitionSummary,
+        rowClass: String?
+    ) -> CompetitionRowStatusTint {
+        if let rowClass {
+            switch rowClass {
+            case "info":
+                if let waitlistStart = competition.localizedWaitlistStartOverride, Date() < waitlistStart {
+                    return .teal
+                }
+                return .orange
+            case "danger":
+                if let waitlistStart = competition.localizedWaitlistStartOverride, Date() >= waitlistStart {
+                    return .teal
+                }
+                return .green
+            default:
+                break
+            }
+        }
+
+        if status == .waitlist {
+            return .teal
+        }
+
+        return statusTint(for: status)
     }
 
     private func competitionAvailabilityStatus(for competition: CompetitionSummary) -> CompetitionAvailabilityStatus {
@@ -1339,6 +1924,23 @@ struct CompetitionTabView: View {
     }
 
     private func statusColor(for status: CompetitionAvailabilityStatus) -> Color {
+        switch status {
+        case .upcoming:
+            return .orange
+        case .registrationNotOpenYet:
+            return .yellow
+        case .registrationOpen:
+            return .green
+        case .waitlist:
+            return .mint
+        case .ongoing:
+            return .blue
+        case .ended:
+            return .secondary
+        }
+    }
+
+    private func statusTint(for status: CompetitionAvailabilityStatus) -> CompetitionRowStatusTint {
         switch status {
         case .upcoming:
             return .orange
@@ -1388,11 +1990,31 @@ struct CompetitionTabView: View {
     private func loadCompetitions() async {
         let query = competitionQuery
         let expectedSignature = filterSignature
+        if activeLoadSignature == expectedSignature {
+            return
+        }
+        if lastLoadedFilterSignature == expectedSignature,
+           !publishedVisibleCompetitions.isEmpty,
+           let lastLoadedFilterDate,
+           Date().timeIntervalSince(lastLoadedFilterDate) < 60 {
+            isLoading = false
+            isLoadingMore = false
+            return
+        }
+
+        activeLoadSignature = expectedSignature
+        defer {
+            if activeLoadSignature == expectedSignature {
+                activeLoadSignature = nil
+            }
+        }
+
         errorMessage = nil
 
         if competitions.isEmpty,
            let runtimeSnapshot = CompetitionListRuntimeCache.shared.snapshot(for: expectedSignature) {
             restoreCompetitionRuntimeSnapshot(runtimeSnapshot)
+            markCompetitionFilterLoaded(signature: expectedSignature)
             return
         }
 
@@ -1415,17 +2037,14 @@ struct CompetitionTabView: View {
                 isLoading = false
                 storeCompetitionRuntimeSnapshot(signature: expectedSignature)
 
-                if nextPage != nil {
-                    Task {
-                        await prefetchRemainingCompetitions(for: query, expectedSignature: expectedSignature)
-                    }
-                } else {
+                if nextPage == nil {
                     await CompetitionService.cacheCompetitions(
                         competitions,
                         totalCount: competitions.count,
                         for: query
                     )
                 }
+                markCompetitionFilterLoaded(signature: expectedSignature)
                 return
             } catch {
                 if isCancellationLikeError(error) {
@@ -1433,6 +2052,7 @@ struct CompetitionTabView: View {
                 }
                 competitions = []
                 errorMessage = competitionListErrorMessage(for: error)
+                competitionLookupStore.clear()
                 isLoading = false
                 isLoadingMore = false
                 return
@@ -1456,15 +2076,13 @@ struct CompetitionTabView: View {
                 competitions = []
                 visibleCompetitionsSnapshot = []
                 publishedVisibleCompetitions = []
+                publishedCompetitionRowModels = []
+                competitionLookupStore.clear()
                 errorMessage = competitionListErrorMessage(for: error)
             }
         }
 
-        if nextPage != nil {
-            Task {
-                await prefetchRemainingCompetitions(for: query, expectedSignature: expectedSignature)
-            }
-        }
+        markCompetitionFilterLoaded(signature: expectedSignature)
     }
 
     @MainActor
@@ -1505,6 +2123,7 @@ struct CompetitionTabView: View {
             isLoading = false
             isLoadingMore = false
             storeCompetitionRuntimeSnapshot(signature: expectedSignature)
+            markCompetitionFilterLoaded(signature: expectedSignature)
 
             announceRefreshSuccess()
 
@@ -1516,11 +2135,6 @@ struct CompetitionTabView: View {
                 )
             }
 
-            if pageToFetch != nil {
-                Task {
-                    await prefetchRemainingCompetitions(for: query, expectedSignature: expectedSignature)
-                }
-            }
         } catch {
             if isCancellationLikeError(error) {
                 return
@@ -1535,6 +2149,7 @@ struct CompetitionTabView: View {
 
     @MainActor
     private func loadMoreCompetitionsIfNeeded() async {
+        guard isActive else { return }
         guard !isLoading, !isLoadingMore, nextPage != nil, errorMessage == nil else { return }
         isLoadingMore = true
         defer { isLoadingMore = false }
@@ -1549,6 +2164,12 @@ struct CompetitionTabView: View {
                 errorMessage = competitionListErrorMessage(for: error)
             }
         }
+    }
+
+    @MainActor
+    private func markCompetitionFilterLoaded(signature: String) {
+        lastLoadedFilterSignature = signature
+        lastLoadedFilterDate = Date()
     }
 
     @MainActor
@@ -1574,50 +2195,6 @@ struct CompetitionTabView: View {
         publishVisibleCompetitionsSnapshot()
         nextPage = pageToFetch
         storeCompetitionRuntimeSnapshot()
-    }
-
-    @MainActor
-    private func prefetchRemainingCompetitions(for query: CompetitionQuery, expectedSignature: String) async {
-        guard expectedSignature == filterSignature else { return }
-        guard !isPrefetchingRemainingCompetitions else { return }
-
-        isPrefetchingRemainingCompetitions = true
-        defer { isPrefetchingRemainingCompetitions = false }
-
-        while let page = nextPage {
-            guard expectedSignature == filterSignature else { return }
-
-            do {
-                let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
-                competitions = uniqueCompetitions(competitions + result.competitions)
-                syncVisibleCompetitionsSnapshot(query: query)
-                nextPage = result.nextPage
-                if !visibleCompetitionsSnapshot.isEmpty {
-                    publishVisibleCompetitionsSnapshot()
-                }
-                storeCompetitionRuntimeSnapshot(signature: expectedSignature)
-
-                if result.nextPage == nil {
-                    if !visibleCompetitionsSnapshot.isEmpty {
-                        publishVisibleCompetitionsSnapshot()
-                    }
-                    storeCompetitionRuntimeSnapshot(signature: expectedSignature)
-                    await CompetitionService.cacheCompetitions(
-                        competitions,
-                        totalCount: result.totalCount ?? competitions.count,
-                        for: query
-                    )
-                }
-            } catch {
-                if isCancellationLikeError(error) {
-                    return
-                }
-                if publishedVisibleCompetitions.isEmpty {
-                    errorMessage = competitionListErrorMessage(for: error)
-                }
-                return
-            }
-        }
     }
 
     @MainActor
@@ -1693,7 +2270,106 @@ struct CompetitionTabView: View {
     private func publishVisibleCompetitionsSnapshot() {
         let published = uniqueCompetitions(visibleCompetitionsSnapshot)
         publishedVisibleCompetitions = published
+        let rowModels = makeCompetitionRowModels(for: published)
+        if publishedCompetitionRowModels != rowModels {
+            publishedCompetitionRowModels = rowModels
+        }
         updateCompetitionListDerivedState(for: published)
+        updateBottomAccessoryVisibility()
+    }
+
+    private func makeCompetitionRowModels(for publishedCompetitions: [CompetitionSummary]) -> [CompetitionRowModel] {
+        publishedCompetitions.enumerated().map { index, competition in
+            let availabilityStatus = competitionAvailabilityStatus(for: competition)
+            let rowClass = cubingRowClass(for: competition)
+            let compactStatus = compactRegistrationDisplayStatus(for: competition, availabilityStatus: availabilityStatus)
+            let addressParts = compactAddressParts(for: competition)
+            let addressCountry = addressParts.first ?? ""
+            let addressRemainder = addressParts.dropFirst().map { ", \($0)" }.joined()
+            let name = competition.name
+            let compactDisplayName = competition.compactDisplayName
+            let flagEmoji = competitionFlagEmoji(for: competition.countryISO2)
+            let dateRangeText = localizedCompetitionDateRange(for: competition)
+            let locationLine = competition.locationLine
+            let venueLine = competition.venueLine
+            let competitorLimit = competition.competitorLimit
+            let statusBadgeTitle = statusBadgeTitle(
+                for: availabilityStatus,
+                competition: competition,
+                rowClass: rowClass,
+                languageCode: appLanguage
+            )
+            let statusTint = statusTint(for: availabilityStatus, competition: competition, rowClass: rowClass)
+            let compactStatusMessage = compactRegistrationStatusMessage(for: compactStatus, competition: competition)
+
+            return CompetitionRowModel(
+                id: competition.id,
+                rowIndex: index,
+                contentHash: competitionRowContentHash(
+                    rowIndex: index,
+                    name: name,
+                    compactDisplayName: compactDisplayName,
+                    flagEmoji: flagEmoji,
+                    dateRangeText: dateRangeText,
+                    locationLine: locationLine,
+                    venueLine: venueLine,
+                    competitorLimit: competitorLimit,
+                    statusBadgeTitle: statusBadgeTitle,
+                    statusTint: statusTint,
+                    compactStatus: compactStatus,
+                    compactStatusMessage: compactStatusMessage,
+                    compactAddressCountry: addressCountry,
+                    compactAddressRemainder: addressRemainder
+                ),
+                name: name,
+                compactDisplayName: compactDisplayName,
+                flagEmoji: flagEmoji,
+                dateRangeText: dateRangeText,
+                locationLine: locationLine,
+                venueLine: venueLine,
+                competitorLimit: competitorLimit,
+                statusBadgeTitle: statusBadgeTitle,
+                statusTint: statusTint,
+                compactStatus: compactStatus,
+                compactStatusMessage: compactStatusMessage,
+                compactAddressCountry: addressCountry,
+                compactAddressRemainder: addressRemainder
+            )
+        }
+    }
+
+    private func competitionRowContentHash(
+        rowIndex: Int,
+        name: String,
+        compactDisplayName: String,
+        flagEmoji: String,
+        dateRangeText: String,
+        locationLine: String,
+        venueLine: String,
+        competitorLimit: Int?,
+        statusBadgeTitle: String,
+        statusTint: CompetitionRowStatusTint,
+        compactStatus: CompactRegistrationDisplayStatus,
+        compactStatusMessage: String,
+        compactAddressCountry: String,
+        compactAddressRemainder: String
+    ) -> Int {
+        var hasher = Hasher()
+        hasher.combine(rowIndex)
+        hasher.combine(name)
+        hasher.combine(compactDisplayName)
+        hasher.combine(flagEmoji)
+        hasher.combine(dateRangeText)
+        hasher.combine(locationLine)
+        hasher.combine(venueLine)
+        hasher.combine(competitorLimit)
+        hasher.combine(statusBadgeTitle)
+        hasher.combine(statusTint)
+        hasher.combine(compactStatus)
+        hasher.combine(compactStatusMessage)
+        hasher.combine(compactAddressCountry)
+        hasher.combine(compactAddressRemainder)
+        return hasher.finalize()
     }
 
     private func updateCompetitionListDerivedState(for publishedCompetitions: [CompetitionSummary]) {
@@ -1720,22 +2396,6 @@ struct CompetitionTabView: View {
             "\(registrationOpenCount) \(localizedCompetitionStringInView(key: "competitions.status.registration_open", languageCode: appLanguage))"
         ].joined(separator: " · ")
 
-        topCuberPreloadCompetitionIDs = Array(
-            publishedCompetitions
-                .prefix(Self.initialTopCuberPreloadCount)
-                .map(\.id)
-        )
-        topCuberPrefetchCompetitionIDs = Array(
-            publishedCompetitions
-                .dropFirst(Self.initialTopCuberPreloadCount)
-                .prefix(Self.nextTopCuberPrefetchCount)
-                .map(\.id)
-        )
-        topCubersTaskSignatureText = [
-            showsTopCubers ? "on" : "off",
-            appLanguage,
-            (topCuberPreloadCompetitionIDs + topCuberPrefetchCompetitionIDs).joined(separator: ",")
-        ].joined(separator: "|")
     }
 
     @MainActor
@@ -1744,7 +2404,9 @@ struct CompetitionTabView: View {
         competitions = uniqueCompetitions(snapshot.competitions)
         visibleCompetitionsSnapshot = uniqueCompetitions(snapshot.visibleCompetitionsSnapshot)
         publishedVisibleCompetitions = uniqueCompetitions(snapshot.publishedVisibleCompetitions)
+        publishedCompetitionRowModels = makeCompetitionRowModels(for: publishedVisibleCompetitions)
         updateCompetitionListDerivedState(for: publishedVisibleCompetitions)
+        updateBottomAccessoryVisibility()
         nextPage = snapshot.nextPage
         topCuberStatesByCompetitionID = snapshot.topCuberStatesByCompetitionID
         errorMessage = nil
@@ -1770,8 +2432,6 @@ struct CompetitionTabView: View {
     @MainActor
     private func loadTopCuberPreviewIfNeeded(for competition: CompetitionSummary) async {
         guard showsTopCubers else {
-            topCuberStatesByCompetitionID = [:]
-            topCuberRefreshingIDs = []
             return
         }
 
@@ -1790,92 +2450,6 @@ struct CompetitionTabView: View {
         }
 
         await refreshTopCuberPreview(for: competition, usesLoadingPlaceholder: true)
-    }
-
-    @MainActor
-    private func loadVisibleTopCuberPreviewsIfNeeded() async {
-        guard showsTopCubers else {
-            topCuberStatesByCompetitionID = [:]
-            topCuberRefreshingIDs = []
-            return
-        }
-
-        for competition in publishedVisibleCompetitions {
-            if let cached = await CompetitionService.cachedCompetitionTopCuberPreviews(for: competition.id) {
-                topCuberStatesByCompetitionID[competition.id] = cached.isEmpty ? .empty : .loaded(cached)
-            }
-        }
-        storeCompetitionRuntimeSnapshot()
-
-        let preloadIDs = Set(topCuberPreloadCompetitionIDs)
-        let prefetchIDs = Set(topCuberPrefetchCompetitionIDs)
-
-        let preloadTargets = publishedVisibleCompetitions
-            .filter { preloadIDs.contains($0.id) }
-            .filter { competition in !topCuberRefreshingIDs.contains(competition.id) }
-
-        let prefetchTargets = publishedVisibleCompetitions
-            .filter { prefetchIDs.contains($0.id) }
-            .filter { competition in
-                topCuberStatesByCompetitionID[competition.id] == nil &&
-                !topCuberRefreshingIDs.contains(competition.id)
-            }
-
-        let jobs: [(competition: CompetitionSummary, usesLoadingPlaceholder: Bool)] =
-            preloadTargets.map { competition in
-                (
-                    competition,
-                    topCuberStatesByCompetitionID[competition.id] == nil
-                )
-            } +
-            prefetchTargets.map { competition in
-                (competition, false)
-            }
-
-        guard !jobs.isEmpty else { return }
-
-        for job in jobs where job.usesLoadingPlaceholder {
-            topCuberStatesByCompetitionID[job.competition.id] = .loading
-        }
-        for job in jobs {
-            topCuberRefreshingIDs.insert(job.competition.id)
-        }
-
-        var nextIndex = 0
-        await withTaskGroup(of: (String, [CompetitionTopCuberPreview]?, Bool).self) { group in
-            let initialCount = min(Self.topCuberLoadConcurrency, jobs.count)
-
-            func enqueueJob(_ job: (competition: CompetitionSummary, usesLoadingPlaceholder: Bool)) {
-                group.addTask {
-                    let previews = await CompetitionService.fetchCompetitionTopCuberPreviews(
-                        for: job.competition,
-                        languageCode: appLanguage
-                    )
-                    return (job.competition.id, previews, job.usesLoadingPlaceholder)
-                }
-            }
-
-            while nextIndex < initialCount {
-                enqueueJob(jobs[nextIndex])
-                nextIndex += 1
-            }
-
-            while let (competitionID, previews, usesLoadingPlaceholder) = await group.next() {
-                topCuberRefreshingIDs.remove(competitionID)
-
-                if let previews {
-                    topCuberStatesByCompetitionID[competitionID] = previews.isEmpty ? .empty : .loaded(previews)
-                } else if usesLoadingPlaceholder {
-                    topCuberStatesByCompetitionID[competitionID] = .failed
-                }
-                storeCompetitionRuntimeSnapshot()
-
-                if nextIndex < jobs.count {
-                    enqueueJob(jobs[nextIndex])
-                    nextIndex += 1
-                }
-            }
-        }
     }
 
     @MainActor
@@ -1931,28 +2505,25 @@ struct CompetitionTabView: View {
     private func localizedCompetitionDateRange(for competition: CompetitionSummary) -> String {
         let locale = appLocale(for: appLanguage)
         let calendar = Calendar(identifier: .gregorian)
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.calendar = calendar
 
         let sameYear = calendar.component(.year, from: competition.startDate) == calendar.component(.year, from: competition.endDate)
         let sameMonth = sameYear && calendar.component(.month, from: competition.startDate) == calendar.component(.month, from: competition.endDate)
         let sameDay = sameMonth && calendar.component(.day, from: competition.startDate) == calendar.component(.day, from: competition.endDate)
 
-        formatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.full_format", languageCode: appLanguage)
+        let fullFormat = localizedCompetitionStringInView(key: "competition.date.full_format", languageCode: appLanguage)
         if sameDay {
-            return formatter.string(from: competition.startDate)
+            return CompetitionDateRangeFormatterCache.string(from: competition.startDate, locale: locale, format: fullFormat)
         }
         if sameMonth {
-            let monthFormatter = DateFormatter()
-            monthFormatter.locale = locale
-            monthFormatter.calendar = calendar
-            monthFormatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.month_day_format", languageCode: appLanguage)
-            let start = monthFormatter.string(from: competition.startDate)
-            formatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.day_suffix_format", languageCode: appLanguage)
-            return "\(start) - \(formatter.string(from: competition.endDate))"
+            let monthDayFormat = localizedCompetitionStringInView(key: "competition.date.month_day_format", languageCode: appLanguage)
+            let daySuffixFormat = localizedCompetitionStringInView(key: "competition.date.day_suffix_format", languageCode: appLanguage)
+            let start = CompetitionDateRangeFormatterCache.string(from: competition.startDate, locale: locale, format: monthDayFormat)
+            let end = CompetitionDateRangeFormatterCache.string(from: competition.endDate, locale: locale, format: daySuffixFormat)
+            return "\(start) - \(end)"
         }
-        return "\(formatter.string(from: competition.startDate)) - \(formatter.string(from: competition.endDate))"
+        let start = CompetitionDateRangeFormatterCache.string(from: competition.startDate, locale: locale, format: fullFormat)
+        let end = CompetitionDateRangeFormatterCache.string(from: competition.endDate, locale: locale, format: fullFormat)
+        return "\(start) - \(end)"
     }
 
     private func cubingRowClass(for competition: CompetitionSummary) -> String? {
@@ -1978,7 +2549,7 @@ struct CompetitionTabView: View {
 
         var request = URLRequest(url: url)
         request.timeoutInterval = 12
-        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.cachePolicy = .useProtocolCachePolicy
         request.setValue(
             "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
             forHTTPHeaderField: "User-Agent"
@@ -3710,8 +4281,7 @@ struct CompetitionDetailView: View {
     @State private var isLoadingWCALive = false
     @State private var wcaLiveContentOverride: CompetitionWCALiveContent?
     @State private var selectedWCALiveRoundID = ""
-    @State private var selectedScheduleDisplayMode: CompetitionScheduleDisplayMode = .calendar
-    @AppStorage("competitionScheduleTableStyle") private var selectedScheduleTableStyleRaw = CompetitionScheduleTableStyle.cards.rawValue
+    @State private var selectedScheduleEventCode = ""
     @State private var filteredCompetitorsSnapshot: [CompetitionCompetitorPreview] = []
     @State private var competitorMatrixEventIDsSnapshot: [String] = []
     @State private var showsCompetitorNumbersSnapshot = false
@@ -3720,11 +4290,21 @@ struct CompetitionDetailView: View {
     @State private var displayedPsychCompetitorsSnapshot: [CompetitionCompetitorPsychPreview] = []
     @State private var psychOverallRankByCompetitorIDSnapshot: [String: Int] = [:]
     @State private var psychMatrixEventIDsSnapshot: [String] = []
-    @State private var showsCollapsedNavigationTitle = false
-    @State private var navigationTitleBaselineY: CGFloat?
+    @State private var collapsedNavigationTitleOpacity: CGFloat = 0
+    @State private var detailScrollTopInset: CGFloat = 0
+    @State private var detailHeaderSeparatorY: CGFloat = .greatestFiniteMagnitude
 
-    private var selectedScheduleTableStyle: CompetitionScheduleTableStyle {
-        CompetitionScheduleTableStyle(rawValue: selectedScheduleTableStyleRaw) ?? .cards
+    private let collapsedNavigationTitleFadeDistance: CGFloat = 28
+    private let collapsedNavigationTitleTriggerOffset: CGFloat = 0
+
+    private var activeScheduleEventCode: String {
+        let selected = selectedScheduleEventCode.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !selected.isEmpty,
+              detailContent.scheduleEventSummaries.contains(where: { $0.eventCode?.lowercased() == selected }) else {
+            return ""
+        }
+
+        return selected
     }
 
     private var displayCompetitionName: String {
@@ -3744,6 +4324,13 @@ struct CompetitionDetailView: View {
 
     private var isMainlandChinaCompetition: Bool {
         competition.countryISO2.uppercased() == "CN"
+    }
+
+    private var usesNativeDetailNavigationHeader: Bool {
+        if #available(iOS 26.0, *) {
+            return isMainlandChinaCompetition
+        }
+        return false
     }
 
     private var eventTitles: [String] {
@@ -4130,27 +4717,20 @@ struct CompetitionDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                GeometryReader { proxy in
-                    Color.clear
-                        .preference(
-                            key: CompetitionDetailScrollOffsetPreferenceKey.self,
-                            value: proxy.frame(in: .global).minY
-                        )
-                }
-                .frame(height: 0)
-
                 if !isMainlandChinaCompetition {
                     heroCard
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
                 }
 
-                tabStrip
-                    .padding(.top, isMainlandChinaCompetition ? 8 : 0)
+                if !usesNativeDetailNavigationHeader {
+                    tabStrip
+                        .padding(.top, isMainlandChinaCompetition ? 8 : 0)
 
-                if isMainlandChinaCompetition {
-                    cubingPageHeader
-                        .padding(.horizontal, 16)
+                    if isMainlandChinaCompetition {
+                        cubingPageHeader
+                            .padding(.horizontal, 16)
+                    }
                 }
 
                 tabContent
@@ -4158,20 +4738,32 @@ struct CompetitionDetailView: View {
                     .padding(.bottom, 24)
             }
         }
+        .coordinateSpace(name: "competitionDetailScrollFallback")
+        .modifier(CompetitionDetailScrollTopInsetModifier(topInset: $detailScrollTopInset))
         .background(Color(uiColor: .systemGroupedBackground))
-        .navigationTitle(isMainlandChinaCompetition ? "" : displayCompetitionName)
-        .navigationBarTitleDisplayMode(.inline)
-        .onPreferenceChange(CompetitionDetailScrollOffsetPreferenceKey.self) { currentY in
-            if navigationTitleBaselineY == nil {
-                navigationTitleBaselineY = currentY
+        .navigationTitle(usesNativeDetailNavigationHeader ? displayCompetitionName : (isMainlandChinaCompetition ? "" : displayCompetitionName))
+        .modifier(CompetitionNavigationSubtitleModifier(subtitle: usesNativeDetailNavigationHeader ? effectiveSelectedTab.localizedTitle(languageCode: appLanguage) : nil))
+        .navigationBarTitleDisplayMode(usesNativeDetailNavigationHeader ? .large : .inline)
+        .background(
+            Group {
+                if usesNativeDetailNavigationHeader {
+                    CompetitionDetailNavigationBarConfigurator(
+                        title: displayCompetitionName,
+                        subtitle: effectiveSelectedTab.localizedTitle(languageCode: appLanguage),
+                        tabs: visibleTabs,
+                        languageCode: appLanguage,
+                        selection: $selectedTab
+                    )
+                }
             }
-
-            let scrollDistance = (navigationTitleBaselineY ?? currentY) - currentY
-            let shouldShowTitle = isMainlandChinaCompetition && scrollDistance > 72
-            guard shouldShowTitle != showsCollapsedNavigationTitle else { return }
-            withAnimation(.easeInOut(duration: 0.16)) {
-                showsCollapsedNavigationTitle = shouldShowTitle
-            }
+        )
+        .onPreferenceChange(CompetitionDetailHeaderSeparatorPreferenceKey.self) { separatorY in
+            guard !isUsingModernScrollGeometry else { return }
+            detailHeaderSeparatorY = separatorY
+            updateCollapsedNavigationTitleOpacity()
+        }
+        .onChange(of: detailScrollTopInset) { _ in
+            updateCollapsedNavigationTitleOpacity()
         }
         .task(id: "\(competition.id)|\(appLanguage)") {
             areCompetitionEventIconsReady = CompetitionEventIconFont.ensureRegistered()
@@ -4195,12 +4787,25 @@ struct CompetitionDetailView: View {
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                if isMainlandChinaCompetition {
-                    Text(displayCompetitionName)
-                        .font(.headline)
-                        .lineLimit(1)
-                        .opacity(showsCollapsedNavigationTitle ? 1 : 0)
-                        .animation(.easeInOut(duration: 0.16), value: showsCollapsedNavigationTitle)
+                if isMainlandChinaCompetition && !usesNativeDetailNavigationHeader {
+                    VStack(spacing: 1) {
+                        Text(displayCompetitionName)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.35)
+                            .allowsTightening(true)
+
+                        Text(effectiveSelectedTab.localizedTitle(languageCode: appLanguage))
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                            .allowsTightening(true)
+                    }
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 300)
+                    .opacity(collapsedNavigationTitleOpacity)
                 }
             }
 
@@ -4307,11 +4912,55 @@ struct CompetitionDetailView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            Divider()
-                .padding(.top, 6)
+            headerSeparator
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 4)
+    }
+
+    private var isUsingModernScrollGeometry: Bool {
+        if #available(iOS 18.0, *) {
+            return true
+        }
+        return false
+    }
+
+    private var headerSeparator: some View {
+        let separator = Divider()
+            .padding(.top, 6)
+
+        return Group {
+            if #available(iOS 18.0, *) {
+                separator.onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.frame(in: .scrollView).minY
+                } action: { _, separatorY in
+                    detailHeaderSeparatorY = separatorY
+                    updateCollapsedNavigationTitleOpacity()
+                }
+            } else {
+                separator.background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: CompetitionDetailHeaderSeparatorPreferenceKey.self,
+                            value: proxy.frame(in: .named("competitionDetailScrollFallback")).minY
+                        )
+                    }
+                )
+            }
+        }
+    }
+
+    private func updateCollapsedNavigationTitleOpacity() {
+        guard isMainlandChinaCompetition,
+              detailHeaderSeparatorY.isFinite else {
+            collapsedNavigationTitleOpacity = 0
+            return
+        }
+
+        let triggerY = collapsedNavigationTitleTriggerOffset
+        let distanceBeforeSeparatorHitsTrigger = detailHeaderSeparatorY - triggerY
+        let opacity = min(max((collapsedNavigationTitleFadeDistance - distanceBeforeSeparatorHitsTrigger) / collapsedNavigationTitleFadeDistance, 0), 1)
+        collapsedNavigationTitleOpacity = opacity
     }
 
     @ViewBuilder
@@ -4522,48 +5171,48 @@ struct CompetitionDetailView: View {
                     detailLoadingCard
                 }
 
-                detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.registration_status", languageCode: appLanguage)) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(registrationSummaryText)
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(registrationSummaryText)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                        statusBadge(
-                            for: competitionAvailabilityStatus(for: competition),
-                            competition: competition,
-                            languageCode: appLanguage
+                    statusBadge(
+                        for: competitionAvailabilityStatus(for: competition),
+                        competition: competition,
+                        languageCode: appLanguage
+                    )
+
+                    if let registrationOpen = competition.registrationOpen {
+                        detailLine(systemImage: "calendar.badge.plus", text: String(format: localizedCompetitionStringInView(key: "competitions.detail.registration_open_format", languageCode: appLanguage), localizedCompetitionDateRange(startingAt: registrationOpen)))
+                    }
+
+                    if let registrationClose = competition.registrationClose {
+                        detailLine(systemImage: "calendar.badge.clock", text: String(format: localizedCompetitionStringInView(key: "competitions.detail.registration_close_format", languageCode: appLanguage), localizedCompetitionDateRange(startingAt: registrationClose)))
+                    }
+
+                    if let competitorLimit = competition.competitorLimit {
+                        detailLine(systemImage: "person.3", text: String(format: localizedCompetitionStringInView(key: "competitions.competitor_limit_format", languageCode: appLanguage), competitorLimit))
+                    }
+
+                    if detailContent.registrationRequiresSignIn {
+                        detailLine(
+                            systemImage: "person.crop.circle.badge.exclamationmark",
+                            text: localizedCompetitionStringInView(key: "competitions.detail.registration_login_required", languageCode: appLanguage)
                         )
-
-                        if let registrationOpen = competition.registrationOpen {
-                            detailLine(systemImage: "calendar.badge.plus", text: String(format: localizedCompetitionStringInView(key: "competitions.detail.registration_open_format", languageCode: appLanguage), localizedCompetitionDateRange(startingAt: registrationOpen)))
-                        }
-
-                        if let registrationClose = competition.registrationClose {
-                            detailLine(systemImage: "calendar.badge.clock", text: String(format: localizedCompetitionStringInView(key: "competitions.detail.registration_close_format", languageCode: appLanguage), localizedCompetitionDateRange(startingAt: registrationClose)))
-                        }
-
-                        if let competitorLimit = competition.competitorLimit {
-                            detailLine(systemImage: "person.3", text: String(format: localizedCompetitionStringInView(key: "competitions.competitor_limit_format", languageCode: appLanguage), competitorLimit))
-                        }
-
-                        if detailContent.registrationRequiresSignIn {
-                            detailLine(
-                                systemImage: "person.crop.circle.badge.exclamationmark",
-                                text: localizedCompetitionStringInView(key: "competitions.detail.registration_login_required", languageCode: appLanguage)
-                            )
-                        }
                     }
                 }
 
                 if !isMainlandChinaCompetition && !detailContent.registerBlocks.isEmpty {
-                    detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.notes", languageCode: appLanguage)) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        detailPlainSectionTitle(localizedCompetitionStringInView(key: "competitions.detail.section.notes", languageCode: appLanguage))
                         detailTextBlocks(detailContent.registerBlocks)
                     }
                 }
 
                 if !isMainlandChinaCompetition, !eventTitles.isEmpty {
-                    detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.events", languageCode: appLanguage)) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        detailPlainSectionTitle(localizedCompetitionStringInView(key: "competitions.detail.section.events", languageCode: appLanguage))
                         FlexibleTagFlow(items: eventTitles)
                     }
                 }
@@ -4582,8 +5231,8 @@ struct CompetitionDetailView: View {
                     detailLoadingCard
                 }
 
-                detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.competitors", languageCode: appLanguage)) {
-                    VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 10) {
+                    if !isMainlandChinaCompetition {
                         Text(localizedCompetitionStringInView(key: "competitions.detail.competitors_body", languageCode: appLanguage))
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.secondary)
@@ -4599,62 +5248,62 @@ struct CompetitionDetailView: View {
                                 text: String(format: localizedCompetitionStringInView(key: "competitions.detail.competitors_count_format", languageCode: appLanguage), competitorsCount)
                             )
                         }
+                    }
 
-                        if !detailContent.competitorPreviews.isEmpty {
-                            competitorSearchField
-                            competitorEventFilterStrip
-                            competitorsModePicker
+                    if !detailContent.competitorPreviews.isEmpty {
+                        competitorSearchField
+                        competitorEventFilterStrip
+                        competitorsModePicker
 
-                            if selectedCompetitorsMode == .registration,
-                               let competitorsCount = detailContent.competitorsCount,
-                               competitorsCount > detailContent.competitorPreviews.count {
-                                Text(
-                                    String(
-                                        format: localizedCompetitionStringInView(
-                                            key: competitorSearchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                                ? "competitions.detail.competitors_preview_format"
-                                                : "competitions.detail.competitors_filtered_format",
-                                            languageCode: appLanguage
-                                        ),
-                                        filteredCompetitors.count,
-                                        competitorsCount
-                                    )
+                        if selectedCompetitorsMode == .registration,
+                           let competitorsCount = detailContent.competitorsCount,
+                           competitorsCount > detailContent.competitorPreviews.count {
+                            Text(
+                                String(
+                                    format: localizedCompetitionStringInView(
+                                        key: competitorSearchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                            ? "competitions.detail.competitors_preview_format"
+                                            : "competitions.detail.competitors_filtered_format",
+                                        languageCode: appLanguage
+                                    ),
+                                    filteredCompetitors.count,
+                                    competitorsCount
                                 )
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                            }
+                            )
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        }
 
-                            if selectedCompetitorsMode == .registration {
-                                competitorsMatrixTable
-                            } else if isLoadingPsych {
-                                competitorsPsychLoadingCard
-                            } else if filteredPsychCompetitors.isEmpty {
-                                Text(localizedCompetitionStringInView(key: "competitions.detail.competitors_psych_unavailable", languageCode: appLanguage))
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                competitorsPsychTable
-                            }
-                        } else if isLoadingCompetitors {
-                            HStack(spacing: 10) {
-                                ProgressView()
-                                    .controlSize(.small)
-                                Text(localizedCompetitionStringInView(key: "competitions.loading", languageCode: appLanguage))
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                            }
-                        } else if !isLoadingDetail {
-                            Text(localizedCompetitionStringInView(key: "competitions.detail.competitors_unavailable", languageCode: appLanguage))
+                        if selectedCompetitorsMode == .registration {
+                            competitorsMatrixTable
+                        } else if isLoadingPsych {
+                            competitorsPsychLoadingCard
+                        } else if filteredPsychCompetitors.isEmpty {
+                            Text(localizedCompetitionStringInView(key: "competitions.detail.competitors_psych_unavailable", languageCode: appLanguage))
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        } else {
+                            competitorsPsychTable
+                        }
+                    } else if isLoadingCompetitors {
+                        HStack(spacing: 10) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text(localizedCompetitionStringInView(key: "competitions.loading", languageCode: appLanguage))
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(.secondary)
                         }
+                    } else if !isLoadingDetail {
+                        Text(localizedCompetitionStringInView(key: "competitions.detail.competitors_unavailable", languageCode: appLanguage))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
 
-                        if let competitorsURL {
-                            Link(destination: competitorsURL) {
-                                detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_competitors", languageCode: appLanguage))
-                            }
-                            .buttonStyle(.plain)
+                    if let competitorsURL {
+                        Link(destination: competitorsURL) {
+                            detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_competitors", languageCode: appLanguage))
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -4665,67 +5314,50 @@ struct CompetitionDetailView: View {
                     detailLoadingCard
                 }
 
-                detailSectionCard(title: localizedCompetitionStringInView(key: "competitions.detail.section.schedule", languageCode: appLanguage)) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if detailContent.scheduleDays.isEmpty {
-                            Text(localizedCompetitionStringInView(key: "competitions.detail.schedule_body", languageCode: appLanguage))
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 12) {
+                    if detailContent.scheduleDays.isEmpty {
+                        Text(localizedCompetitionStringInView(key: "competitions.detail.schedule_body", languageCode: appLanguage))
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                            if !competitionDayTexts.isEmpty {
-                                detailLine(
-                                    systemImage: "calendar.day.timeline.left",
-                                    text: String(
-                                        format: localizedCompetitionStringInView(
-                                            key: "competitions.detail.schedule_days_format",
-                                            languageCode: appLanguage
-                                        ),
-                                        competitionDayTexts.count
-                                    )
+                        if !competitionDayTexts.isEmpty {
+                            detailLine(
+                                systemImage: "calendar.day.timeline.left",
+                                text: String(
+                                    format: localizedCompetitionStringInView(
+                                        key: "competitions.detail.schedule_days_format",
+                                        languageCode: appLanguage
+                                    ),
+                                    competitionDayTexts.count
                                 )
+                            )
 
-                                FlexibleTagFlow(items: competitionDayTexts)
-                            }
-
-                            if !eventTitles.isEmpty {
-                                FlexibleTagFlow(items: eventTitles)
-                            }
-                        } else {
-                            if canShowCubingCalendarSchedule {
-                                Picker("", selection: $selectedScheduleDisplayMode) {
-                                    Text("项目列表").tag(CompetitionScheduleDisplayMode.calendar)
-                                    Text("赛程安排").tag(CompetitionScheduleDisplayMode.table)
-                                }
-                                .pickerStyle(.segmented)
-                                .labelsHidden()
-                            }
-
-                            if canShowCubingCalendarSchedule && selectedScheduleDisplayMode == .calendar {
-                                cubingScheduleCalendar
-                            } else {
-                                scheduleTableStyleMenu
-
-                                if isMainlandChinaCompetition, selectedScheduleTableStyle == .table {
-                                    cubingScheduleWebsiteIntro
-                                }
-
-                                ForEach(detailContent.scheduleDays) { day in
-                                    detailScheduleDayCard(day)
-                                }
-
-                                if isMainlandChinaCompetition, selectedScheduleTableStyle == .table {
-                                    cubingScheduleWebsiteComment
-                                }
-                            }
+                            FlexibleTagFlow(items: competitionDayTexts)
                         }
 
-                        if let officialURL {
-                            Link(destination: officialURL) {
-                                detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_official", languageCode: appLanguage))
-                            }
-                            .buttonStyle(.plain)
+                        if !eventTitles.isEmpty {
+                            FlexibleTagFlow(items: eventTitles)
                         }
+                    } else {
+                        if isMainlandChinaCompetition {
+                            cubingScheduleWebsiteIntro
+                        }
+
+                        ForEach(detailContent.scheduleDays) { day in
+                            detailScheduleDayCard(day)
+                        }
+
+                        if isMainlandChinaCompetition {
+                            cubingScheduleWebsiteComment
+                        }
+                    }
+
+                    if let officialURL {
+                        Link(destination: officialURL) {
+                            detailSecondaryLink(localizedCompetitionStringInView(key: "competitions.detail.open_official", languageCode: appLanguage))
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -5355,6 +5987,13 @@ struct CompetitionDetailView: View {
         return blocks.first?.id
     }
 
+    private func detailPlainSectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private func detailTextBlocks(_ blocks: [CompetitionDetailTextBlock]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             ForEach(blocks) { block in
@@ -5383,43 +6022,12 @@ struct CompetitionDetailView: View {
         }
     }
 
-    private var scheduleTableStyleMenu: some View {
-        HStack {
-            Spacer(minLength: 0)
-
-            Menu {
-                Button {
-                    selectedScheduleTableStyleRaw = CompetitionScheduleTableStyle.cards.rawValue
-                } label: {
-                    Label(
-                        localizedScheduleTableStyleTitle(.cards),
-                        systemImage: selectedScheduleTableStyle == .cards ? "checkmark" : "rectangle.stack"
-                    )
-                }
-
-                Button {
-                    selectedScheduleTableStyleRaw = CompetitionScheduleTableStyle.table.rawValue
-                } label: {
-                    Label(
-                        localizedScheduleTableStyleTitle(.table),
-                        systemImage: selectedScheduleTableStyle == .table ? "checkmark" : "tablecells"
-                    )
-                }
-            } label: {
-                Label(localizedScheduleFieldLabel(.display), systemImage: "ellipsis.circle")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
     @ViewBuilder
     private func detailScheduleDayCard(_ day: CompetitionScheduleDay) -> some View {
-        if selectedScheduleTableStyle == .table, isMainlandChinaCompetition {
+        if isMainlandChinaCompetition {
             detailScheduleWebsiteDayPanel(day)
         } else {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Image(systemName: "calendar")
                         .font(.system(size: 13, weight: .semibold))
@@ -5439,54 +6047,15 @@ struct CompetitionDetailView: View {
                         .background(.secondary.opacity(0.10), in: Capsule())
                 }
 
-                switch selectedScheduleTableStyle {
-                case .cards:
-                    ForEach(day.entries) { entry in
-                        detailScheduleEntryCard(entry, showsVenue: true)
-                    }
-                case .table:
-                    detailScheduleTraditionalTable(day, showsVenue: true)
-                }
+                detailScheduleTraditionalTable(day, showsVenue: true)
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.background)
-            )
         }
     }
 
     private var cubingScheduleWebsiteIntro: some View {
         VStack(alignment: .leading, spacing: 12) {
             if !detailContent.scheduleEventSummaries.isEmpty {
-                LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 148), alignment: .leading)],
-                    alignment: .leading,
-                    spacing: 10
-                ) {
-                    ForEach(detailContent.scheduleEventSummaries) { summary in
-                        HStack(alignment: .firstTextBaseline, spacing: 7) {
-                            Image(systemName: "square")
-                                .font(.system(size: 10, weight: .regular))
-                                .foregroundStyle(.secondary)
-
-                            if let code = summary.eventCode,
-                               !code.isEmpty,
-                               let glyph = CompetitionEventIconFont.glyph(for: code) {
-                                Text(glyph)
-                                    .font(.custom(CompetitionEventIconFont.fontName, size: 15))
-                                    .foregroundStyle(.primary)
-                                    .frame(width: 18, alignment: .center)
-                                    .offset(y: 1)
-                            }
-
-                            Text(summary.detail)
-                                .font(.system(size: 13, weight: .regular))
-                                .foregroundStyle(.primary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                }
+                cubingScheduleEventSelector
             }
 
             if let html = detailContent.scheduleIntroHTML, !html.isEmpty {
@@ -5494,6 +6063,47 @@ struct CompetitionDetailView: View {
                     .font(.system(size: 13, weight: .regular))
             }
         }
+    }
+
+    private var cubingScheduleEventSelector: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(detailContent.scheduleEventSummaries) { summary in
+                    cubingScheduleEventSelectorButton(summary)
+                }
+            }
+            .padding(.vertical, 1)
+        }
+    }
+
+    private func cubingScheduleEventSelectorButton(_ summary: CompetitionScheduleEventSummary) -> some View {
+        let eventCode = summary.eventCode?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+        let isSelected = !eventCode.isEmpty && eventCode == activeScheduleEventCode
+
+        return Button {
+            selectedScheduleEventCode = isSelected ? "" : eventCode
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
+                if !eventCode.isEmpty, let glyph = CompetitionEventIconFont.glyph(for: eventCode) {
+                    Text(glyph)
+                        .font(.custom(CompetitionEventIconFont.fontName, size: 15))
+                        .frame(width: 18, alignment: .center)
+                        .offset(y: 1)
+                }
+
+                Text(summary.detail)
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                    .lineLimit(1)
+            }
+            .foregroundStyle(isSelected ? Color.white : Color.primary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(isSelected ? Color.blue : Color.secondary.opacity(0.10))
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -5505,21 +6115,14 @@ struct CompetitionDetailView: View {
     }
 
     private func detailScheduleWebsiteDayPanel(_ day: CompetitionScheduleDay) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(day.title)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(detailScheduleWebsiteDateTextColor)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(detailScheduleWebsiteDateBarColor)
 
             detailScheduleTraditionalTable(day, showsVenue: false)
         }
-        .overlay(
-            Rectangle()
-                .stroke(detailScheduleWebsitePanelBorderColor, lineWidth: 1)
-        )
     }
 
     private var cubingScheduleCalendar: some View {
@@ -5797,33 +6400,25 @@ struct CompetitionDetailView: View {
     }
 
     private func detailScheduleTraditionalTable(_ day: CompetitionScheduleDay, showsVenue: Bool) -> some View {
-        let isWebsiteTable = selectedScheduleTableStyle == .table && isMainlandChinaCompetition
+        let isWebsiteTable = isMainlandChinaCompetition
 
         return ScrollView(.horizontal, showsIndicators: true) {
-            ZStack(alignment: .topTrailing) {
-                if isWebsiteTable {
-                    detailScheduleWebsiteWatermark
-                        .padding(.top, 20)
-                        .padding(.trailing, 20)
-                }
+            VStack(spacing: 0) {
+                detailScheduleTraditionalHeader(showsVenue: showsVenue)
 
-                VStack(spacing: 0) {
-                    detailScheduleTraditionalHeader(showsVenue: showsVenue)
-
-                    ForEach(Array(day.entries.enumerated()), id: \.element.id) { index, entry in
-                        detailScheduleHorizontalDivider
-                        detailScheduleTraditionalRow(entry, index: index, showsVenue: showsVenue)
-                    }
+                ForEach(Array(day.entries.enumerated()), id: \.element.id) { index, entry in
+                    detailScheduleHorizontalDivider
+                    detailScheduleTraditionalRow(entry, index: index, showsVenue: showsVenue)
                 }
-                .frame(minWidth: detailScheduleTraditionalTableWidth(showsVenue: showsVenue), alignment: .leading)
             }
+            .frame(minWidth: detailScheduleTraditionalTableWidth(showsVenue: showsVenue), alignment: .leading)
         }
-        .background(isWebsiteTable ? Color.white : Color(uiColor: .secondarySystemGroupedBackground))
+        .background(isWebsiteTable ? Color(uiColor: .systemBackground) : Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
-            Rectangle()
-                .stroke(isWebsiteTable ? detailScheduleWebsitePanelBorderColor : Color.secondary.opacity(0.12), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color(uiColor: .separator).opacity(0.55), lineWidth: 1)
         )
-        .clipShape(Rectangle())
     }
 
     private func detailScheduleTraditionalHeader(showsVenue: Bool) -> some View {
@@ -5851,7 +6446,7 @@ struct CompetitionDetailView: View {
                 detailScheduleTraditionalHeaderCell(localizedScheduleFieldLabel(.group), width: 96)
             }
         }
-        .background(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? detailScheduleWebsiteHeaderColor : Color.secondary.opacity(0.08))
+        .background(Color.secondary.opacity(0.08))
     }
 
     private func detailScheduleTraditionalRow(_ entry: CompetitionScheduleEntry, index: Int, showsVenue: Bool) -> some View {
@@ -5863,8 +6458,9 @@ struct CompetitionDetailView: View {
         let cutoffValue = detailScheduleOptionalValue(entry.cutoff)
         let timeLimitValue = detailScheduleOptionalValue(entry.timeLimit)
         let proceedValue = detailScheduleOptionalValue(entry.advancingCount)
+        let isHighlighted = detailScheduleEntryMatchesActiveEvent(entry)
 
-        let blankValue = selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? "" : "—"
+        let blankValue = isMainlandChinaCompetition ? "" : "—"
 
         return HStack(spacing: 0) {
             detailScheduleTraditionalCell(times.start, width: detailScheduleStartColumnWidth, role: .time)
@@ -5890,7 +6486,20 @@ struct CompetitionDetailView: View {
                 detailScheduleTraditionalCell(groupValue ?? "—", width: 96, role: .secondary)
             }
         }
-        .background(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? Color.clear : (index.isMultiple(of: 2) ? Color.clear : Color.primary.opacity(0.025)))
+        .background(detailScheduleRowBackground(index: index, isHighlighted: isHighlighted))
+    }
+
+    private func detailScheduleEntryMatchesActiveEvent(_ entry: CompetitionScheduleEntry) -> Bool {
+        guard isMainlandChinaCompetition, !activeScheduleEventCode.isEmpty else { return false }
+        return entry.eventCode?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == activeScheduleEventCode
+    }
+
+    private func detailScheduleRowBackground(index: Int, isHighlighted: Bool) -> Color {
+        if isHighlighted {
+            return Color.blue.opacity(0.10)
+        }
+
+        return index.isMultiple(of: 2) ? Color.clear : Color.primary.opacity(0.025)
     }
 
     private func detailScheduleCapsule(_ text: String, color: Color) -> some View {
@@ -5940,7 +6549,7 @@ struct CompetitionDetailView: View {
     private func detailScheduleTraditionalHeaderCell(_ text: String, width: CGFloat) -> some View {
         Text(text)
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? Color.white : Color.secondary)
+            .foregroundStyle(.secondary)
             .lineLimit(1)
             .padding(.horizontal, 6)
             .padding(.vertical, 8)
@@ -5980,56 +6589,46 @@ struct CompetitionDetailView: View {
     private func detailScheduleEventIcon(for entry: CompetitionScheduleEntry) -> some View {
         let code = entry.eventCode?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
 
-        if let code, !code.isEmpty {
-            competitionEventIconLabel(for: code, isEmphasized: true)
+        if let code, !code.isEmpty, let glyph = CompetitionEventIconFont.glyph(for: code) {
+            Text(glyph)
+                .font(.custom(CompetitionEventIconFont.fontName, size: 15))
+                .foregroundStyle(.primary)
                 .accessibilityLabel(entry.title)
         }
     }
 
     private var detailScheduleHorizontalDivider: some View {
         Rectangle()
-            .fill(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? detailScheduleWebsiteGridColor : Color.secondary.opacity(0.10))
+            .fill(Color.secondary.opacity(0.10))
             .frame(height: 1)
     }
 
     private var detailScheduleVerticalDivider: some View {
         Rectangle()
-            .fill(selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? detailScheduleWebsiteGridColor : Color.secondary.opacity(0.10))
+            .fill(Color.secondary.opacity(0.10))
             .frame(width: 1)
     }
 
     private func detailScheduleCellValueFont(for role: DetailScheduleCellRole) -> Font {
         switch role {
         case .time:
-            return .system(size: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 12 : 14, weight: .regular, design: .default)
+            return .system(size: 13, weight: .regular, design: .default)
         case .event:
-            return .system(size: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 12 : 15, weight: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? .regular : .semibold)
+            return .system(size: 14, weight: .medium)
         case .secondary:
-            return .system(size: selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 12 : 13, weight: .regular)
+            return .system(size: 13, weight: .regular)
         }
     }
 
-    private var detailScheduleStartColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 72 : 74 }
-    private var detailScheduleEndColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 72 : 74 }
-    private var detailScheduleEventColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 236 : 230 }
-    private var detailScheduleRoundColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 102 : 108 }
-    private var detailScheduleFormatColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 156 : 132 }
-    private var detailScheduleCutoffColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 145 : 132 }
-    private var detailScheduleTimeLimitColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 145 : 132 }
-    private var detailScheduleCompetitorsColumnWidth: CGFloat { selectedScheduleTableStyle == .table && isMainlandChinaCompetition ? 72 : 92 }
+    private var detailScheduleStartColumnWidth: CGFloat { isMainlandChinaCompetition ? 72 : 74 }
+    private var detailScheduleEndColumnWidth: CGFloat { isMainlandChinaCompetition ? 72 : 74 }
+    private var detailScheduleEventColumnWidth: CGFloat { isMainlandChinaCompetition ? 236 : 230 }
+    private var detailScheduleRoundColumnWidth: CGFloat { isMainlandChinaCompetition ? 102 : 108 }
+    private var detailScheduleFormatColumnWidth: CGFloat { isMainlandChinaCompetition ? 156 : 132 }
+    private var detailScheduleCutoffColumnWidth: CGFloat { isMainlandChinaCompetition ? 145 : 132 }
+    private var detailScheduleTimeLimitColumnWidth: CGFloat { isMainlandChinaCompetition ? 145 : 132 }
+    private var detailScheduleCompetitorsColumnWidth: CGFloat { isMainlandChinaCompetition ? 72 : 92 }
 
-    private var detailScheduleWebsiteHeaderColor: Color { Color(red: 0.38, green: 0.57, blue: 0.73) }
-    private var detailScheduleWebsiteDateBarColor: Color { Color(red: 0.84, green: 0.94, blue: 0.98) }
-    private var detailScheduleWebsiteDateTextColor: Color { Color(red: 0.22, green: 0.51, blue: 0.66) }
-    private var detailScheduleWebsiteGridColor: Color { Color(red: 0.86, green: 0.86, blue: 0.86) }
-    private var detailScheduleWebsitePanelBorderColor: Color { Color(red: 0.70, green: 0.88, blue: 0.94) }
-
-    private var detailScheduleWebsiteWatermark: some View {
-        Image(systemName: "circle.hexagongrid.circle")
-            .font(.system(size: 180, weight: .light))
-            .foregroundStyle(Color(red: 0.38, green: 0.57, blue: 0.73).opacity(0.06))
-            .allowsHitTesting(false)
-    }
 
     private func detailScheduleTraditionalTableWidth(showsVenue: Bool) -> CGFloat {
         let baseWidth = detailScheduleStartColumnWidth
@@ -6104,16 +6703,6 @@ struct CompetitionDetailView: View {
             return isChinese ? "场地" : "Venue"
         case .group:
             return isChinese ? "分组" : "Group"
-        }
-    }
-
-    private func localizedScheduleTableStyleTitle(_ style: CompetitionScheduleTableStyle) -> String {
-        let isChinese = appLanguage.hasPrefix("zh")
-        switch style {
-        case .cards:
-            return isChinese ? "卡片" : "Cards"
-        case .table:
-            return isChinese ? "表格" : "Table"
         }
     }
 
@@ -6574,37 +7163,33 @@ struct CompetitionDetailView: View {
     }
 
     private func localizedCompetitionDateRange(startingAt date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = appLocale(for: appLanguage)
-        formatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.full_format", languageCode: appLanguage)
-        return formatter.string(from: date)
+        let locale = appLocale(for: appLanguage)
+        let fullFormat = localizedCompetitionStringInView(key: "competition.date.full_format", languageCode: appLanguage)
+        return CompetitionDateRangeFormatterCache.string(from: date, locale: locale, format: fullFormat)
     }
 
     private func localizedCompetitionDateRange(for competition: CompetitionSummary) -> String {
         let locale = appLocale(for: appLanguage)
         let calendar = Calendar(identifier: .gregorian)
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.calendar = calendar
 
         let sameYear = calendar.component(.year, from: competition.startDate) == calendar.component(.year, from: competition.endDate)
         let sameMonth = sameYear && calendar.component(.month, from: competition.startDate) == calendar.component(.month, from: competition.endDate)
         let sameDay = sameMonth && calendar.component(.day, from: competition.startDate) == calendar.component(.day, from: competition.endDate)
 
-        formatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.full_format", languageCode: appLanguage)
+        let fullFormat = localizedCompetitionStringInView(key: "competition.date.full_format", languageCode: appLanguage)
         if sameDay {
-            return formatter.string(from: competition.startDate)
+            return CompetitionDateRangeFormatterCache.string(from: competition.startDate, locale: locale, format: fullFormat)
         }
         if sameMonth {
-            let monthFormatter = DateFormatter()
-            monthFormatter.locale = locale
-            monthFormatter.calendar = calendar
-            monthFormatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.month_day_format", languageCode: appLanguage)
-            let start = monthFormatter.string(from: competition.startDate)
-            formatter.dateFormat = localizedCompetitionStringInView(key: "competition.date.day_suffix_format", languageCode: appLanguage)
-            return "\(start) - \(formatter.string(from: competition.endDate))"
+            let monthDayFormat = localizedCompetitionStringInView(key: "competition.date.month_day_format", languageCode: appLanguage)
+            let daySuffixFormat = localizedCompetitionStringInView(key: "competition.date.day_suffix_format", languageCode: appLanguage)
+            let start = CompetitionDateRangeFormatterCache.string(from: competition.startDate, locale: locale, format: monthDayFormat)
+            let end = CompetitionDateRangeFormatterCache.string(from: competition.endDate, locale: locale, format: daySuffixFormat)
+            return "\(start) - \(end)"
         }
-        return "\(formatter.string(from: competition.startDate)) - \(formatter.string(from: competition.endDate))"
+        let start = CompetitionDateRangeFormatterCache.string(from: competition.startDate, locale: locale, format: fullFormat)
+        let end = CompetitionDateRangeFormatterCache.string(from: competition.endDate, locale: locale, format: fullFormat)
+        return "\(start) - \(end)"
     }
 
     private func competitionAvailabilityStatus(for competition: CompetitionSummary) -> CompetitionAvailabilityStatus {

@@ -254,6 +254,7 @@
 "settings.competition_card_style" = "大会カードスタイル";
 "settings.competition_card_style_list" = "リスト";
 "settings.competition_card_style_glass" = "Glass";
+"settings.competition_card_style_compact" = "コンパクト";
 "settings.competitions_bg_label" = "大会背景";
 "settings.result_popup" = "結果ポップアップを表示";
 "settings.result_popup_help" = "入力方法に関係なく、各ソルブの後に結果セレクターを表示します。";
@@ -435,6 +436,9 @@
 "settings.draw_scramble_position_bottom_center" = "下中央";
 "settings.draw_scramble_position_off" = "オフ";
 "settings.draw_scramble_size" = "スクランブル図サイズ";
+"settings.draw_scramble_colors" = "スクランブル図の配色";
+"settings.draw_scramble_colors_help" = "スクランブル図で使う色をカスタマイズします。";
+"settings.draw_scramble_colors_reset" = "配色をリセット";
 "settings.hide_elements_when_solving" = "ソルブ中に要素を隠す";
 "settings.import_preparing" = "インポート準備中…";
 "settings.import_in_progress" = "データをインポート中…";
@@ -1706,3 +1710,30 @@
 "about.wca_disclaimer_accuracy" = "WCA の大会、ランキング、記録情報は変更される場合があります。WCA 公式サイトが正式な情報源です。";
 "about.wca_disclaimer_identity" = "WCA の名称、商標、サービスは各権利者に帰属します。WCA サインインは許可した機能にのみ使用されます。";
 "about.visit_wca" = "WCA Web サイトを開く";
+
+// Storage & Cache
+"settings.section.storage_cache" = "ストレージとキャッシュ";
+"settings.cache_title" = "ストレージとキャッシュ";
+"settings.cache_total" = "キャッシュ済みデータ";
+"settings.cache_description" = "キャッシュは再ダウンロードできます。削除してもソルブ、セッション、設定、アカウントは削除されません。";
+"settings.cache_section_competitions" = "大会";
+"settings.cache_competition_list" = "大会リストキャッシュ";
+"settings.cache_competition_list_detail" = "WCA と Cubing China の大会リストのキャッシュ。";
+"settings.cache_competition_support" = "大会補助キャッシュ";
+"settings.cache_competition_support_detail" = "ローカライズ名、国、補助メタデータ。";
+"settings.cache_competition_details" = "大会詳細キャッシュ";
+"settings.cache_competition_details_detail" = "このアプリセッション内の詳細、スケジュール、地図、登録状態、解析済み内容。";
+"settings.cache_top_cubers" = "トップキューバーキャッシュ";
+"settings.cache_top_cubers_detail" = "大会カードに表示するトップキューバーのプレビュー。";
+"settings.cache_section_wca" = "WCA";
+"settings.cache_wca_results" = "WCA 結果キャッシュ";
+"settings.cache_wca_results_detail" = "WCA プロフィール結果と関連検索データのキャッシュ。";
+"settings.cache_section_all" = "すべてのキャッシュ";
+"settings.cache_clear_all" = "すべてのキャッシュを削除";
+"settings.cache_clear_all_detail" = "CubeFlow が後で再作成できるすべてのキャッシュを削除します。";
+"settings.cache_clear_all_footer" = "ソルブ、セッション、カスタム設定、インポート、WCA ログインは削除されません。";
+"settings.cache_session_only" = "セッションのみ";
+"settings.cache_clear_confirm_title" = "キャッシュを削除しますか？";
+"settings.cache_clear_confirm_message" = "このキャッシュは再ダウンロードできます。ソルブ、セッション、設定、アカウントは削除されません。";
+"settings.cache_clear_button" = "キャッシュを削除";
+"settings.cache_cleared_message" = "キャッシュを削除しました。";

@@ -2,13 +2,36 @@ import Foundation
 
 enum SolveMetrics {
     nonisolated static func formatTime(_ seconds: Double, decimals: Int) -> String {
-        String(format: "%.\(decimals)f", seconds)
+        guard seconds.isFinite else {
+            return seconds.isNaN
+                ? currentAppLocalizedString("common.dnf")
+                : currentAppLocalizedString("common.not_available")
+        }
+
+        let precision = max(0, decimals)
+        let clampedSeconds = max(0, seconds)
+        guard clampedSeconds >= 60 else {
+            return String(format: "%.\(precision)f", clampedSeconds)
+        }
+
+        let totalMinutes = Int(clampedSeconds / 60)
+        let secondsRemainder = clampedSeconds - Double(totalMinutes * 60)
+        let secondsWidth = precision > 0 ? precision + 3 : 2
+        let secondsText = String(format: "%0\(secondsWidth).\(precision)f", secondsRemainder)
+
+        guard totalMinutes >= 60 else {
+            return "\(totalMinutes):\(secondsText)"
+        }
+
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        return String(format: "%d:%02d:%@", hours, minutes, secondsText)
     }
 
     nonisolated static func formatAverage(_ seconds: Double?) -> String {
         guard let seconds else { return currentAppLocalizedString("common.not_available") }
         if seconds.isNaN { return currentAppLocalizedString("common.dnf") }
-        return String(format: "%.2f", seconds)
+        return formatTime(seconds, decimals: 2)
     }
 
     @MainActor

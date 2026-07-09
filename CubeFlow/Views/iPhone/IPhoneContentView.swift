@@ -46,6 +46,7 @@ struct IPhoneContentView: View {
 
             AlgsTabView(
                 usesSystemBottomAccessory: usesSystemTabBottomAccessory,
+                isActive: selectedTab == .algs,
                 isOverviewBottomAccessoryVisible: $isAlgsOverviewBottomAccessoryVisible,
                 searchRequestID: $algsSearchRequestID
             )
@@ -60,6 +61,7 @@ struct IPhoneContentView: View {
 
             CompetitionTabView(
                 usesSystemBottomAccessory: usesSystemTabBottomAccessory,
+                isActive: selectedTab == .competitions,
                 isBottomAccessoryVisible: $isCompetitionBottomAccessoryVisible,
                 searchRequestID: $competitionSearchRequestID
             )
@@ -72,7 +74,7 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.competitions)
 
-            SettingsTabView()
+            SettingsTabView(isActive: selectedTab == .settings)
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.settings", languageCode: appLanguage))

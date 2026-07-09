@@ -285,7 +285,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>CubeFlow uses Bluetooth to connect to compatible smart timers.</string>
+	<string>CubeFlow uses Bluetooth to connect to compatible smart timers and smart cubes.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_cubeflow._tcp</string>

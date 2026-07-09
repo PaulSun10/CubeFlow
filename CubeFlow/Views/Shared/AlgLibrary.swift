@@ -150,7 +150,13 @@ enum AlgLibrarySet: String {
 }
 
 enum AlgLibraryLoader {
+    private static var payloadCache: [AlgLibrarySet: AlgSetPayload] = [:]
+
     static func load(_ set: AlgLibrarySet) -> AlgSetPayload? {
+        if let cached = payloadCache[set] {
+            return cached
+        }
+
         guard let url = Bundle.main.url(
             forResource: set.resourceName,
             withExtension: "json",
@@ -164,7 +170,9 @@ enum AlgLibraryLoader {
 
         do {
             let data = try Data(contentsOf: url)
-            return try JSONDecoder().decode(AlgSetPayload.self, from: data)
+            let payload = try JSONDecoder().decode(AlgSetPayload.self, from: data)
+            payloadCache[set] = payload
+            return payload
         } catch {
             assertionFailure("Failed to load \(set.resourceName).json: \(error)")
             return nil

@@ -6,8 +6,12 @@ struct ScrambleDiagramView: View {
     let puzzleKey: String
     let scramble: String
 
+    @AppStorage("scrambleDiagramColorSchemeData") private var colorSchemeData: Data?
+
     var body: some View {
-        ScrambleDiagramWebView(puzzleKey: puzzleKey, scramble: scramble)
+        let colorScheme = ScrambleColorConfiguration.decode(from: colorSchemeData)
+            .schemeString(for: puzzleKey)
+        ScrambleDiagramWebView(puzzleKey: puzzleKey, scramble: scramble, colorScheme: colorScheme)
             .background(Color.clear)
     }
 
@@ -85,10 +89,12 @@ struct ScrambleDiagramSheet: View {
 private struct ScrambleDiagramWebView: UIViewRepresentable {
     let puzzleKey: String
     let scramble: String
+    let colorScheme: String
 
     final class Coordinator {
         var lastPuzzleKey: String?
         var lastScramble: String?
+        var lastColorScheme: String?
     }
 
     func makeCoordinator() -> Coordinator {
@@ -111,15 +117,19 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
     }
 
     private func loadIfNeeded(_ webView: WKWebView, coordinator: Coordinator, force: Bool) {
-        guard force || coordinator.lastPuzzleKey != puzzleKey || coordinator.lastScramble != scramble else {
+        guard force
+            || coordinator.lastPuzzleKey != puzzleKey
+            || coordinator.lastScramble != scramble
+            || coordinator.lastColorScheme != colorScheme else {
             return
         }
         coordinator.lastPuzzleKey = puzzleKey
         coordinator.lastScramble = scramble
-        webView.loadHTMLString(Self.html(puzzleKey: puzzleKey, scramble: scramble), baseURL: Bundle.main.resourceURL)
+        coordinator.lastColorScheme = colorScheme
+        webView.loadHTMLString(Self.html(puzzleKey: puzzleKey, scramble: scramble, colorScheme: colorScheme), baseURL: Bundle.main.resourceURL)
     }
 
-    private static func html(puzzleKey: String, scramble: String) -> String {
+    private static func html(puzzleKey: String, scramble: String, colorScheme: String) -> String {
         let sourceMap: [String: String] = [
             "main": loadJavaScript(relativePath: "main.js"),
             "mathlib": loadJavaScript(relativePath: "mathlib.js"),
@@ -265,7 +275,7 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
               const message = document.getElementById("message");
               try {
                 const scrambleImage = requireModule("main");
-                const result = scrambleImage.genImage(\(javaScriptLiteral(puzzleKey)), \(javaScriptLiteral(scramble)), "default");
+                const result = scrambleImage.genImage(\(javaScriptLiteral(puzzleKey)), \(javaScriptLiteral(scramble)), \(javaScriptLiteral(colorScheme)));
                 const dataURL = typeof result === "string"
                   ? result
                   : (result && typeof result.toDataURL === "function" ? result.toDataURL("image/png") : "");
