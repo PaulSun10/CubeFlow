@@ -29,7 +29,7 @@ enum SmartCubeParsedEvent {
     case facelets(String, serial: Int)
     case battery(Int)
     case hardware(String)
-    case gyro(String)
+    case gyro(SmartCubeGyroState)
     case debug(String, String)
     case holdPendingMove(seconds: TimeInterval)
     case requestMoveHistory(startMoveCount: Int, numberOfMoves: Int)
@@ -251,9 +251,9 @@ final class GANCubeProtocolParser {
                 return Double(Int32(bitPattern: unsigned)) / pow(2.0, 30.0)
             }
             // MoYu order is w, x, -z, y.
-            return [.gyro(String(format: "x %.2f y %.2f z %.2f w %.2f", values[1], values[3], -values[2], values[0]))]
+            return [.gyro(SmartCubeGyroState(x: values[1], y: values[3], z: -values[2], w: values[0]))]
         case 0xAC:
-            return [.gyro("gyro functional \(byte(message, 1)), enabled \(byte(message, 2))")]
+            return [.debug("MoYu gyro", "functional \(byte(message, 1)), enabled \(byte(message, 2))")]
         default:
             return []
         }
@@ -329,7 +329,7 @@ final class GANCubeProtocolParser {
             let qx = signedQuaternionComponent(view.word(32, 16))
             let qy = signedQuaternionComponent(view.word(48, 16))
             let qz = signedQuaternionComponent(view.word(64, 16))
-            return [.gyro(String(format: "x %.2f y %.2f z %.2f w %.2f", qx, qy, qz, qw))]
+            return [.gyro(SmartCubeGyroState(x: qx, y: qy, z: qz, w: qw))]
         case 0xFA...0xFE:
             if let event = updateGen4Hardware(view: view, eventType: eventType, dataLength: dataLength) {
                 return [event]

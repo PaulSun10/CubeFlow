@@ -175,7 +175,12 @@ struct SmartCubeLabView: View {
 
     private var cube3DSection: some View {
         Section {
-            SmartCube3DView(facelets: manager.facelets, latestMove: manager.latestMove)
+            SmartCube3DView(
+                facelets: manager.facelets,
+                latestMove: manager.latestMove,
+                gyroState: manager.gyroState,
+                stateRevision: manager.cubeStateRevision
+            )
                 .frame(height: 280)
                 .frame(maxWidth: .infinity)
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))

@@ -63,6 +63,17 @@ struct SmartCubeLogEntry: Identifiable, Equatable {
     let detail: String
 }
 
+struct SmartCubeGyroState: Equatable {
+    let x: Double
+    let y: Double
+    let z: Double
+    let w: Double
+
+    var summary: String {
+        String(format: "x %.2f y %.2f z %.2f w %.2f", x, y, z, w)
+    }
+}
+
 final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     static let shared = SmartCubeBluetoothManager()
 
@@ -76,6 +87,8 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     @Published private(set) var latestMove: SmartCubeMoveEvent?
     @Published private(set) var moveHistory: [SmartCubeMoveEvent] = []
     @Published private(set) var facelets: String?
+    @Published private(set) var cubeStateRevision = 0
+    @Published private(set) var gyroState: SmartCubeGyroState?
     @Published private(set) var batteryLevel: Int?
     @Published private(set) var hardwareSummary: String?
     @Published private(set) var logEntries: [SmartCubeLogEntry] = []
@@ -117,6 +130,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private var isLocalFaceletStateLocked = false
     private var shouldAcceptNextFaceletsSnapshot = false
     private var lastGyroLogDate = Date.distantPast
+    private var lastGyroPublishDate = Date.distantPast
     private var pendingMoveEvent: SmartCubeMoveEvent?
     private var pendingMoveFlushWorkItem: DispatchWorkItem?
 
@@ -226,6 +240,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         latestMove = nil
         moveHistory = []
         facelets = Self.solvedFacelets
+        cubeStateRevision += 1
         isLocalFaceletStateLocked = true
         shouldAcceptNextFaceletsSnapshot = false
         if let parser {
@@ -259,6 +274,8 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         latestMove = nil
         moveHistory = []
         facelets = nil
+        cubeStateRevision += 1
+        gyroState = nil
         batteryLevel = nil
         hardwareSummary = nil
         commandCharacteristic = nil
@@ -267,6 +284,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         isLocalFaceletStateLocked = false
         shouldAcceptNextFaceletsSnapshot = false
         lastGyroLogDate = .distantPast
+        lastGyroPublishDate = .distantPast
         cancelPendingMove()
         if !keepLogs {
             logEntries = []
@@ -400,6 +418,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
                 return
             }
             facelets = value
+            cubeStateRevision += 1
             isLocalFaceletStateLocked = false
             shouldAcceptNextFaceletsSnapshot = false
             appendLog("Facelets", "serial \(serial): \(value)")
@@ -415,12 +434,16 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             }
             hardwareSummary = summary
             appendLog("Hardware", summary)
-        case .gyro(let summary):
+        case .gyro(let state):
             flushPendingMove()
             let now = Date()
+            if now.timeIntervalSince(lastGyroPublishDate) >= 0.025 {
+                lastGyroPublishDate = now
+                gyroState = state
+            }
             if verbosePacketLogging || now.timeIntervalSince(lastGyroLogDate) >= 0.5 {
                 lastGyroLogDate = now
-                appendLog("Gyro", summary)
+                appendLog("Gyro", state.summary)
             }
         case .debug(let title, let detail):
             if protocolDebugLogging {

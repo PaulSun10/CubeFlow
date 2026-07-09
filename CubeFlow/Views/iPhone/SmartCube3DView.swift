@@ -5,6 +5,8 @@ import SwiftUI
 struct SmartCube3DView: UIViewRepresentable {
     let facelets: String?
     let latestMove: SmartCubeMoveEvent?
+    let gyroState: SmartCubeGyroState?
+    let stateRevision: Int
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -15,7 +17,12 @@ struct SmartCube3DView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
-        context.coordinator.update(facelets: facelets ?? Self.solvedFacelets, latestMove: latestMove)
+        context.coordinator.update(
+            facelets: facelets ?? Self.solvedFacelets,
+            latestMove: latestMove,
+            gyroState: gyroState,
+            stateRevision: stateRevision
+        )
     }
 
     private static let solvedFacelets = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
@@ -26,8 +33,10 @@ struct SmartCube3DView: UIViewRepresentable {
         private var stickerNodes: [StickerNode] = []
         private var lastExternalFacelets: String?
         private var lastMoveID: UUID?
+        private var lastStateRevision = -1
         private var pendingMoves: [SmartCubeMoveEvent] = []
         private var isAnimating = false
+        private var animationGeneration = 0
 
         func makeView() -> SCNView {
             let view = SCNView(frame: .zero)
@@ -45,7 +54,19 @@ struct SmartCube3DView: UIViewRepresentable {
             return view
         }
 
-        func update(facelets: String, latestMove: SmartCubeMoveEvent?) {
+        func update(facelets: String, latestMove: SmartCubeMoveEvent?, gyroState: SmartCubeGyroState?, stateRevision: Int) {
+            applyGyro(gyroState)
+
+            if stateRevision != lastStateRevision {
+                lastStateRevision = stateRevision
+                animationGeneration += 1
+                pendingMoves.removeAll()
+                isAnimating = false
+                lastExternalFacelets = facelets
+                rebuildCube(facelets: facelets)
+                return
+            }
+
             if let latestMove, latestMove.id != lastMoveID {
                 lastMoveID = latestMove.id
                 lastExternalFacelets = facelets
@@ -57,6 +78,27 @@ struct SmartCube3DView: UIViewRepresentable {
             guard !isAnimating, pendingMoves.isEmpty, facelets != lastExternalFacelets else { return }
             lastExternalFacelets = facelets
             rebuildCube(facelets: facelets)
+        }
+
+        private func applyGyro(_ state: SmartCubeGyroState?) {
+            guard let state else { return }
+            let q = normalizedQuaternion(state)
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0.045
+            SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .linear)
+            rootNode.orientation = q
+            SCNTransaction.commit()
+        }
+
+        private func normalizedQuaternion(_ state: SmartCubeGyroState) -> SCNQuaternion {
+            let length = sqrt(state.x * state.x + state.y * state.y + state.z * state.z + state.w * state.w)
+            guard length > 0.0001 else { return SCNQuaternion(0, 0, 0, 1) }
+            return SCNQuaternion(
+                Float(state.x / length),
+                Float(state.y / length),
+                Float(state.z / length),
+                Float(state.w / length)
+            )
         }
 
         private func installCamera() {
@@ -139,6 +181,7 @@ struct SmartCube3DView: UIViewRepresentable {
             }
 
             isAnimating = true
+            let generation = animationGeneration
             let pivot = SCNNode()
             rootNode.addChildNode(pivot)
 
@@ -155,6 +198,10 @@ struct SmartCube3DView: UIViewRepresentable {
             SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             SCNTransaction.completionBlock = { [weak self, weak pivot] in
                 guard let self, let pivot else { return }
+                guard generation == self.animationGeneration else {
+                    pivot.removeFromParentNode()
+                    return
+                }
                 for index in affectedIndices {
                     let node = self.stickerNodes[index].node
                     let worldTransform = node.worldTransform
