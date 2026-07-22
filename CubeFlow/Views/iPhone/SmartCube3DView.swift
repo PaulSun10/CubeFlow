@@ -4,9 +4,8 @@ import SwiftUI
 
 struct SmartCube3DView: UIViewRepresentable {
     let facelets: String?
-    let latestMove: SmartCubeMoveEvent?
-    let gyroState: SmartCubeGyroState?
     let stateRevision: Int
+    let fixedView: SmartCubeFixedView
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -19,9 +18,8 @@ struct SmartCube3DView: UIViewRepresentable {
     func updateUIView(_ view: SCNView, context: Context) {
         context.coordinator.update(
             facelets: facelets ?? Self.solvedFacelets,
-            latestMove: latestMove,
-            gyroState: gyroState,
-            stateRevision: stateRevision
+            stateRevision: stateRevision,
+            fixedView: fixedView
         )
     }
 
@@ -29,121 +27,141 @@ struct SmartCube3DView: UIViewRepresentable {
 
     final class Coordinator: NSObject {
         private let scene = SCNScene()
-        private let rootNode = SCNNode()
-        private var stickerNodes: [StickerNode] = []
+        private let interactionNode = SCNNode()
+        private let cubeNode = SCNNode()
+        private var stickerNodes: [SCNNode] = []
         private var lastExternalFacelets: String?
-        private var lastMoveID: UUID?
         private var lastStateRevision = -1
-        private var pendingMoves: [SmartCubeMoveEvent] = []
-        private var isAnimating = false
-        private var animationGeneration = 0
+        private var dragYaw = SmartCubeFixedView.urf.yaw
+        private var selectedFixedView: SmartCubeFixedView = .urf
 
         func makeView() -> SCNView {
             let view = SCNView(frame: .zero)
             view.scene = scene
             view.backgroundColor = .clear
-            view.allowsCameraControl = true
+            view.allowsCameraControl = false
             view.autoenablesDefaultLighting = false
-            view.isJitteringEnabled = true
-            view.antialiasingMode = .multisampling4X
+            view.isJitteringEnabled = false
+            view.antialiasingMode = .multisampling2X
+            view.rendersContinuously = true
+            view.preferredFramesPerSecond = UIScreen.main.maximumFramesPerSecond
 
-            scene.rootNode.addChildNode(rootNode)
+            scene.rootNode.addChildNode(interactionNode)
+            interactionNode.addChildNode(cubeNode)
+            interactionNode.eulerAngles = SCNVector3(0, dragYaw, 0)
+            interactionNode.scale = SCNVector3(0.88, 0.88, 0.88)
             installCamera()
             installLights()
-            rebuildCube(facelets: SmartCube3DView.solvedFacelets)
+            buildCube(facelets: SmartCube3DView.solvedFacelets)
+            installGestures(on: view)
             return view
         }
 
-        func update(facelets: String, latestMove: SmartCubeMoveEvent?, gyroState: SmartCubeGyroState?, stateRevision: Int) {
-            applyGyro(gyroState)
-
+        func update(
+            facelets: String,
+            stateRevision: Int,
+            fixedView: SmartCubeFixedView
+        ) {
+            if fixedView != selectedFixedView {
+                selectedFixedView = fixedView
+                dragYaw = fixedView.yaw
+                SCNTransaction.begin()
+                SCNTransaction.animationDuration = 0.2
+                SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                interactionNode.eulerAngles = SCNVector3(0, dragYaw, 0)
+                SCNTransaction.commit()
+            }
             if stateRevision != lastStateRevision {
                 lastStateRevision = stateRevision
-                animationGeneration += 1
-                pendingMoves.removeAll()
-                isAnimating = false
                 lastExternalFacelets = facelets
-                rebuildCube(facelets: facelets)
+                buildCube(facelets: facelets)
                 return
             }
-
-            if let latestMove, latestMove.id != lastMoveID {
-                lastMoveID = latestMove.id
-                lastExternalFacelets = facelets
-                pendingMoves.append(latestMove)
-                startNextMoveIfNeeded()
-                return
-            }
-
-            guard !isAnimating, pendingMoves.isEmpty, facelets != lastExternalFacelets else { return }
+            guard facelets != lastExternalFacelets else { return }
+            updateStickerColors(facelets: facelets)
             lastExternalFacelets = facelets
-            rebuildCube(facelets: facelets)
         }
 
-        private func applyGyro(_ state: SmartCubeGyroState?) {
-            guard let state else { return }
-            let q = normalizedQuaternion(state)
+        private func installGestures(on view: SCNView) {
+            let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+            pan.maximumNumberOfTouches = 1
+            view.addGestureRecognizer(pan)
+        }
+
+        @objc private func handlePan(_ recognizer: UIPanGestureRecognizer) {
+            let translation = recognizer.translation(in: recognizer.view)
+            recognizer.setTranslation(.zero, in: recognizer.view)
+
+            // Only yaw is user-controlled. The top/bottom alignment stays stable.
+            dragYaw += Float(translation.x) * 0.008
+            dragYaw = Self.normalizedAngle(dragYaw)
+
             SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.045
-            SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .linear)
-            rootNode.orientation = q
+            SCNTransaction.animationDuration = 0
+            interactionNode.eulerAngles = SCNVector3(0, dragYaw, 0)
             SCNTransaction.commit()
         }
 
-        private func normalizedQuaternion(_ state: SmartCubeGyroState) -> SCNQuaternion {
-            let length = sqrt(state.x * state.x + state.y * state.y + state.z * state.z + state.w * state.w)
-            guard length > 0.0001 else { return SCNQuaternion(0, 0, 0, 1) }
-            return SCNQuaternion(
-                Float(state.x / length),
-                Float(state.y / length),
-                Float(state.z / length),
-                Float(state.w / length)
-            )
+        private static func normalizedAngle(_ value: Float) -> Float {
+            var angle = value
+            while angle > Float.pi { angle -= Float.pi * 2 }
+            while angle < -Float.pi { angle += Float.pi * 2 }
+            return angle
         }
 
         private func installCamera() {
             let cameraNode = SCNNode()
             cameraNode.camera = SCNCamera()
             cameraNode.camera?.fieldOfView = 34
-            cameraNode.position = SCNVector3(4.2, 3.6, 5.2)
+            cameraNode.position = SCNVector3(0, 2.8, 7.2)
             cameraNode.look(at: SCNVector3(0, 0, 0))
             scene.rootNode.addChildNode(cameraNode)
         }
 
         private func installLights() {
-            let key = SCNNode()
-            key.light = SCNLight()
-            key.light?.type = .omni
-            key.light?.intensity = 650
-            key.position = SCNVector3(2.5, 4.5, 5)
-            scene.rootNode.addChildNode(key)
-
             let ambient = SCNNode()
             ambient.light = SCNLight()
             ambient.light?.type = .ambient
-            ambient.light?.intensity = 450
-            ambient.light?.color = UIColor.secondaryLabel
+            ambient.light?.intensity = 1_000
+            ambient.light?.color = UIColor.white
             scene.rootNode.addChildNode(ambient)
         }
 
-        private func rebuildCube(facelets: String) {
-            rootNode.childNodes.forEach { $0.removeFromParentNode() }
-            stickerNodes = []
+        private func buildCube(facelets: String) {
+            cubeNode.childNodes.forEach { $0.removeFromParentNode() }
+            stickerNodes.removeAll(keepingCapacity: true)
 
             let body = SCNNode(geometry: SCNBox(width: 3.05, height: 3.05, length: 3.05, chamferRadius: 0.16))
-            body.geometry?.firstMaterial?.diffuse.contents = UIColor.black
-            body.geometry?.firstMaterial?.roughness.contents = 0.78
-            body.opacity = 0.92
-            rootNode.addChildNode(body)
+            let bodyMaterial = SCNMaterial()
+            bodyMaterial.diffuse.contents = UIColor.black
+            bodyMaterial.lightingModel = .constant
+            body.geometry?.materials = [bodyMaterial]
+            body.opacity = 0.95
+            cubeNode.addChildNode(body)
 
             let chars = Array(facelets)
             for index in 0..<54 {
                 let sticker = Sticker(faceletIndex: index)
                 let color = Self.color(for: index < chars.count ? chars[index] : "U")
                 let node = makeStickerNode(sticker: sticker, color: color)
-                rootNode.addChildNode(node)
-                stickerNodes.append(StickerNode(sticker: sticker, node: node))
+                cubeNode.addChildNode(node)
+                stickerNodes.append(node)
             }
+        }
+
+        private func updateStickerColors(facelets: String) {
+            guard stickerNodes.count == 54 else {
+                buildCube(facelets: facelets)
+                return
+            }
+            let chars = Array(facelets)
+            SCNTransaction.begin()
+            SCNTransaction.disableActions = true
+            for index in stickerNodes.indices {
+                let color = Self.color(for: index < chars.count ? chars[index] : "U")
+                stickerNodes[index].geometry?.firstMaterial?.diffuse.contents = color
+            }
+            SCNTransaction.commit()
         }
 
         private func makeStickerNode(sticker: Sticker, color: UIColor) -> SCNNode {
@@ -151,8 +169,7 @@ struct SmartCube3DView: UIViewRepresentable {
             plane.cornerRadius = 0.055
             let material = SCNMaterial()
             material.diffuse.contents = color
-            material.roughness.contents = 0.72
-            material.lightingModel = .physicallyBased
+            material.lightingModel = .constant
             material.isDoubleSided = true
             plane.materials = [material]
 
@@ -161,61 +178,6 @@ struct SmartCube3DView: UIViewRepresentable {
             node.position = Self.position(for: sticker)
             node.eulerAngles = Self.eulerAngles(for: sticker)
             return node
-        }
-
-        private func startNextMoveIfNeeded() {
-            guard !isAnimating, !pendingMoves.isEmpty else { return }
-            let move = pendingMoves.removeFirst()
-            guard let descriptor = MoveDescriptor(move.move) else {
-                startNextMoveIfNeeded()
-                return
-            }
-            animate(descriptor: descriptor)
-        }
-
-        private func animate(descriptor: MoveDescriptor) {
-            let affectedIndices = stickerNodes.indices.filter { descriptor.affects(stickerNodes[$0].sticker) }
-            guard !affectedIndices.isEmpty else {
-                startNextMoveIfNeeded()
-                return
-            }
-
-            isAnimating = true
-            let generation = animationGeneration
-            let pivot = SCNNode()
-            rootNode.addChildNode(pivot)
-
-            for index in affectedIndices {
-                let stickerNode = stickerNodes[index]
-                let transform = stickerNode.node.transform
-                stickerNode.node.removeFromParentNode()
-                pivot.addChildNode(stickerNode.node)
-                stickerNode.node.transform = transform
-            }
-
-            SCNTransaction.begin()
-            SCNTransaction.animationDuration = descriptor.animationDuration
-            SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            SCNTransaction.completionBlock = { [weak self, weak pivot] in
-                guard let self, let pivot else { return }
-                guard generation == self.animationGeneration else {
-                    pivot.removeFromParentNode()
-                    return
-                }
-                for index in affectedIndices {
-                    let node = self.stickerNodes[index].node
-                    let worldTransform = node.worldTransform
-                    node.removeFromParentNode()
-                    self.rootNode.addChildNode(node)
-                    node.transform = self.rootNode.convertTransform(worldTransform, from: nil)
-                    self.stickerNodes[index].sticker.apply(descriptor: descriptor)
-                }
-                pivot.removeFromParentNode()
-                self.isAnimating = false
-                self.startNextMoveIfNeeded()
-            }
-            pivot.rotation = descriptor.sceneRotation
-            SCNTransaction.commit()
         }
 
         private struct Sticker {
@@ -249,93 +211,6 @@ struct SmartCube3DView: UIViewRepresentable {
                 }
             }
 
-            mutating func apply(descriptor: MoveDescriptor) {
-                for _ in 0..<descriptor.modelTurns {
-                    rotateClockwise(face: descriptor.face)
-                }
-            }
-
-            private mutating func rotateClockwise(face: Character) {
-                switch face {
-                case "U":
-                    (x, z) = (-z, x)
-                    (nx, nz) = (-nz, nx)
-                case "D", "E":
-                    (x, z) = (z, -x)
-                    (nx, nz) = (nz, -nx)
-                case "F", "S":
-                    (x, y) = (y, -x)
-                    (nx, ny) = (ny, -nx)
-                case "B":
-                    (x, y) = (-y, x)
-                    (nx, ny) = (-ny, nx)
-                case "R":
-                    (y, z) = (z, -y)
-                    (ny, nz) = (nz, -ny)
-                case "L", "M":
-                    (y, z) = (-z, y)
-                    (ny, nz) = (-nz, ny)
-                default:
-                    break
-                }
-            }
-        }
-
-        private struct StickerNode {
-            var sticker: Sticker
-            let node: SCNNode
-        }
-
-        private struct MoveDescriptor {
-            let face: Character
-            let modelTurns: Int
-            let axis: SCNVector3
-            let baseAngle: Float
-
-            init?(_ move: String) {
-                guard let face = move.first, "URFDLBMES".contains(face) else { return nil }
-                self.face = face
-                if move.hasSuffix("2") {
-                    modelTurns = 2
-                } else if move.contains("'") {
-                    modelTurns = 3
-                } else {
-                    modelTurns = 1
-                }
-
-                switch face {
-                case "U": axis = SCNVector3(0, 1, 0); baseAngle = -.pi / 2
-                case "D", "E": axis = SCNVector3(0, 1, 0); baseAngle = .pi / 2
-                case "F", "S": axis = SCNVector3(0, 0, 1); baseAngle = -.pi / 2
-                case "B": axis = SCNVector3(0, 0, 1); baseAngle = .pi / 2
-                case "R": axis = SCNVector3(1, 0, 0); baseAngle = -.pi / 2
-                case "L", "M": axis = SCNVector3(1, 0, 0); baseAngle = .pi / 2
-                default: return nil
-                }
-            }
-
-            var sceneRotation: SCNVector4 {
-                SCNVector4(axis.x, axis.y, axis.z, baseAngle * Float(modelTurns))
-            }
-
-            var animationDuration: TimeInterval {
-                modelTurns == 2 ? 0.13 : 0.09
-            }
-
-            func affects(_ sticker: Sticker) -> Bool {
-                switch face {
-                case "U": return sticker.y == 1
-                case "R": return sticker.x == 1
-                case "F": return sticker.z == 1
-                case "D": return sticker.y == -1
-                case "L": return sticker.x == -1
-                case "B": return sticker.z == -1
-                case "M": return sticker.x == 0
-                case "E": return sticker.y == 0
-                case "S": return sticker.z == 0
-                default: return false
-                }
-            }
         }
 
         private static func position(for sticker: Sticker) -> SCNVector3 {
@@ -360,13 +235,13 @@ struct SmartCube3DView: UIViewRepresentable {
 
         private static func color(for facelet: Character) -> UIColor {
             switch facelet {
-            case "U": return .white
-            case "R": return .systemRed
-            case "F": return .systemGreen
-            case "D": return .systemYellow
-            case "L": return .systemOrange
-            case "B": return .systemBlue
-            default: return .systemGray
+            case "U": return UIColor(red: 1, green: 1, blue: 1, alpha: 1)
+            case "R": return UIColor(red: 1, green: 0, blue: 0, alpha: 1)
+            case "F": return UIColor(red: 0, green: 0.87, blue: 0, alpha: 1)
+            case "D": return UIColor(red: 1, green: 1, blue: 0, alpha: 1)
+            case "L": return UIColor(red: 1, green: 0.67, blue: 0, alpha: 1)
+            case "B": return UIColor(red: 0, green: 0, blue: 1, alpha: 1)
+            default: return UIColor(white: 0.5, alpha: 1)
             }
         }
     }

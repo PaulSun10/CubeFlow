@@ -329,7 +329,18 @@ final class GANCubeProtocolParser {
             let qx = signedQuaternionComponent(view.word(32, 16))
             let qy = signedQuaternionComponent(view.word(48, 16))
             let qz = signedQuaternionComponent(view.word(64, 16))
-            return [.gyro(SmartCubeGyroState(x: qx, y: qy, z: qz, w: qw))]
+            let vx = signedAngularVelocityComponent(view.word(80, 4))
+            let vy = signedAngularVelocityComponent(view.word(84, 4))
+            let vz = signedAngularVelocityComponent(view.word(88, 4))
+            return [.gyro(SmartCubeGyroState(
+                x: qx,
+                y: qy,
+                z: qz,
+                w: qw,
+                velocityX: vx,
+                velocityY: vy,
+                velocityZ: vz
+            ))]
         case 0xFA...0xFE:
             if let event = updateGen4Hardware(view: view, eventType: eventType, dataLength: dataLength) {
                 return [event]
@@ -659,6 +670,10 @@ final class GANCubeProtocolParser {
 
     private func signedQuaternionComponent(_ value: Int) -> Double {
         Double(1 - ((value >> 15) * 2)) * Double(value & 0x7FFF) / Double(0x7FFF)
+    }
+
+    private func signedAngularVelocityComponent(_ value: Int) -> Double {
+        Double(1 - ((value >> 3) * 2)) * Double(value & 0x7)
     }
 
 

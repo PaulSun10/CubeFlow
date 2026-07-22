@@ -5,8 +5,10 @@ struct IPhoneContentView: View {
     @State private var selectedTab: IPhoneTab = .timer
     @State private var algsSearchRequestID = 0
     @State private var competitionSearchRequestID = 0
+    @State private var dataSearchRequestID = 0
     @State private var isAlgsOverviewBottomAccessoryVisible = false
     @State private var isCompetitionBottomAccessoryVisible = false
+    @State private var isDataBottomAccessoryVisible = false
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
     @AppStorage("algBrowseViewModeStore") private var algBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
@@ -34,7 +36,11 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.timer)
 
-            DataTabView()
+            DataTabView(
+                usesSystemBottomAccessory: usesSystemTabBottomAccessory,
+                isBottomAccessoryVisible: $isDataBottomAccessoryVisible,
+                searchRequestID: $dataSearchRequestID
+            )
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.data", languageCode: appLanguage))
@@ -87,7 +93,9 @@ struct IPhoneContentView: View {
         .compatibleTabViewBottomAccessory(isEnabled: shouldShowTabBottomAccessory) {
             tabBottomAccessoryContent
         }
-        .compatibleTabBarMinimizeOnScrollDown(isEnabled: selectedTab == .algs || selectedTab == .competitions)
+        .compatibleTabBarMinimizeOnScrollDown(
+            isEnabled: selectedTab == .data || selectedTab == .algs || selectedTab == .competitions
+        )
         .compatibleTabBarBackground()
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, appUsesRightToLeftLayout(for: appLanguage) ? .rightToLeft : .leftToRight)
@@ -98,7 +106,11 @@ struct IPhoneContentView: View {
     }
 
     private var shouldShowTabBottomAccessory: Bool {
-        shouldShowAlgsBottomAccessory || shouldShowCompetitionBottomAccessory
+        shouldShowDataBottomAccessory || shouldShowAlgsBottomAccessory || shouldShowCompetitionBottomAccessory
+    }
+
+    private var shouldShowDataBottomAccessory: Bool {
+        selectedTab == .data && isDataBottomAccessoryVisible
     }
 
     private var shouldShowAlgsBottomAccessory: Bool {
@@ -112,6 +124,10 @@ struct IPhoneContentView: View {
     @ViewBuilder
     private var tabBottomAccessoryContent: some View {
         switch selectedTab {
+        case .data:
+            DataBottomSearchBar(languageCode: appLanguage, usesContainerGlass: false) {
+                dataSearchRequestID += 1
+            }
         case .algs:
             AlgOverviewBottomBar(
                 languageCode: appLanguage,

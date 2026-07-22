@@ -22,6 +22,7 @@ final class WCAAuthManager: NSObject, ObservableObject {
 
     private var authSession: WCAStoredAuthSession?
     private var webAuthenticationSession: ASWebAuthenticationSession?
+    private var refreshTask: Task<WCAStoredAuthSession, Error>?
 
     private override init() {
         super.init()
@@ -139,19 +140,11 @@ final class WCAAuthManager: NSObject, ObservableObject {
             URLQueryItem(name: "client_secret", value: clientSecret)
         ]
 
-        request.httpBody = queryItems
-            .compactMap { item in
-                guard let value = item.value?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                    return nil
-                }
-                return "\(item.name)=\(value)"
-            }
-            .joined(separator: "&")
-            .data(using: .utf8)
+        request.httpBody = Self.formEncodedBody(for: queryItems)
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
-            throw WCAAuthError.tokenExchangeFailed
+            throw Self.tokenExchangeError(from: data, response: response, invalidatesSession: false)
         }
 
         let decoder = JSONDecoder()
@@ -174,15 +167,39 @@ final class WCAAuthManager: NSObject, ObservableObject {
            expiresAt <= Date().addingTimeInterval(60),
            let refreshToken = authSession.refreshToken,
            !refreshToken.isEmpty {
-            authSession = try await refreshAuthSession(
-                refreshToken,
-                fallbackRefreshToken: authSession.refreshToken
-            )
-            self.authSession = authSession
-            try Self.storeAuthSession(authSession)
+            do {
+                authSession = try await coalescedRefresh(
+                    refreshToken,
+                    fallbackRefreshToken: authSession.refreshToken
+                )
+                self.authSession = authSession
+                try Self.storeAuthSession(authSession)
+            } catch let error as WCAAuthError where error.invalidatesStoredSession {
+                signOut()
+                throw error
+            }
         }
 
         return authSession
+    }
+
+    private func coalescedRefresh(
+        _ refreshToken: String,
+        fallbackRefreshToken: String?
+    ) async throws -> WCAStoredAuthSession {
+        if let refreshTask {
+            return try await refreshTask.value
+        }
+
+        let task = Task { @MainActor in
+            try await refreshAuthSession(
+                refreshToken,
+                fallbackRefreshToken: fallbackRefreshToken
+            )
+        }
+        refreshTask = task
+        defer { refreshTask = nil }
+        return try await task.value
     }
 
     private func refreshAuthSession(
@@ -200,6 +217,7 @@ final class WCAAuthManager: NSObject, ObservableObject {
         let queryItems = [
             URLQueryItem(name: "grant_type", value: "refresh_token"),
             URLQueryItem(name: "refresh_token", value: refreshToken),
+            URLQueryItem(name: "redirect_uri", value: Self.redirectURI),
             URLQueryItem(name: "client_id", value: Self.clientID),
             URLQueryItem(name: "client_secret", value: Self.clientSecret)
         ]
@@ -208,7 +226,7 @@ final class WCAAuthManager: NSObject, ObservableObject {
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
-            throw WCAAuthError.tokenExchangeFailed
+            throw Self.tokenExchangeError(from: data, response: response, invalidatesSession: true)
         }
 
         let decoder = JSONDecoder()
@@ -283,15 +301,47 @@ final class WCAAuthManager: NSObject, ObservableObject {
     }
 
     private static func formEncodedBody(for queryItems: [URLQueryItem]) -> Data? {
-        queryItems
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+
+        return queryItems
             .compactMap { item in
-                guard let value = item.value?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                guard
+                    let encodedName = item.name.addingPercentEncoding(withAllowedCharacters: allowed),
+                    let encodedValue = item.value?.addingPercentEncoding(withAllowedCharacters: allowed)
+                else {
                     return nil
                 }
-                return "\(item.name)=\(value)"
+                return "\(encodedName)=\(encodedValue)"
             }
             .joined(separator: "&")
             .data(using: .utf8)
+    }
+
+    private static func tokenExchangeError(
+        from data: Data,
+        response: URLResponse,
+        invalidatesSession: Bool
+    ) -> WCAAuthError {
+        let httpStatus = (response as? HTTPURLResponse)?.statusCode
+        let payload = try? JSONDecoder().decode(WCAOAuthErrorResponse.self, from: data)
+        let serverMessage = [payload?.error, payload?.errorDescription]
+            .compactMap { value in
+                guard let value, !value.isEmpty else { return nil }
+                return value
+            }
+            .joined(separator: ": ")
+
+        let detail = serverMessage.isEmpty
+            ? httpStatus.map { "HTTP \($0)" }
+            : serverMessage
+
+        if invalidatesSession,
+           let errorCode = payload?.error,
+           ["invalid_grant", "invalid_client"].contains(errorCode) {
+            return .sessionExpired(detail)
+        }
+        return .tokenExchangeFailed(detail)
     }
 }
 
@@ -348,6 +398,16 @@ private struct WCATokenResponse: Decodable {
     let expiresIn: Int?
 }
 
+private struct WCAOAuthErrorResponse: Decodable {
+    let error: String?
+    let errorDescription: String?
+
+    enum CodingKeys: String, CodingKey {
+        case error
+        case errorDescription = "error_description"
+    }
+}
+
 private struct WCAProfileEnvelope: Decodable {
     let me: WCAProfilePayload?
     let user: WCAProfilePayload?
@@ -372,7 +432,8 @@ enum WCAAuthError: LocalizedError {
     case invalidTokenURL
     case invalidProfileURL
     case missingAuthorizationCode
-    case tokenExchangeFailed
+    case tokenExchangeFailed(String?)
+    case sessionExpired(String?)
     case profileFetchFailed
     case invalidProfileResponse
     case cancelled
@@ -386,8 +447,16 @@ enum WCAAuthError: LocalizedError {
             return currentAppLocalizedString("settings.wca_error_invalid_request")
         case .missingAuthorizationCode:
             return currentAppLocalizedString("settings.wca_error_missing_code")
-        case .tokenExchangeFailed:
-            return currentAppLocalizedString("settings.wca_error_token_exchange")
+        case .tokenExchangeFailed(let detail):
+            return Self.message(
+                currentAppLocalizedString("settings.wca_error_token_exchange"),
+                detail: detail
+            )
+        case .sessionExpired(let detail):
+            return Self.message(
+                currentAppLocalizedString("settings.wca_error_session_expired"),
+                detail: detail
+            )
         case .profileFetchFailed:
             return currentAppLocalizedString("settings.wca_error_profile")
         case .invalidProfileResponse:
@@ -397,6 +466,16 @@ enum WCAAuthError: LocalizedError {
         case .notSignedIn:
             return currentAppLocalizedString("settings.wca_error_not_signed_in")
         }
+    }
+
+    var invalidatesStoredSession: Bool {
+        if case .sessionExpired = self { return true }
+        return false
+    }
+
+    private static func message(_ message: String, detail: String?) -> String {
+        guard let detail, !detail.isEmpty else { return message }
+        return "\(message)\n\nWCA: \(detail)"
     }
 }
 

@@ -394,12 +394,12 @@ private extension SettingsTabView {
                 NavigationLink {
                     SmartCubeLabView()
                 } label: {
-                    settingsNavigationLabel(titleKey: "Smart Cube Lab", valueKey: "Experimental")
+                    settingsNavigationLabel(titleKey: "smart_cube.title")
                 }
             } header: {
-                Text("Smart Cubes")
+                Text("smart_cube.section")
             } footer: {
-                Text("Connect GAN smart cubes, inspect raw BLE packets, and verify move tracking before the full trainer UI ships.")
+                Text("smart_cube.settings_footer")
             }
 
             Section {
@@ -861,6 +861,20 @@ private extension SettingsTabView {
                         .foregroundStyle(.secondary)
                 } header: {
                     Text("settings.gan_timer")
+                }
+            }
+
+            if enteringTimesWith == TimeEntryMode.smartCube.rawValue {
+                Section {
+                    NavigationLink {
+                        SmartCubeLabView()
+                    } label: {
+                        settingsNavigationLabel(titleKey: "smart_cube.title")
+                    }
+                } header: {
+                    Text("smart_cube.section")
+                } footer: {
+                    Text("smart_cube.timer_settings_footer")
                 }
             }
         }
@@ -2515,6 +2529,7 @@ private enum TimeEntryMode: String, CaseIterable, Identifiable {
     case timer
     case typing
     case gan
+    case smartCube
 
     var id: String { rawValue }
 
@@ -2523,6 +2538,7 @@ private enum TimeEntryMode: String, CaseIterable, Identifiable {
         case .timer: "settings.entering_times_timer"
         case .typing: "settings.entering_times_typing"
         case .gan: "settings.entering_times_gan"
+        case .smartCube: "settings.entering_times_smart_cube"
         }
     }
 }

@@ -68,9 +68,59 @@ struct SmartCubeGyroState: Equatable {
     let y: Double
     let z: Double
     let w: Double
+    let velocityX: Double?
+    let velocityY: Double?
+    let velocityZ: Double?
+
+    init(
+        x: Double,
+        y: Double,
+        z: Double,
+        w: Double,
+        velocityX: Double? = nil,
+        velocityY: Double? = nil,
+        velocityZ: Double? = nil
+    ) {
+        self.x = x
+        self.y = y
+        self.z = z
+        self.w = w
+        self.velocityX = velocityX
+        self.velocityY = velocityY
+        self.velocityZ = velocityZ
+    }
 
     var summary: String {
-        String(format: "x %.2f y %.2f z %.2f w %.2f", x, y, z, w)
+        let quaternion = String(format: "x %.2f y %.2f z %.2f w %.2f", x, y, z, w)
+        guard let velocityX, let velocityY, let velocityZ else { return quaternion }
+        return quaternion + String(format: " v %.0f %.0f %.0f", velocityX, velocityY, velocityZ)
+    }
+}
+
+@MainActor
+final class SmartCubeGyroFeed {
+    typealias Observer = (SmartCubeGyroState?) -> Void
+
+    private var observers: [UUID: Observer] = [:]
+    private(set) var latestState: SmartCubeGyroState?
+
+    @discardableResult
+    func addObserver(_ observer: @escaping Observer) -> UUID {
+        let id = UUID()
+        observers[id] = observer
+        observer(latestState)
+        return id
+    }
+
+    func removeObserver(_ id: UUID) {
+        observers[id] = nil
+    }
+
+    func send(_ state: SmartCubeGyroState?) {
+        latestState = state
+        for observer in observers.values {
+            observer(state)
+        }
     }
 }
 
@@ -88,7 +138,8 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     @Published private(set) var moveHistory: [SmartCubeMoveEvent] = []
     @Published private(set) var facelets: String?
     @Published private(set) var cubeStateRevision = 0
-    @Published private(set) var gyroState: SmartCubeGyroState?
+    private(set) var gyroState: SmartCubeGyroState?
+    let gyroFeed = SmartCubeGyroFeed()
     @Published private(set) var batteryLevel: Int?
     @Published private(set) var hardwareSummary: String?
     @Published private(set) var logEntries: [SmartCubeLogEntry] = []
@@ -97,7 +148,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     @Published var coalesceSliceMoves = false
     @Published var verbosePacketLogging = false
 
-    private static let solvedFacelets = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+    static let solvedFacelets = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 
     private let ganGen2ServiceUUID = CBUUID(string: "6E400001-B5A3-F393-E0A9-E50E24DC4179")
     private let ganGen2CommandCharacteristicUUID = CBUUID(string: "28BE4A4A-CD67-11E9-A32F-2A2AE2DBCCE4")
@@ -129,10 +180,11 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private var cipher: GANCubeCipher?
     private var isLocalFaceletStateLocked = false
     private var shouldAcceptNextFaceletsSnapshot = false
-    private var lastGyroLogDate = Date.distantPast
-    private var lastGyroPublishDate = Date.distantPast
     private var pendingMoveEvent: SmartCubeMoveEvent?
     private var pendingMoveFlushWorkItem: DispatchWorkItem?
+    private var packetRateWindowStart = Date()
+    private var packetCountsByCharacteristic: [String: Int] = [:]
+    private var sampledCharacteristicUUIDs: Set<String> = []
 
     private override init() {
         super.init()
@@ -252,6 +304,17 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         appendLog("Reset", "No hardware reset command was sent; this only resets CubeFlow's local state.")
     }
 
+    static func facelets(afterApplying algorithm: String) -> String? {
+        var state = solvedFacelets
+        let moves = algorithm.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        guard !moves.isEmpty else { return nil }
+        for move in moves {
+            guard let next = facelets(state, applying: move) else { return nil }
+            state = next
+        }
+        return state
+    }
+
     private func disconnectConnectedPeripheralIfNeeded() {
         if let connectedPeripheral {
             centralManager.cancelPeripheralConnection(connectedPeripheral)
@@ -276,6 +339,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         facelets = nil
         cubeStateRevision += 1
         gyroState = nil
+        gyroFeed.send(nil)
         batteryLevel = nil
         hardwareSummary = nil
         commandCharacteristic = nil
@@ -283,8 +347,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         setParser(nil)
         isLocalFaceletStateLocked = false
         shouldAcceptNextFaceletsSnapshot = false
-        lastGyroLogDate = .distantPast
-        lastGyroPublishDate = .distantPast
+        packetRateWindowStart = Date()
+        packetCountsByCharacteristic = [:]
+        sampledCharacteristicUUIDs = []
         cancelPendingMove()
         if !keepLogs {
             logEntries = []
@@ -436,13 +501,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             appendLog("Hardware", summary)
         case .gyro(let state):
             flushPendingMove()
-            let now = Date()
-            if now.timeIntervalSince(lastGyroPublishDate) >= 0.025 {
-                lastGyroPublishDate = now
-                gyroState = state
-            }
-            if verbosePacketLogging || now.timeIntervalSince(lastGyroLogDate) >= 0.5 {
-                lastGyroLogDate = now
+            gyroState = state
+            gyroFeed.send(state)
+            if verbosePacketLogging {
                 appendLog("Gyro", state.summary)
             }
         case .debug(let title, let detail):
@@ -588,6 +649,37 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         if properties.contains(.indicate) { labels.append("indicate") }
         if properties.contains(.broadcast) { labels.append("broadcast") }
         return labels.isEmpty ? "none" : labels.joined(separator: ",")
+    }
+
+    private func recordTransportPacket(_ data: Data, from characteristic: CBCharacteristic) {
+        guard protocolDebugLogging else { return }
+
+        let uuid = characteristic.uuid.uuidString
+        if characteristic.isNotifying {
+            packetCountsByCharacteristic[uuid, default: 0] += 1
+        }
+
+        if sampledCharacteristicUUIDs.insert(uuid).inserted {
+            let service = characteristic.service?.uuid.uuidString ?? "Unknown service"
+            appendProtocolLog(
+                "BLE sample \(uuid)",
+                "\(service) [\(Self.propertySummary(characteristic.properties))] \(Self.hexString([UInt8](data)))"
+            )
+        }
+
+        let now = Date()
+        let elapsed = now.timeIntervalSince(packetRateWindowStart)
+        guard elapsed >= 1 else { return }
+
+        let rates = packetCountsByCharacteristic
+            .sorted { $0.key < $1.key }
+            .map { uuid, count in
+                String(format: "%@ %.1f/s", uuid, Double(count) / elapsed)
+            }
+            .joined(separator: ", ")
+        appendProtocolLog("BLE notify rates", rates.isEmpty ? "No notifications" : rates)
+        packetRateWindowStart = now
+        packetCountsByCharacteristic = [:]
     }
 
     private static func isPlausibleFacelets(_ value: String) -> Bool {
@@ -882,7 +974,9 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
                 foundKnownProtocol = true
                 connectedProtocol = .ganGen4
                 setParser(GANCubeProtocolParser(kind: .ganGen4))
-                peripheral.discoverCharacteristics([ganGen4CommandCharacteristicUUID, ganGen4StateCharacteristicUUID], for: service)
+                // GAN16UI is newer than the public Gen4 references. Enumerate the
+                // complete service so any additional notify stream remains visible.
+                peripheral.discoverCharacteristics(nil, for: service)
             case ganGen3ServiceUUID:
                 foundKnownProtocol = true
                 connectedProtocol = .ganGen3
@@ -964,7 +1058,16 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
             return
         }
         guard let data = characteristic.value else { return }
+        recordTransportPacket(data, from: characteristic)
         handleStateData(data, characteristic: characteristic)
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        if let error {
+            appendLog("Notify state", "\(characteristic.uuid.uuidString): \(error.localizedDescription)")
+            return
+        }
+        appendLog("Notify state", "\(characteristic.uuid.uuidString): \(characteristic.isNotifying ? "active" : "inactive")")
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {

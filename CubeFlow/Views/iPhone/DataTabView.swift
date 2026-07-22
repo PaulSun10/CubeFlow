@@ -11,6 +11,10 @@ private let solvesDidChangeNotification = Notification.Name("CubeFlowSolvesDidCh
 struct DataTabView: View {
     @Environment(\.managedObjectContext) private var modelContext
 
+    private let usesSystemBottomAccessory: Bool
+    @Binding private var isBottomAccessoryVisible: Bool
+    @Binding private var searchRequestID: Int
+
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
         animation: .default
@@ -19,6 +23,10 @@ struct DataTabView: View {
 
     @AppStorage("selectedSessionID") private var selectedSessionID: String = ""
     @AppStorage("appLanguage") private var appLanguage: String = "en"
+    @AppStorage("dataSolveSortOption") private var solveSortOptionRawValue = DataSolveSortOption.newest.rawValue
+    @AppStorage("dataSolveResultFilter") private var solveResultFilterRawValue = DataSolveResultFilter.all.rawValue
+    @AppStorage("dataAverageSortOption") private var averageSortOptionRawValue = DataAverageSortOption.newest.rawValue
+    @AppStorage("dataRecordFilterOption") private var recordFilterOptionRawValue = DataRecordFilterOption.all.rawValue
 
     @State private var selectedSegment: DataSegment = .time
     @State private var segmentTransitionDirection: Edge = .trailing
@@ -28,23 +36,41 @@ struct DataTabView: View {
     @State private var solveDetailSample: SessionSolveSample?
     @State private var averageDetailEntry: AverageListEntry?
     @State private var showingTrendSheet = false
+    @State private var showingRecordHistory = false
+    @State private var recordAverageDetail: RecordAverageDetailSelection?
+    @State private var rangeFilterEditor: DataSolveRangeFilterEditor?
+    @State private var isShowingSearch = false
+    @State private var isTimeRangeFilterEnabled = false
+    @State private var minimumTimeFilter = 0.0
+    @State private var maximumTimeFilter = 0.0
+    @State private var isDateRangeFilterEnabled = false
+    @State private var startDateFilter = Date()
+    @State private var endDateFilter = Date()
     @State private var selectedAverageType: AverageListType = .mo3
     @State private var recordSnapshot = RecordSnapshot.empty
     @State private var filteredSessionSolves: [SessionSolveSample] = []
+    @State private var visibleSessionSolves: [SessionSolveSample] = []
+    @State private var solvePositionByID: [UUID: Int] = [:]
     @State private var averageEntriesSnapshot: [AverageListEntry] = []
     @State private var averageEntriesKey: AverageEntriesSnapshotKey?
     @State private var recordSnapshotKey: SessionSnapshotKey?
     @State private var isLoadingSessionSnapshot = false
     @State private var isComputingRecordSnapshot = false
     @State private var isComputingAverageEntries = false
-    @State private var measuredLeadingToolbarFrame: CGRect = .zero
-    @State private var measuredTrailingToolbarFrame: CGRect = .zero
-    @State private var measuredSegmentedFrame: CGRect = .zero
-    @State private var toolbarMeasurementGeneration = 0
     @State private var sessionSnapshotGeneration = 0
     @State private var recordComputationGeneration = 0
     @State private var averageComputationGeneration = 0
     @State private var isShowingDeleteSelectedSolvesAlert = false
+
+    init(
+        usesSystemBottomAccessory: Bool = false,
+        isBottomAccessoryVisible: Binding<Bool> = .constant(false),
+        searchRequestID: Binding<Int> = .constant(0)
+    ) {
+        self.usesSystemBottomAccessory = usesSystemBottomAccessory
+        _isBottomAccessoryVisible = isBottomAccessoryVisible
+        _searchRequestID = searchRequestID
+    }
 
     private var selectedSession: Session? {
         sessions.first(where: { $0.id.uuidString == selectedSessionID }) ?? sessions.first
@@ -94,53 +120,77 @@ struct DataTabView: View {
 
     var body: some View {
         CompatibleNavigationContainer {
-            ZStack {
-                switch selectedSegment {
-                case .time:
-                    timeContent
-                        .transition(segmentTransition)
-                case .average:
-                    averageContent
-                        .transition(segmentTransition)
-                case .record:
-                    recordContent
-                        .transition(segmentTransition)
-                }
-            }
-            .animation(.snappy(duration: 0.24, extraBounce: 0), value: selectedSegment)
+            dataContent
+            .navigationTitle(Text("tab.data"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    segmentedControl
-                }
-            }
             .modifier(
-                DataTabLeadingToolbarModifier(frame: $measuredLeadingToolbarFrame) {
+                DataTabLeadingToolbarModifier {
                     showingSessionSheet = true
                 }
             )
             .modifier(
                 DataTabTrailingToolbarModifier(
-                    mode: trailingToolbarMode,
-                    frame: $measuredTrailingToolbarFrame,
-                    measurementGeneration: toolbarMeasurementGeneration,
+                    segment: selectedSegment,
+                    showsListControls: selectedSegment == .time && !filteredSessionSolves.isEmpty,
+                    isSelecting: isSelecting,
+                    isFilterActive: hasActiveSolveFilters,
+                    isAverageFilterActive: averageSortOptionRawValue != DataAverageSortOption.newest.rawValue,
+                    isRecordFilterActive: recordFilterOptionRawValue != DataRecordFilterOption.all.rawValue,
+                    sortOption: solveSortOptionBinding,
+                    resultFilter: solveResultFilterBinding,
+                    averageType: $selectedAverageType,
+                    averageTypes: availableAverageTypes,
+                    averageSortOption: averageSortOptionBinding,
+                    recordFilterOption: recordFilterOptionBinding,
+                    languageCode: appLanguage,
+                    isTimeRangeEnabled: isTimeRangeFilterEnabled,
+                    isDateRangeEnabled: isDateRangeFilterEnabled,
                     onSelect: beginSelecting,
                     onCloseSelection: endSelecting,
-                    onShowGraph: { showingTrendSheet = true }
+                    onShowGraph: { showingTrendSheet = true },
+                    onShowTimeRange: { rangeFilterEditor = .time },
+                    onShowDateRange: { rangeFilterEditor = .date },
+                    onResetFilters: resetAllFilters,
+                    onResetAverageFilters: resetAverageFilters,
+                    onResetRecordFilters: resetRecordFilters
                 )
             )
+            .compatibleNavigationDestination(isPresented: $isShowingSearch) {
+                if let selectedSession {
+                    DataSolveSearchView(
+                        sessionID: selectedSession.id,
+                        fallbackPuzzleKey: selectedSessionPuzzleKey
+                    )
+                }
+            }
         }
         .sheet(isPresented: $showingSessionSheet) {
             SessionManagementSheet(selectedSessionID: $selectedSessionID)
                 .compatibleLargeSheet()
         }
         .sheet(item: $solveDetailSample) { sample in
-            SolveDetailSheet(sample: sample, fallbackPuzzleKey: selectedSessionPuzzleKey)
+            SolveDetailSheet(
+                sample: sample,
+                position: solvePositionByID[sample.id],
+                fallbackPuzzleKey: selectedSessionPuzzleKey
+            )
                 .compatibleLargeSheet()
         }
         .sheet(item: $averageDetailEntry) { entry in
-            AverageDetailSheet(entry: entry, averageType: selectedAverageType)
+            AverageDetailSheet(
+                entry: entry,
+                metric: AverageDetailMetric(selectedAverageType),
+                personalBestSingleSolveIDs: personalBestSingleSolveIDs
+            )
                 .compatibleLargeSheet()
+        }
+        .sheet(item: $recordAverageDetail) { selection in
+            AverageDetailSheet(
+                entry: selection.entry,
+                metric: selection.metric,
+                personalBestSingleSolveIDs: personalBestSingleSolveIDs
+            )
+            .compatibleLargeSheet()
         }
         .alert("delete.solves.title", isPresented: $isShowingDeleteSelectedSolvesAlert) {
             Button("common.delete", role: .destructive) {
@@ -154,19 +204,44 @@ struct DataTabView: View {
             TimeTrendSheet(solves: sessionSolves, appLanguage: appLanguage)
                 .compatibleLargeSheet()
         }
+        .sheet(isPresented: $showingRecordHistory) {
+            RecordHistorySheet(
+                solves: sessionSolves,
+                solvePositionByID: solvePositionByID,
+                personalBestSingleSolveIDs: personalBestSingleSolveIDs,
+                fallbackPuzzleKey: selectedSessionPuzzleKey
+            )
+            .compatibleMediumLargeSheet()
+        }
+        .sheet(item: $rangeFilterEditor) { editor in
+            DataSolveRangeFilterSheet(
+                editor: editor,
+                isTimeRangeEnabled: $isTimeRangeFilterEnabled,
+                minimumTime: $minimumTimeFilter,
+                maximumTime: $maximumTimeFilter,
+                isDateRangeEnabled: $isDateRangeFilterEnabled,
+                startDate: $startDateFilter,
+                endDate: $endDateFilter,
+                solves: filteredSessionSolves
+            )
+            .compatibleMediumLargeSheet()
+        }
         .safeAreaInset(edge: .bottom) {
             if selectedSegment == .time && isSelecting && !selectedSolveIDs.isEmpty {
                 selectionActionBar
             } else if selectedSegment == .average && !availableAverageTypes.isEmpty {
                 averageTypeBar
+            } else if !usesSystemBottomAccessory && shouldShowBottomAccessory {
+                DataBottomSearchBar(languageCode: appLanguage, usesContainerGlass: true) {
+                    isShowingSearch = true
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
             }
         }
         .task {
             ensureSessionExists()
             refreshFilteredSessionSolves()
-        }
-        .onAppear {
-            toolbarMeasurementGeneration += 1
         }
         .onChange(of: selectedSegment) { newValue in
             if newValue != .time {
@@ -180,15 +255,32 @@ struct DataTabView: View {
             if newValue == .record {
                 refreshRecordSnapshot()
             }
+            updateBottomAccessoryVisibility()
+        }
+        .onChange(of: isSelecting) { _ in
+            updateBottomAccessoryVisibility()
         }
         .onChange(of: selectedSessionID) { _ in
             isSelecting = false
             selectedSolveIDs.removeAll()
+            resetRangeFilters()
             refreshFilteredSessionSolves()
         }
         .onChange(of: selectedSessionSolveCount) { _ in
             refreshFilteredSessionSolves()
         }
+        .onChange(of: solveSortOptionRawValue) { _ in
+            updateVisibleSessionSolves()
+        }
+        .onChange(of: solveResultFilterRawValue) { _ in
+            updateVisibleSessionSolves()
+        }
+        .onChange(of: isTimeRangeFilterEnabled) { _ in updateVisibleSessionSolves() }
+        .onChange(of: minimumTimeFilter) { _ in updateVisibleSessionSolves() }
+        .onChange(of: maximumTimeFilter) { _ in updateVisibleSessionSolves() }
+        .onChange(of: isDateRangeFilterEnabled) { _ in updateVisibleSessionSolves() }
+        .onChange(of: startDateFilter) { _ in updateVisibleSessionSolves() }
+        .onChange(of: endDateFilter) { _ in updateVisibleSessionSolves() }
         .onReceive(NotificationCenter.default.publisher(for: solvesDidChangeNotification)) { _ in
             refreshFilteredSessionSolves()
         }
@@ -203,6 +295,55 @@ struct DataTabView: View {
                 refreshRecordSnapshot()
             }
         }
+        .onChange(of: searchRequestID) { _ in
+            guard usesSystemBottomAccessory, shouldShowBottomAccessory else { return }
+            isShowingSearch = true
+        }
+        .onAppear(perform: updateBottomAccessoryVisibility)
+        .onDisappear {
+            if usesSystemBottomAccessory {
+                isBottomAccessoryVisible = false
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var dataContent: some View {
+        if #available(iOS 26.0, *) {
+            segmentContent
+                .safeAreaBar(edge: .top, spacing: 0) {
+                    glassSegmentedControl
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                }
+                .scrollEdgeEffectStyle(.soft, for: .top)
+        } else {
+            VStack(spacing: 0) {
+                glassSegmentedControl
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+
+                Divider()
+                segmentContent
+            }
+        }
+    }
+
+    private var segmentContent: some View {
+        ZStack {
+            switch selectedSegment {
+            case .time:
+                timeContent
+                    .transition(segmentTransition)
+            case .average:
+                averageContent
+                    .transition(segmentTransition)
+            case .record:
+                recordContent
+                    .transition(segmentTransition)
+            }
+        }
+        .animation(.snappy(duration: 0.24, extraBounce: 0), value: selectedSegment)
     }
 
 
@@ -213,22 +354,59 @@ struct DataTabView: View {
             Text("data.segment.record").tag(DataSegment.record)
         }
         .pickerStyle(.segmented)
-        .modifier(
-            DataTabSegmentedWidthModifier(
-                fallbackWidth: segmentedWidth,
-                leadingToolbarFrame: measuredLeadingToolbarFrame,
-                trailingToolbarFrame: measuredTrailingToolbarFrame,
-                segmentedFrame: $measuredSegmentedFrame
-            )
+    }
+
+    private var glassSegmentedControl: some View {
+        HStack {
+            segmentedControl
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 10)
+        .compatibleGlass(in: Capsule())
+    }
+
+    private var solveSortOptionBinding: Binding<DataSolveSortOption> {
+        Binding(
+            get: { DataSolveSortOption(rawValue: solveSortOptionRawValue) ?? .newest },
+            set: { solveSortOptionRawValue = $0.rawValue }
         )
     }
 
+    private var solveResultFilterBinding: Binding<DataSolveResultFilter> {
+        Binding(
+            get: { DataSolveResultFilter(rawValue: solveResultFilterRawValue) ?? .all },
+            set: { solveResultFilterRawValue = $0.rawValue }
+        )
+    }
 
-    private var trailingToolbarMode: DataTabTrailingToolbarMode {
-        if selectedSegment == .time {
-            return isSelecting ? .closeSelection : .select
-        }
-        return .graph
+    private var averageSortOptionBinding: Binding<DataAverageSortOption> {
+        Binding(
+            get: { DataAverageSortOption(rawValue: averageSortOptionRawValue) ?? .newest },
+            set: { averageSortOptionRawValue = $0.rawValue }
+        )
+    }
+
+    private var recordFilterOptionBinding: Binding<DataRecordFilterOption> {
+        Binding(
+            get: { DataRecordFilterOption(rawValue: recordFilterOptionRawValue) ?? .all },
+            set: { recordFilterOptionRawValue = $0.rawValue }
+        )
+    }
+
+    private var recordFilterOption: DataRecordFilterOption {
+        DataRecordFilterOption(rawValue: recordFilterOptionRawValue) ?? .all
+    }
+
+    private var visibleAverageEntries: [AverageListEntry] {
+        let sortOption = DataAverageSortOption(rawValue: averageSortOptionRawValue) ?? .newest
+        return averageEntriesSnapshot.sorted(by: sortOption.areInIncreasingOrder)
+    }
+
+    private var hasActiveSolveFilters: Bool {
+        solveSortOptionRawValue != DataSolveSortOption.newest.rawValue ||
+        solveResultFilterRawValue != DataSolveResultFilter.all.rawValue ||
+        isTimeRangeFilterEnabled ||
+        isDateRangeFilterEnabled
     }
 
     private func beginSelecting() {
@@ -258,18 +436,38 @@ struct DataTabView: View {
                         .padding(.top, 48)
                     Spacer()
                 }
+            } else if visibleSessionSolves.isEmpty {
+                VStack(spacing: 14) {
+                    Image(systemName: "line.3.horizontal.decrease")
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundStyle(.secondary)
+
+                    Text("data.filter.no_matches")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(.secondary)
+
+                    Button("data.filter.reset") {
+                        resetAllFilters()
+                    }
+                    .buttonStyle(.bordered)
+
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 48)
             } else {
                 List {
                     Section(selectedSession?.name ?? "") {
-                        ForEach(Array(sessionSolves.enumerated()), id: \.element.id) { index, solve in
+                        ForEach(visibleSessionSolves) { solve in
                             solveRow(
                                 for: solve,
-                                position: sessionSolves.count - index
+                                position: solvePositionByID[solve.id] ?? 0
                             )
                         }
                     }
                 }
                 .listStyle(.insetGrouped)
+                .compatibleSoftScrollEdgeEffect()
             }
         }
     }
@@ -295,10 +493,6 @@ struct DataTabView: View {
         )
     }
 
-    private var segmentedWidth: CGFloat {
-        200
-    }
-
     private var averageContent: some View {
         Group {
             if isLoadingSessionSnapshot {
@@ -317,11 +511,12 @@ struct DataTabView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(averageEntriesSnapshot) { entry in
+                List(visibleAverageEntries) { entry in
                     averageRow(for: entry)
                         .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                 }
                 .listStyle(.plain)
+                .compatibleSoftScrollEdgeEffect()
             }
         }
     }
@@ -341,31 +536,59 @@ struct DataTabView: View {
                         )
                         recordRow(
                             title: localizedRecordLabel("data.best_time"),
-                            value: recordSnapshot.bestTimeText
+                            value: recordSnapshot.bestTimeText,
+                            action: showBestSingle
                         )
                         recordRow(
                             title: localizedRecordLabel("data.worst_time"),
-                            value: recordSnapshot.worstTimeText
+                            value: recordSnapshot.worstTimeText,
+                            action: showWorstSingle
                         )
                     }
 
-                    if !recordSnapshot.currentStats.isEmpty {
+                    if recordFilterOption != .best, !recordSnapshot.currentStats.isEmpty {
                         Section(localizedRecordLabel("common.current")) {
                             ForEach(recordSnapshot.currentStats) { item in
-                                recordRow(title: item.title, value: item.value)
+                                recordRow(
+                                    title: item.title,
+                                    secondaryTitle: item.secondaryTitle,
+                                    value: item.value
+                                ) {
+                                    showRecordDetail(for: item, scope: .current)
+                                }
                             }
                         }
                     }
 
-                    if !recordSnapshot.bestStats.isEmpty {
-                        Section(localizedRecordLabel("common.best")) {
+                    if recordFilterOption != .current, !recordSnapshot.bestStats.isEmpty {
+                        Section {
                             ForEach(recordSnapshot.bestStats) { item in
-                                recordRow(title: item.title, value: item.value)
+                                recordRow(
+                                    title: item.title,
+                                    secondaryTitle: item.secondaryTitle,
+                                    value: item.value
+                                ) {
+                                    showRecordDetail(for: item, scope: .best)
+                                }
+                            }
+                        } header: {
+                            HStack {
+                                Text(localizedRecordLabel("common.best"))
+                                Spacer()
+                                Button {
+                                    showingRecordHistory = true
+                                } label: {
+                                    Text("data.record_history")
+                                        .textCase(nil)
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(.tint)
                             }
                         }
                     }
                 }
                 .listStyle(.insetGrouped)
+                .compatibleSoftScrollEdgeEffect()
             }
         }
     }
@@ -383,12 +606,24 @@ struct DataTabView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    private func recordRow(title: String, value: String, suffix: String? = nil) -> some View {
-        HStack(spacing: 12) {
+    private func recordRow(
+        title: String,
+        secondaryTitle: String? = nil,
+        value: String,
+        suffix: String? = nil,
+        action: (() -> Void)? = nil
+    ) -> some View {
+        let content = HStack(spacing: 12) {
             HStack(spacing: 6) {
                 Text(title)
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(.primary)
+
+                if let secondaryTitle {
+                    Text(secondaryTitle)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
 
                 if let suffix {
                     Text(suffix)
@@ -403,8 +638,26 @@ struct DataTabView: View {
                 .font(.system(size: 17, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(.primary)
+
+            if action != nil {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
         }
         .padding(.vertical, 4)
+
+        return Group {
+            if let action {
+                Button(action: action) {
+                    content
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            } else {
+                content
+            }
+        }
     }
 
     private func averageRow(for entry: AverageListEntry) -> some View {
@@ -490,7 +743,7 @@ struct DataTabView: View {
     private var selectionActionBar: some View {
         HStack {
             Button("common.select_all") {
-                selectedSolveIDs = Set(sessionSolves.map(\.id))
+                selectedSolveIDs = Set(visibleSessionSolves.map(\.id))
             }
             .font(.system(size: 17, weight: .medium))
             .foregroundStyle(.primary)
@@ -540,17 +793,111 @@ struct DataTabView: View {
         let deletedIDs = selectedSolveIDs
         for solveID in selectedSolveIDs {
             if let solve = fetchSolve(with: solveID) {
+                solve.comment = ""
                 modelContext.delete(solve)
             }
         }
         try? modelContext.save()
         filteredSessionSolves.removeAll { deletedIDs.contains($0.id) }
+        updateVisibleSessionSolves()
         selectedSolveIDs.removeAll()
         NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
     }
 
     private func fetchSolve(with id: UUID) -> Solve? {
         try? modelContext.fetchSolve(with: id)
+    }
+
+    private func showBestSingle() {
+        solveDetailSample = sessionSolves
+            .compactMap { solve -> (SessionSolveSample, Double)? in
+                guard let value = solve.adjustedTime else { return nil }
+                return (solve, value)
+            }
+            .min { $0.1 < $1.1 }?.0
+    }
+
+    private func showWorstSingle() {
+        solveDetailSample = sessionSolves
+            .compactMap { solve -> (SessionSolveSample, Double)? in
+                guard let value = solve.adjustedTime else { return nil }
+                return (solve, value)
+            }
+            .max { $0.1 < $1.1 }?.0
+    }
+
+    private func showRecordDetail(for item: RecordStatItem, scope: RecordDetailScope) {
+        if item.metricRawValue == "single" {
+            switch scope {
+            case .current:
+                solveDetailSample = sessionSolves.first
+            case .best:
+                showBestSingle()
+            }
+            return
+        }
+
+        guard let metric = RecordAverageMetric.defaultMetrics.first(where: {
+            $0.title == item.metricRawValue
+        }) else { return }
+        let samples = sessionSolves
+
+        Task {
+            let selection = await Task.detached(priority: .userInitiated) {
+                Self.makeRecordAverageDetail(metric: metric, scope: scope, solves: samples)
+            }.value
+            guard !Task.isCancelled else { return }
+            recordAverageDetail = selection
+        }
+    }
+
+    nonisolated private static func makeRecordAverageDetail(
+        metric: RecordAverageMetric,
+        scope: RecordDetailScope,
+        solves: [SessionSolveSample]
+    ) -> RecordAverageDetailSelection? {
+        let evaluation = DataTabComputation.evaluateRecordMetric(
+            metric: metric,
+            solves: solves,
+            includeWindowValues: true
+        )
+        guard !evaluation.windowValues.isEmpty else { return nil }
+
+        let index: Int
+        switch scope {
+        case .current:
+            index = 0
+        case .best:
+            let finiteBest = evaluation.windowValues.enumerated()
+                .compactMap { index, value -> (Int, Double)? in
+                    guard let value, value.isFinite else { return nil }
+                    return (index, value)
+                }
+                .min { $0.1 < $1.1 }
+            index = finiteBest?.0
+                ?? evaluation.windowValues.firstIndex(where: { $0 != nil })
+                ?? 0
+        }
+
+        guard let value = evaluation.windowValues[index] else { return nil }
+        let totalWindows = evaluation.windowValues.count
+        let averagePosition = totalWindows - index
+        let windowSolves = Array(solves[index..<(index + metric.solveCount)])
+        let isPersonalBest: Bool
+        switch scope {
+        case .current: isPersonalBest = false
+        case .best: isPersonalBest = true
+        }
+        return RecordAverageDetailSelection(
+            entry: AverageListEntry(
+                position: averagePosition,
+                date: solves[index].date,
+                value: value,
+                isPersonalBest: isPersonalBest,
+                solves: windowSolves
+            ),
+            metric: AverageDetailMetric(metric)
+        )
     }
 
     private func localizedRecordLabel(_ key: String) -> String {
@@ -572,8 +919,11 @@ struct DataTabView: View {
     private func refreshFilteredSessionSolves() {
         guard let selectedSession else {
             filteredSessionSolves = []
+            visibleSessionSolves = []
+            solvePositionByID = [:]
             recordSnapshotKey = nil
             isLoadingSessionSnapshot = false
+            updateBottomAccessoryVisibility()
             return
         }
 
@@ -593,6 +943,7 @@ struct DataTabView: View {
                     time: solve.time,
                     resultRaw: solve.resultRaw,
                     scramble: solve.scramble,
+                    comment: solve.comment,
                     eventRawValue: solve.event
                 )
             }
@@ -600,7 +951,10 @@ struct DataTabView: View {
             await MainActor.run {
                 guard generation == sessionSnapshotGeneration else { return }
                 filteredSessionSolves = snapshots
+                initializeRangeFiltersIfNeeded(from: snapshots)
+                updateVisibleSessionSolves()
                 isLoadingSessionSnapshot = false
+                updateBottomAccessoryVisibility()
                 syncSelectedAverageType()
                 prewarmRecordSnapshotIfNeeded()
                 ensureAverageEntriesSnapshot()
@@ -609,6 +963,88 @@ struct DataTabView: View {
                 }
             }
         }
+    }
+
+    private func updateVisibleSessionSolves() {
+        solvePositionByID = Dictionary(
+            uniqueKeysWithValues: filteredSessionSolves.enumerated().map { index, solve in
+                (solve.id, filteredSessionSolves.count - index)
+            }
+        )
+
+        let calendar = Calendar.current
+        let dateLowerBound = calendar.startOfDay(for: min(startDateFilter, endDateFilter))
+        let dateUpperDay = calendar.startOfDay(for: max(startDateFilter, endDateFilter))
+        let dateUpperBound = calendar.date(byAdding: .day, value: 1, to: dateUpperDay) ?? dateUpperDay
+        let timeLowerBound = min(minimumTimeFilter, maximumTimeFilter)
+        let timeUpperBound = max(minimumTimeFilter, maximumTimeFilter)
+        let resultFilter = DataSolveResultFilter(rawValue: solveResultFilterRawValue) ?? .all
+        let matchingSolves = filteredSessionSolves.filter { solve in
+            guard resultFilter.matches(solve) else { return false }
+
+            if isTimeRangeFilterEnabled {
+                guard let adjustedTime = solve.adjustedTime,
+                      adjustedTime >= timeLowerBound,
+                      adjustedTime <= timeUpperBound else { return false }
+            }
+
+            if isDateRangeFilterEnabled,
+               !(solve.date >= dateLowerBound && solve.date < dateUpperBound) {
+                return false
+            }
+
+            return true
+        }
+        let sortOption = DataSolveSortOption(rawValue: solveSortOptionRawValue) ?? .newest
+        visibleSessionSolves = matchingSolves.sorted(by: sortOption.areInIncreasingOrder)
+    }
+
+    private var shouldShowBottomAccessory: Bool {
+        selectedSegment == .time && !filteredSessionSolves.isEmpty && !isSelecting
+    }
+
+    private func updateBottomAccessoryVisibility() {
+        guard usesSystemBottomAccessory else { return }
+        withAnimation(.smooth(duration: 0.22)) {
+            isBottomAccessoryVisible = shouldShowBottomAccessory
+        }
+    }
+
+    private func initializeRangeFiltersIfNeeded(from solves: [SessionSolveSample]) {
+        if let minimum = solves.compactMap(\.adjustedTime).min(),
+           let maximum = solves.compactMap(\.adjustedTime).max(),
+           !isTimeRangeFilterEnabled {
+            minimumTimeFilter = minimum
+            maximumTimeFilter = maximum
+        }
+
+        if let earliest = solves.map(\.date).min(),
+           let latest = solves.map(\.date).max(),
+           !isDateRangeFilterEnabled {
+            startDateFilter = earliest
+            endDateFilter = latest
+        }
+    }
+
+    private func resetRangeFilters() {
+        isTimeRangeFilterEnabled = false
+        isDateRangeFilterEnabled = false
+    }
+
+    private func resetAllFilters() {
+        solveSortOptionRawValue = DataSolveSortOption.newest.rawValue
+        solveResultFilterRawValue = DataSolveResultFilter.all.rawValue
+        resetRangeFilters()
+        initializeRangeFiltersIfNeeded(from: filteredSessionSolves)
+        updateVisibleSessionSolves()
+    }
+
+    private func resetAverageFilters() {
+        averageSortOptionRawValue = DataAverageSortOption.newest.rawValue
+    }
+
+    private func resetRecordFilters() {
+        recordFilterOptionRawValue = DataRecordFilterOption.all.rawValue
     }
 
     private func syncSelectedAverageType() {
@@ -723,84 +1159,7 @@ private struct AverageEntriesSnapshotKey: Equatable {
     let averageType: AverageListType
 }
 
-private enum DataTabTrailingToolbarMode: Equatable {
-    case select
-    case closeSelection
-    case graph
-}
-
-private let dataTabDebugToolbarMarkerLeftInset: CGFloat = 14
-private let dataTabDebugToolbarMarkerRightInset: CGFloat = 16
-
-private struct DataTabToolbarFramePreferenceKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
-
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        let nextFrame = nextValue()
-        if nextFrame != .zero {
-            value = nextFrame
-        }
-    }
-}
-
-private extension CGRect {
-    func isNearlyEqual(to other: CGRect, tolerance: CGFloat = 0.5) -> Bool {
-        abs(minX - other.minX) <= tolerance &&
-        abs(minY - other.minY) <= tolerance &&
-        abs(width - other.width) <= tolerance &&
-        abs(height - other.height) <= tolerance
-    }
-}
-
-private struct DataTabToolbarFrameReader: View {
-    @Binding var frame: CGRect
-
-    var body: some View {
-        GeometryReader { proxy in
-            Color.clear
-                .preference(
-                    key: DataTabToolbarFramePreferenceKey.self,
-                    value: proxy.frame(in: .global)
-                )
-        }
-        .onPreferenceChange(DataTabToolbarFramePreferenceKey.self) { newFrame in
-            guard newFrame != .zero else { return }
-            guard !frame.isNearlyEqual(to: newFrame) else { return }
-            frame = newFrame
-        }
-    }
-}
-
-
-private struct DataTabGraphToolbarFrameReader: View {
-    @Binding var frame: CGRect
-    let generation: Int
-    @State private var acceptedGeneration: Int?
-
-    var body: some View {
-        GeometryReader { proxy in
-            Color.clear
-                .preference(
-                    key: DataTabToolbarFramePreferenceKey.self,
-                    value: proxy.frame(in: .global)
-                )
-        }
-        .onPreferenceChange(DataTabToolbarFramePreferenceKey.self) { newFrame in
-            guard newFrame != .zero else { return }
-            if acceptedGeneration != generation {
-                acceptedGeneration = generation
-                frame = newFrame
-                return
-            }
-            if frame == .zero || newFrame.minX > frame.minX + 0.5 {
-                frame = newFrame
-            }
-        }
-    }
-}
-
 private struct DataTabLeadingToolbarModifier: ViewModifier {
-    @Binding var frame: CGRect
     let onShowSessions: () -> Void
 
     func body(content: Content) -> some View {
@@ -812,108 +1171,1063 @@ private struct DataTabLeadingToolbarModifier: ViewModifier {
                     Text("common.session")
                         .font(.system(size: 16, weight: .semibold))
                 }
-                .background(DataTabToolbarFrameReader(frame: $frame))
             }
         }
     }
 }
 
-private struct DataTabSegmentedWidthModifier: ViewModifier {
-    let fallbackWidth: CGFloat
-    let leadingToolbarFrame: CGRect
-    let trailingToolbarFrame: CGRect
-    @Binding var segmentedFrame: CGRect
+private enum DataSolveSortOption: String, CaseIterable {
+    case newest
+    case oldest
+    case fastest
+    case slowest
 
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            ZStack(alignment: .leading) {
-                Color.clear
-                    .frame(width: fallbackWidth)
-                    .background(DataTabToolbarFrameReader(frame: $segmentedFrame))
-
-                content
-                    .frame(width: measuredAvailableWidth)
-                    .offset(x: measuredLeftOffsetX)
-                    .transaction { transaction in
-                        transaction.animation = nil
-                    }
-            }
-            .frame(width: fallbackWidth, alignment: .leading)
-            .layoutPriority(1)
-        } else {
-            content
-                .frame(width: fallbackWidth)
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .newest: "data.filter.sort.newest"
+        case .oldest: "data.filter.sort.oldest"
+        case .fastest: "data.filter.sort.fastest"
+        case .slowest: "data.filter.sort.slowest"
         }
     }
 
-    private var measuredAvailableWidth: CGFloat {
-        guard hasMeasuredToolbarFrames else { return fallbackWidth }
-        return max(measuredRightX - measuredLeftX, 0)
+    func areInIncreasingOrder(_ lhs: SessionSolveSample, _ rhs: SessionSolveSample) -> Bool {
+        switch self {
+        case .newest:
+            return lhs.date > rhs.date
+        case .oldest:
+            return lhs.date < rhs.date
+        case .fastest:
+            return compareByTime(lhs, rhs, dnfFirst: false)
+        case .slowest:
+            return compareByTime(lhs, rhs, dnfFirst: true)
+        }
     }
 
-    private var measuredLeftOffsetX: CGFloat {
-        guard hasMeasuredToolbarFrames, segmentedFrame != .zero else { return 0 }
-        return measuredLeftX - segmentedFrame.minX
+    private func compareByTime(
+        _ lhs: SessionSolveSample,
+        _ rhs: SessionSolveSample,
+        dnfFirst: Bool
+    ) -> Bool {
+        switch (lhs.adjustedTime, rhs.adjustedTime) {
+        case let (lhsTime?, rhsTime?):
+            if lhsTime == rhsTime {
+                return lhs.date > rhs.date
+            }
+            return self == .fastest ? lhsTime < rhsTime : lhsTime > rhsTime
+        case (nil, nil):
+            return lhs.date > rhs.date
+        case (nil, _?):
+            return dnfFirst
+        case (_?, nil):
+            return !dnfFirst
+        }
+    }
+}
+
+private enum DataSolveResultFilter: String, CaseIterable {
+    case all
+    case solved
+    case plusTwo
+    case dnf
+
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .all: "data.filter.result.all"
+        case .solved: "common.solved"
+        case .plusTwo: "data.filter.result.plus_two"
+        case .dnf: "common.dnf"
+        }
     }
 
+    func matches(_ solve: SessionSolveSample) -> Bool {
+        guard self != .all else { return true }
+        let result = SolveResult(rawValue: solve.resultRaw) ?? .solved
+        switch self {
+        case .all:
+            return true
+        case .solved:
+            return result == .solved
+        case .plusTwo:
+            return result == .plusTwo
+        case .dnf:
+            return result == .dnf
+        }
+    }
+}
 
-    private var measuredLeftX: CGFloat {
-        leadingToolbarFrame.maxX + dataTabDebugToolbarMarkerLeftInset
+private enum DataAverageSortOption: String, CaseIterable {
+    case newest
+    case oldest
+    case fastest
+    case slowest
+
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .newest: "data.filter.sort.newest"
+        case .oldest: "data.filter.sort.oldest"
+        case .fastest: "data.filter.sort.fastest"
+        case .slowest: "data.filter.sort.slowest"
+        }
     }
 
-    private var measuredRightX: CGFloat {
-        trailingToolbarFrame.minX - dataTabDebugToolbarMarkerRightInset
+    func areInIncreasingOrder(_ lhs: AverageListEntry, _ rhs: AverageListEntry) -> Bool {
+        switch self {
+        case .newest:
+            return compareByDate(lhs, rhs, newestFirst: true)
+        case .oldest:
+            return compareByDate(lhs, rhs, newestFirst: false)
+        case .fastest:
+            return compareByAverage(lhs, rhs, fastestFirst: true)
+        case .slowest:
+            return compareByAverage(lhs, rhs, fastestFirst: false)
+        }
     }
 
-    private var hasMeasuredToolbarFrames: Bool {
-        leadingToolbarFrame != .zero && trailingToolbarFrame != .zero
+    private func compareByDate(
+        _ lhs: AverageListEntry,
+        _ rhs: AverageListEntry,
+        newestFirst: Bool
+    ) -> Bool {
+        if lhs.date == rhs.date {
+            return newestFirst ? lhs.position > rhs.position : lhs.position < rhs.position
+        }
+        return newestFirst ? lhs.date > rhs.date : lhs.date < rhs.date
+    }
+
+    private func compareByAverage(
+        _ lhs: AverageListEntry,
+        _ rhs: AverageListEntry,
+        fastestFirst: Bool
+    ) -> Bool {
+        let lhsValue = lhs.value.flatMap { $0.isFinite ? $0 : nil }
+        let rhsValue = rhs.value.flatMap { $0.isFinite ? $0 : nil }
+
+        switch (lhsValue, rhsValue) {
+        case let (lhsValue?, rhsValue?):
+            if lhsValue == rhsValue {
+                return lhs.date > rhs.date
+            }
+            return fastestFirst ? lhsValue < rhsValue : lhsValue > rhsValue
+        case (nil, nil):
+            return lhs.date > rhs.date
+        case (nil, _?):
+            return false
+        case (_?, nil):
+            return true
+        }
+    }
+}
+
+private enum DataRecordFilterOption: String, CaseIterable {
+    case all
+    case current
+    case best
+
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .all: "data.segment.record"
+        case .current: "common.current"
+        case .best: "common.best"
+        }
     }
 }
 
 private struct DataTabTrailingToolbarModifier: ViewModifier {
-    let mode: DataTabTrailingToolbarMode
-    @Binding var frame: CGRect
-    let measurementGeneration: Int
+    let segment: DataSegment
+    let showsListControls: Bool
+    let isSelecting: Bool
+    let isFilterActive: Bool
+    let isAverageFilterActive: Bool
+    let isRecordFilterActive: Bool
+    @Binding var sortOption: DataSolveSortOption
+    @Binding var resultFilter: DataSolveResultFilter
+    @Binding var averageType: AverageListType
+    let averageTypes: [AverageListType]
+    @Binding var averageSortOption: DataAverageSortOption
+    @Binding var recordFilterOption: DataRecordFilterOption
+    let languageCode: String
+    let isTimeRangeEnabled: Bool
+    let isDateRangeEnabled: Bool
     let onSelect: () -> Void
     let onCloseSelection: () -> Void
     let onShowGraph: () -> Void
+    let onShowTimeRange: () -> Void
+    let onShowDateRange: () -> Void
+    let onResetFilters: () -> Void
+    let onResetAverageFilters: () -> Void
+    let onResetRecordFilters: () -> Void
 
+    @ViewBuilder
     func body(content: Content) -> some View {
-        content.toolbar {
-            trailingToolbarContent
+        if #available(iOS 26.0, *) {
+            content.toolbar {
+                modernToolbarContent
+            }
+        } else {
+            content.toolbar {
+                legacyToolbarContent
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    @ToolbarContentBuilder
+    private var modernToolbarContent: some ToolbarContent {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            graphButton
+            dataFilterButton
+        }
+
+        if showsListControls {
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
+            ToolbarItem(placement: .topBarTrailing) {
+                selectionButton
+            }
         }
     }
 
     @ToolbarContentBuilder
-    private var trailingToolbarContent: some ToolbarContent {
+    private var legacyToolbarContent: some ToolbarContent {
         ToolbarItemGroup(placement: .topBarTrailing) {
-            switch mode {
-            case .select:
-                Button {
-                    onSelect()
-                } label: {
-                    Text("common.select")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .background(DataTabToolbarFrameReader(frame: $frame))
-            case .closeSelection:
-                Button {
-                    onCloseSelection()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .medium))
-                }
-                .background(DataTabToolbarFrameReader(frame: $frame))
-            case .graph:
-                Button {
-                    onShowGraph()
-                } label: {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.system(size: 16, weight: .medium))
-                }
-                .background(DataTabGraphToolbarFrameReader(frame: $frame, generation: measurementGeneration))
+            graphButton
+            dataFilterButton
+            if showsListControls {
+                selectionButton
             }
         }
+    }
+
+    private var graphButton: some View {
+        Button(
+            "data.trend.title",
+            systemImage: "chart.line.uptrend.xyaxis",
+            action: onShowGraph
+        )
+        .labelStyle(.iconOnly)
+        .font(.system(size: 16, weight: .medium))
+    }
+
+    private var dataFilterButton: some View {
+        Menu {
+            activeFilterMenuContent
+        } label: {
+            Image(systemName: isActiveFilter ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease")
+                .font(.system(size: 16, weight: .medium))
+        }
+        .accessibilityLabel(Text("data.filter.title"))
+    }
+
+    @ViewBuilder
+    private var activeFilterMenuContent: some View {
+        switch segment {
+        case .time:
+            Section("data.filter.sort") {
+                Picker("data.filter.sort", selection: $sortOption) {
+                    ForEach(DataSolveSortOption.allCases, id: \.self) { option in
+                        Text(option.titleKey).tag(option)
+                    }
+                }
+            }
+
+            Section("data.filter.results") {
+                Picker("data.filter.results", selection: $resultFilter) {
+                    ForEach(DataSolveResultFilter.allCases, id: \.self) { filter in
+                        Text(filter.titleKey).tag(filter)
+                    }
+                }
+            }
+
+            Section("data.filter.title") {
+                Button(action: onShowTimeRange) {
+                    Label(
+                        "data.filter.time_range",
+                        systemImage: isTimeRangeEnabled ? "checkmark.circle.fill" : "timer"
+                    )
+                }
+                Button(action: onShowDateRange) {
+                    Label(
+                        "data.filter.date_range",
+                        systemImage: isDateRangeEnabled ? "checkmark.circle.fill" : "calendar"
+                    )
+                }
+            }
+
+            if isFilterActive {
+                Divider()
+                Button("data.filter.reset", action: onResetFilters)
+            }
+        case .average:
+            Section("data.segment.average") {
+                Picker("data.segment.average", selection: $averageType) {
+                    ForEach(averageTypes) { type in
+                        Text(type.title(languageCode: languageCode)).tag(type)
+                    }
+                }
+            }
+
+            Section("data.filter.sort") {
+                Picker("data.filter.sort", selection: $averageSortOption) {
+                    ForEach(DataAverageSortOption.allCases, id: \.self) { option in
+                        Text(option.titleKey).tag(option)
+                    }
+                }
+            }
+
+            if isAverageFilterActive {
+                Divider()
+                Button("data.filter.reset", action: onResetAverageFilters)
+            }
+        case .record:
+            Picker("data.filter.title", selection: $recordFilterOption) {
+                ForEach(DataRecordFilterOption.allCases, id: \.self) { option in
+                    Text(option.titleKey).tag(option)
+                }
+            }
+
+            if isRecordFilterActive {
+                Divider()
+                Button("data.filter.reset", action: onResetRecordFilters)
+            }
+        }
+    }
+
+    private var isActiveFilter: Bool {
+        switch segment {
+        case .time: isFilterActive
+        case .average: isAverageFilterActive
+        case .record: isRecordFilterActive
+        }
+    }
+
+    @ViewBuilder
+    private var selectionButton: some View {
+        if isSelecting {
+            Button {
+                onCloseSelection()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .medium))
+            }
+            .accessibilityLabel(Text("common.done"))
+        } else {
+            Button {
+                onSelect()
+            } label: {
+                Text("common.select")
+                    .font(.system(size: 16, weight: .semibold))
+            }
+        }
+    }
+}
+
+private enum DataSolveRangeFilterEditor: String, Identifiable {
+    case time
+    case date
+
+    var id: String { rawValue }
+
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .time: "data.filter.time_range"
+        case .date: "data.filter.date_range"
+        }
+    }
+}
+
+private struct DataSolveRangeFilterSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let editor: DataSolveRangeFilterEditor
+    @Binding var isTimeRangeEnabled: Bool
+    @Binding var minimumTime: Double
+    @Binding var maximumTime: Double
+    @Binding var isDateRangeEnabled: Bool
+    @Binding var startDate: Date
+    @Binding var endDate: Date
+    let solves: [SessionSolveSample]
+
+    private var availableTimeRange: ClosedRange<Double> {
+        let values = solves.compactMap(\.adjustedTime)
+        let lower = values.min() ?? 0
+        let upper = values.max() ?? max(lower + 1, 1)
+        return lower...(upper > lower ? upper : lower + 1)
+    }
+
+    private var availableDateRange: ClosedRange<Date> {
+        let calendar = Calendar.current
+        let lower = calendar.startOfDay(for: solves.map(\.date).min() ?? .now)
+        let upper = calendar.startOfDay(for: solves.map(\.date).max() ?? lower)
+        return lower...max(lower, upper)
+    }
+
+    private var sliderStep: Double {
+        let span = availableTimeRange.upperBound - availableTimeRange.lowerBound
+        if span > 600 { return 1 }
+        if span > 60 { return 0.5 }
+        return 0.1
+    }
+
+    var body: some View {
+        CompatibleNavigationContainer {
+            Form {
+                if editor == .time {
+                    Section {
+                        Toggle("data.filter.limit_time", isOn: $isTimeRangeEnabled)
+
+                        if isTimeRangeEnabled {
+                            rangeSliderRow(
+                                title: "data.filter.minimum",
+                                value: minimumTimeBinding
+                            )
+                            rangeSliderRow(
+                                title: "data.filter.maximum",
+                                value: maximumTimeBinding
+                            )
+                        }
+                    } footer: {
+                        if isTimeRangeEnabled {
+                            Text("data.filter.time_range.footer")
+                        }
+                    }
+                } else {
+                    Section {
+                        Toggle("data.filter.limit_date", isOn: $isDateRangeEnabled)
+
+                        if isDateRangeEnabled {
+                            DatePicker(
+                                "data.filter.start_date",
+                                selection: startDateBinding,
+                                in: availableDateRange,
+                                displayedComponents: .date
+                            )
+                            DatePicker(
+                                "data.filter.end_date",
+                                selection: endDateBinding,
+                                in: availableDateRange,
+                                displayedComponents: .date
+                            )
+                        }
+                    }
+                }
+            }
+            .compatibleSoftScrollEdgeEffect()
+            .navigationTitle(Text(editor.titleKey))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("data.filter.reset") {
+                        reset()
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("common.done") {
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear(perform: normalizeRanges)
+        }
+    }
+
+    private func rangeSliderRow(title: LocalizedStringKey, value: Binding<Double>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                Spacer()
+                Text(SolveMetrics.formatTime(value.wrappedValue, decimals: 1))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            Slider(value: value, in: availableTimeRange, step: sliderStep)
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var minimumTimeBinding: Binding<Double> {
+        Binding(
+            get: { minimumTime },
+            set: { minimumTime = min($0, maximumTime) }
+        )
+    }
+
+    private var maximumTimeBinding: Binding<Double> {
+        Binding(
+            get: { maximumTime },
+            set: { maximumTime = max($0, minimumTime) }
+        )
+    }
+
+    private var startDateBinding: Binding<Date> {
+        Binding(
+            get: { startDate },
+            set: { startDate = min($0, endDate) }
+        )
+    }
+
+    private var endDateBinding: Binding<Date> {
+        Binding(
+            get: { endDate },
+            set: { endDate = max($0, startDate) }
+        )
+    }
+
+    private func normalizeRanges() {
+        minimumTime = min(max(minimumTime, availableTimeRange.lowerBound), availableTimeRange.upperBound)
+        maximumTime = min(max(maximumTime, minimumTime), availableTimeRange.upperBound)
+        startDate = min(max(startDate, availableDateRange.lowerBound), availableDateRange.upperBound)
+        endDate = min(max(endDate, startDate), availableDateRange.upperBound)
+    }
+
+    private func reset() {
+        switch editor {
+        case .time:
+            isTimeRangeEnabled = false
+            minimumTime = availableTimeRange.lowerBound
+            maximumTime = availableTimeRange.upperBound
+        case .date:
+            isDateRangeEnabled = false
+            startDate = availableDateRange.lowerBound
+            endDate = availableDateRange.upperBound
+        }
+    }
+}
+
+struct DataBottomSearchBar: View {
+    let languageCode: String
+    let usesContainerGlass: Bool
+    let searchAction: () -> Void
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
+
+        Button(action: searchAction) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 15, weight: .semibold))
+                Text(appLocalizedString("data.search.placeholder", languageCode: languageCode))
+                    .font(.system(size: 16, weight: .medium))
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(shape)
+        }
+        .buttonStyle(.plain)
+        .background(shape.fill(.black.opacity(0.001)))
+        .contentShape(shape)
+        .modifier(DataBottomSearchBarGlassModifier(isEnabled: usesContainerGlass, shape: shape))
+    }
+}
+
+private struct DataBottomSearchBarGlassModifier: ViewModifier {
+    let isEnabled: Bool
+    let shape: RoundedRectangle
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.compatibleGlass(in: shape)
+        } else {
+            content
+        }
+    }
+}
+
+private struct DataSolveSearchView: View {
+    let sessionID: UUID
+    let fallbackPuzzleKey: String?
+    @AppStorage("appLanguage") private var appLanguage: String = "en"
+    @State private var query = ""
+    @State private var solves: [SessionSolveSample] = []
+    @State private var searchableTextByID: [UUID: String] = [:]
+    @State private var selectedSolve: SessionSolveSample?
+    @State private var isLoading = true
+
+    private var matchingSolves: [SessionSolveSample] {
+        let tokens = normalized(query).split(whereSeparator: \.isWhitespace).map(String.init)
+        guard !tokens.isEmpty else { return solves }
+
+        return solves.filter { solve in
+            let haystack = searchableTextByID[solve.id] ?? ""
+            return tokens.allSatisfy(haystack.contains)
+        }
+    }
+
+    private var solvePositionByID: [UUID: Int] {
+        Dictionary(
+            uniqueKeysWithValues: solves.enumerated().map { index, solve in
+                (solve.id, solves.count - index)
+            }
+        )
+    }
+
+    var body: some View {
+        Group {
+            if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if matchingSolves.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 30, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    Text("data.search.no_results")
+                        .font(.headline)
+                    Text("data.search.no_results.description")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List(matchingSolves) { solve in
+                    Button {
+                        selectedSolve = solve
+                    } label: {
+                        searchResultRow(solve)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .listStyle(.plain)
+                .compatibleSoftScrollEdgeEffect()
+            }
+        }
+        .navigationTitle(Text("data.search.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .searchable(text: $query, prompt: Text("data.search.placeholder"))
+        .sheet(item: $selectedSolve) { solve in
+            SolveDetailSheet(
+                sample: solve,
+                position: solvePositionByID[solve.id],
+                fallbackPuzzleKey: fallbackPuzzleKey
+            )
+                .compatibleLargeSheet()
+        }
+        .task {
+            loadSolves()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: solvesDidChangeNotification)) { _ in
+            loadSolves()
+        }
+        .onChange(of: appLanguage) { _ in
+            searchableTextByID = makeSearchIndex(for: solves)
+        }
+    }
+
+    private func searchResultRow(_ solve: SessionSolveSample) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(SolveMetrics.displayTime(for: solve))
+                    .font(.system(size: 20, weight: .semibold))
+                    .monospacedDigit()
+                Spacer()
+                Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            if !solve.comment.isEmpty {
+                Text(solve.comment)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            } else if !solve.scramble.isEmpty {
+                Text(solve.scramble)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 5)
+        .contentShape(Rectangle())
+    }
+
+    private func loadSolves() {
+        isLoading = solves.isEmpty
+        let persistenceController = PersistenceController.shared
+        let selectedSessionID = sessionID
+
+        Task.detached(priority: .userInitiated) {
+            let context = persistenceController.newBackgroundContext()
+            let fetched = (try? context.fetchSolves(forSessionID: selectedSessionID, ascending: false)) ?? []
+            let snapshots = fetched.map {
+                SessionSolveSample(
+                    id: $0.id,
+                    date: $0.date,
+                    time: $0.time,
+                    resultRaw: $0.resultRaw,
+                    scramble: $0.scramble,
+                    comment: $0.comment,
+                    eventRawValue: $0.event
+                )
+            }
+
+            await MainActor.run {
+                solves = snapshots
+                searchableTextByID = makeSearchIndex(for: snapshots)
+                isLoading = false
+            }
+        }
+    }
+
+    private func makeSearchIndex(for solves: [SessionSolveSample]) -> [UUID: String] {
+        let displayDateFormatter = DateFormatter()
+        displayDateFormatter.locale = appLocale(for: appLanguage)
+        displayDateFormatter.dateStyle = .medium
+        displayDateFormatter.timeStyle = .short
+        let isoDateFormatter = ISO8601DateFormatter()
+
+        return Dictionary(uniqueKeysWithValues: solves.map { solve in
+            (
+                solve.id,
+                searchableText(
+                    for: solve,
+                    displayDateFormatter: displayDateFormatter,
+                    isoDateFormatter: isoDateFormatter
+                )
+            )
+        })
+    }
+
+    private func searchableText(
+        for solve: SessionSolveSample,
+        displayDateFormatter: DateFormatter,
+        isoDateFormatter: ISO8601DateFormatter
+    ) -> String {
+        let result = SolveResult(rawValue: solve.resultRaw) ?? .solved
+        let resultText: String
+        switch result {
+        case .solved:
+            resultText = appLocalizedString("common.solved", languageCode: appLanguage)
+        case .plusTwo:
+            resultText = "+2"
+        case .dnf:
+            resultText = appLocalizedString("common.dnf", languageCode: appLanguage)
+        }
+
+        let eventText = PuzzleEvent(rawValue: solve.eventRawValue).map {
+            appLocalizedString($0.localizationKey, languageCode: appLanguage)
+        } ?? solve.eventRawValue
+        let isoDate = isoDateFormatter.string(from: solve.date)
+        let rawSeconds = String(format: "%.3f", solve.time)
+        return normalized([
+            SolveMetrics.displayTime(for: solve),
+            rawSeconds,
+            solve.comment,
+            solve.scramble,
+            displayDateFormatter.string(from: solve.date),
+            isoDate,
+            resultText,
+            solve.eventRawValue,
+            eventText
+        ].joined(separator: " "))
+    }
+
+    private func normalized(_ value: String) -> String {
+        value
+            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: appLocale(for: appLanguage))
+            .lowercased()
+    }
+}
+
+private enum RecordHistoryMetric: String, CaseIterable, Identifiable, Sendable {
+    case single
+    case mo3
+    case ao5
+    case ao12
+    case ao50
+    case ao100
+    case ao500
+    case ao1000
+    case ao5000
+    case ao10000
+
+    nonisolated var id: String { rawValue }
+
+    nonisolated var recordMetric: RecordAverageMetric? {
+        guard self != .single else { return nil }
+        return RecordAverageMetric.defaultMetrics.first { $0.title == rawValue }
+    }
+
+    nonisolated var requiredSolveCount: Int { recordMetric?.solveCount ?? 1 }
+
+    nonisolated func title(languageCode: String) -> String {
+        if self == .single {
+            return dataTabLocalizedString(for: "data.best_time", languageCode: languageCode)
+        }
+        return recordMetric?.localizedTitle(languageCode: languageCode) ?? rawValue.uppercased()
+    }
+}
+
+private enum RecordDetailScope: Sendable {
+    case current
+    case best
+}
+
+private struct AverageDetailMetric: Sendable {
+    let rawValue: String
+    let solveCount: Int
+    let trimmingCount: Int
+
+    nonisolated init(_ type: AverageListType) {
+        rawValue = type.rawValue
+        solveCount = type.solveCount
+        trimmingCount = type.trimmingCount
+    }
+
+    nonisolated init(_ metric: RecordAverageMetric) {
+        rawValue = metric.title
+        solveCount = metric.solveCount
+        trimmingCount = metric.trimCount
+    }
+
+    nonisolated func title(languageCode: String) -> String {
+        RecordAverageMetric.defaultMetrics
+            .first { $0.title == rawValue }?
+            .localizedTitle(languageCode: languageCode) ?? rawValue.uppercased()
+    }
+}
+
+private struct RecordAverageDetailSelection: Identifiable, Sendable {
+    let entry: AverageListEntry
+    let metric: AverageDetailMetric
+
+    nonisolated var id: String { "\(metric.rawValue)-\(entry.position)" }
+}
+
+private struct RecordHistoryEntry: Identifiable, Sendable {
+    let id: String
+    let metric: RecordHistoryMetric
+    let value: Double
+    let improvement: Double?
+    let date: Date
+    let displayedPosition: Int
+    let averageEntry: AverageListEntry?
+    let solve: SessionSolveSample?
+}
+
+private struct RecordHistorySheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("appLanguage") private var appLanguage: String = "en"
+
+    let solves: [SessionSolveSample]
+    let solvePositionByID: [UUID: Int]
+    let personalBestSingleSolveIDs: Set<UUID>
+    let fallbackPuzzleKey: String?
+
+    @State private var selectedMetric: RecordHistoryMetric = .single
+    @State private var entries: [RecordHistoryEntry] = []
+    @State private var isLoading = true
+    @State private var selectedEntry: RecordHistoryEntry?
+
+    private var availableMetrics: [RecordHistoryMetric] {
+        RecordHistoryMetric.allCases.filter { solves.count >= $0.requiredSolveCount }
+    }
+
+    var body: some View {
+        CompatibleNavigationContainer {
+            List {
+                Section {
+                    Picker("data.record_history.metric", selection: $selectedMetric) {
+                        ForEach(availableMetrics) { metric in
+                            Text(metric.title(languageCode: appLanguage)).tag(metric)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+
+                Section(selectedMetric.title(languageCode: appLanguage)) {
+                    if isLoading {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    } else if entries.isEmpty {
+                        Text("data.record_history.empty")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(entries) { entry in
+                            historyRow(entry)
+                        }
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .compatibleSoftScrollEdgeEffect()
+            .navigationTitle(Text("data.record_history"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .accessibilityLabel(Text("common.done"))
+                }
+            }
+            .task(id: selectedMetric) {
+                await loadHistory()
+            }
+            .sheet(item: $selectedEntry) { entry in
+                if let solve = entry.solve {
+                    SolveDetailSheet(
+                        sample: solve,
+                        position: solvePositionByID[solve.id],
+                        fallbackPuzzleKey: fallbackPuzzleKey
+                    )
+                    .compatibleLargeSheet()
+                } else if let averageEntry = entry.averageEntry,
+                          let recordMetric = entry.metric.recordMetric {
+                    AverageDetailSheet(
+                        entry: averageEntry,
+                        metric: AverageDetailMetric(recordMetric),
+                        personalBestSingleSolveIDs: personalBestSingleSolveIDs
+                    )
+                    .compatibleLargeSheet()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func historyRow(_ entry: RecordHistoryEntry) -> some View {
+        let canOpenDetail = entry.solve != nil || entry.averageEntry != nil
+        Button {
+            if canOpenDetail {
+                selectedEntry = entry
+            }
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(
+                            entry.metric == .single
+                                ? SolveMetrics.formatTime(entry.value, decimals: 3)
+                                : SolveMetrics.formatAverage(entry.value)
+                        )
+                            .font(.system(size: 19, weight: .semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(.primary)
+
+                        if let improvement = entry.improvement {
+                            Text("−\(SolveMetrics.formatTime(improvement, decimals: 3))")
+                                .font(.system(size: 13, weight: .semibold))
+                                .monospacedDigit()
+                                .foregroundStyle(.green)
+                        }
+                    }
+
+                    Text(SolveMetrics.displayDate(entry.date, languageCode: appLanguage))
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 8)
+
+                Text("#\(entry.displayedPosition)")
+                    .font(.system(size: 15, weight: .medium))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+
+                if canOpenDetail {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!canOpenDetail)
+    }
+
+    private func loadHistory() async {
+        isLoading = true
+        let samples = solves
+        let metric = selectedMetric
+        let positions = solvePositionByID
+        let history = await Task.detached(priority: .userInitiated) {
+            Self.buildHistory(metric: metric, solves: samples, solvePositionByID: positions)
+        }.value
+        guard !Task.isCancelled, selectedMetric == metric else { return }
+        entries = history
+        isLoading = false
+    }
+
+    nonisolated private static func buildHistory(
+        metric: RecordHistoryMetric,
+        solves: [SessionSolveSample],
+        solvePositionByID: [UUID: Int]
+    ) -> [RecordHistoryEntry] {
+        if metric == .single {
+            var bestValue: Double?
+            var history: [RecordHistoryEntry] = []
+
+            for solve in solves.reversed() {
+                guard let value = solve.adjustedTime,
+                      bestValue == nil || value < bestValue! else { continue }
+                history.append(
+                    RecordHistoryEntry(
+                        id: "single-\(solve.id.uuidString)",
+                        metric: metric,
+                        value: value,
+                        improvement: bestValue.map { $0 - value },
+                        date: solve.date,
+                        displayedPosition: solvePositionByID[solve.id] ?? 0,
+                        averageEntry: nil,
+                        solve: solve
+                    )
+                )
+                bestValue = value
+            }
+            return history.reversed()
+        }
+
+        guard let recordMetric = metric.recordMetric else { return [] }
+        let evaluation = DataTabComputation.evaluateRecordMetric(
+            metric: recordMetric,
+            solves: solves,
+            includeWindowValues: true
+        )
+        let totalWindows = evaluation.windowValues.count
+        var bestValue: Double?
+        var history: [RecordHistoryEntry] = []
+
+        for index in evaluation.windowValues.indices.reversed() {
+            guard let value = evaluation.windowValues[index], value.isFinite,
+                  bestValue == nil || value < bestValue! else { continue }
+            let averagePosition = totalWindows - index
+            let windowSolves = Array(solves[index..<(index + recordMetric.solveCount)])
+            let averageEntry = AverageListEntry(
+                position: averagePosition,
+                date: solves[index].date,
+                value: value,
+                isPersonalBest: true,
+                solves: windowSolves
+            )
+            history.append(
+                RecordHistoryEntry(
+                    id: "\(metric.rawValue)-\(averagePosition)",
+                    metric: metric,
+                    value: value,
+                    improvement: bestValue.map { $0 - value },
+                    date: solves[index].date,
+                    displayedPosition: averagePosition + recordMetric.solveCount - 1,
+                    averageEntry: averageEntry,
+                    solve: nil
+                )
+            )
+            bestValue = value
+        }
+
+        return history.reversed()
     }
 }
 
@@ -921,14 +2235,24 @@ private struct SolveDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var modelContext
     private let sample: SessionSolveSample
+    private let position: Int?
     private let fallbackPuzzleKey: String?
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @State private var showingScrambleDetail = false
     @State private var isShowingDeleteSolveAlert = false
+    @State private var commentText: String
 
-    init(sample: SessionSolveSample, fallbackPuzzleKey: String?) {
+    init(sample: SessionSolveSample, position: Int?, fallbackPuzzleKey: String?) {
         self.sample = sample
+        self.position = position
         self.fallbackPuzzleKey = fallbackPuzzleKey
+        _commentText = State(initialValue: sample.comment)
+    }
+
+    private var navigationTitle: String {
+        let title = appLocalizedString("common.solve", languageCode: appLanguage)
+        guard let position else { return title }
+        return "\(title) #\(position)"
     }
 
     private var puzzleKey: String? {
@@ -971,19 +2295,27 @@ private struct SolveDetailSheet: View {
                             .frame(maxWidth: .infinity)
                     }
 
+                    commentSection
+
                     actionSection
                 }
                 .padding(20)
             }
-            .navigationTitle(appLocalizedString("common.solve", languageCode: appLanguage))
+            .compatibleSoftScrollEdgeEffect()
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("common.done") {
+                    Button {
+                        saveComment()
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
+                    .accessibilityLabel(Text("common.done"))
                 }
             }
+            .onDisappear(perform: saveComment)
             .alert("delete.solve.title", isPresented: $isShowingDeleteSolveAlert) {
                 Button("common.delete", role: .destructive) {
                     deleteSolve()
@@ -1000,17 +2332,43 @@ private struct SolveDetailSheet: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(24)
                     }
+                    .compatibleSoftScrollEdgeEffect()
                     .navigationTitle(appLocalizedString("common.scramble", languageCode: appLanguage))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button("common.done") {
+                            Button {
                                 showingScrambleDetail = false
+                            } label: {
+                                Image(systemName: "xmark")
                             }
+                            .accessibilityLabel(Text("common.done"))
                         }
                     }
                 }
                 .compatibleLargeSheet()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var commentSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("solve.comment")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.secondary)
+
+            if #available(iOS 16.0, *) {
+                TextField("solve.comment.placeholder", text: $commentText, axis: .vertical)
+                    .lineLimit(3...6)
+                    .textFieldStyle(.roundedBorder)
+            } else {
+                TextEditor(text: $commentText)
+                    .frame(minHeight: 88)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(.secondary.opacity(0.25), lineWidth: 1)
+                    }
             }
         }
     }
@@ -1049,19 +2407,16 @@ private struct SolveDetailSheet: View {
                 Button("common.dnf") {
                     updateResult(.dnf)
                 }
-                .foregroundStyle(.blue)
                 .compatibleProminentButtonFromIOS16(tint: .blue)
 
                 Button("+2") {
                     updateResult(.plusTwo)
                 }
-                .foregroundStyle(.blue)
                 .compatibleProminentButtonFromIOS16(tint: .blue)
 
                 Button("common.solved") {
                     updateResult(.solved)
                 }
-                .foregroundStyle(.blue)
                 .compatibleProminentButtonFromIOS16(tint: .blue)
             }
             .controlSize(.large)
@@ -1073,7 +2428,6 @@ private struct SolveDetailSheet: View {
                     .frame(maxWidth: .infinity)
             }
             .compatibleProminentButtonFromIOS16(tint: .red)
-            .foregroundStyle(.red)
             .controlSize(.large)
         }
     }
@@ -1085,13 +2439,27 @@ private struct SolveDetailSheet: View {
         }
 
         solve.result = result
+        solve.comment = normalizedComment
         try? modelContext.save()
         NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
         dismiss()
     }
 
+    private var normalizedComment: String {
+        commentText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func saveComment() {
+        guard let solve = try? modelContext.fetchSolve(with: sample.id),
+              normalizedComment != solve.comment else { return }
+        solve.comment = normalizedComment
+        try? modelContext.save()
+        NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
+    }
+
     private func deleteSolve() {
         if let solve = try? modelContext.fetchSolve(with: sample.id) {
+            solve.comment = ""
             modelContext.delete(solve)
             try? modelContext.save()
             NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
@@ -1104,8 +2472,10 @@ private struct SolveDetailSheet: View {
 private struct AverageDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     let entry: AverageListEntry
-    let averageType: AverageListType
+    let metric: AverageDetailMetric
+    let personalBestSingleSolveIDs: Set<UUID>
     @AppStorage("appLanguage") private var appLanguage: String = "en"
+    @State private var selectedSolve: SessionSolveSample?
 
     private var orderedSolves: [SessionSolveSample] {
         Array(entry.solves.reversed())
@@ -1122,7 +2492,7 @@ private struct AverageDetailSheet: View {
     }
 
     private var trimmedSolveIDs: Set<UUID> {
-        let trimmingCount = averageType.trimmingCount
+        let trimmingCount = metric.trimmingCount
         guard trimmingCount > 0 else { return [] }
 
         let fastestFiniteIDs = entry.solves
@@ -1145,12 +2515,43 @@ private struct AverageDetailSheet: View {
         return Set(fastestFiniteIDs + slowestIDs)
     }
 
+    private var endingSolvePosition: Int {
+        entry.position + metric.solveCount - 1
+    }
+
+    private var navigationTitle: String {
+        "\(metric.title(languageCode: appLanguage)) #\(endingSolvePosition)"
+    }
+
+    private var standardDeviation: Double? {
+        SolveMetrics.standardDeviation(
+            from: entry.solves,
+            trimmingCount: metric.trimmingCount
+        )
+    }
+
+    private var standardDeviationLabel: String {
+        let value = standardDeviation.map {
+            SolveMetrics.formatTime($0, decimals: 2)
+        } ?? "-"
+        return "(σ = \(value))"
+    }
+
+    private var solvePositionByID: [UUID: Int] {
+        Dictionary(
+            uniqueKeysWithValues: orderedSolves.enumerated().map { index, solve in
+                (solve.id, entry.position + index)
+            }
+        )
+    }
+
     var body: some View {
         CompatibleNavigationContainer {
             List {
                 Section {
                     averageSummaryRow(
-                        title: dataTabLocalizedString(for: "data.segment.average", languageCode: appLanguage),
+                        title: metric.title(languageCode: appLanguage),
+                        secondaryTitle: standardDeviationLabel,
                         value: SolveMetrics.formatAverage(entry.value),
                         isPrimary: true
                     )
@@ -1166,28 +2567,53 @@ private struct AverageDetailSheet: View {
 
                 Section(String(format: dataTabLocalizedString(for: "common.solves_format", languageCode: appLanguage), entry.solves.count)) {
                     ForEach(Array(orderedSolves.enumerated()), id: \.element.id) { index, solve in
-                        averageSolveRow(solve, position: index + 1)
+                        averageSolveRow(solve, position: entry.position + index)
                     }
                 }
             }
+            .compatibleSoftScrollEdgeEffect()
             .listStyle(.insetGrouped)
-            .navigationTitle(averageType.title(languageCode: appLanguage))
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("common.done") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
+                    .accessibilityLabel(Text("common.done"))
                 }
+            }
+            .sheet(item: $selectedSolve) { solve in
+                SolveDetailSheet(
+                    sample: solve,
+                    position: solvePositionByID[solve.id],
+                    fallbackPuzzleKey: nil
+                )
+                .compatibleLargeSheet()
             }
         }
     }
 
-    private func averageSummaryRow(title: String, value: String, isPrimary: Bool = false) -> some View {
+    private func averageSummaryRow(
+        title: String,
+        secondaryTitle: String? = nil,
+        value: String,
+        isPrimary: Bool = false
+    ) -> some View {
         HStack(spacing: 12) {
-            Text(title)
-                .font(.system(size: 17, weight: .medium))
-                .foregroundStyle(.primary)
+            HStack(spacing: 4) {
+                Text(title)
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundStyle(.primary)
+
+                if let secondaryTitle {
+                    Text(secondaryTitle)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             Spacer()
 
@@ -1195,6 +2621,7 @@ private struct AverageDetailSheet: View {
                 .font(.system(size: isPrimary ? 26 : 18, weight: isPrimary ? .semibold : .medium))
                 .monospacedDigit()
                 .foregroundStyle(isPrimary && entry.isPersonalBest ? .orange : .primary)
+                .layoutPriority(1)
         }
         .padding(.vertical, isPrimary ? 6 : 3)
     }
@@ -1203,31 +2630,40 @@ private struct AverageDetailSheet: View {
         let timeText = SolveMetrics.displayTime(for: solve)
         let displayText = trimmedSolveIDs.contains(solve.id) ? "(\(timeText))" : timeText
 
-        return HStack(spacing: 12) {
-            Text("#\(position)")
-                .font(.system(size: 16, weight: .regular))
-                .foregroundStyle(.secondary)
+        return Button {
+            selectedSolve = solve
+        } label: {
+            HStack(spacing: 12) {
+                Text("#\(position)")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(displayText)
-                    .font(.system(size: 21, weight: .semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(color(for: solve))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(displayText)
+                        .font(.system(size: 21, weight: .semibold))
+                        .monospacedDigit()
+                        .foregroundStyle(personalBestSingleSolveIDs.contains(solve.id) ? .orange : .primary)
 
-                Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
-                    .font(.system(size: 13, weight: .medium))
+                    Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+
+                    Text(solve.scramble.isEmpty ? "-" : solve.scramble)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.secondary)
             }
-
-            Spacer()
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
         }
-        .padding(.vertical, 4)
-    }
-
-    private func color(for solve: SessionSolveSample) -> Color {
-        if solve.id == entry.bestSolveID { return .orange }
-        if solve.id == entry.worstSolveID { return .red }
-        return .primary
+        .buttonStyle(.plain)
     }
 }
 
@@ -1444,6 +2880,7 @@ private struct SessionManagementSheet: View {
                             }
                         }
                     }
+                    .compatibleSoftScrollEdgeEffect()
                     .listStyle(.plain)
                 }
             }
@@ -1806,6 +3243,7 @@ private struct SessionManagementSheet: View {
         deleteProgressTotal = total
 
         for session in sessionsToDelete {
+            session.solves?.forEach { $0.comment = "" }
             modelContext.delete(session)
             deleteProgressCurrent = min(deleteProgressCurrent + 1, total - 1)
         }

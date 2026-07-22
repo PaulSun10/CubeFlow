@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreData
 #if os(iOS)
+import AudioToolbox
 import UIKit
 #endif
 
@@ -19,6 +20,7 @@ struct TimerTabView: View {
     @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var ganTimer = GANTimerBluetoothManager.shared
+    @ObservedObject private var smartCube = SmartCubeBluetoothManager.shared
     @StateObject private var nearbyBattleManager = NearbyBattleManager()
     @FocusState private var isTypingFieldFocused: Bool
 
@@ -62,6 +64,8 @@ struct TimerTabView: View {
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
     @AppStorage("drawScramblePlacement") private var drawScramblePlacement: String = DrawScramblePlacement.inline.rawValue
     @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = 132
+    @AppStorage("smartCubeFixedView") private var smartCubeFixedViewRawValue = SmartCubeFixedView.urf.rawValue
+    @AppStorage("smartCubeReadySound") private var smartCubeReadySound = true
 
     @State private var selectedEvent: PuzzleEvent = .threeByThree
     @State private var elapsedSeconds: Double = 0
@@ -129,6 +133,9 @@ struct TimerTabView: View {
     @State private var localBattleSecondDisplayTime: Double?
     @State private var didScoreCurrentLocalBattleRound = false
     @State private var scrambleDisplayMeasuredHeight: CGFloat = 0
+    @State private var smartCubeTargetFacelets: String?
+    @State private var smartCubeIsReady = false
+    @State private var smartCubeSolveStartMoveIndex = 0
 
     private let hiddenTimerVerticalOffset: CGFloat = 18
     private let ganResultChoices: [SolveResult] = [.solved, .plusTwo, .dnf]
@@ -318,6 +325,9 @@ struct TimerTabView: View {
     }
 
     private var timerTextStyle: AnyShapeStyle {
+        if enteringTimesWith == "smartCube", !isRunning, smartCubeIsReady {
+            return AnyShapeStyle(Color.green)
+        }
         if enteringTimesWith == "gan" && !isRunning {
             if ganTimer.connectionState == .ready {
                 return AnyShapeStyle(Color.green)
@@ -558,6 +568,10 @@ struct TimerTabView: View {
                 }
                 .padding(.top, 10)
                 .padding(.bottom, 6)
+
+                if enteringTimesWith == "smartCube" {
+                    smartCubeTimerPanel
+                }
             }
 
             Spacer()
@@ -577,6 +591,37 @@ struct TimerTabView: View {
         }
         .padding(.horizontal, 24)
         .simultaneousGesture(dismissTypingKeyboardGesture)
+    }
+
+    private var smartCubeTimerPanel: some View {
+        VStack(spacing: 4) {
+            SmartCube3DView(
+                facelets: smartCube.facelets,
+                stateRevision: smartCube.cubeStateRevision,
+                fixedView: SmartCubeFixedView(rawValue: smartCubeFixedViewRawValue) ?? .urf
+            )
+            .frame(height: 180)
+            .frame(maxWidth: .infinity)
+
+            Label(smartCubeStatusText, systemImage: smartCubeStatusSymbol)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(smartCubeIsReady ? .green : .secondary)
+        }
+        .padding(.top, 2)
+    }
+
+    private var smartCubeStatusText: LocalizedStringKey {
+        if !smartCube.isConnected { return "smart_cube.timer.disconnected" }
+        if isRunning { return "smart_cube.timer.solving" }
+        if smartCubeIsReady { return "smart_cube.timer.ready" }
+        return "smart_cube.timer.scramble"
+    }
+
+    private var smartCubeStatusSymbol: String {
+        if !smartCube.isConnected { return "antenna.radiowaves.left.and.right.slash" }
+        if isRunning { return "timer" }
+        if smartCubeIsReady { return "checkmark.circle.fill" }
+        return "arrow.triangle.2.circlepath"
     }
 
     @ViewBuilder
@@ -778,11 +823,19 @@ struct TimerTabView: View {
     .task {
         ensureSessionExists()
         restoreSelectedEventFromSession()
+        if enteringTimesWith == "smartCube" {
+            selectedEvent = .threeByThree
+        }
         refreshSolveSnapshots()
         refreshStreakSnapshots()
-        generateNewScramble()
+        if currentScramble.isEmpty {
+            generateNewScramble()
+        }
         if enteringTimesWith == "gan" {
             ganTimer.prepareIfNeeded()
+        } else if enteringTimesWith == "smartCube" {
+            smartCube.prepareIfNeeded()
+            prepareSmartCubeScrambleTarget()
         }
     }
         .onChange(of: timerBackgroundAppearanceData) { _ in
@@ -809,7 +862,25 @@ struct TimerTabView: View {
         .onChange(of: enteringTimesWith) { newValue in
             if newValue == "gan" {
                 ganTimer.prepareIfNeeded()
+            } else if newValue == "smartCube" {
+                selectedEvent = .threeByThree
+                smartCube.prepareIfNeeded()
+                prepareSmartCubeScrambleTarget()
+            } else {
+                resetSmartCubeTimerState()
             }
+        }
+        .onChange(of: currentScramble) { _ in
+            guard enteringTimesWith == "smartCube" else { return }
+            prepareSmartCubeScrambleTarget()
+        }
+        .onChange(of: smartCube.facelets) { facelets in
+            guard enteringTimesWith == "smartCube", let facelets else { return }
+            handleSmartCubeFacelets(facelets)
+        }
+        .onChange(of: smartCube.latestMove) { move in
+            guard enteringTimesWith == "smartCube", let move else { return }
+            handleSmartCubeMove(move)
         }
         .onChange(of: ganTimer.connectionState) { newValue in
             handleGANTimerStateChange(newValue)
@@ -827,6 +898,10 @@ struct TimerTabView: View {
             handleGANInspectionToggle()
         }
         .onChange(of: selectedEvent) { _ in
+            if enteringTimesWith == "smartCube", selectedEvent != .threeByThree {
+                selectedEvent = .threeByThree
+                return
+            }
             persistSelectedEventToSession()
             refreshSolveSnapshots()
             generateNewScramble()
@@ -949,6 +1024,7 @@ struct TimerTabView: View {
         }
         .tint(.primary)
         .buttonStyle(.plain)
+        .disabled(enteringTimesWith == "smartCube")
     }
 
     private var startTimerGesture: some Gesture {
@@ -1032,6 +1108,63 @@ struct TimerTabView: View {
         pendingSolveTime = elapsedSeconds
         pendingInspectionPenalty = currentSolveInspectionPenalty
         showingResultPopup = true
+    }
+
+    private func prepareSmartCubeScrambleTarget() {
+        smartCubeTargetFacelets = SmartCubeBluetoothManager.facelets(afterApplying: currentScramble)
+        smartCubeIsReady = smartCube.facelets == smartCubeTargetFacelets
+        smartCubeSolveStartMoveIndex = smartCube.moveHistory.count
+    }
+
+    private func handleSmartCubeFacelets(_ facelets: String) {
+        if isRunning {
+            guard facelets == SmartCubeBluetoothManager.solvedFacelets else { return }
+            finishSmartCubeSolve()
+            return
+        }
+
+        guard let smartCubeTargetFacelets else {
+            smartCubeIsReady = false
+            return
+        }
+        let wasReady = smartCubeIsReady
+        smartCubeIsReady = facelets == smartCubeTargetFacelets
+        if smartCubeIsReady, !wasReady {
+            smartCubeSolveStartMoveIndex = smartCube.moveHistory.count
+            if smartCubeReadySound {
+                AudioServicesPlaySystemSound(1104)
+            }
+        }
+    }
+
+    private func handleSmartCubeMove(_ move: SmartCubeMoveEvent) {
+        guard smartCubeIsReady, !isRunning, !showingResultPopup else { return }
+        smartCubeIsReady = false
+        smartCubeSolveStartMoveIndex = max(smartCube.moveHistory.count - 1, 0)
+        elapsedSeconds = 0
+        timerStartDate = move.localTimestamp
+        isRunning = true
+        startDisplayTimer()
+    }
+
+    private func finishSmartCubeSolve() {
+        guard isRunning, let timerStartDate else { return }
+        let finishDate = smartCube.latestMove?.localTimestamp ?? .now
+        let duration = finishDate.timeIntervalSince(timerStartDate)
+        invalidateTimer()
+        isRunning = false
+        guard duration > 0 else { return }
+        elapsedSeconds = duration
+        pendingSolveTime = duration
+        pendingInspectionPenalty = nil
+        currentSolveInspectionPenalty = nil
+        showingResultPopup = true
+    }
+
+    private func resetSmartCubeTimerState() {
+        smartCubeTargetFacelets = nil
+        smartCubeIsReady = false
+        smartCubeSolveStartMoveIndex = 0
     }
 
     private func handleGANTimerStateChange(_ state: GANTimerConnectionState) {

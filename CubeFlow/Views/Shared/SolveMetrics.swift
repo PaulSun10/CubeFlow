@@ -83,7 +83,8 @@ enum SolveMetrics {
     nonisolated static func displayDate(_ date: Date, languageCode: String) -> String {
         let formatter = DateFormatter()
         formatter.locale = appLocale(for: languageCode)
-        formatter.dateFormat = appLocalizedString("common.date_format", languageCode: languageCode)
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
         return formatter.string(from: date)
     }
 
@@ -117,6 +118,35 @@ enum SolveMetrics {
     nonisolated static func percentageTrimmedAverage(from solves: [SessionSolveSample], percentage: Double) -> Double? {
         let trimmingCount = Int(Double(solves.count) * percentage)
         return averageValue(from: solves, trimmingCount: trimmingCount)
+    }
+
+    nonisolated static func standardDeviation(
+        from solves: [SessionSolveSample],
+        trimmingCount: Int
+    ) -> Double? {
+        guard trimmingCount >= 0, trimmingCount * 2 < solves.count else { return nil }
+
+        let ranked = solves
+            .map(\.adjustedTime)
+            .sorted { lhs, rhs in
+                switch (lhs, rhs) {
+                case let (lhs?, rhs?): lhs < rhs
+                case (nil, _?): false
+                case (_?, nil): true
+                case (nil, nil): false
+                }
+            }
+        let included = ranked
+            .dropFirst(trimmingCount)
+            .dropLast(trimmingCount)
+
+        guard included.count > 1, included.allSatisfy({ $0 != nil }) else { return nil }
+        let values = included.compactMap { $0 }
+        let mean = values.reduce(0, +) / Double(values.count)
+        let squaredDeviations = values.reduce(0) { partialResult, value in
+            partialResult + pow(value - mean, 2)
+        }
+        return sqrt(squaredDeviations / Double(values.count - 1))
     }
 
     @MainActor

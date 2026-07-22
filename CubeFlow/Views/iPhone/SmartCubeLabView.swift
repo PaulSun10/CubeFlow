@@ -3,6 +3,19 @@ import SwiftUI
 
 struct SmartCubeLabView: View {
     @StateObject private var manager = SmartCubeBluetoothManager.shared
+    @AppStorage("smartCubeFixedView") private var fixedViewRawValue = SmartCubeFixedView.urf.rawValue
+    @AppStorage("smartCubeResetPolicy") private var resetPolicyRawValue = SmartCubeResetPolicy.prompt.rawValue
+    @AppStorage("smartCubeReadySound") private var readySound = true
+    @AppStorage("smartCubeDebugMode") private var debugMode = false
+    @State private var showingResetPrompt = false
+
+    private var fixedView: SmartCubeFixedView {
+        SmartCubeFixedView(rawValue: fixedViewRawValue) ?? .urf
+    }
+
+    private var resetPolicy: SmartCubeResetPolicy {
+        SmartCubeResetPolicy(rawValue: resetPolicyRawValue) ?? .prompt
+    }
 
     var body: some View {
         List {
@@ -10,13 +23,16 @@ struct SmartCubeLabView: View {
             discoveredDevicesSection
             liveStateSection
             cube3DSection
-            faceletsSection
-            servicesSection
-            protocolLogSection
-            logSection
+            settingsSection
+            if debugMode {
+                faceletsSection
+                servicesSection
+                protocolLogSection
+                logSection
+            }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Smart Cube Lab")
+        .navigationTitle("smart_cube.title")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -26,10 +42,31 @@ struct SmartCubeLabView: View {
                     Image(systemName: "trash")
                 }
                 .accessibilityLabel("Clear log")
+                .opacity(debugMode ? 1 : 0)
+                .disabled(!debugMode)
             }
         }
         .onAppear {
             manager.prepareIfNeeded()
+        }
+        .onChange(of: manager.connectionState) { state in
+            guard state == .connected else { return }
+            switch resetPolicy {
+            case .always:
+                manager.resetCubeStateToSolved()
+            case .prompt:
+                showingResetPrompt = true
+            case .never:
+                break
+            }
+        }
+        .alert("smart_cube.reset_prompt_title", isPresented: $showingResetPrompt) {
+            Button("smart_cube.reset_action") {
+                manager.resetCubeStateToSolved()
+            }
+            Button("common.cancel", role: .cancel) {}
+        } message: {
+            Text("smart_cube.reset_prompt_message")
         }
     }
 
@@ -41,9 +78,15 @@ struct SmartCubeLabView: View {
                         .font(.system(size: 26, weight: .semibold))
                         .foregroundStyle(manager.isConnected ? .green : .secondary)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(manager.connectedDeviceName ?? "No smart cube connected")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text(manager.connectionState.label)
+                        Group {
+                            if let deviceName = manager.connectedDeviceName {
+                                Text(deviceName)
+                            } else {
+                                Text("smart_cube.no_connected")
+                            }
+                        }
+                        .font(.system(size: 16, weight: .semibold))
+                        Text(connectionStateKey)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
@@ -52,38 +95,40 @@ struct SmartCubeLabView: View {
 
                 HStack(spacing: 10) {
                     if manager.connectionState == .scanning {
-                        Button("Stop Scanning") { manager.stopScanning() }
+                        Button("smart_cube.stop_scanning") { manager.stopScanning() }
                             .buttonStyle(.borderedProminent)
                     } else {
-                        Button("Scan") { manager.startScanning() }
+                        Button("smart_cube.scan") { manager.startScanning() }
                             .buttonStyle(.borderedProminent)
                     }
 
-                    Button("Disconnect") { manager.disconnect() }
+                    Button("smart_cube.disconnect") { manager.disconnect() }
                         .buttonStyle(.bordered)
                         .disabled(!manager.isConnected)
                 }
 
                 if manager.isConnected {
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 10) {
-                            Button("Facelets") { manager.requestFacelets() }
-                            Button("Battery") { manager.requestBattery() }
-                            Button("Hardware") { manager.requestHardware() }
-                        }
-
                         Button {
                             manager.resetCubeStateToSolved()
                         } label: {
-                            Label("Reset State", systemImage: "arrow.counterclockwise")
+                            Label("smart_cube.reset_action", systemImage: "arrow.counterclockwise")
                         }
 
-                        VStack(alignment: .leading, spacing: 6) {
-                            Toggle("Protocol Debug", isOn: $manager.protocolDebugLogging)
-                            Toggle("Coalesce Slice Moves", isOn: $manager.coalesceSliceMoves)
-                            Toggle("Verbose Packets", isOn: $manager.verbosePacketLogging)
+                        if debugMode {
+                            HStack(spacing: 10) {
+                                Button("Facelets") { manager.requestFacelets() }
+                                Button("Battery") { manager.requestBattery() }
+                                Button("Hardware") { manager.requestHardware() }
+                            }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Toggle("Protocol Debug", isOn: $manager.protocolDebugLogging)
+                                Toggle("Coalesce Slice Moves", isOn: $manager.coalesceSliceMoves)
+                                Toggle("Verbose Packets", isOn: $manager.verbosePacketLogging)
+                            }
+                            .font(.system(size: 13, weight: .medium))
                         }
-                        .font(.system(size: 13, weight: .medium))
                     }
                     .font(.system(size: 13, weight: .semibold))
                     .buttonStyle(.bordered)
@@ -91,15 +136,15 @@ struct SmartCubeLabView: View {
             }
             .padding(.vertical, 4)
         } footer: {
-            Text("Reset State assumes the physical cube is already solved, then resets CubeFlow's local cube state and move history.")
+            Text("smart_cube.reset_footer")
         }
     }
 
     @ViewBuilder
     private var discoveredDevicesSection: some View {
-        Section("Devices") {
+        Section("smart_cube.devices") {
             if manager.discoveredDevices.isEmpty {
-                Text("No smart cubes found yet. Wake the cube, keep it nearby, then scan.")
+                Text("smart_cube.no_devices")
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(manager.discoveredDevices) { device in
@@ -147,14 +192,30 @@ struct SmartCubeLabView: View {
         }
     }
 
+    private var connectionStateKey: LocalizedStringKey {
+        switch manager.connectionState {
+        case .disconnected: "smart_cube.status.disconnected"
+        case .bluetoothUnavailable: "smart_cube.status.bluetooth_unavailable"
+        case .unauthorized: "smart_cube.status.unauthorized"
+        case .scanning: "smart_cube.status.scanning"
+        case .connecting: "smart_cube.status.connecting"
+        case .connected: "smart_cube.status.connected"
+        case .failed: "smart_cube.status.failed"
+        }
+    }
+
     private var liveStateSection: some View {
-        Section("Live State") {
-            labeledValue("Protocol", manager.connectedProtocol.rawValue)
-            labeledValue("MAC", manager.connectedMACAddress ?? "Unknown")
-            labeledValue("Battery", manager.batteryLevel.map { "\($0)%" } ?? "Unknown")
-            labeledValue("Hardware", manager.hardwareSummary ?? "Unknown")
-            labeledValue("Latest Move", manager.latestMove?.move ?? "None")
-            labeledValue("Move Count", "\(manager.moveHistory.count)")
+        Section("smart_cube.live_state") {
+            labeledValue("smart_cube.battery", manager.batteryLevel.map { "\($0)%" } ?? "—")
+            labeledValue("smart_cube.latest_move", manager.latestMove?.move ?? "—")
+            labeledValue("smart_cube.move_count", "\(manager.moveHistory.count)")
+
+            if debugMode {
+                labeledValue("Protocol", manager.connectedProtocol.rawValue)
+                labeledValue("MAC", manager.connectedMACAddress ?? "Unknown")
+                labeledValue("Hardware", manager.hardwareSummary ?? "Unknown")
+                labeledValue("Gyro", manager.gyroState?.summary ?? "No gyro data")
+            }
 
             if !manager.moveHistory.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -177,18 +238,36 @@ struct SmartCubeLabView: View {
         Section {
             SmartCube3DView(
                 facelets: manager.facelets,
-                latestMove: manager.latestMove,
-                gyroState: manager.gyroState,
-                stateRevision: manager.cubeStateRevision
+                stateRevision: manager.cubeStateRevision,
+                fixedView: fixedView
             )
                 .frame(height: 280)
                 .frame(maxWidth: .infinity)
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 .listRowBackground(Color.clear)
         } header: {
-            Text("3D Cube")
+            Text("smart_cube.virtual_cube")
         } footer: {
-            Text("The native 3D model follows incoming smart-cube moves. Drag the model to inspect the cube; Reset State rebuilds it from solved state.")
+            Text("smart_cube.virtual_cube_footer")
+        }
+    }
+
+    private var settingsSection: some View {
+        Section("smart_cube.settings") {
+            Picker("settings.smart_cube.fixed_view", selection: $fixedViewRawValue) {
+                ForEach(SmartCubeFixedView.allCases) { view in
+                    Text(view.localizedKey).tag(view.rawValue)
+                }
+            }
+
+            Picker("settings.smart_cube.reset_on_connect", selection: $resetPolicyRawValue) {
+                ForEach(SmartCubeResetPolicy.allCases) { policy in
+                    Text(policy.localizedKey).tag(policy.rawValue)
+                }
+            }
+
+            Toggle("settings.smart_cube.ready_sound", isOn: $readySound)
+            Toggle("settings.smart_cube.debug_mode", isOn: $debugMode)
         }
     }
 
@@ -269,7 +348,7 @@ struct SmartCubeLabView: View {
         .padding(.vertical, 2)
     }
 
-    private func labeledValue(_ title: String, _ value: String) -> some View {
+    private func labeledValue(_ title: LocalizedStringKey, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
@@ -323,13 +402,13 @@ private struct CubeFaceletsNet: View {
 
     private func color(for facelet: Character) -> Color {
         switch facelet {
-        case "U": return .white
-        case "R": return .red
-        case "F": return .green
-        case "D": return .yellow
-        case "L": return .orange
-        case "B": return .blue
-        default: return .gray
+        case "U": return Color(red: 1, green: 1, blue: 1)
+        case "R": return Color(red: 1, green: 0, blue: 0)
+        case "F": return Color(red: 0, green: 0.87, blue: 0)
+        case "D": return Color(red: 1, green: 1, blue: 0)
+        case "L": return Color(red: 1, green: 0.67, blue: 0)
+        case "B": return Color(red: 0, green: 0, blue: 1)
+        default: return Color(white: 0.5)
         }
     }
 }

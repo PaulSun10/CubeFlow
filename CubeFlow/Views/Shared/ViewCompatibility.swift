@@ -10,7 +10,7 @@ struct CompatibleNavigationContainer<Content: View>: View {
     var body: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
-                content
+                content.compatibleSoftScrollEdgeEffect()
             }
         } else {
             NavigationView {
@@ -144,6 +144,15 @@ extension View {
     func compatibleScrollContentBackgroundHidden() -> some View {
         if #available(iOS 16.0, *) {
             self.scrollContentBackground(.hidden)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func compatibleSoftScrollEdgeEffect(for edges: Edge.Set = .all) -> some View {
+        if #available(iOS 26.0, *) {
+            self.scrollEdgeEffectStyle(.soft, for: edges)
         } else {
             self
         }

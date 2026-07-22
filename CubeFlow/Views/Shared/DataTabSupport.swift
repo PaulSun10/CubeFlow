@@ -7,10 +7,12 @@ enum SessionSolveCountPhase: Equatable {
 }
 
 struct RecordStatItem: Identifiable, Sendable {
+    let metricRawValue: String
     let title: String
+    let secondaryTitle: String?
     let value: String
 
-    nonisolated var id: String { title }
+    nonisolated var id: String { metricRawValue }
 }
 
 struct RecordSnapshot: Sendable {
@@ -37,14 +39,16 @@ struct SessionSolveSample: Identifiable, Sendable {
     let time: Double
     let resultRaw: String
     let scramble: String
+    let comment: String
     let eventRawValue: String
 
-    nonisolated init(id: UUID, date: Date, time: Double, resultRaw: String, scramble: String, eventRawValue: String) {
+    nonisolated init(id: UUID, date: Date, time: Double, resultRaw: String, scramble: String, comment: String, eventRawValue: String) {
         self.id = id
         self.date = date
         self.time = time
         self.resultRaw = resultRaw
         self.scramble = scramble
+        self.comment = comment
         self.eventRawValue = eventRawValue
     }
 
@@ -347,21 +351,66 @@ enum DataTabComputation {
         let validCount = validTimes.count
 
         let evaluations = availableMetrics.map { metric in
-            (metric, evaluateRecordMetric(metric: metric, solves: solves, includeWindowValues: false))
+            (metric, evaluateRecordMetric(metric: metric, solves: solves, includeWindowValues: true))
         }
 
-        let currentStats = evaluations.compactMap { metric, evaluation -> RecordStatItem? in
+        var currentStats: [RecordStatItem] = []
+        if let currentSingle = solves.first {
+            currentStats.append(
+                RecordStatItem(
+                    metricRawValue: "single",
+                    title: dataTabLocalizedString(for: "data.single", languageCode: languageCode),
+                    secondaryTitle: nil,
+                    value: SolveMetrics.displayTime(for: currentSingle)
+                )
+            )
+        }
+        currentStats += evaluations.compactMap { metric, evaluation -> RecordStatItem? in
             guard let value = evaluation.currentValue else { return nil }
+            let currentWindow = Array(solves.prefix(metric.solveCount))
             return RecordStatItem(
+                metricRawValue: metric.title,
                 title: metric.localizedTitle(languageCode: languageCode),
+                secondaryTitle: standardDeviationLabel(
+                    solves: currentWindow,
+                    trimmingCount: metric.trimCount
+                ),
                 value: SolveMetrics.formatAverage(value)
             )
         }
 
-        let bestStats = evaluations.compactMap { metric, evaluation -> RecordStatItem? in
+        var bestStats: [RecordStatItem] = []
+        if let bestSingle = solves.compactMap({ solve -> (SessionSolveSample, Double)? in
+            guard let value = solve.adjustedTime else { return nil }
+            return (solve, value)
+        }).min(by: { $0.1 < $1.1 })?.0 {
+            bestStats.append(
+                RecordStatItem(
+                    metricRawValue: "single",
+                    title: dataTabLocalizedString(for: "data.single", languageCode: languageCode),
+                    secondaryTitle: nil,
+                    value: SolveMetrics.displayTime(for: bestSingle)
+                )
+            )
+        }
+        bestStats += evaluations.compactMap { metric, evaluation -> RecordStatItem? in
             guard let bestValue = evaluation.bestValue else { return nil }
+            let bestIndex = evaluation.windowValues.enumerated()
+                .compactMap { index, value -> (Int, Double)? in
+                    guard let value, value.isFinite else { return nil }
+                    return (index, value)
+                }
+                .min { $0.1 < $1.1 }?.0
+            let bestWindow = bestIndex.map {
+                Array(solves[$0..<($0 + metric.solveCount)])
+            } ?? []
             return RecordStatItem(
+                metricRawValue: metric.title,
                 title: metric.localizedTitle(languageCode: languageCode),
+                secondaryTitle: standardDeviationLabel(
+                    solves: bestWindow,
+                    trimmingCount: metric.trimCount
+                ),
                 value: SolveMetrics.formatAverage(bestValue)
             )
         }
@@ -376,6 +425,15 @@ enum DataTabComputation {
             currentStats: currentStats,
             bestStats: bestStats
         )
+    }
+
+    nonisolated private static func standardDeviationLabel(
+        solves: [SessionSolveSample],
+        trimmingCount: Int
+    ) -> String? {
+        SolveMetrics.standardDeviation(from: solves, trimmingCount: trimmingCount).map {
+            "(σ = \(SolveMetrics.formatTime($0, decimals: 2)))"
+        }
     }
 
     nonisolated static func evaluateRecordMetric(

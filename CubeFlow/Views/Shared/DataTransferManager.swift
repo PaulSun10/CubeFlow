@@ -240,7 +240,7 @@ enum DataTransferManager {
         solves: [Solve]
     ) throws -> DataTransferExportPackage {
         let payload = CubeFlowBackupPayload(
-            version: 1,
+            version: 2,
             exportedAt: .now,
             sessions: sessions.map {
                 SessionBackupItem(id: $0.id, name: $0.name, createdAt: $0.createdAt)
@@ -251,6 +251,7 @@ enum DataTransferManager {
                     time: $0.time,
                     date: $0.date,
                     scramble: $0.scramble,
+                    comment: $0.comment,
                     event: $0.event,
                     resultRaw: $0.resultRaw,
                     sessionID: $0.session?.id
@@ -468,6 +469,7 @@ enum DataTransferManager {
                 existing.time = solveItem.time
                 existing.date = solveItem.date
                 existing.scramble = solveItem.scramble
+                existing.comment = solveItem.comment
                 existing.event = solveItem.event
                 existing.resultRaw = solveItem.resultRaw
                 existing.session = targetSession
@@ -478,6 +480,7 @@ enum DataTransferManager {
                     time: solveItem.time,
                     date: solveItem.date,
                     scramble: solveItem.scramble,
+                    comment: solveItem.comment,
                     event: solveItem.event,
                     result: SolveResult(rawValue: solveItem.resultRaw) ?? .solved,
                     session: targetSession,
@@ -592,6 +595,7 @@ enum DataTransferManager {
                             time: importedSolve.time,
                             date: importedSolve.date,
                             scramble: importedSolve.scramble,
+                            comment: importedSolve.comment,
                             event: importedSolve.event,
                             result: importedSolve.result,
                             session: targetSession,
@@ -738,6 +742,7 @@ enum DataTransferManager {
         }
 
         let scramble = rawSolve[safe: 1] as? String ?? ""
+        let comment = rawSolve[safe: 2] as? String ?? ""
         let result: SolveResult
         if penalty == -1 {
             result = .dnf
@@ -751,6 +756,7 @@ enum DataTransferManager {
             time: timeMilliseconds / 1000,
             date: Date(timeIntervalSince1970: timestamp),
             scramble: scramble,
+            comment: comment,
             event: defaultEvent,
             result: result
         )
@@ -771,7 +777,7 @@ enum DataTransferManager {
         return [
             [penalty, Int((solve.time * 1000).rounded())],
             solve.scramble,
-            "",
+            solve.comment,
             Int(solve.date.timeIntervalSince1970)
         ]
     }
@@ -1068,6 +1074,7 @@ struct CSTimerImportSolve: Sendable {
     let time: Double
     let date: Date
     let scramble: String
+    let comment: String
     let event: String
     let result: SolveResult
 }
@@ -1153,6 +1160,7 @@ struct SolveBackupItem: Sendable, Codable {
     let time: Double
     let date: Date
     let scramble: String
+    let comment: String
     let event: String
     let resultRaw: String
     let sessionID: UUID?
@@ -1162,6 +1170,7 @@ struct SolveBackupItem: Sendable, Codable {
         case time
         case date
         case scramble
+        case comment
         case event
         case resultRaw
         case sessionID
@@ -1172,6 +1181,7 @@ struct SolveBackupItem: Sendable, Codable {
         time: Double,
         date: Date,
         scramble: String,
+        comment: String,
         event: String,
         resultRaw: String,
         sessionID: UUID?
@@ -1180,6 +1190,7 @@ struct SolveBackupItem: Sendable, Codable {
         self.time = time
         self.date = date
         self.scramble = scramble
+        self.comment = comment
         self.event = event
         self.resultRaw = resultRaw
         self.sessionID = sessionID
@@ -1191,6 +1202,7 @@ struct SolveBackupItem: Sendable, Codable {
         time = try container.decode(Double.self, forKey: .time)
         date = try container.decode(Date.self, forKey: .date)
         scramble = try container.decode(String.self, forKey: .scramble)
+        comment = try container.decodeIfPresent(String.self, forKey: .comment) ?? ""
         event = try container.decode(String.self, forKey: .event)
         resultRaw = try container.decode(String.self, forKey: .resultRaw)
         sessionID = try container.decodeIfPresent(UUID.self, forKey: .sessionID)
@@ -1202,6 +1214,7 @@ struct SolveBackupItem: Sendable, Codable {
         try container.encode(time, forKey: .time)
         try container.encode(date, forKey: .date)
         try container.encode(scramble, forKey: .scramble)
+        try container.encode(comment, forKey: .comment)
         try container.encode(event, forKey: .event)
         try container.encode(resultRaw, forKey: .resultRaw)
         try container.encodeIfPresent(sessionID, forKey: .sessionID)

@@ -202,6 +202,43 @@ enum GANResultInputMode: String, CaseIterable, Identifiable {
     }
 }
 
+enum SmartCubeFixedView: String, CaseIterable, Identifiable {
+    case uf
+    case urf
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .uf: "settings.smart_cube.view_uf"
+        case .urf: "settings.smart_cube.view_urf"
+        }
+    }
+
+    var yaw: Float {
+        switch self {
+        case .uf: 0
+        case .urf: 0.68
+        }
+    }
+}
+
+enum SmartCubeResetPolicy: String, CaseIterable, Identifiable {
+    case always
+    case prompt
+    case never
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .always: "settings.smart_cube.reset_always"
+        case .prompt: "settings.smart_cube.reset_prompt"
+        case .never: "settings.smart_cube.reset_never"
+        }
+    }
+}
+
 enum PuzzleEvent: String, CaseIterable {
     case twoByTwo = "2x2"
     case threeByThree = "3x3"

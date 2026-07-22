@@ -59,7 +59,7 @@ struct ScrambleDiagramSheet: View {
     private var navigationContent: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
-                content
+                content.compatibleSoftScrollEdgeEffect()
             }
         } else {
             NavigationView {
