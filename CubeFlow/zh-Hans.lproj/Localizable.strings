@@ -342,6 +342,7 @@
 "wca.results_results" = "成绩";
 "wca.results_single" = "单次";
 "wca.results_average" = "平均";
+"wca.results_mean" = "平均";
 "wca.results_place" = "名次";
 "wca.results_solves" = "五把成绩";
 "wca.results_empty" = "这个项目暂时没有成绩。";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "类别";
 "data.record_history.empty" = "此类别还没有纪录历史。";
 "data.single" = "单次";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "1 次计最好";
+"competitions.wca.format.best_of_2" = "2 次计最好";
+"competitions.wca.format.best_of_3" = "3 次计最好";
+"competitions.wca.format.best_of_5" = "5 次计最好";
+"competitions.wca.format.mean_of_3" = "3 次平均";
+"competitions.wca.format.average_of_5" = "5 次去尾平均";
+"competitions.wca.time_limit.cumulative_format" = "%@ 累计";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ 累计（%@）";
+"competitions.wca.cutoff_format" = "%@（%d 次机会）";
+"competitions.wca.advancement.ranking_format" = "前 %d 名";
+"competitions.wca.advancement.percent_format" = "前 %d%%";
+"competitions.wca.round.final" = "决赛";
+"competitions.wca.round.number_format" = "第 %d 轮";
+"competitions.wca.group.number_format" = "第 %@ 组";
+"competitions.calendar.title" = "日历";
+"competitions.calendar.error_format" = "无法打开此赛程：%@";
+
+"competitions.wca.round.first" = "第一轮";
+"competitions.wca.round.second" = "第二轮";
+"competitions.wca.round.semi_final" = "半决赛";
+"competitions.wca.qualification" = "资格要求";
+"competitions.wca.qualification.average" = "平均";
+"competitions.wca.qualification.single" = "单次";
+"competitions.wca.qualification.ranking_format" = "%2$@排名前 %1$d";
+"competitions.wca.qualification.any_result_format" = "任意%@成绩";
+"competitions.wca.qualification.attempt_result_format" = "%@低于 %@";
+"competitions.wca.qualification.deadline_format" = "%@，截止 %@";
+
+"competitions.calendar.add_all" = "全部添加";
+"competitions.calendar.all_day" = "全天";
+"competitions.calendar.add_error_format" = "无法添加这些日程：%@";
+"competitions.calendar.permission_denied" = "未允许访问日历。";
+
+"competitions.championship.world" = "世界锦标赛";
+"competitions.championship.greater_china" = "大中华区锦标赛";
+"competitions.championship.continental_format" = "洲际锦标赛：%@";
+"competitions.championship.national_format" = "全国锦标赛：%@";
+"competitions.championship.generic_format" = "锦标赛：%@";
+"competitions.detail.live.wca.welcome_format" = "欢迎来到%@！";
+"competitions.detail.live.wca.website" = "WCA 官网";
+"competitions.detail.live.wca.active_rounds" = "正在进行的轮次";
+"competitions.detail.live.wca.records" = "纪录";
+"competitions.detail.live.wca.multiple_countries" = "多个国家或地区";
+"competitions.detail.live.wca.introduction_format" = "本场比赛在%@举行。请前往 WCA 官网查看比赛的更多详情。";
+"competitions.detail.live.wca.timezone_format" = "下方所有日期和时间均按你的本地时区显示：%@";
+"competitions.schedule.view.calendar" = "日历";
+"competitions.schedule.view.table" = "表格";
+
+"competitions.detail.live.wca.no_results" = "暂无成绩";
+"competitions.detail.live.wca.name" = "姓名";
+"competitions.detail.live.wca.all_results" = "全部成绩";
+"competitions.detail.live.wca.country" = "国家";
+"competitions.detail.live.wca.attempts" = "尝试";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@：%3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@，来自%2$@";
+
+"competitions.detail.live.wca.close" = "关闭";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "总计";
+"competitions.detail.competitors.people_summary_format" = "%d 位初次参赛者 + %d 位回归参赛者 = %d 人";
+"competitions.detail.competitors.people_count_format" = "%d 人";
+"competitions.detail.competitors.region_count_format" = "%d 个地区";
+"competitions.wca.time_limit.fmc" = "1 小时";
+"competitions.wca.time_limit.multiblind" = "每个魔方 10:00.00，最多 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%@，%@合计";
+"competitions.wca.cutoff.official_format" = "%d 次尝试达到 < %@";
+"competitions.wca.advancement.next_round_format" = "%@晋级下一轮";
+"competitions.detail.competitors_column.representing" = "代表地区";
+
+"common.sort.ascending" = "升序";
+"common.sort.descending" = "降序";
+
+"common.error_generic" = "出现了一些问题，请重试。";
+"competitions.detail.unavailable" = "当前无法加载这场比赛的详情。";
+
+"settings.font_style_label" = "字体样式";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "现在";
+"competitions.filter.status.past" = "过去";
+"competitions.loading_progress_format" = "%d / %d 场比赛";
+"competitions.count_format" = "%d 场比赛";
+"competitions.filter.top_cubers_info" = "突出显示拥有显著排名或纪录的选手。黄色表示 NR，橙色表示 CR，红色表示 WR。";
+"competitions.registration.open" = "报名开放";
+"competitions.registration.closed" = "报名已关闭";
+"competitions.registration.full_short" = "参赛人数已满";
+"competitions.registration.not_open_yet" = "报名尚未开放";
+"competitions.registration.open_message" = "报名正在开放！";
+"competitions.registration.full_message" = "参赛人数已满；新的报名将进入候补名单。";
+"competitions.registration.will_open_format" = "报名将于%@开放。";
+"competitions.registration.details_unavailable" = "暂时无法获取报名时间。";
+"competitions.registration.closed_ended" = "报名已关闭。比赛已结束。";
+"competitions.registration.closed_started" = "报名已关闭。比赛已开始。";
+"competitions.registration.closed_starts_format" = "报名已关闭。比赛将于%@开始。";
+
+"competitions.rate_limited" = "已达到 WCA 请求限制，加载将很快自动继续。";
+
+"competitions.no_more" = "没有更多比赛";
+"competitions.reload" = "重新加载";

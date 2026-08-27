@@ -342,6 +342,7 @@
 "wca.results_results" = "Sonuçlar";
 "wca.results_single" = "Tekil";
 "wca.results_average" = "Ortalama";
+"wca.results_mean" = "Ortalama";
 "wca.results_place" = "Sıra";
 "wca.results_solves" = "Çözümler";
 "wca.results_empty" = "Bu etkinlik için sonuç yok.";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "Kategori";
 "data.record_history.empty" = "Bu kategori için henüz rekor geçmişi yok.";
 "data.single" = "Tek";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "1 denemede en iyi";
+"competitions.wca.format.best_of_2" = "2 denemede en iyi";
+"competitions.wca.format.best_of_3" = "3 denemede en iyi";
+"competitions.wca.format.best_of_5" = "5 denemede en iyi";
+"competitions.wca.format.mean_of_3" = "3 denemenin ortalaması";
+"competitions.wca.format.average_of_5" = "5 denemenin ortalaması";
+"competitions.wca.time_limit.cumulative_format" = "%@ kümülatif";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ kümülatif (%@)";
+"competitions.wca.cutoff_format" = "%@ (%d denemede)";
+"competitions.wca.advancement.ranking_format" = "İlk %d";
+"competitions.wca.advancement.percent_format" = "İlk %d%%";
+"competitions.wca.round.final" = "Final";
+"competitions.wca.round.number_format" = "%d. Tur";
+"competitions.wca.group.number_format" = "%@ Grubu";
+"competitions.calendar.title" = "Takvim";
+"competitions.calendar.error_format" = "Bu program açılamadı: %@";
+
+"competitions.wca.round.first" = "İlk tur";
+"competitions.wca.round.second" = "İkinci tur";
+"competitions.wca.round.semi_final" = "Yarı final";
+"competitions.wca.qualification" = "Yeterlilik";
+"competitions.wca.qualification.average" = "ortalama";
+"competitions.wca.qualification.single" = "tek sonuç";
+"competitions.wca.qualification.ranking_format" = "%2$@ sıralamasında ilk %1$d";
+"competitions.wca.qualification.any_result_format" = "Herhangi bir %@ sonucu";
+"competitions.wca.qualification.attempt_result_format" = "%@, %@ altında";
+"competitions.wca.qualification.deadline_format" = "%@, %@ tarihine kadar";
+
+"competitions.calendar.add_all" = "Tümünü Ekle";
+"competitions.calendar.all_day" = "Tüm gün";
+"competitions.calendar.add_error_format" = "Bu etkinlikler eklenemedi: %@";
+"competitions.calendar.permission_denied" = "Takvim erişimine izin verilmedi.";
+
+"competitions.championship.world" = "Dünya Şampiyonası";
+"competitions.championship.greater_china" = "Büyük Çin Şampiyonası";
+"competitions.championship.continental_format" = "Kıta Şampiyonası: %@";
+"competitions.championship.national_format" = "Ulusal Şampiyona: %@";
+"competitions.championship.generic_format" = "Şampiyona: %@";
+"competitions.detail.live.wca.welcome_format" = "%@ yarışmasına hoş geldiniz!";
+"competitions.detail.live.wca.website" = "WCA web sitesi";
+"competitions.detail.live.wca.active_rounds" = "Aktif Turlar";
+"competitions.detail.live.wca.records" = "Rekorlar";
+"competitions.detail.live.wca.multiple_countries" = "birden fazla ülke";
+"competitions.detail.live.wca.introduction_format" = "Bu yarışma %@ konumunda gerçekleşir. Ayrıntılar için WCA web sitesine bakın.";
+"competitions.detail.live.wca.timezone_format" = "Aşağıdaki tüm tarih ve saatler yerel saat diliminizde gösterilir: %@";
+"competitions.schedule.view.calendar" = "Takvim";
+"competitions.schedule.view.table" = "Tablo";
+
+"competitions.detail.live.wca.no_results" = "Henüz sonuç yok";
+"competitions.detail.live.wca.name" = "Ad";
+"competitions.detail.live.wca.all_results" = "Tüm sonuçlar";
+"competitions.detail.live.wca.country" = "Ülke";
+"competitions.detail.live.wca.attempts" = "Denemeler";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@: %3$@";
+"competitions.detail.live.wca.record_person_format" = "%2$@ ülkesinden %1$@";
+
+"competitions.detail.live.wca.close" = "Kapat";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "Toplam";
+"competitions.detail.competitors.people_summary_format" = "%d ilk kez katılan + %d yeniden katılan = %d kişi";
+"competitions.detail.competitors.people_count_format" = "%d kişi";
+"competitions.detail.competitors.region_count_format" = "%d bölge";
+"competitions.wca.time_limit.fmc" = "1 saat";
+"competitions.wca.time_limit.multiblind" = "Küp başına 10:00.00, en fazla 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%2$@ için toplam %1$@";
+"competitions.wca.cutoff.official_format" = "< %2$@ elde etmek için %1$d deneme";
+"competitions.wca.advancement.next_round_format" = "%@ bir sonraki tura yükselir";
+"competitions.detail.competitors_column.representing" = "Temsil";
+
+"common.sort.ascending" = "Artan";
+"common.sort.descending" = "Azalan";
+
+"common.error_generic" = "Bir sorun oluştu. Lütfen tekrar deneyin.";
+"competitions.detail.unavailable" = "Bu yarışmanın ayrıntıları şu anda kullanılamıyor.";
+
+"settings.font_style_label" = "Yazı Tipi Stili";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "Güncel";
+"competitions.filter.status.past" = "Geçmiş";
+"competitions.loading_progress_format" = "%d / %d yarışma";
+"competitions.count_format" = "%d yarışma";
+"competitions.filter.top_cubers_info" = "Dikkate değer sıralama veya rekorlara sahip yarışmacıları vurgular. Sarı NR, turuncu CR, kırmızı WR anlamına gelir.";
+"competitions.registration.open" = "Kayıt açık";
+"competitions.registration.closed" = "Kayıt kapalı";
+"competitions.registration.full_short" = "Yarışmacı sınırına ulaşıldı";
+"competitions.registration.not_open_yet" = "Kayıt henüz açılmadı";
+"competitions.registration.open_message" = "Kayıt açık!";
+"competitions.registration.full_message" = "Yarışmacı sınırına ulaşıldı; yeni kayıtlar bekleme listesine alınacak.";
+"competitions.registration.will_open_format" = "Kayıt %@ açılacak.";
+"competitions.registration.details_unavailable" = "Kayıt zamanı kullanılamıyor.";
+"competitions.registration.closed_ended" = "Kayıt kapandı. Yarışma sona erdi.";
+"competitions.registration.closed_started" = "Kayıt kapandı. Yarışma başladı.";
+"competitions.registration.closed_starts_format" = "Kayıt kapandı. Yarışma %@ başlayacak.";
+
+"competitions.rate_limited" = "WCA istek sınırına ulaşıldı. Yükleme kısa süre içinde devam edecek.";
+
+"competitions.no_more" = "Başka yarışma yok";
+"competitions.reload" = "Yeniden yükle";

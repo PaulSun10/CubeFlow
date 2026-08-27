@@ -342,6 +342,7 @@
 "wca.results_results" = "परिणाम";
 "wca.results_single" = "एकल";
 "wca.results_average" = "औसत";
+"wca.results_mean" = "माध्य";
 "wca.results_place" = "जगह";
 "wca.results_solves" = "हल करता है";
 "wca.results_empty" = "इस इवेंट के लिए कोई परिणाम उपलब्ध नहीं है.";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "श्रेणी";
 "data.record_history.empty" = "इस श्रेणी के लिए अभी कोई रिकॉर्ड इतिहास नहीं है।";
 "data.single" = "सिंगल";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "1 में सर्वश्रेष्ठ";
+"competitions.wca.format.best_of_2" = "2 में सर्वश्रेष्ठ";
+"competitions.wca.format.best_of_3" = "3 में सर्वश्रेष्ठ";
+"competitions.wca.format.best_of_5" = "5 में सर्वश्रेष्ठ";
+"competitions.wca.format.mean_of_3" = "3 का माध्य";
+"competitions.wca.format.average_of_5" = "5 का औसत";
+"competitions.wca.time_limit.cumulative_format" = "%@ संचयी";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ संचयी (%@)";
+"competitions.wca.cutoff_format" = "%@ (%d प्रयासों में)";
+"competitions.wca.advancement.ranking_format" = "शीर्ष %d";
+"competitions.wca.advancement.percent_format" = "शीर्ष %d%%";
+"competitions.wca.round.final" = "फ़ाइनल";
+"competitions.wca.round.number_format" = "राउंड %d";
+"competitions.wca.group.number_format" = "समूह %@";
+"competitions.calendar.title" = "कैलेंडर";
+"competitions.calendar.error_format" = "यह शेड्यूल नहीं खोला जा सका: %@";
+
+"competitions.wca.round.first" = "पहला राउंड";
+"competitions.wca.round.second" = "दूसरा राउंड";
+"competitions.wca.round.semi_final" = "सेमी फ़ाइनल";
+"competitions.wca.qualification" = "योग्यता";
+"competitions.wca.qualification.average" = "औसत";
+"competitions.wca.qualification.single" = "सिंगल";
+"competitions.wca.qualification.ranking_format" = "%2$@ के अनुसार शीर्ष %1$d";
+"competitions.wca.qualification.any_result_format" = "कोई भी %@ परिणाम";
+"competitions.wca.qualification.attempt_result_format" = "%@, %@ से कम";
+"competitions.wca.qualification.deadline_format" = "%@, %@ तक";
+
+"competitions.calendar.add_all" = "सभी जोड़ें";
+"competitions.calendar.all_day" = "पूरे दिन";
+"competitions.calendar.add_error_format" = "ये इवेंट नहीं जोड़े जा सके: %@";
+"competitions.calendar.permission_denied" = "कैलेंडर की अनुमति नहीं दी गई।";
+
+"competitions.championship.world" = "विश्व चैम्पियनशिप";
+"competitions.championship.greater_china" = "ग्रेटर चाइना चैम्पियनशिप";
+"competitions.championship.continental_format" = "महाद्वीपीय चैम्पियनशिप: %@";
+"competitions.championship.national_format" = "राष्ट्रीय चैम्पियनशिप: %@";
+"competitions.championship.generic_format" = "चैम्पियनशिप: %@";
+"competitions.detail.live.wca.welcome_format" = "%@ में आपका स्वागत है!";
+"competitions.detail.live.wca.website" = "WCA वेबसाइट";
+"competitions.detail.live.wca.active_rounds" = "सक्रिय राउंड";
+"competitions.detail.live.wca.records" = "रिकॉर्ड";
+"competitions.detail.live.wca.multiple_countries" = "कई देशों";
+"competitions.detail.live.wca.introduction_format" = "यह प्रतियोगिता %@ में होती है। अधिक जानकारी के लिए WCA वेबसाइट देखें।";
+"competitions.detail.live.wca.timezone_format" = "नीचे सभी तारीखें और समय आपके स्थानीय समय क्षेत्र में हैं: %@";
+"competitions.schedule.view.calendar" = "कैलेंडर";
+"competitions.schedule.view.table" = "तालिका";
+
+"competitions.detail.live.wca.no_results" = "अभी कोई परिणाम नहीं";
+"competitions.detail.live.wca.name" = "नाम";
+"competitions.detail.live.wca.all_results" = "सभी परिणाम";
+"competitions.detail.live.wca.country" = "देश";
+"competitions.detail.live.wca.attempts" = "प्रयास";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@ में %3$@";
+"competitions.detail.live.wca.record_person_format" = "%2$@ से %1$@";
+
+"competitions.detail.live.wca.close" = "बंद करें";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "कुल";
+"competitions.detail.competitors.people_summary_format" = "%d पहली बार + %d लौटने वाले = %d लोग";
+"competitions.detail.competitors.people_count_format" = "%d लोग";
+"competitions.detail.competitors.region_count_format" = "%d क्षेत्र";
+"competitions.wca.time_limit.fmc" = "1 घंटा";
+"competitions.wca.time_limit.multiblind" = "प्रति क्यूब 10:00.00, अधिकतम 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%2$@ के लिए कुल %1$@";
+"competitions.wca.cutoff.official_format" = "< %2$@ पाने के लिए %1$d प्रयास";
+"competitions.wca.advancement.next_round_format" = "%@ अगले राउंड में जाते हैं";
+"competitions.detail.competitors_column.representing" = "प्रतिनिधित्व";
+
+"common.sort.ascending" = "आरोही";
+"common.sort.descending" = "अवरोही";
+
+"common.error_generic" = "कुछ गड़बड़ हुई। कृपया फिर से कोशिश करें।";
+"competitions.detail.unavailable" = "इस प्रतियोगिता का विवरण अभी उपलब्ध नहीं है।";
+
+"settings.font_style_label" = "फ़ॉन्ट शैली";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "वर्तमान";
+"competitions.filter.status.past" = "पिछली";
+"competitions.loading_progress_format" = "%d / %d प्रतियोगिताएँ";
+"competitions.count_format" = "%d प्रतियोगिताएँ";
+"competitions.filter.top_cubers_info" = "उल्लेखनीय रैंकिंग या रिकॉर्ड वाले प्रतियोगियों को हाइलाइट करता है। पीला NR, नारंगी CR और लाल WR है।";
+"competitions.registration.open" = "पंजीकरण खुला है";
+"competitions.registration.closed" = "पंजीकरण बंद है";
+"competitions.registration.full_short" = "प्रतियोगी सीमा पूरी हुई";
+"competitions.registration.not_open_yet" = "पंजीकरण अभी नहीं खुला";
+"competitions.registration.open_message" = "पंजीकरण खुला है!";
+"competitions.registration.full_message" = "प्रतियोगी सीमा पूरी हो गई; नए पंजीकरण प्रतीक्षा सूची में जाएंगे।";
+"competitions.registration.will_open_format" = "पंजीकरण %@ खुलेगा।";
+"competitions.registration.details_unavailable" = "पंजीकरण का समय उपलब्ध नहीं है।";
+"competitions.registration.closed_ended" = "पंजीकरण बंद है। प्रतियोगिता समाप्त हो चुकी है।";
+"competitions.registration.closed_started" = "पंजीकरण बंद है। प्रतियोगिता शुरू हो चुकी है।";
+"competitions.registration.closed_starts_format" = "पंजीकरण बंद है। प्रतियोगिता %@ शुरू होगी।";
+
+"competitions.rate_limited" = "WCA अनुरोध सीमा पूरी हो गई है। लोडिंग शीघ्र ही फिर शुरू होगी।";
+
+"competitions.no_more" = "और कोई प्रतियोगिता नहीं";
+"competitions.reload" = "फिर से लोड करें";

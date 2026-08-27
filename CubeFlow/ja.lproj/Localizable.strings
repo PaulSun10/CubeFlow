@@ -342,6 +342,7 @@
 "wca.results_results" = "結果";
 "wca.results_single" = "単発";
 "wca.results_average" = "平均";
+"wca.results_mean" = "平均";
 "wca.results_place" = "順位";
 "wca.results_solves" = "ソルブ";
 "wca.results_empty" = "この種目の結果はありません。";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "カテゴリー";
 "data.record_history.empty" = "このカテゴリーの記録履歴はまだありません。";
 "data.single" = "単発";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "ベスト・オブ1";
+"competitions.wca.format.best_of_2" = "ベスト・オブ2";
+"competitions.wca.format.best_of_3" = "ベスト・オブ3";
+"competitions.wca.format.best_of_5" = "ベスト・オブ5";
+"competitions.wca.format.mean_of_3" = "3回の平均";
+"competitions.wca.format.average_of_5" = "5回の平均";
+"competitions.wca.time_limit.cumulative_format" = "%@ 累積";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ 累積（%@）";
+"competitions.wca.cutoff_format" = "%@（%d回以内）";
+"competitions.wca.advancement.ranking_format" = "上位%d名";
+"competitions.wca.advancement.percent_format" = "上位%d%%";
+"competitions.wca.round.final" = "決勝";
+"competitions.wca.round.number_format" = "第%dラウンド";
+"competitions.wca.group.number_format" = "グループ%@";
+"competitions.calendar.title" = "カレンダー";
+"competitions.calendar.error_format" = "このスケジュールを開けませんでした：%@";
+
+"competitions.wca.round.first" = "1回戦";
+"competitions.wca.round.second" = "2回戦";
+"competitions.wca.round.semi_final" = "準決勝";
+"competitions.wca.qualification" = "参加資格";
+"competitions.wca.qualification.average" = "平均";
+"competitions.wca.qualification.single" = "単発";
+"competitions.wca.qualification.ranking_format" = "%2$@で上位%1$d位";
+"competitions.wca.qualification.any_result_format" = "%@の記録あり";
+"competitions.wca.qualification.attempt_result_format" = "%@が%@未満";
+"competitions.wca.qualification.deadline_format" = "%@（%@まで）";
+
+"competitions.calendar.add_all" = "すべて追加";
+"competitions.calendar.all_day" = "終日";
+"competitions.calendar.add_error_format" = "イベントを追加できませんでした：%@";
+"competitions.calendar.permission_denied" = "カレンダーへのアクセスが許可されていません。";
+
+"competitions.championship.world" = "世界選手権";
+"competitions.championship.greater_china" = "大中華圏選手権";
+"competitions.championship.continental_format" = "大陸選手権：%@";
+"competitions.championship.national_format" = "国内選手権：%@";
+"competitions.championship.generic_format" = "選手権：%@";
+"competitions.detail.live.wca.welcome_format" = "%@へようこそ！";
+"competitions.detail.live.wca.website" = "WCAウェブサイト";
+"competitions.detail.live.wca.active_rounds" = "進行中のラウンド";
+"competitions.detail.live.wca.records" = "記録";
+"competitions.detail.live.wca.multiple_countries" = "複数の国";
+"competitions.detail.live.wca.introduction_format" = "この大会は%@で開催されます。詳細はWCAウェブサイトをご覧ください。";
+"competitions.detail.live.wca.timezone_format" = "以下の日時はすべて現在のタイムゾーンで表示されます：%@";
+"competitions.schedule.view.calendar" = "カレンダー";
+"competitions.schedule.view.table" = "表";
+
+"competitions.detail.live.wca.no_results" = "まだ結果がありません";
+"competitions.detail.live.wca.name" = "名前";
+"competitions.detail.live.wca.all_results" = "すべての結果";
+"competitions.detail.live.wca.country" = "国";
+"competitions.detail.live.wca.attempts" = "試技";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@：%3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@（%2$@）";
+
+"competitions.detail.live.wca.close" = "閉じる";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "合計";
+"competitions.detail.competitors.people_summary_format" = "初参加 %d 人 + 再参加 %d 人 = %d 人";
+"competitions.detail.competitors.people_count_format" = "%d 人";
+"competitions.detail.competitors.region_count_format" = "%d 地域";
+"competitions.wca.time_limit.fmc" = "1時間";
+"competitions.wca.time_limit.multiblind" = "1キューブにつき10:00.00、最大60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%@（%@の合計）";
+"competitions.wca.cutoff.official_format" = "%d回以内に < %@";
+"competitions.wca.advancement.next_round_format" = "%@が次のラウンドに進出";
+"competitions.detail.competitors_column.representing" = "代表国・地域";
+
+"common.sort.ascending" = "昇順";
+"common.sort.descending" = "降順";
+
+"common.error_generic" = "問題が発生しました。もう一度お試しください。";
+"competitions.detail.unavailable" = "この大会の詳細は現在読み込めません。";
+
+"settings.font_style_label" = "フォントスタイル";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "現在";
+"competitions.filter.status.past" = "過去";
+"competitions.loading_progress_format" = "%d / %d 大会";
+"competitions.count_format" = "%d 大会";
+"competitions.filter.top_cubers_info" = "注目すべきランキングや記録を持つ選手を強調表示します。黄色は NR、オレンジは CR、赤は WR です。";
+"competitions.registration.open" = "申込受付中";
+"competitions.registration.closed" = "申込終了";
+"competitions.registration.full_short" = "定員に到達";
+"competitions.registration.not_open_yet" = "申込開始前";
+"competitions.registration.open_message" = "申込受付中です！";
+"competitions.registration.full_message" = "定員に達しました。新しい申込はウェイティングリストに入ります。";
+"competitions.registration.will_open_format" = "申込は%@に開始します。";
+"competitions.registration.details_unavailable" = "申込期間を取得できません。";
+"competitions.registration.closed_ended" = "申込は終了しました。大会は終了しています。";
+"competitions.registration.closed_started" = "申込は終了しました。大会は開始しています。";
+"competitions.registration.closed_starts_format" = "申込は終了しました。大会は%@に開始します。";
+
+"competitions.rate_limited" = "WCA のリクエスト上限に達しました。まもなく読み込みを再開します。";
+
+"competitions.no_more" = "これ以上大会はありません";
+"competitions.reload" = "再読み込み";

@@ -342,6 +342,7 @@
 "wca.results_results" = "النتائج";
 "wca.results_single" = "واحد";
 "wca.results_average" = "متوسط";
+"wca.results_mean" = "المتوسط";
 "wca.results_place" = "مكان";
 "wca.results_solves" = "يحل";
 "wca.results_empty" = "لا توجد نتائج متاحة لهذا الحدث.";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "الفئة";
 "data.record_history.empty" = "لا يوجد سجل لهذه الفئة بعد.";
 "data.single" = "فردي";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "الأفضل من محاولة واحدة";
+"competitions.wca.format.best_of_2" = "الأفضل من محاولتين";
+"competitions.wca.format.best_of_3" = "الأفضل من 3 محاولات";
+"competitions.wca.format.best_of_5" = "الأفضل من 5 محاولات";
+"competitions.wca.format.mean_of_3" = "متوسط 3";
+"competitions.wca.format.average_of_5" = "متوسط 5";
+"competitions.wca.time_limit.cumulative_format" = "%@ تراكمي";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ تراكمي (%@)";
+"competitions.wca.cutoff_format" = "%@ خلال %d محاولات";
+"competitions.wca.advancement.ranking_format" = "أفضل %d";
+"competitions.wca.advancement.percent_format" = "أفضل %d%%";
+"competitions.wca.round.final" = "النهائي";
+"competitions.wca.round.number_format" = "الجولة %d";
+"competitions.wca.group.number_format" = "المجموعة %@";
+"competitions.calendar.title" = "التقويم";
+"competitions.calendar.error_format" = "تعذر فتح هذا الجدول: %@";
+
+"competitions.wca.round.first" = "الجولة الأولى";
+"competitions.wca.round.second" = "الجولة الثانية";
+"competitions.wca.round.semi_final" = "نصف النهائي";
+"competitions.wca.qualification" = "التأهل";
+"competitions.wca.qualification.average" = "المتوسط";
+"competitions.wca.qualification.single" = "الفردي";
+"competitions.wca.qualification.ranking_format" = "أفضل %d حسب %@";
+"competitions.wca.qualification.any_result_format" = "أي نتيجة %@";
+"competitions.wca.qualification.attempt_result_format" = "%@ أقل من %@";
+"competitions.wca.qualification.deadline_format" = "%@ بحلول %@";
+
+"competitions.calendar.add_all" = "إضافة الكل";
+"competitions.calendar.all_day" = "طوال اليوم";
+"competitions.calendar.add_error_format" = "تعذرت إضافة هذه الأحداث: %@";
+"competitions.calendar.permission_denied" = "لم يتم منح إذن الوصول إلى التقويم.";
+
+"competitions.championship.world" = "بطولة العالم";
+"competitions.championship.greater_china" = "بطولة الصين الكبرى";
+"competitions.championship.continental_format" = "البطولة القارية: %@";
+"competitions.championship.national_format" = "البطولة الوطنية: %@";
+"competitions.championship.generic_format" = "البطولة: %@";
+"competitions.detail.live.wca.welcome_format" = "مرحبًا بك في %@!";
+"competitions.detail.live.wca.website" = "موقع WCA";
+"competitions.detail.live.wca.active_rounds" = "الجولات النشطة";
+"competitions.detail.live.wca.records" = "الأرقام القياسية";
+"competitions.detail.live.wca.multiple_countries" = "عدة دول";
+"competitions.detail.live.wca.introduction_format" = "تقام هذه المسابقة في %@. راجع موقع WCA لمزيد من التفاصيل.";
+"competitions.detail.live.wca.timezone_format" = "تُعرض جميع التواريخ والأوقات أدناه حسب منطقتك الزمنية المحلية: %@";
+"competitions.schedule.view.calendar" = "التقويم";
+"competitions.schedule.view.table" = "الجدول";
+
+"competitions.detail.live.wca.no_results" = "لا توجد نتائج بعد";
+"competitions.detail.live.wca.name" = "الاسم";
+"competitions.detail.live.wca.all_results" = "كل النتائج";
+"competitions.detail.live.wca.country" = "الدولة";
+"competitions.detail.live.wca.attempts" = "المحاولات";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@ بقيمة %3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@ من %2$@";
+
+"competitions.detail.live.wca.close" = "إغلاق";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "الإجمالي";
+"competitions.detail.competitors.people_summary_format" = "%d مشاركين لأول مرة + %d مشاركين عائدين = %d أشخاص";
+"competitions.detail.competitors.people_count_format" = "%d أشخاص";
+"competitions.detail.competitors.region_count_format" = "%d مناطق";
+"competitions.wca.time_limit.fmc" = "ساعة واحدة";
+"competitions.wca.time_limit.multiblind" = "10:00.00 لكل مكعب، بحد أقصى 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%@ إجمالاً لـ %@";
+"competitions.wca.cutoff.official_format" = "%d محاولات لتحقيق أقل من %@";
+"competitions.wca.advancement.next_round_format" = "%@ يتأهلون إلى الجولة التالية";
+"competitions.detail.competitors_column.representing" = "يمثل";
+
+"common.sort.ascending" = "تصاعدي";
+"common.sort.descending" = "تنازلي";
+
+"common.error_generic" = "حدث خطأ ما. يرجى المحاولة مرة أخرى.";
+"competitions.detail.unavailable" = "تفاصيل هذه المسابقة غير متاحة حاليًا.";
+
+"settings.font_style_label" = "نمط الخط";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "الحالية";
+"competitions.filter.status.past" = "السابقة";
+"competitions.loading_progress_format" = "%d / %d مسابقات";
+"competitions.count_format" = "%d مسابقات";
+"competitions.filter.top_cubers_info" = "يبرز المتسابقين ذوي التصنيفات أو الأرقام القياسية البارزة. الأصفر لـ NR والبرتقالي لـ CR والأحمر لـ WR.";
+"competitions.registration.open" = "التسجيل مفتوح";
+"competitions.registration.closed" = "التسجيل مغلق";
+"competitions.registration.full_short" = "اكتمل عدد المتسابقين";
+"competitions.registration.not_open_yet" = "لم يفتح التسجيل بعد";
+"competitions.registration.open_message" = "التسجيل مفتوح!";
+"competitions.registration.full_message" = "اكتمل عدد المتسابقين؛ ستوضع التسجيلات الجديدة في قائمة الانتظار.";
+"competitions.registration.will_open_format" = "سيفتح التسجيل %@.";
+"competitions.registration.details_unavailable" = "وقت التسجيل غير متاح.";
+"competitions.registration.closed_ended" = "أغلق التسجيل. انتهت المسابقة.";
+"competitions.registration.closed_started" = "أغلق التسجيل. بدأت المسابقة.";
+"competitions.registration.closed_starts_format" = "أغلق التسجيل. ستبدأ المسابقة %@.";
+
+"competitions.rate_limited" = "تم بلوغ حد طلبات WCA. سيُستأنف التحميل قريبًا.";
+
+"competitions.no_more" = "لا توجد مسابقات أخرى";
+"competitions.reload" = "إعادة التحميل";

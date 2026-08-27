@@ -342,6 +342,7 @@
 "wca.results_results" = "Kết quả";
 "wca.results_single" = "Single";
 "wca.results_average" = "Trung bình";
+"wca.results_mean" = "Trung bình";
 "wca.results_place" = "Hạng";
 "wca.results_solves" = "Lần giải";
 "wca.results_empty" = "Không có kết quả cho nội dung này.";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "Danh mục";
 "data.record_history.empty" = "Chưa có lịch sử kỷ lục cho danh mục này.";
 "data.single" = "Đơn";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "Tốt nhất trong 1";
+"competitions.wca.format.best_of_2" = "Tốt nhất trong 2";
+"competitions.wca.format.best_of_3" = "Tốt nhất trong 3";
+"competitions.wca.format.best_of_5" = "Tốt nhất trong 5";
+"competitions.wca.format.mean_of_3" = "Trung bình 3";
+"competitions.wca.format.average_of_5" = "Trung bình 5";
+"competitions.wca.time_limit.cumulative_format" = "%@ cộng dồn";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ cộng dồn (%@)";
+"competitions.wca.cutoff_format" = "%@ trong %d lần";
+"competitions.wca.advancement.ranking_format" = "Top %d";
+"competitions.wca.advancement.percent_format" = "Top %d%%";
+"competitions.wca.round.final" = "Chung kết";
+"competitions.wca.round.number_format" = "Vòng %d";
+"competitions.wca.group.number_format" = "Nhóm %@";
+"competitions.calendar.title" = "Lịch";
+"competitions.calendar.error_format" = "Không thể mở lịch này: %@";
+
+"competitions.wca.round.first" = "Vòng đầu";
+"competitions.wca.round.second" = "Vòng hai";
+"competitions.wca.round.semi_final" = "Bán kết";
+"competitions.wca.qualification" = "Điều kiện tham dự";
+"competitions.wca.qualification.average" = "trung bình";
+"competitions.wca.qualification.single" = "đơn";
+"competitions.wca.qualification.ranking_format" = "Top %d theo %@";
+"competitions.wca.qualification.any_result_format" = "Bất kỳ kết quả %@ nào";
+"competitions.wca.qualification.attempt_result_format" = "%@ dưới %@";
+"competitions.wca.qualification.deadline_format" = "%@ trước %@";
+
+"competitions.calendar.add_all" = "Thêm tất cả";
+"competitions.calendar.all_day" = "Cả ngày";
+"competitions.calendar.add_error_format" = "Không thể thêm các sự kiện này: %@";
+"competitions.calendar.permission_denied" = "Chưa cấp quyền truy cập Lịch.";
+
+"competitions.championship.world" = "Giải vô địch thế giới";
+"competitions.championship.greater_china" = "Giải vô địch Đại Trung Hoa";
+"competitions.championship.continental_format" = "Giải vô địch châu lục: %@";
+"competitions.championship.national_format" = "Giải vô địch quốc gia: %@";
+"competitions.championship.generic_format" = "Giải vô địch: %@";
+"competitions.detail.live.wca.welcome_format" = "Chào mừng đến với %@!";
+"competitions.detail.live.wca.website" = "trang web WCA";
+"competitions.detail.live.wca.active_rounds" = "Vòng đang diễn ra";
+"competitions.detail.live.wca.records" = "Kỷ lục";
+"competitions.detail.live.wca.multiple_countries" = "nhiều quốc gia";
+"competitions.detail.live.wca.introduction_format" = "Giải đấu này diễn ra tại %@. Xem trang web WCA để biết thêm chi tiết.";
+"competitions.detail.live.wca.timezone_format" = "Tất cả ngày và giờ bên dưới được hiển thị theo múi giờ địa phương của bạn: %@";
+"competitions.schedule.view.calendar" = "Lịch";
+"competitions.schedule.view.table" = "Bảng";
+
+"competitions.detail.live.wca.no_results" = "Chưa có kết quả";
+"competitions.detail.live.wca.name" = "Tên";
+"competitions.detail.live.wca.all_results" = "Tất cả kết quả";
+"competitions.detail.live.wca.country" = "Quốc gia";
+"competitions.detail.live.wca.attempts" = "Lượt giải";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@ với %3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@ đến từ %2$@";
+
+"competitions.detail.live.wca.close" = "Đóng";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "Tổng";
+"competitions.detail.competitors.people_summary_format" = "%d người thi lần đầu + %d người trở lại = %d người";
+"competitions.detail.competitors.people_count_format" = "%d người";
+"competitions.detail.competitors.region_count_format" = "%d khu vực";
+"competitions.wca.time_limit.fmc" = "1 giờ";
+"competitions.wca.time_limit.multiblind" = "10:00.00 mỗi khối, tối đa 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "Tổng %@ cho %@";
+"competitions.wca.cutoff.official_format" = "%d lượt để đạt < %@";
+"competitions.wca.advancement.next_round_format" = "%@ vào vòng tiếp theo";
+"competitions.detail.competitors_column.representing" = "Đại diện";
+
+"common.sort.ascending" = "Tăng dần";
+"common.sort.descending" = "Giảm dần";
+
+"common.error_generic" = "Đã xảy ra sự cố. Vui lòng thử lại.";
+"competitions.detail.unavailable" = "Hiện không thể tải thông tin chi tiết của giải đấu này.";
+
+"settings.font_style_label" = "Kiểu phông chữ";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "Hiện tại";
+"competitions.filter.status.past" = "Đã qua";
+"competitions.loading_progress_format" = "%d / %d cuộc thi";
+"competitions.count_format" = "%d cuộc thi";
+"competitions.filter.top_cubers_info" = "Làm nổi bật các thí sinh có thứ hạng hoặc kỷ lục đáng chú ý. Vàng là NR, cam là CR và đỏ là WR.";
+"competitions.registration.open" = "Đang mở đăng ký";
+"competitions.registration.closed" = "Đã đóng đăng ký";
+"competitions.registration.full_short" = "Đã đủ số thí sinh";
+"competitions.registration.not_open_yet" = "Chưa mở đăng ký";
+"competitions.registration.open_message" = "Đăng ký đang mở!";
+"competitions.registration.full_message" = "Đã đủ số thí sinh; đăng ký mới sẽ vào danh sách chờ.";
+"competitions.registration.will_open_format" = "Đăng ký sẽ mở %@.";
+"competitions.registration.details_unavailable" = "Không có thông tin thời gian đăng ký.";
+"competitions.registration.closed_ended" = "Đăng ký đã đóng. Cuộc thi đã kết thúc.";
+"competitions.registration.closed_started" = "Đăng ký đã đóng. Cuộc thi đã bắt đầu.";
+"competitions.registration.closed_starts_format" = "Đăng ký đã đóng. Cuộc thi sẽ bắt đầu %@.";
+
+"competitions.rate_limited" = "Đã đạt giới hạn yêu cầu WCA. Quá trình tải sẽ sớm tự động tiếp tục.";
+
+"competitions.no_more" = "Không còn cuộc thi nào";
+"competitions.reload" = "Tải lại";

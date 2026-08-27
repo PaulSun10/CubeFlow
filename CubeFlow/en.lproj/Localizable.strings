@@ -342,6 +342,7 @@
 "wca.results_results" = "Results";
 "wca.results_single" = "Single";
 "wca.results_average" = "Average";
+"wca.results_mean" = "Mean";
 "wca.results_place" = "Place";
 "wca.results_solves" = "Solves";
 "wca.results_empty" = "No results available for this event.";
@@ -1813,3 +1814,146 @@
 "data.record_history.metric" = "Category";
 "data.record_history.empty" = "No record history for this category yet.";
 "data.single" = "Single";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "Best of 1";
+"competitions.wca.format.best_of_2" = "Best of 2";
+"competitions.wca.format.best_of_3" = "Best of 3";
+"competitions.wca.format.best_of_5" = "Best of 5";
+"competitions.wca.format.mean_of_3" = "Mean of 3";
+"competitions.wca.format.average_of_5" = "Average of 5";
+"competitions.wca.time_limit.cumulative_format" = "%@ cumulative";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ cumulative (%@)";
+"competitions.wca.cutoff_format" = "%@ in %d attempts";
+"competitions.wca.advancement.ranking_format" = "Top %d";
+"competitions.wca.advancement.percent_format" = "Top %d%%";
+"competitions.wca.round.final" = "Final";
+"competitions.wca.round.number_format" = "Round %d";
+"competitions.wca.group.number_format" = "Group %@";
+"competitions.calendar.title" = "Calendar";
+"competitions.calendar.error_format" = "Could not open this schedule: %@";
+
+"competitions.wca.round.first" = "First round";
+"competitions.wca.round.second" = "Second round";
+"competitions.wca.round.semi_final" = "Semi Final";
+"competitions.wca.qualification" = "Qualification";
+"competitions.wca.qualification.average" = "average";
+"competitions.wca.qualification.single" = "single";
+"competitions.wca.qualification.ranking_format" = "Top %d by %@";
+"competitions.wca.qualification.any_result_format" = "Any %@ result";
+"competitions.wca.qualification.attempt_result_format" = "%@ under %@";
+"competitions.wca.qualification.deadline_format" = "%@ by %@";
+
+"competitions.calendar.add_all" = "Add All";
+"competitions.calendar.all_day" = "All-day";
+"competitions.calendar.add_error_format" = "Could not add these events: %@";
+"competitions.calendar.permission_denied" = "Calendar access was not granted.";
+
+"competitions.championship.world" = "World Championship";
+"competitions.championship.greater_china" = "Greater China Championship";
+"competitions.championship.continental_format" = "Continental Championship: %@";
+"competitions.championship.national_format" = "National Championship: %@";
+"competitions.championship.generic_format" = "Championship: %@";
+"competitions.detail.live.wca.welcome_format" = "Welcome to %@!";
+"competitions.detail.live.wca.website" = "WCA website";
+"competitions.detail.live.wca.active_rounds" = "Active Rounds";
+"competitions.detail.live.wca.records" = "Records";
+"competitions.detail.live.wca.multiple_countries" = "multiple countries";
+"competitions.detail.live.wca.introduction_format" = "This competition takes place in %@. Check out the WCA website for more details on the competition.";
+"competitions.detail.live.wca.timezone_format" = "All dates and times below are displayed in your local timezone: %@";
+"competitions.schedule.view.calendar" = "Calendar";
+"competitions.schedule.view.table" = "Table";
+
+"competitions.detail.live.wca.no_results" = "No results yet";
+"competitions.detail.live.wca.name" = "Name";
+"competitions.detail.live.wca.all_results" = "All results";
+"competitions.detail.live.wca.country" = "Country";
+"competitions.detail.live.wca.attempts" = "Attempts";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@ of %3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@ from %2$@";
+
+"competitions.detail.live.wca.close" = "Close";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "Total";
+"competitions.detail.competitors.people_summary_format" = "%d first-timers + %d returners = %d people";
+"competitions.detail.competitors.people_count_format" = "%d people";
+"competitions.detail.competitors.region_count_format" = "%d regions";
+"competitions.wca.time_limit.fmc" = "1 hour";
+"competitions.wca.time_limit.multiblind" = "10:00.00 per cube, up to 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%@ total for %@";
+"competitions.wca.cutoff.official_format" = "%d attempts to get < %@";
+"competitions.wca.advancement.next_round_format" = "%@ advance to next round";
+"competitions.detail.competitors_column.representing" = "Representing";
+
+"common.sort.ascending" = "Ascending";
+"common.sort.descending" = "Descending";
+
+"common.error_generic" = "Something went wrong. Please try again.";
+"competitions.detail.unavailable" = "The competition details are currently unavailable.";
+
+/* WCA Teams and Committees */
+"wca.teams_committees.title" = "WCA Teams and Committees";
+"wca.teams_committees.introduction" = "The WCA's teams and committees are an integral part of the organization and perform the day-to-day tasks that are required to keep it functioning. These committees are made up of WCA community members, including WCA Delegates and competitors. Each team has a leader, whose role is to ensure the proper functioning of the team and guide other team members. When there are team or committee openings, information about how to apply is posted on the front page.";
+"wca.teams_committees.department" = "Team or Committee";
+"wca.teams_committees.members" = "Members";
+"wca.teams_committees.no_members" = "No members are currently listed.";
+"wca.teams_committees.loading" = "Loading…";
+"wca.teams_committees.error" = "WCA Teams and Committees is currently unavailable.";
+"wca.teams_committees.invalid_response" = "The WCA returned an unexpected response.";
+"wca.teams_committees.unavailable" = "Unable to Load";
+"wca.teams_committees.retry" = "Try Again";
+"wca.teams_committees.view_action" = "View WCA Teams & Committees";
+"wca.teams_committees.role.leader" = "Leader";
+"wca.teams_committees.role.senior_member" = "Senior Member";
+"wca.teams_committees.role.member" = "Member";
+"wca.teams_committees.contact_form_notice" = "This team or committee prefers to be contacted through the WCA contact form.";
+"wca.teams_committees.contact_form_action" = "Open WCA Contact Form";
+"wca.teams_committees.no_contact_notice" = "The contact details of this team or committee are not publicly available.";
+"wca.delegates.title" = "WCA Delegates";
+"wca.delegates.introduction" = "WCA Delegate is a role defined in the WCA Motions and depicted in the WCA Regulations. The primary duty of a Delegate is to oversee competitions on behalf of the WCA. A WCA Delegate is responsible for making sure that all WCA Competitions are run according to the Purpose, Values, and Regulations of the WCA.";
+"wca.delegates.levels" = "The WCA distinguishes between Senior Delegates, Regional Delegates, Full Delegates, Junior Delegates, and Trainee Delegates.";
+"wca.delegates.region" = "Region";
+"wca.delegates.senior_delegate" = "Senior Delegate";
+"wca.delegates.regional_delegate" = "Regional Delegate";
+"wca.delegates.junior_delegate" = "Junior Delegate";
+"wca.delegates.trainee_delegate" = "Trainee Delegate";
+"wca.delegates.delegate" = "Delegate";
+"wca.delegates.delegates" = "Delegates";
+"wca.delegates.loading" = "Loading…";
+"wca.delegates.error" = "WCA Delegates is currently unavailable.";
+"wca.delegates.invalid_response" = "The WCA returned an unexpected response.";
+"wca.delegates.retry" = "Try Again";
+"wca.delegates.view_action" = "View WCA Delegates";
+"settings.font_style_label" = "Font Style";
+"wca.delegates.regional_duties" = "In addition to the duties of a WCA Delegate, a Senior Delegate or Regional Delegate is responsible for managing the WCA Delegates in their area and can also be contacted by the community for regional matters.";
+"wca.delegates.junior_delegates" = "New Delegates are listed as Junior Delegates at first; afterwards they are requested to show proficiency managing WCA Competitions before being promoted to WCA Delegates.";
+"wca.delegates.trainee_delegates" = "Trainee Delegates are being trained for the position of WCA Delegate and can only oversee competitions in which a WCA Delegate is present.";
+"wca.delegates.acknowledges" = "The WCA acknowledges the following WCA Delegates:";
+"wca.delegates.name" = "Name";
+"wca.delegates.role" = "Role";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "Present";
+"competitions.filter.status.past" = "Past";
+"competitions.loading_progress_format" = "%d / %d Competitions";
+"competitions.count_format" = "%d Competitions";
+"competitions.filter.top_cubers_info" = "Highlights competitors with notable rankings or records. Yellow is NR, orange is CR, and red is WR.";
+"competitions.registration.open" = "Registration open";
+"competitions.registration.closed" = "Registration closed";
+"competitions.registration.full_short" = "Competitor limit reached";
+"competitions.registration.not_open_yet" = "Registration not open yet";
+"competitions.registration.open_message" = "Registration is open!";
+"competitions.registration.full_message" = "Competitor limit reached; new registrations will go to the waiting list.";
+"competitions.registration.will_open_format" = "Registration will open %@.";
+"competitions.registration.details_unavailable" = "Registration timing is unavailable.";
+"competitions.registration.closed_ended" = "Registration has closed. The competition has ended.";
+"competitions.registration.closed_started" = "Registration has closed. The competition has started.";
+"competitions.registration.closed_starts_format" = "Registration has closed. The competition will start %@.";
+
+"competitions.rate_limited" = "WCA request limit reached. Loading will resume shortly.";
+
+"competitions.no_more" = "No more competitions";
+"competitions.reload" = "Reload";

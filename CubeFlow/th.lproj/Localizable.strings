@@ -342,6 +342,7 @@
 "wca.results_results" = "ผลลัพธ์";
 "wca.results_single" = "โสด";
 "wca.results_average" = "เฉลี่ย";
+"wca.results_mean" = "ค่าเฉลี่ย";
 "wca.results_place" = "สถานที่";
 "wca.results_solves" = "แก้";
 "wca.results_empty" = "ไม่มีผลลัพธ์สำหรับกิจกรรมนี้";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "หมวดหมู่";
 "data.record_history.empty" = "ยังไม่มีประวัติสถิติสำหรับหมวดหมู่นี้";
 "data.single" = "ครั้งเดียว";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "ดีที่สุดจาก 1 ครั้ง";
+"competitions.wca.format.best_of_2" = "ดีที่สุดจาก 2 ครั้ง";
+"competitions.wca.format.best_of_3" = "ดีที่สุดจาก 3 ครั้ง";
+"competitions.wca.format.best_of_5" = "ดีที่สุดจาก 5 ครั้ง";
+"competitions.wca.format.mean_of_3" = "ค่าเฉลี่ย 3 ครั้ง";
+"competitions.wca.format.average_of_5" = "ค่าเฉลี่ย 5 ครั้ง";
+"competitions.wca.time_limit.cumulative_format" = "%@ สะสม";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ สะสม (%@)";
+"competitions.wca.cutoff_format" = "%@ ภายใน %d ครั้ง";
+"competitions.wca.advancement.ranking_format" = "อันดับ %d แรก";
+"competitions.wca.advancement.percent_format" = "%d%% แรก";
+"competitions.wca.round.final" = "รอบชิงชนะเลิศ";
+"competitions.wca.round.number_format" = "รอบ %d";
+"competitions.wca.group.number_format" = "กลุ่ม %@";
+"competitions.calendar.title" = "ปฏิทิน";
+"competitions.calendar.error_format" = "ไม่สามารถเปิดกำหนดการนี้ได้: %@";
+
+"competitions.wca.round.first" = "รอบแรก";
+"competitions.wca.round.second" = "รอบสอง";
+"competitions.wca.round.semi_final" = "รอบรองชนะเลิศ";
+"competitions.wca.qualification" = "คุณสมบัติ";
+"competitions.wca.qualification.average" = "ค่าเฉลี่ย";
+"competitions.wca.qualification.single" = "ครั้งเดียว";
+"competitions.wca.qualification.ranking_format" = "อันดับ %d แรกตาม %@";
+"competitions.wca.qualification.any_result_format" = "ผล %@ ใดก็ได้";
+"competitions.wca.qualification.attempt_result_format" = "%@ ต่ำกว่า %@";
+"competitions.wca.qualification.deadline_format" = "%@ ภายใน %@";
+
+"competitions.calendar.add_all" = "เพิ่มทั้งหมด";
+"competitions.calendar.all_day" = "ตลอดวัน";
+"competitions.calendar.add_error_format" = "ไม่สามารถเพิ่มกิจกรรมเหล่านี้ได้: %@";
+"competitions.calendar.permission_denied" = "ไม่ได้รับอนุญาตให้เข้าถึงปฏิทิน";
+
+"competitions.championship.world" = "การแข่งขันชิงแชมป์โลก";
+"competitions.championship.greater_china" = "การแข่งขันชิงแชมป์เกรตเตอร์ไชน่า";
+"competitions.championship.continental_format" = "การแข่งขันชิงแชมป์ทวีป: %@";
+"competitions.championship.national_format" = "การแข่งขันชิงแชมป์ประเทศ: %@";
+"competitions.championship.generic_format" = "การแข่งขันชิงแชมป์: %@";
+"competitions.detail.live.wca.welcome_format" = "ยินดีต้อนรับสู่ %@!";
+"competitions.detail.live.wca.website" = "เว็บไซต์ WCA";
+"competitions.detail.live.wca.active_rounds" = "รอบที่กำลังแข่งขัน";
+"competitions.detail.live.wca.records" = "สถิติ";
+"competitions.detail.live.wca.multiple_countries" = "หลายประเทศ";
+"competitions.detail.live.wca.introduction_format" = "การแข่งขันนี้จัดขึ้นใน %@ ดูรายละเอียดเพิ่มเติมได้ที่เว็บไซต์ WCA";
+"competitions.detail.live.wca.timezone_format" = "วันที่และเวลาทั้งหมดแสดงตามเขตเวลาท้องถิ่นของคุณ: %@";
+"competitions.schedule.view.calendar" = "ปฏิทิน";
+"competitions.schedule.view.table" = "ตาราง";
+
+"competitions.detail.live.wca.no_results" = "ยังไม่มีผลการแข่งขัน";
+"competitions.detail.live.wca.name" = "ชื่อ";
+"competitions.detail.live.wca.all_results" = "ผลทั้งหมด";
+"competitions.detail.live.wca.country" = "ประเทศ";
+"competitions.detail.live.wca.attempts" = "ครั้งที่เล่น";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@ %3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@ จาก %2$@";
+
+"competitions.detail.live.wca.close" = "ปิด";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "รวม";
+"competitions.detail.competitors.people_summary_format" = "ผู้เข้าแข่งขันครั้งแรก %d คน + ผู้เข้าแข่งขันเดิม %d คน = %d คน";
+"competitions.detail.competitors.people_count_format" = "%d คน";
+"competitions.detail.competitors.region_count_format" = "%d ภูมิภาค";
+"competitions.wca.time_limit.fmc" = "1 ชั่วโมง";
+"competitions.wca.time_limit.multiblind" = "10:00.00 ต่อคิวบ์ สูงสุด 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "รวม %@ สำหรับ %@";
+"competitions.wca.cutoff.official_format" = "%d ครั้งเพื่อทำเวลา < %@";
+"competitions.wca.advancement.next_round_format" = "%@ ผ่านเข้าสู่รอบถัดไป";
+"competitions.detail.competitors_column.representing" = "ตัวแทน";
+
+"common.sort.ascending" = "จากน้อยไปมาก";
+"common.sort.descending" = "จากมากไปน้อย";
+
+"common.error_generic" = "เกิดข้อผิดพลาด โปรดลองอีกครั้ง";
+"competitions.detail.unavailable" = "ขณะนี้ไม่สามารถโหลดรายละเอียดการแข่งขันนี้ได้";
+
+"settings.font_style_label" = "ลักษณะแบบอักษร";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "ปัจจุบัน";
+"competitions.filter.status.past" = "ที่ผ่านมา";
+"competitions.loading_progress_format" = "%d / %d การแข่งขัน";
+"competitions.count_format" = "%d การแข่งขัน";
+"competitions.filter.top_cubers_info" = "เน้นผู้แข่งขันที่มีอันดับหรือสถิติสำคัญ สีเหลืองคือ NR สีส้มคือ CR และสีแดงคือ WR";
+"competitions.registration.open" = "เปิดรับสมัคร";
+"competitions.registration.closed" = "ปิดรับสมัคร";
+"competitions.registration.full_short" = "ผู้แข่งขันเต็มจำนวน";
+"competitions.registration.not_open_yet" = "ยังไม่เปิดรับสมัคร";
+"competitions.registration.open_message" = "เปิดรับสมัครแล้ว!";
+"competitions.registration.full_message" = "ผู้แข่งขันเต็มจำนวน การสมัครใหม่จะเข้าสู่รายชื่อรอ";
+"competitions.registration.will_open_format" = "การสมัครจะเปิด %@";
+"competitions.registration.details_unavailable" = "ไม่มีข้อมูลเวลารับสมัคร";
+"competitions.registration.closed_ended" = "ปิดรับสมัครแล้ว การแข่งขันสิ้นสุดแล้ว";
+"competitions.registration.closed_started" = "ปิดรับสมัครแล้ว การแข่งขันเริ่มแล้ว";
+"competitions.registration.closed_starts_format" = "ปิดรับสมัครแล้ว การแข่งขันจะเริ่ม %@";
+
+"competitions.rate_limited" = "ถึงขีดจำกัดคำขอของ WCA แล้ว การโหลดจะดำเนินต่อโดยอัตโนมัติในอีกสักครู่";
+
+"competitions.no_more" = "ไม่มีการแข่งขันเพิ่มเติม";
+"competitions.reload" = "โหลดใหม่";

@@ -342,6 +342,7 @@
 "wca.results_results" = "Результаты";
 "wca.results_single" = "Одинокий";
 "wca.results_average" = "Средний";
+"wca.results_mean" = "Среднее";
 "wca.results_place" = "Место";
 "wca.results_solves" = "Решает";
 "wca.results_empty" = "Для этого события нет результатов.";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "Категория";
 "data.record_history.empty" = "Для этой категории пока нет истории рекордов.";
 "data.single" = "Одиночный результат";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "Лучшая из 1";
+"competitions.wca.format.best_of_2" = "Лучшая из 2";
+"competitions.wca.format.best_of_3" = "Лучшая из 3";
+"competitions.wca.format.best_of_5" = "Лучшая из 5";
+"competitions.wca.format.mean_of_3" = "Среднее из 3";
+"competitions.wca.format.average_of_5" = "Среднее из 5";
+"competitions.wca.time_limit.cumulative_format" = "%@ суммарно";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ суммарно (%@)";
+"competitions.wca.cutoff_format" = "%@ за %d попытки";
+"competitions.wca.advancement.ranking_format" = "Топ-%d";
+"competitions.wca.advancement.percent_format" = "Топ-%d%%";
+"competitions.wca.round.final" = "Финал";
+"competitions.wca.round.number_format" = "Раунд %d";
+"competitions.wca.group.number_format" = "Группа %@";
+"competitions.calendar.title" = "Календарь";
+"competitions.calendar.error_format" = "Не удалось открыть расписание: %@";
+
+"competitions.wca.round.first" = "Первый раунд";
+"competitions.wca.round.second" = "Второй раунд";
+"competitions.wca.round.semi_final" = "Полуфинал";
+"competitions.wca.qualification" = "Квалификация";
+"competitions.wca.qualification.average" = "среднему";
+"competitions.wca.qualification.single" = "единичному результату";
+"competitions.wca.qualification.ranking_format" = "Топ-%d по %@";
+"competitions.wca.qualification.any_result_format" = "Любой результат по %@";
+"competitions.wca.qualification.attempt_result_format" = "%@ менее %@";
+"competitions.wca.qualification.deadline_format" = "%@ до %@";
+
+"competitions.calendar.add_all" = "Добавить все";
+"competitions.calendar.all_day" = "Весь день";
+"competitions.calendar.add_error_format" = "Не удалось добавить события: %@";
+"competitions.calendar.permission_denied" = "Доступ к календарю не предоставлен.";
+
+"competitions.championship.world" = "Чемпионат мира";
+"competitions.championship.greater_china" = "Чемпионат Большого Китая";
+"competitions.championship.continental_format" = "Континентальный чемпионат: %@";
+"competitions.championship.national_format" = "Национальный чемпионат: %@";
+"competitions.championship.generic_format" = "Чемпионат: %@";
+"competitions.detail.live.wca.welcome_format" = "Добро пожаловать на %@!";
+"competitions.detail.live.wca.website" = "сайт WCA";
+"competitions.detail.live.wca.active_rounds" = "Активные раунды";
+"competitions.detail.live.wca.records" = "Рекорды";
+"competitions.detail.live.wca.multiple_countries" = "нескольких странах";
+"competitions.detail.live.wca.introduction_format" = "Соревнование проходит в %@. Подробности доступны на сайте WCA.";
+"competitions.detail.live.wca.timezone_format" = "Все даты и время указаны в вашем местном часовом поясе: %@";
+"competitions.schedule.view.calendar" = "Календарь";
+"competitions.schedule.view.table" = "Таблица";
+
+"competitions.detail.live.wca.no_results" = "Результатов пока нет";
+"competitions.detail.live.wca.name" = "Имя";
+"competitions.detail.live.wca.all_results" = "Все результаты";
+"competitions.detail.live.wca.country" = "Страна";
+"competitions.detail.live.wca.attempts" = "Попытки";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@: %3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@ из %2$@";
+
+"competitions.detail.live.wca.close" = "Закрыть";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "Всего";
+"competitions.detail.competitors.people_summary_format" = "%d новичков + %d повторных участников = %d человек";
+"competitions.detail.competitors.people_count_format" = "%d человек";
+"competitions.detail.competitors.region_count_format" = "%d регионов";
+"competitions.wca.time_limit.fmc" = "1 час";
+"competitions.wca.time_limit.multiblind" = "10:00.00 на куб, не более 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%@ суммарно для %@";
+"competitions.wca.cutoff.official_format" = "%d попытки, чтобы получить < %@";
+"competitions.wca.advancement.next_round_format" = "%@ проходят в следующий раунд";
+"competitions.detail.competitors_column.representing" = "Представляет";
+
+"common.sort.ascending" = "По возрастанию";
+"common.sort.descending" = "По убыванию";
+
+"common.error_generic" = "Что-то пошло не так. Повторите попытку.";
+"competitions.detail.unavailable" = "Подробная информация об этом соревновании сейчас недоступна.";
+
+"settings.font_style_label" = "Стиль шрифта";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "Текущие";
+"competitions.filter.status.past" = "Прошедшие";
+"competitions.loading_progress_format" = "%d / %d соревнований";
+"competitions.count_format" = "%d соревнований";
+"competitions.filter.top_cubers_info" = "Выделяет участников с заметными рейтингами или рекордами. Жёлтый — NR, оранжевый — CR, красный — WR.";
+"competitions.registration.open" = "Регистрация открыта";
+"competitions.registration.closed" = "Регистрация закрыта";
+"competitions.registration.full_short" = "Лимит участников достигнут";
+"competitions.registration.not_open_yet" = "Регистрация ещё не открыта";
+"competitions.registration.open_message" = "Регистрация открыта!";
+"competitions.registration.full_message" = "Лимит участников достигнут; новые заявки попадут в лист ожидания.";
+"competitions.registration.will_open_format" = "Регистрация откроется %@.";
+"competitions.registration.details_unavailable" = "Время регистрации недоступно.";
+"competitions.registration.closed_ended" = "Регистрация закрыта. Соревнование завершено.";
+"competitions.registration.closed_started" = "Регистрация закрыта. Соревнование началось.";
+"competitions.registration.closed_starts_format" = "Регистрация закрыта. Соревнование начнётся %@.";
+
+"competitions.rate_limited" = "Достигнут лимит запросов WCA. Загрузка скоро возобновится.";
+
+"competitions.no_more" = "Больше соревнований нет";
+"competitions.reload" = "Перезагрузить";

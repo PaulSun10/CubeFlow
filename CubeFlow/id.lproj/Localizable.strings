@@ -342,6 +342,7 @@
 "wca.results_results" = "Hasil";
 "wca.results_single" = "Single";
 "wca.results_average" = "Rata-rata";
+"wca.results_mean" = "Rata-rata";
 "wca.results_place" = "Peringkat";
 "wca.results_solves" = "Solve";
 "wca.results_empty" = "Tidak ada hasil untuk event ini.";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "Kategori";
 "data.record_history.empty" = "Belum ada riwayat rekor untuk kategori ini.";
 "data.single" = "Single";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "Terbaik dari 1";
+"competitions.wca.format.best_of_2" = "Terbaik dari 2";
+"competitions.wca.format.best_of_3" = "Terbaik dari 3";
+"competitions.wca.format.best_of_5" = "Terbaik dari 5";
+"competitions.wca.format.mean_of_3" = "Rata-rata 3";
+"competitions.wca.format.average_of_5" = "Rata-rata 5";
+"competitions.wca.time_limit.cumulative_format" = "%@ kumulatif";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ kumulatif (%@)";
+"competitions.wca.cutoff_format" = "%@ dalam %d percobaan";
+"competitions.wca.advancement.ranking_format" = "%d teratas";
+"competitions.wca.advancement.percent_format" = "%d%% teratas";
+"competitions.wca.round.final" = "Final";
+"competitions.wca.round.number_format" = "Babak %d";
+"competitions.wca.group.number_format" = "Grup %@";
+"competitions.calendar.title" = "Kalender";
+"competitions.calendar.error_format" = "Jadwal ini tidak dapat dibuka: %@";
+
+"competitions.wca.round.first" = "Babak pertama";
+"competitions.wca.round.second" = "Babak kedua";
+"competitions.wca.round.semi_final" = "Semifinal";
+"competitions.wca.qualification" = "Kualifikasi";
+"competitions.wca.qualification.average" = "rata-rata";
+"competitions.wca.qualification.single" = "tunggal";
+"competitions.wca.qualification.ranking_format" = "%d teratas berdasarkan %@";
+"competitions.wca.qualification.any_result_format" = "Hasil %@ apa pun";
+"competitions.wca.qualification.attempt_result_format" = "%@ di bawah %@";
+"competitions.wca.qualification.deadline_format" = "%@ sebelum %@";
+
+"competitions.calendar.add_all" = "Tambahkan Semua";
+"competitions.calendar.all_day" = "Sepanjang hari";
+"competitions.calendar.add_error_format" = "Acara ini tidak dapat ditambahkan: %@";
+"competitions.calendar.permission_denied" = "Akses kalender tidak diberikan.";
+
+"competitions.championship.world" = "Kejuaraan Dunia";
+"competitions.championship.greater_china" = "Kejuaraan Tiongkok Raya";
+"competitions.championship.continental_format" = "Kejuaraan Kontinental: %@";
+"competitions.championship.national_format" = "Kejuaraan Nasional: %@";
+"competitions.championship.generic_format" = "Kejuaraan: %@";
+"competitions.detail.live.wca.welcome_format" = "Selamat datang di %@!";
+"competitions.detail.live.wca.website" = "situs web WCA";
+"competitions.detail.live.wca.active_rounds" = "Babak Aktif";
+"competitions.detail.live.wca.records" = "Rekor";
+"competitions.detail.live.wca.multiple_countries" = "beberapa negara";
+"competitions.detail.live.wca.introduction_format" = "Kompetisi ini berlangsung di %@. Lihat situs web WCA untuk detail selengkapnya.";
+"competitions.detail.live.wca.timezone_format" = "Semua tanggal dan waktu ditampilkan dalam zona waktu lokal Anda: %@";
+"competitions.schedule.view.calendar" = "Kalender";
+"competitions.schedule.view.table" = "Tabel";
+
+"competitions.detail.live.wca.no_results" = "Belum ada hasil";
+"competitions.detail.live.wca.name" = "Nama";
+"competitions.detail.live.wca.all_results" = "Semua hasil";
+"competitions.detail.live.wca.country" = "Negara";
+"competitions.detail.live.wca.attempts" = "Percobaan";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@ sebesar %3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@ dari %2$@";
+
+"competitions.detail.live.wca.close" = "Tutup";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "Total";
+"competitions.detail.competitors.people_summary_format" = "%d peserta baru + %d peserta lama = %d orang";
+"competitions.detail.competitors.people_count_format" = "%d orang";
+"competitions.detail.competitors.region_count_format" = "%d wilayah";
+"competitions.wca.time_limit.fmc" = "1 jam";
+"competitions.wca.time_limit.multiblind" = "10:00.00 per kubus, maksimum 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%@ total untuk %@";
+"competitions.wca.cutoff.official_format" = "%d percobaan untuk mendapat < %@";
+"competitions.wca.advancement.next_round_format" = "%@ maju ke babak berikutnya";
+"competitions.detail.competitors_column.representing" = "Mewakili";
+
+"common.sort.ascending" = "Menaik";
+"common.sort.descending" = "Menurun";
+
+"common.error_generic" = "Terjadi kesalahan. Silakan coba lagi.";
+"competitions.detail.unavailable" = "Detail kompetisi ini saat ini tidak tersedia.";
+
+"settings.font_style_label" = "Gaya Font";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "Saat Ini";
+"competitions.filter.status.past" = "Sebelumnya";
+"competitions.loading_progress_format" = "%d / %d kompetisi";
+"competitions.count_format" = "%d kompetisi";
+"competitions.filter.top_cubers_info" = "Menyoroti peserta dengan peringkat atau rekor penting. Kuning untuk NR, oranye untuk CR, dan merah untuk WR.";
+"competitions.registration.open" = "Pendaftaran dibuka";
+"competitions.registration.closed" = "Pendaftaran ditutup";
+"competitions.registration.full_short" = "Batas peserta tercapai";
+"competitions.registration.not_open_yet" = "Pendaftaran belum dibuka";
+"competitions.registration.open_message" = "Pendaftaran sedang dibuka!";
+"competitions.registration.full_message" = "Batas peserta tercapai; pendaftaran baru akan masuk daftar tunggu.";
+"competitions.registration.will_open_format" = "Pendaftaran akan dibuka %@.";
+"competitions.registration.details_unavailable" = "Waktu pendaftaran tidak tersedia.";
+"competitions.registration.closed_ended" = "Pendaftaran ditutup. Kompetisi telah berakhir.";
+"competitions.registration.closed_started" = "Pendaftaran ditutup. Kompetisi telah dimulai.";
+"competitions.registration.closed_starts_format" = "Pendaftaran ditutup. Kompetisi akan dimulai %@.";
+
+"competitions.rate_limited" = "Batas permintaan WCA tercapai. Pemuatan akan segera dilanjutkan.";
+
+"competitions.no_more" = "Tidak ada kompetisi lagi";
+"competitions.reload" = "Muat ulang";

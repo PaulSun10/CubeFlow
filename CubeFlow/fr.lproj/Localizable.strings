@@ -342,6 +342,7 @@
 "wca.results_results" = "Résultats";
 "wca.results_single" = "Single";
 "wca.results_average" = "Moyenne";
+"wca.results_mean" = "Moyenne";
 "wca.results_place" = "Place";
 "wca.results_solves" = "Solves";
 "wca.results_empty" = "Aucun résultat disponible pour cette épreuve.";
@@ -1813,3 +1814,107 @@
 "data.record_history.metric" = "Catégorie";
 "data.record_history.empty" = "Aucun historique de record pour cette catégorie.";
 "data.single" = "Temps unique";
+
+
+/* WCA event details and calendar */
+"competitions.wca.format.best_of_1" = "Meilleur sur 1";
+"competitions.wca.format.best_of_2" = "Meilleur sur 2";
+"competitions.wca.format.best_of_3" = "Meilleur sur 3";
+"competitions.wca.format.best_of_5" = "Meilleur sur 5";
+"competitions.wca.format.mean_of_3" = "Moyenne sur 3";
+"competitions.wca.format.average_of_5" = "Moyenne élaguée sur 5";
+"competitions.wca.time_limit.cumulative_format" = "%@ cumulées";
+"competitions.wca.time_limit.cumulative_events_format" = "%@ cumulées (%@)";
+"competitions.wca.cutoff_format" = "%@ en %d essais";
+"competitions.wca.advancement.ranking_format" = "Top %d";
+"competitions.wca.advancement.percent_format" = "Top %d%%";
+"competitions.wca.round.final" = "Finale";
+"competitions.wca.round.number_format" = "Tour %d";
+"competitions.wca.group.number_format" = "Groupe %@";
+"competitions.calendar.title" = "Calendrier";
+"competitions.calendar.error_format" = "Impossible d’ouvrir ce programme : %@";
+
+"competitions.wca.round.first" = "Premier tour";
+"competitions.wca.round.second" = "Deuxième tour";
+"competitions.wca.round.semi_final" = "Demi-finale";
+"competitions.wca.qualification" = "Qualification";
+"competitions.wca.qualification.average" = "moyenne";
+"competitions.wca.qualification.single" = "résultat unique";
+"competitions.wca.qualification.ranking_format" = "Top %d par %@";
+"competitions.wca.qualification.any_result_format" = "Tout résultat en %@";
+"competitions.wca.qualification.attempt_result_format" = "%@ inférieur à %@";
+"competitions.wca.qualification.deadline_format" = "%@ avant le %@";
+
+"competitions.calendar.add_all" = "Tout ajouter";
+"competitions.calendar.all_day" = "Toute la journée";
+"competitions.calendar.add_error_format" = "Impossible d’ajouter ces événements : %@";
+"competitions.calendar.permission_denied" = "L’accès au calendrier n’a pas été autorisé.";
+
+"competitions.championship.world" = "Championnat du monde";
+"competitions.championship.greater_china" = "Championnat de Grande Chine";
+"competitions.championship.continental_format" = "Championnat continental : %@";
+"competitions.championship.national_format" = "Championnat national : %@";
+"competitions.championship.generic_format" = "Championnat : %@";
+"competitions.detail.live.wca.welcome_format" = "Bienvenue à %@ !";
+"competitions.detail.live.wca.website" = "site de la WCA";
+"competitions.detail.live.wca.active_rounds" = "Tours en cours";
+"competitions.detail.live.wca.records" = "Records";
+"competitions.detail.live.wca.multiple_countries" = "plusieurs pays";
+"competitions.detail.live.wca.introduction_format" = "Cette compétition a lieu en %@. Consultez le site de la WCA pour plus de détails.";
+"competitions.detail.live.wca.timezone_format" = "Toutes les dates et heures sont affichées dans votre fuseau horaire local : %@";
+"competitions.schedule.view.calendar" = "Calendrier";
+"competitions.schedule.view.table" = "Tableau";
+
+"competitions.detail.live.wca.no_results" = "Aucun résultat pour le moment";
+"competitions.detail.live.wca.name" = "Nom";
+"competitions.detail.live.wca.all_results" = "Tous les résultats";
+"competitions.detail.live.wca.country" = "Pays";
+"competitions.detail.live.wca.attempts" = "Essais";
+"competitions.detail.live.wca.record_result_format" = "%1$@ %2$@ de %3$@";
+"competitions.detail.live.wca.record_person_format" = "%1$@ de %2$@";
+
+"competitions.detail.live.wca.close" = "Fermer";
+
+
+/* WCA official competition tables */
+"competitions.detail.competitors_column.total" = "Total";
+"competitions.detail.competitors.people_summary_format" = "%d nouveaux + %d habitués = %d personnes";
+"competitions.detail.competitors.people_count_format" = "%d personnes";
+"competitions.detail.competitors.region_count_format" = "%d régions";
+"competitions.wca.time_limit.fmc" = "1 heure";
+"competitions.wca.time_limit.multiblind" = "10:00.00 par cube, jusqu’à 60:00.00";
+"competitions.wca.time_limit.total_for_format" = "%@ au total pour %@";
+"competitions.wca.cutoff.official_format" = "%d essais pour obtenir < %@";
+"competitions.wca.advancement.next_round_format" = "%@ accèdent au tour suivant";
+"competitions.detail.competitors_column.representing" = "Représentation";
+
+"common.sort.ascending" = "Croissant";
+"common.sort.descending" = "Décroissant";
+
+"common.error_generic" = "Une erreur est survenue. Réessayez.";
+"competitions.detail.unavailable" = "Les détails de cette compétition sont actuellement indisponibles.";
+
+"settings.font_style_label" = "Style de police";
+
+// Competition list loading and registration status
+"competitions.filter.status.present" = "Actuelles";
+"competitions.filter.status.past" = "Passées";
+"competitions.loading_progress_format" = "%d / %d compétitions";
+"competitions.count_format" = "%d compétitions";
+"competitions.filter.top_cubers_info" = "Met en évidence les concurrents ayant des classements ou records remarquables. Jaune : NR, orange : CR, rouge : WR.";
+"competitions.registration.open" = "Inscriptions ouvertes";
+"competitions.registration.closed" = "Inscriptions fermées";
+"competitions.registration.full_short" = "Limite de concurrents atteinte";
+"competitions.registration.not_open_yet" = "Inscriptions pas encore ouvertes";
+"competitions.registration.open_message" = "Les inscriptions sont ouvertes !";
+"competitions.registration.full_message" = "La limite est atteinte ; les nouvelles inscriptions seront placées sur liste d’attente.";
+"competitions.registration.will_open_format" = "Les inscriptions ouvriront %@.";
+"competitions.registration.details_unavailable" = "Les dates d’inscription sont indisponibles.";
+"competitions.registration.closed_ended" = "Les inscriptions sont fermées. La compétition est terminée.";
+"competitions.registration.closed_started" = "Les inscriptions sont fermées. La compétition a commencé.";
+"competitions.registration.closed_starts_format" = "Les inscriptions sont fermées. La compétition commencera %@.";
+
+"competitions.rate_limited" = "La limite de requêtes de la WCA a été atteinte. Le chargement reprendra bientôt.";
+
+"competitions.no_more" = "Aucune autre compétition";
+"competitions.reload" = "Recharger";
