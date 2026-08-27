@@ -763,6 +763,17 @@ struct CompetitionMapView: View {
             return .ongoing
         }
 
+        switch competition.registrationStatus {
+        case .notYetOpened:
+            return .registrationNotOpenYet
+        case .full:
+            return .waitlist
+        case .open:
+            return .registrationOpen
+        case .past, .none:
+            break
+        }
+
         if let open = competition.registrationOpen,
            let close = competition.registrationClose,
            open <= now && close >= now {
@@ -816,7 +827,7 @@ struct CompetitionMapView: View {
             try await refreshMapCompetitionsFromNetwork(cachedCompetitions: competitions)
         } catch {
             if competitions.isEmpty {
-                errorMessage = error.localizedDescription
+                errorMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
             }
         }
 

@@ -4,7 +4,6 @@ import MapKit
 import CoreLocation
 import Combine
 import WeatherKit
-import CoreText
 
 #if os(iOS)
 private struct CompetitionSkeletonBreathingModifier: ViewModifier {
@@ -24,9 +23,161 @@ private struct CompetitionSkeletonBreathingModifier: ViewModifier {
     }
 }
 
+private struct CompetitionAddressText: View {
+    let address: CompetitionService.ParsedAddress
+    let competitionID: String
+    @Binding var tappedCompetitionID: String?
+    var emphasizedPrefix: String?
+    var emphasizedPrefixFont: Font?
+
+    var body: some View {
+        Text(attributedAddress)
+            .environment(\.openURL, OpenURLAction { _ in
+                tappedCompetitionID = competitionID
+                DispatchQueue.main.async {
+                    if tappedCompetitionID == competitionID {
+                        tappedCompetitionID = nil
+                    }
+                }
+                return .systemAction
+            })
+    }
+
+    private var attributedAddress: AttributedString {
+        var output = AttributedString()
+        for segment in address.segments {
+            let isLinked = segment.destinationURL != nil
+            var run = AttributedString(segment.text + (isLinked ? " ↗" : ""))
+            run.foregroundColor = isLinked ? Color.accentColor : Color.primary
+            run.link = segment.destinationURL
+            output += run
+        }
+
+        if let emphasizedPrefix,
+           let emphasizedPrefixFont,
+           let range = output.range(of: emphasizedPrefix) {
+            output[range].font = emphasizedPrefixFont
+        }
+        return output
+    }
+}
+
+private struct CompetitionCompactStatusButton: UIViewRepresentable {
+    let symbolName: String
+    let tintColor: UIColor
+    let accessibilityLabel: String
+    let message: String
+    let onTap: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    func makeUIView(context: Context) -> UIButton {
+        let button = UIButton(type: .system)
+        button.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.didTap(_:)),
+            for: .touchUpInside
+        )
+        configure(button)
+        return button
+    }
+
+    func updateUIView(_ button: UIButton, context: Context) {
+        context.coordinator.parent = self
+        configure(button)
+    }
+
+    private func configure(_ button: UIButton) {
+        let imageConfiguration = UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
+        button.setImage(UIImage(systemName: symbolName, withConfiguration: imageConfiguration), for: .normal)
+        button.tintColor = tintColor
+        button.accessibilityLabel = accessibilityLabel
+        button.contentHorizontalAlignment = .center
+        button.contentVerticalAlignment = .center
+    }
+
+    final class Coordinator: NSObject, UIPopoverPresentationControllerDelegate {
+        var parent: CompetitionCompactStatusButton
+        weak var presentedController: UIViewController?
+
+        init(parent: CompetitionCompactStatusButton) {
+            self.parent = parent
+        }
+
+        @objc func didTap(_ sender: UIButton) {
+            parent.onTap()
+            guard presentedController == nil,
+                  let presenter = nearestViewController(from: sender) else { return }
+
+            let label = UILabel()
+            label.text = parent.message
+            label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+            label.textColor = .label
+            label.numberOfLines = 0
+            label.translatesAutoresizingMaskIntoConstraints = false
+
+            let content = UIViewController()
+            content.view.backgroundColor = .clear
+            content.view.addSubview(label)
+            NSLayoutConstraint.activate([
+                label.leadingAnchor.constraint(equalTo: content.view.leadingAnchor, constant: 14),
+                label.trailingAnchor.constraint(equalTo: content.view.trailingAnchor, constant: -14),
+                label.topAnchor.constraint(equalTo: content.view.topAnchor, constant: 11),
+                label.bottomAnchor.constraint(equalTo: content.view.bottomAnchor, constant: -11)
+            ])
+
+            let availableWidth = max((sender.window?.bounds.width ?? 320) - 32, 180)
+            let maximumWidth = min(availableWidth, 300)
+            let measured = label.sizeThatFits(
+                CGSize(width: maximumWidth - 28, height: .greatestFiniteMagnitude)
+            )
+            content.preferredContentSize = CGSize(
+                width: min(max(ceil(measured.width) + 28, 108), maximumWidth),
+                height: ceil(measured.height) + 22
+            )
+            content.modalPresentationStyle = .popover
+
+            guard let popover = content.popoverPresentationController else { return }
+            popover.sourceView = sender
+            popover.sourceRect = sender.bounds
+            popover.permittedArrowDirections = [.up, .down]
+            popover.delegate = self
+            presentedController = content
+            presenter.present(content, animated: true)
+        }
+
+        func adaptivePresentationStyle(
+            for controller: UIPresentationController
+        ) -> UIModalPresentationStyle {
+            .none
+        }
+
+        func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+            presentedController = nil
+        }
+
+        private func nearestViewController(from view: UIView) -> UIViewController? {
+            sequence(first: view.next, next: { $0?.next })
+                .compactMap { $0 as? UIViewController }
+                .first
+        }
+    }
+}
+
 private extension View {
     func competitionSkeletonBreathing() -> some View {
         modifier(CompetitionSkeletonBreathingModifier())
+    }
+
+    @ViewBuilder
+    func competitionSystemChromeUnderlap() -> some View {
+        if #available(iOS 26.0, *) {
+            ignoresSafeArea(.container, edges: .vertical)
+        } else {
+            self
+        }
     }
 }
 
@@ -359,9 +510,11 @@ private enum CompetitionTopCuberLoadState: Equatable {
 private final class CompetitionListRuntimeCache {
     struct Snapshot {
         let competitions: [CompetitionSummary]
-        let visibleCompetitionsSnapshot: [CompetitionSummary]
-        let publishedVisibleCompetitions: [CompetitionSummary]
+        let competitionsByID: [String: CompetitionSummary]
+        let displayItems: [CompetitionListItem]
         let nextPage: Int?
+        let loadedCount: Int
+        let totalCount: Int?
         let topCuberStatesByCompetitionID: [String: CompetitionTopCuberLoadState]
     }
 
@@ -384,6 +537,7 @@ private final class CompetitionListLookupStore: ObservableObject {
     private(set) var visibleCompetitionsSnapshot: [CompetitionSummary] = []
     private(set) var competitionsByID: [String: CompetitionSummary] = [:]
     private(set) var publishedCompetitions: [CompetitionSummary] = []
+    private(set) var preparedDisplayItems: [CompetitionListItem] = []
 
     func setCompetitions(_ competitions: [CompetitionSummary]) {
         self.competitions = competitions
@@ -397,6 +551,27 @@ private final class CompetitionListLookupStore: ObservableObject {
     func setPublishedCompetitions(_ publishedCompetitions: [CompetitionSummary]) {
         self.publishedCompetitions = publishedCompetitions
         rebuildLookup()
+    }
+
+    func setPreparedDisplayItems(_ items: [CompetitionListItem]) {
+        preparedDisplayItems = items
+    }
+
+    func setListSnapshot(_ competitions: [CompetitionSummary]) {
+        setListSnapshot(
+            competitions,
+            lookup: Dictionary(uniqueKeysWithValues: competitions.map { ($0.id, $0) })
+        )
+    }
+
+    func setListSnapshot(
+        _ competitions: [CompetitionSummary],
+        lookup: [String: CompetitionSummary]
+    ) {
+        self.competitions = competitions
+        visibleCompetitionsSnapshot = competitions
+        publishedCompetitions = competitions
+        competitionsByID = lookup
     }
 
     private func rebuildLookup() {
@@ -416,6 +591,7 @@ private final class CompetitionListLookupStore: ObservableObject {
         visibleCompetitionsSnapshot = []
         competitionsByID = [:]
         publishedCompetitions = []
+        preparedDisplayItems = []
     }
 
     func competition(id: String) -> CompetitionSummary? {
@@ -444,12 +620,6 @@ enum CompetitionCardStyleOption: String, CaseIterable, Identifiable {
             return "settings.competition_card_style_compact"
         }
     }
-}
-
-private struct CompetitionStatusAlert: Identifiable {
-    let id = UUID()
-    let title: String
-    let message: String
 }
 
 private enum CompactRegistrationDisplayStatus: Hashable {
@@ -491,6 +661,8 @@ private enum CompetitionRowStatusTint: Hashable {
 private struct CompetitionRowModel: Identifiable, Equatable {
     let id: String
     let rowIndex: Int
+    let startYear: Int
+    let showsYearSeparator: Bool
     let contentHash: Int
     let name: String
     let compactDisplayName: String
@@ -504,14 +676,508 @@ private struct CompetitionRowModel: Identifiable, Equatable {
     let compactStatus: CompactRegistrationDisplayStatus
     let compactStatusMessage: String
     let compactAddressCountry: String
-    let compactAddressRemainder: String
+    let compactAddress: CompetitionService.ParsedAddress
+    let venueAddress: CompetitionService.ParsedAddress
 
     static func == (lhs: CompetitionRowModel, rhs: CompetitionRowModel) -> Bool {
         lhs.id == rhs.id && lhs.contentHash == rhs.contentHash
     }
 }
 
+private enum CompetitionListItem: Identifiable, Equatable {
+    case year(Int)
+    case competition(CompetitionRowModel)
+
+    var id: String {
+        switch self {
+        case .year(let year):
+            return "year:\(year)"
+        case .competition(let row):
+            return "competition:\(row.id)"
+        }
+    }
+
+    var diffableID: String {
+        switch self {
+        case .year(let year):
+            return "year:\(year)"
+        case .competition(let row):
+            return "competition:\(row.id):\(row.contentHash)"
+        }
+    }
+}
+
+private enum CompetitionListLoadPhase: Equatable {
+    case initialLoading
+    case loadingMore
+    case rateLimited(Date)
+    case failed(String)
+    case completed
+}
+
+private enum CompetitionVirtualizedFooterState: Equatable {
+    case loading
+    case rateLimited
+    case failed(String)
+    case completed
+}
+
+private final class CompetitionHostingCollectionViewCell: UICollectionViewCell {
+    private var host: UIHostingController<AnyView>?
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        if #available(iOS 16.0, *) {
+            contentConfiguration = nil
+        } else {
+            host?.rootView = AnyView(EmptyView())
+        }
+    }
+
+    func setRootView(_ rootView: AnyView) {
+        if #available(iOS 16.0, *) {
+            contentConfiguration = UIHostingConfiguration {
+                rootView
+            }
+            .margins(.all, 0)
+            .background(.clear)
+            return
+        }
+
+        if let host {
+            host.rootView = rootView
+            host.view.invalidateIntrinsicContentSize()
+            return
+        }
+
+        let host = UIHostingController(rootView: rootView)
+        host.view.backgroundColor = .clear
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            host.view.topAnchor.constraint(equalTo: contentView.topAnchor),
+            host.view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
+        self.host = host
+    }
+}
+
+private struct CompetitionVirtualizedList: UIViewRepresentable {
+    let items: [CompetitionListItem]
+    let dataRevision: Int
+    let querySignature: String
+    let presentationSignature: String
+    let footerState: CompetitionVirtualizedFooterState
+    let backgroundColor: UIColor
+    let rowContent: (CompetitionListItem) -> AnyView
+    let footerContent: (CompetitionVirtualizedFooterState) -> AnyView
+    let onRefresh: () async -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    func makeUIView(context: Context) -> UICollectionView {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .estimated(76)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: itemSize, subitems: [item])
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 0
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: UICollectionViewCompositionalLayout(section: section)
+        )
+        collectionView.backgroundColor = backgroundColor
+        collectionView.alwaysBounceVertical = true
+        collectionView.keyboardDismissMode = .interactive
+        collectionView.contentInsetAdjustmentBehavior = .automatic
+        if #available(iOS 26.0, *) {
+            collectionView.topEdgeEffect.style = .soft
+            collectionView.bottomEdgeEffect.style = .soft
+        }
+        collectionView.delegate = context.coordinator
+        collectionView.register(
+            CompetitionHostingCollectionViewCell.self,
+            forCellWithReuseIdentifier: Coordinator.cellReuseIdentifier
+        )
+        context.coordinator.installDataSource(on: collectionView)
+
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.didRequestRefresh(_:)),
+            for: .valueChanged
+        )
+        collectionView.refreshControl = refreshControl
+        context.coordinator.registerAsContentScrollView(collectionView)
+        context.coordinator.update(parent: self, collectionView: collectionView)
+        return collectionView
+    }
+
+    func updateUIView(_ collectionView: UICollectionView, context: Context) {
+        collectionView.backgroundColor = backgroundColor
+        collectionView.contentInsetAdjustmentBehavior = .automatic
+        if #available(iOS 26.0, *) {
+            collectionView.topEdgeEffect.style = .soft
+            collectionView.bottomEdgeEffect.style = .soft
+        }
+        context.coordinator.registerAsContentScrollView(collectionView)
+        context.coordinator.update(parent: self, collectionView: collectionView)
+    }
+
+    static func dismantleUIView(_ collectionView: UICollectionView, coordinator: Coordinator) {
+        coordinator.unregisterContentScrollView(collectionView)
+    }
+
+    final class Coordinator: NSObject, UICollectionViewDelegate {
+        static let cellReuseIdentifier = "CompetitionVirtualizedCell"
+        static let footerID = "competition-list-footer"
+
+        private var parent: CompetitionVirtualizedList
+        private var itemsByID: [String: CompetitionListItem] = [:]
+        private var appliedDataRevision = -1
+        private var appliedQuerySignature = ""
+        private var appliedPresentationSignature = ""
+        private var appliedFooterState: CompetitionVirtualizedFooterState?
+        private var isApplyingSnapshot = false
+        private var pendingParent: CompetitionVirtualizedList?
+        private var refreshTask: Task<Void, Never>?
+        private var dataSource: UICollectionViewDiffableDataSource<Int, String>?
+        private weak var contentScrollViewController: UIViewController?
+        private weak var registeredContentScrollView: UICollectionView?
+        private var isContentScrollViewRegistrationPending = false
+        private var isContentScrollViewRegistered = false
+
+        init(parent: CompetitionVirtualizedList) {
+            self.parent = parent
+        }
+
+        deinit {
+            refreshTask?.cancel()
+        }
+
+        func installDataSource(on collectionView: UICollectionView) {
+            dataSource = UICollectionViewDiffableDataSource<Int, String>(
+                collectionView: collectionView
+            ) { [weak self] collectionView, indexPath, identifier in
+                guard let self else { return nil }
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: Self.cellReuseIdentifier,
+                    for: indexPath
+                )
+                guard let hostingCell = cell as? CompetitionHostingCollectionViewCell else {
+                    return cell
+                }
+                if identifier == Self.footerID {
+                    hostingCell.setRootView(parent.footerContent(parent.footerState))
+                } else if let item = itemsByID[identifier] {
+                    hostingCell.setRootView(parent.rowContent(item))
+                }
+                return hostingCell
+            }
+        }
+
+        func registerAsContentScrollView(_ collectionView: UICollectionView) {
+            if registeredContentScrollView === collectionView,
+               isContentScrollViewRegistered {
+                return
+            }
+            registeredContentScrollView = collectionView
+            guard !isContentScrollViewRegistrationPending else { return }
+            isContentScrollViewRegistrationPending = true
+            DispatchQueue.main.async { [weak self, weak collectionView] in
+                guard let self else { return }
+                self.isContentScrollViewRegistrationPending = false
+                guard let collectionView,
+                      self.registeredContentScrollView === collectionView,
+                      let viewController = self.nearestViewController(from: collectionView) else {
+                    return
+                }
+
+                if self.contentScrollViewController !== viewController {
+                    self.contentScrollViewController?.setContentScrollView(nil)
+                    self.contentScrollViewController = viewController
+                }
+                viewController.setContentScrollView(collectionView)
+                self.isContentScrollViewRegistered = true
+            }
+        }
+
+        func unregisterContentScrollView(_ collectionView: UICollectionView) {
+            guard registeredContentScrollView === collectionView else { return }
+            contentScrollViewController?.setContentScrollView(nil)
+            contentScrollViewController = nil
+            registeredContentScrollView = nil
+            isContentScrollViewRegistered = false
+        }
+
+        private func nearestViewController(from view: UIView) -> UIViewController? {
+            sequence(first: view.next, next: { $0?.next })
+                .compactMap { $0 as? UIViewController }
+                .first
+        }
+
+        func update(parent: CompetitionVirtualizedList, collectionView: UICollectionView) {
+            self.parent = parent
+
+            if appliedDataRevision != parent.dataRevision {
+                pendingParent = parent
+                applyPendingUpdateIfPossible(on: collectionView)
+                return
+            }
+
+            if appliedPresentationSignature != parent.presentationSignature
+                || appliedFooterState != parent.footerState {
+                pendingParent = parent
+                applyPendingUpdateIfPossible(on: collectionView)
+            }
+        }
+
+        func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+            guard !decelerate, let collectionView = scrollView as? UICollectionView else { return }
+            applyPendingUpdateIfPossible(on: collectionView)
+        }
+
+        func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+            guard let collectionView = scrollView as? UICollectionView else { return }
+            applyPendingUpdateIfPossible(on: collectionView)
+        }
+
+        private func applyPendingUpdateIfPossible(on collectionView: UICollectionView) {
+            guard !isApplyingSnapshot, let pendingParent else { return }
+            guard !collectionView.isDragging, !collectionView.isDecelerating else { return }
+            self.pendingParent = nil
+            self.parent = pendingParent
+
+            if appliedDataRevision != pendingParent.dataRevision {
+                itemsByID = Dictionary(
+                    uniqueKeysWithValues: pendingParent.items.map { ($0.diffableID, $0) }
+                )
+                var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
+                snapshot.appendSections([0])
+                snapshot.appendItems(pendingParent.items.map(\.diffableID), toSection: 0)
+                snapshot.appendItems([Self.footerID], toSection: 0)
+                isApplyingSnapshot = true
+                dataSource?.apply(snapshot, animatingDifferences: false) { [weak self, weak collectionView] in
+                    guard let self else { return }
+                    appliedDataRevision = pendingParent.dataRevision
+                    appliedPresentationSignature = pendingParent.presentationSignature
+                    appliedFooterState = pendingParent.footerState
+                    isApplyingSnapshot = false
+                    guard let collectionView else { return }
+                    if appliedQuerySignature != pendingParent.querySignature {
+                        appliedQuerySignature = pendingParent.querySignature
+                        collectionView.setContentOffset(
+                            CGPoint(x: 0, y: -collectionView.adjustedContentInset.top),
+                            animated: false
+                        )
+                    }
+                    applyPendingUpdateIfPossible(on: collectionView)
+                }
+                return
+            }
+
+            guard var snapshot = dataSource?.snapshot() else { return }
+            var identifiersToReconfigure: [String] = []
+            if appliedPresentationSignature != pendingParent.presentationSignature {
+                identifiersToReconfigure.append(contentsOf: collectionView.indexPathsForVisibleItems.compactMap {
+                    dataSource?.itemIdentifier(for: $0)
+                })
+            }
+            if appliedFooterState != pendingParent.footerState,
+               snapshot.indexOfItem(Self.footerID) != nil {
+                identifiersToReconfigure.append(Self.footerID)
+            }
+            let uniqueIdentifiers = Array(Set(identifiersToReconfigure))
+            guard !uniqueIdentifiers.isEmpty else { return }
+            snapshot.reconfigureItems(uniqueIdentifiers)
+            isApplyingSnapshot = true
+            dataSource?.apply(snapshot, animatingDifferences: false) { [weak self, weak collectionView] in
+                guard let self else { return }
+                appliedPresentationSignature = pendingParent.presentationSignature
+                appliedFooterState = pendingParent.footerState
+                isApplyingSnapshot = false
+                guard let collectionView else { return }
+                applyPendingUpdateIfPossible(on: collectionView)
+            }
+        }
+
+        @objc func didRequestRefresh(_ sender: UIRefreshControl) {
+            refreshTask?.cancel()
+            let refresh = parent.onRefresh
+            refreshTask = Task { @MainActor in
+                await refresh()
+                sender.endRefreshing()
+            }
+        }
+    }
+}
+
+private struct CompetitionPreparedRow: Sendable {
+    let competition: CompetitionSummary
+    let rowIndex: Int
+    let competitionYear: Int
+    let showsYearSeparator: Bool
+    let name: String
+    let compactDisplayName: String
+    let flagEmoji: String
+    let dateRangeText: String
+    let locationLine: String
+    let venueLine: String
+    let compactAddressCountry: String
+    let compactAddress: CompetitionService.ParsedAddress
+    let venueAddress: CompetitionService.ParsedAddress
+}
+
+private enum CompetitionRowPreparation {
+    nonisolated static func prepare(
+        _ competitions: [CompetitionSummary],
+        languageCode: String
+    ) -> [CompetitionPreparedRow] {
+        let locale = appLocale(for: languageCode)
+        let calendar = Calendar(identifier: .gregorian)
+        let fullFormat = appLocalizedString("competition.date.full_format", languageCode: languageCode)
+        let monthDayFormat = appLocalizedString("competition.date.month_day_format", languageCode: languageCode)
+        let daySuffixFormat = appLocalizedString("competition.date.day_suffix_format", languageCode: languageCode)
+        let fullFormatter = dateFormatter(locale: locale, format: fullFormat)
+        let monthDayFormatter = dateFormatter(locale: locale, format: monthDayFormat)
+        let daySuffixFormatter = dateFormatter(locale: locale, format: daySuffixFormat)
+
+        return competitions.enumerated().map { index, competition in
+            let year = CompetitionService.officialCompetitionYear(for: competition)
+            let previousYear = index > 0
+                ? CompetitionService.officialCompetitionYear(for: competitions[index - 1])
+                : year
+            let addressParts = compactAddressParts(for: competition, locale: locale)
+            let addressCountry = addressParts.first ?? ""
+            let addressRemainder = addressParts.dropFirst().map { ", \($0)" }.joined()
+            let addressSource = competition.addressLinkSource
+            let compactAddress = addressSource.projected(onto: addressCountry + addressRemainder)
+            let venueAddress = addressSource.projected(onto: competition.venueLine)
+
+            return CompetitionPreparedRow(
+                competition: competition,
+                rowIndex: index,
+                competitionYear: year,
+                showsYearSeparator: index > 0 && year != previousYear,
+                name: competition.name,
+                compactDisplayName: competition.compactDisplayName,
+                flagEmoji: flagEmoji(for: competition.countryISO2),
+                dateRangeText: dateRange(
+                    for: competition,
+                    calendar: calendar,
+                    fullFormatter: fullFormatter,
+                    monthDayFormatter: monthDayFormatter,
+                    daySuffixFormatter: daySuffixFormatter
+                ),
+                locationLine: CompetitionService.parseAddress(competition.locationLine).displayText,
+                venueLine: venueAddress.displayText,
+                compactAddressCountry: addressCountry,
+                compactAddress: compactAddress,
+                venueAddress: venueAddress
+            )
+        }
+    }
+
+    nonisolated private static func dateFormatter(locale: Locale, format: String) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = format
+        return formatter
+    }
+
+    nonisolated private static func dateRange(
+        for competition: CompetitionSummary,
+        calendar: Calendar,
+        fullFormatter: DateFormatter,
+        monthDayFormatter: DateFormatter,
+        daySuffixFormatter: DateFormatter
+    ) -> String {
+        let sameYear = calendar.component(.year, from: competition.startDate)
+            == calendar.component(.year, from: competition.endDate)
+        let sameMonth = sameYear
+            && calendar.component(.month, from: competition.startDate)
+                == calendar.component(.month, from: competition.endDate)
+        let sameDay = sameMonth
+            && calendar.component(.day, from: competition.startDate)
+                == calendar.component(.day, from: competition.endDate)
+        if sameDay {
+            return fullFormatter.string(from: competition.startDate)
+        }
+        if sameMonth {
+            return "\(monthDayFormatter.string(from: competition.startDate)) - \(daySuffixFormatter.string(from: competition.endDate))"
+        }
+        return "\(fullFormatter.string(from: competition.startDate)) - \(fullFormatter.string(from: competition.endDate))"
+    }
+
+    nonisolated private static func compactAddressParts(
+        for competition: CompetitionSummary,
+        locale: Locale
+    ) -> [String] {
+        let countryName = locale.localizedString(forRegionCode: competition.countryISO2)
+            ?? competition.countryISO2
+        var parts = [countryName]
+        if let localizedRegion = competition.localizedRegionLineOverride, !localizedRegion.isEmpty {
+            let region = localizedRegion.components(separatedBy: "·").first ?? localizedRegion
+            let regionParts = splitAddressComponent(region)
+            if competition.usesCubingChinaDetailSource, regionParts.count >= 2 {
+                parts.append(contentsOf: [regionParts[1], regionParts[0]] + Array(regionParts.dropFirst(2)))
+            } else {
+                parts.append(contentsOf: regionParts.filter {
+                    $0.caseInsensitiveCompare(countryName) != .orderedSame
+                })
+            }
+        } else {
+            parts.append(contentsOf: splitAddressComponent(competition.city))
+        }
+
+        if let localizedAddress = competition.localizedAddressLineOverride, !localizedAddress.isEmpty {
+            parts.append(contentsOf: splitAddressComponent(localizedAddress))
+        } else if !competition.venue.isEmpty {
+            parts.append(contentsOf: splitAddressComponent(competition.venue))
+        } else {
+            parts.append(contentsOf: splitAddressComponent(competition.venueAddress))
+        }
+        return deduplicated(parts)
+    }
+
+    nonisolated private static func splitAddressComponent(_ component: String) -> [String] {
+        CompetitionService.parseAddress(component).displayText
+            .replacingOccurrences(of: " · ", with: ",")
+            .replacingOccurrences(of: "·", with: ",")
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    nonisolated private static func deduplicated(_ parts: [String]) -> [String] {
+        var seen = Set<String>()
+        return parts.compactMap { part in
+            let trimmed = part.trimmingCharacters(in: .whitespacesAndNewlines)
+            let key = trimmed.lowercased()
+            guard !key.isEmpty, seen.insert(key).inserted else { return nil }
+            return trimmed
+        }
+    }
+
+    nonisolated private static func flagEmoji(for countryCode: String) -> String {
+        guard countryCode.count == 2 else { return "" }
+        let base: UInt32 = 127397
+        let scalars = countryCode.uppercased().unicodeScalars.compactMap {
+            UnicodeScalar(base + $0.value)
+        }
+        return String(String.UnicodeScalarView(scalars))
+    }
+}
+
 struct CompetitionTabView: View {
+    private static let paginationProgressPublishInterval: TimeInterval = 1.0
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("competitionCardStyle") private var competitionCardStyle: String = CompetitionCardStyleOption.list.rawValue
@@ -522,16 +1188,18 @@ struct CompetitionTabView: View {
         .map(\.rawValue)
         .sorted()
         .joined(separator: ",")
-    @AppStorage("competition_filter_year") private var storedYearRawValue: String = CompetitionYearFilter.all.rawValue
-    @AppStorage("competition_filter_status") private var storedStatusRawValue: String = CompetitionStatusFilter.upcoming.rawValue
+    @AppStorage("competition_filter_year") private var storedYearRawValue: String = CompetitionYearFilter.all.id
+    @AppStorage("competition_filter_status") private var storedStatusRawValue: String = CompetitionStatusFilter.present.rawValue
     @AppStorage("competition_show_top_cubers") private var showsTopCubers: Bool = false
     @StateObject private var competitionLookupStore = CompetitionListLookupStore()
     @State private var showsFilterPopover = false
-    @State private var publishedCompetitionRowModels: [CompetitionRowModel] = []
-    @State private var isLoading = true
-    @State private var isLoadingMore = false
-    @State private var errorMessage: String?
+    @State private var publishedCompetitionListItems: [CompetitionListItem] = []
+    @State private var competitionListLoadPhase: CompetitionListLoadPhase = .initialLoading
+    @State private var competitionListDataRevision = 0
+    @State private var competitionVisibleRowRevision = 0
     @State private var nextPage: Int? = 1
+    @State private var loadedCompetitionCount = 0
+    @State private var totalCompetitionCount: Int?
     @State private var showsMapView = false
     @State private var isShowingSearch = false
     @State private var selectedCompetitionForDetail: CompetitionDetailSelection?
@@ -540,12 +1208,12 @@ struct CompetitionTabView: View {
     @State private var topCuberStatesByCompetitionID: [String: CompetitionTopCuberLoadState] = [:]
     @State private var topCuberRefreshingIDs: Set<String> = []
     @State private var areCompetitionEventIconsReady = CompetitionEventIconFont.isAvailable
-    @State private var competitionNavigationSubtitleText = ""
-    @State private var compactStatusAlert: CompetitionStatusAlert?
     @State private var compactStatusTapCompetitionID: String?
+    @State private var addressTapCompetitionID: String?
     @State private var competitionsBackgroundAppearance = AppearanceConfiguration.defaultBackground
     @State private var decodedCompetitionsBackgroundImage: UIImage?
     @State private var activeLoadSignature: String?
+    @State private var displayedFilterSignature: String?
     @State private var lastLoadedFilterSignature: String?
     @State private var lastLoadedFilterDate: Date?
 
@@ -583,41 +1251,7 @@ struct CompetitionTabView: View {
 
     var body: some View {
         CompatibleNavigationContainer {
-            List {
-                if showsRefreshSuccessBanner {
-                    refreshSuccessRow
-                }
-
-                if isLoading {
-                    competitionLoadingSkeletonRows
-                } else if publishedCompetitionRowModels.isEmpty {
-                    if let errorMessage {
-                        errorRow(message: errorMessage)
-                    } else {
-                        emptyRow
-                    }
-                } else {
-                    ForEach(publishedCompetitionRowModels) { rowModel in
-                        competitionListRow(rowModel, rowIndex: rowModel.rowIndex)
-                    }
-
-                    if isLoadingMore {
-                        loadingMoreRow
-                    } else if nextPage != nil {
-                        Color.clear
-                            .frame(height: 1)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .onAppear {
-                                Task {
-                                    await loadMoreCompetitionsIfNeeded()
-                                }
-                            }
-                    }
-                }
-            }
-            .listStyle(.plain)
-            .compatibleScrollContentBackgroundHidden()
+            competitionListSurface
             .background(competitionsTabBackgroundView.ignoresSafeArea())
             .safeAreaInset(edge: .bottom) {
                 if !usesSystemBottomAccessory && shouldShowCompetitionBottomAccessory {
@@ -654,16 +1288,6 @@ struct CompetitionTabView: View {
                     filterButton
                 }
             }
-            .refreshable {
-                await refreshCompetitionsForPullToRefresh()
-            }
-            .alert(item: $compactStatusAlert) { alert in
-                Alert(
-                    title: Text(alert.title),
-                    message: Text(alert.message),
-                    dismissButton: .default(Text(localizedCompetitionStringInView(key: "common.done", languageCode: appLanguage)))
-                )
-            }
             .task(id: "\(isActive)|\(appLanguage)") {
                 guard isActive else { return }
                 await CompetitionService.warmRecognizedCountriesCache()
@@ -678,18 +1302,28 @@ struct CompetitionTabView: View {
                 cubingRowClassesByKey = rowClasses
             }
             .onChange(of: cubingRowClassesByKey) { _ in
-                syncVisibleCompetitionsSnapshot(query: competitionQuery)
-                publishVisibleCompetitionsSnapshot()
+                let signature = filterSignature
+                Task {
+                    await publishVisibleCompetitionsSnapshot(expectedSignature: signature)
+                }
             }
             .onChange(of: showsTopCubers) { _ in
                 if !showsTopCubers {
                     topCuberStatesByCompetitionID = [:]
                     topCuberRefreshingIDs = []
                 }
-                updateCompetitionListDerivedState(for: competitionLookupStore.publishedCompetitions)
             }
             .onChange(of: competitionCardStyle) { _ in
                 updateCompetitionsBackgroundImage()
+            }
+            .onChange(of: filterSignature) { signature in
+                guard isActive else { return }
+                if let snapshot = CompetitionListRuntimeCache.shared.snapshot(for: signature) {
+                    restoreCompetitionRuntimeSnapshot(snapshot)
+                    displayedFilterSignature = signature
+                } else {
+                    resetCompetitionListForQueryTransition(signature: signature)
+                }
             }
             .onChange(of: competitionsBackgroundAppearanceData) { _ in
                 updateCompetitionsBackgroundAppearance()
@@ -808,7 +1442,12 @@ struct CompetitionTabView: View {
                     .split(separator: ",")
                     .compactMap { CompetitionEventFilter(rawValue: String($0)) }
             )
-            return restored.isEmpty ? Set(CompetitionEventFilter.selectableCases) : restored
+            let allEvents = Set(CompetitionEventFilter.selectableCases)
+            let preFTOAllEvents = allEvents.subtracting([.faceTurningOctahedron])
+            if restored == preFTOAllEvents {
+                return allEvents
+            }
+            return restored.isEmpty ? allEvents : restored
         }
         nonmutating set {
             let normalized = newValue.isEmpty ? Set(CompetitionEventFilter.selectableCases) : newValue
@@ -817,13 +1456,30 @@ struct CompetitionTabView: View {
     }
 
     private var selectedYear: CompetitionYearFilter {
-        get { CompetitionYearFilter(rawValue: storedYearRawValue) ?? .all }
-        nonmutating set { storedYearRawValue = newValue.rawValue }
+        get { CompetitionYearFilter(storedID: storedYearRawValue) }
+        nonmutating set { storedYearRawValue = newValue.id }
     }
 
     private var selectedStatus: CompetitionStatusFilter {
-        get { CompetitionStatusFilter(rawValue: storedStatusRawValue) ?? .upcoming }
+        get {
+            if let status = CompetitionStatusFilter(rawValue: storedStatusRawValue) {
+                return status
+            }
+            switch storedStatusRawValue {
+            case "ended":
+                return .past
+            case "upcoming", "registrationNotOpenYet", "registrationOpen", "waitlist", "ongoing":
+                return .present
+            default:
+                return .present
+            }
+        }
         nonmutating set { storedStatusRawValue = newValue.rawValue }
+    }
+
+    private var availablePastYears: [Int] {
+        Set(competitions.map { CompetitionService.officialCompetitionYear(for: $0) })
+            .sorted(by: >)
     }
 
     private var filterButton: some View {
@@ -854,6 +1510,7 @@ struct CompetitionTabView: View {
                     get: { selectedStatus },
                     set: { selectedStatus = $0 }
                 ),
+                availablePastYears: availablePastYears,
                 showsTopCubers: $showsTopCubers,
                 appLanguage: appLanguage,
                 showsFilterPopover: $showsFilterPopover
@@ -905,8 +1562,169 @@ struct CompetitionTabView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    @ViewBuilder
+    private var competitionListSurface: some View {
+        if publishedCompetitionListItems.isEmpty {
+            List {
+                if competitionListLoadPhase == .initialLoading {
+                    competitionLoadingSkeletonRows
+                } else {
+                    switch competitionListLoadPhase {
+                    case .rateLimited:
+                        rateLimitStatusRow
+                    case .failed(let message):
+                        errorRow(message: message)
+                    case .initialLoading, .loadingMore:
+                        loadingMoreRow
+                    case .completed:
+                        emptyRow
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .compatibleScrollContentBackgroundHidden()
+        } else {
+            CompetitionVirtualizedList(
+                items: publishedCompetitionListItems,
+                dataRevision: competitionListDataRevision,
+                querySignature: filterSignature,
+                presentationSignature: competitionListPresentationSignature,
+                footerState: competitionVirtualizedFooterState,
+                backgroundColor: .clear,
+                rowContent: { item in
+                    AnyView(competitionVirtualizedListItem(item))
+                },
+                footerContent: { state in
+                    AnyView(competitionVirtualizedFooter(state))
+                },
+                onRefresh: {
+                    await refreshCompetitionsForPullToRefresh()
+                }
+            )
+            .competitionSystemChromeUnderlap()
+            .overlay(alignment: .topLeading) {
+                if showsRefreshSuccessBanner {
+                    refreshSuccessOverlay
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+        }
+    }
+
+    private var competitionListPresentationSignature: String {
+        [
+            competitionCardStyle,
+            colorScheme == .dark ? "dark" : "light",
+            appLanguage,
+            areCompetitionEventIconsReady ? "icons" : "no-icons",
+            showsTopCubers ? "top-cubers" : "no-top-cubers",
+            String(competitionVisibleRowRevision)
+        ].joined(separator: "|")
+    }
+
+    private var competitionVirtualizedFooterState: CompetitionVirtualizedFooterState {
+        switch competitionListLoadPhase {
+        case .initialLoading, .loadingMore:
+            return .loading
+        case .rateLimited:
+            return .rateLimited
+        case .failed(let message):
+            return .failed(message)
+        case .completed:
+            return .completed
+        }
+    }
+
+    @ViewBuilder
+    private func competitionVirtualizedListItem(_ item: CompetitionListItem) -> some View {
+        switch item {
+        case .year(let year):
+            competitionYearSeparator(year)
+                .padding(.horizontal, 16)
+        case .competition(let row):
+            let cardStyle = CompetitionCardStyleOption(rawValue: competitionCardStyle) ?? .list
+            competitionListRow(row, rowIndex: row.rowIndex)
+                .padding(.horizontal, cardStyle == .compact ? 8 : 16)
+                .padding(.vertical, cardStyle == .compact ? 0 : 4)
+                .overlay(alignment: .bottom) {
+                    if cardStyle == .list {
+                        Divider()
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder
+    private func competitionVirtualizedFooter(_ state: CompetitionVirtualizedFooterState) -> some View {
+        switch state {
+        case .loading:
+            loadingMoreContent
+        case .rateLimited:
+            rateLimitStatusContent
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, alignment: .center)
+        case .failed(let message):
+            errorContent(message: message)
+        case .completed:
+            Text(
+                appLocalizedString(
+                    "competitions.no_more",
+                    languageCode: appLanguage,
+                    defaultValue: "No more competitions"
+                )
+            )
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.secondary)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .center)
+        }
+    }
+
+    private var refreshSuccessOverlay: some View {
+        Text(localizedCompetitionStringInView(key: "competitions.refresh_success", languageCode: appLanguage))
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
+            .padding(.leading, 16)
+            .padding(.top, 4)
+    }
+
     private var competitionNavigationSubtitle: String {
-        competitionNavigationSubtitleText
+        if competitionListLoadPhase == .initialLoading,
+           loadedCompetitionCount == 0,
+           publishedVisibleCompetitions.isEmpty {
+            return localizedCompetitionStringInView(
+                key: "competitions.loading",
+                languageCode: appLanguage
+            )
+        }
+        let presentation = CompetitionService.listCountPresentation(
+            loadedCount: loadedCompetitionCount,
+            visibleCount: publishedVisibleCompetitions.count,
+            totalCount: totalCompetitionCount,
+            hasPendingPages: nextPage != nil && competitionListLoadPhase != .completed
+        )
+        switch presentation {
+        case .progress(let loaded, let total):
+            return String(
+                format: localizedCompetitionStringInView(
+                    key: "competitions.loading_progress_format",
+                    languageCode: appLanguage
+                ),
+                loaded,
+                total
+            )
+        case .count(let count):
+            return String(
+                format: localizedCompetitionStringInView(
+                    key: "competitions.count_format",
+                    languageCode: appLanguage
+                ),
+                count
+            )
+        }
     }
 
     private var filterSignature: String {
@@ -916,7 +1734,7 @@ struct CompetitionTabView: View {
                 .map(\.rawValue)
                 .sorted()
                 .joined(separator: ","),
-            selectedYear.rawValue,
+            selectedStatus == .past ? selectedYear.id : CompetitionYearFilter.all.id,
             selectedStatus.rawValue,
             appLanguage
         ].joined(separator: "|")
@@ -927,13 +1745,13 @@ struct CompetitionTabView: View {
             languageCode: appLanguage,
             region: selectedRegion,
             events: selectedEvents,
-            year: selectedYear,
+            year: selectedStatus == .past ? selectedYear : .all,
             status: selectedStatus
         )
     }
 
     private var shouldShowCompetitionBottomAccessory: Bool {
-        !publishedCompetitionRowModels.isEmpty
+        !publishedCompetitionListItems.isEmpty
     }
 
     private var competitionBottomSearchBar: some View {
@@ -1013,6 +1831,14 @@ struct CompetitionTabView: View {
     }
 
     private var loadingMoreRow: some View {
+        loadingMoreContent
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+    }
+
+    private var loadingMoreContent: some View {
         HStack(spacing: 10) {
             ProgressView()
                 .scaleEffect(0.9)
@@ -1022,11 +1848,37 @@ struct CompetitionTabView: View {
         }
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity, alignment: .center)
-        .listRowSeparator(.hidden)
-        .listRowBackground(Color.clear)
+    }
+
+    private var rateLimitStatusRow: some View {
+        rateLimitStatusContent
+            .padding(.vertical, 18)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+    }
+
+    private var rateLimitStatusContent: some View {
+        Text(
+            appLocalizedString(
+                "competitions.rate_limited",
+                languageCode: appLanguage,
+                defaultValue: "WCA request limit reached. Loading will resume shortly."
+            )
+        )
+        .font(.system(size: 14, weight: .medium))
+        .foregroundStyle(.secondary)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func errorRow(message: String) -> some View {
+        errorContent(message: message)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+    }
+
+    private func errorContent(message: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(message)
                 .font(.system(size: 16, weight: .medium))
@@ -1040,8 +1892,6 @@ struct CompetitionTabView: View {
             .font(.system(size: 16, weight: .semibold))
         }
         .padding(.vertical, 18)
-        .listRowSeparator(.hidden)
-        .listRowBackground(Color.clear)
     }
 
     private var refreshSuccessRow: some View {
@@ -1078,33 +1928,25 @@ struct CompetitionTabView: View {
             if !rowIndex.isMultiple(of: 2) {
                 Rectangle()
                     .fill(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.05))
-                    .padding(.horizontal, 8)
             }
 
             VStack(alignment: .leading, spacing: 5) {
-                HStack(alignment: .firstTextBaseline, spacing: 7) {
-                    Text(row.flagEmoji)
-                        .font(.system(size: 14))
-                        .fixedSize()
-
-                    Text(row.compactDisplayName)
-                        .font(.system(size: 14, weight: .semibold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.76)
-                        .allowsTightening(true)
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    compactCompetitionTitle(row)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
                         .layoutPriority(1)
 
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 4)
 
-                    Image(systemName: compactRegistrationStatusSymbol(for: row.compactStatus))
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(compactRegistrationStatusColor(for: row.compactStatus))
-                        .frame(width: 19, alignment: .center)
-                        .contentShape(Rectangle())
-                        .highPriorityGesture(
-                            TapGesture().onEnded {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        CompetitionCompactStatusButton(
+                            symbolName: compactRegistrationStatusSymbol(for: row.compactStatus),
+                            tintColor: UIColor(compactRegistrationStatusColor(for: row.compactStatus)),
+                            accessibilityLabel: compactRegistrationStatusAccessibilityTitle(for: row.compactStatus),
+                            message: row.compactStatusMessage,
+                            onTap: {
                                 compactStatusTapCompetitionID = row.id
-                                compactStatusAlert = compactRegistrationStatusAlert(for: row)
                                 DispatchQueue.main.async {
                                     if compactStatusTapCompetitionID == row.id {
                                         compactStatusTapCompetitionID = nil
@@ -1112,25 +1954,85 @@ struct CompetitionTabView: View {
                                 }
                             }
                         )
-                        .accessibilityLabel(Text(compactRegistrationStatusAccessibilityTitle(for: row.compactStatus)))
+                            .frame(width: 28, height: 28, alignment: .center)
+                            .contentShape(Rectangle())
 
-                    Text(row.dateRangeText)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        Text(row.dateRangeText)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.primary.opacity(0.78))
+                            .lineLimit(1)
+                            .fixedSize()
+                    }
                 }
 
-                compactAddressText(for: row)
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(.secondary)
+                CompetitionAddressText(
+                    address: row.compactAddress,
+                    competitionID: row.id,
+                    tappedCompetitionID: $addressTapCompetitionID,
+                    emphasizedPrefix: row.compactAddressCountry,
+                    emphasizedPrefixFont: .caption.weight(.semibold)
+                )
+                    .font(.caption)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
-
         .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(Color.primary.opacity(colorScheme == .dark ? 0.18 : 0.12))
+                .frame(width: 0.5)
+        }
+        .overlay(alignment: .trailing) {
+            Rectangle()
+                .fill(Color.primary.opacity(colorScheme == .dark ? 0.18 : 0.12))
+                .frame(width: 0.5)
+        }
+        .overlay(alignment: .bottom) {
+            compactRowHorizontalSeparator
+        }
+        .overlay(alignment: .top) {
+            if row.rowIndex == 0 || row.showsYearSeparator {
+                compactRowHorizontalSeparator
+            }
+        }
+    }
+
+    private func compactCompetitionTitle(_ row: CompetitionRowModel) -> Text {
+        guard !row.flagEmoji.isEmpty else {
+            return Text(row.compactDisplayName)
+                .font(.subheadline.weight(.semibold))
+        }
+        return Text(row.flagEmoji)
+            .font(.system(size: 15))
+            + Text(" " + row.compactDisplayName)
+            .font(.subheadline.weight(.semibold))
+    }
+
+    private var compactRowHorizontalSeparator: some View {
+        Rectangle()
+            .fill(Color.primary.opacity(colorScheme == .dark ? 0.18 : 0.12))
+            .frame(height: 0.5)
+    }
+
+    private func competitionYearSeparator(_ year: Int) -> some View {
+        HStack(spacing: 10) {
+            Rectangle()
+                .fill(Color(uiColor: .separator))
+                .frame(height: 0.5)
+            Text(String(year))
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.primary)
+            Rectangle()
+                .fill(Color(uiColor: .separator))
+                .frame(height: 0.5)
+        }
+        .padding(.vertical, 8)
+        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
     }
 
     private func listCompetitionRow(_ row: CompetitionRowModel) -> some View {
@@ -1169,9 +2071,12 @@ struct CompetitionTabView: View {
             }
 
             if !row.venueLine.isEmpty {
-                Text(row.venueLine)
+                CompetitionAddressText(
+                    address: row.venueAddress,
+                    competitionID: row.id,
+                    tappedCompetitionID: $addressTapCompetitionID
+                )
                     .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -1227,9 +2132,12 @@ struct CompetitionTabView: View {
                 .padding(.trailing, 18)
 
                 if !row.venueLine.isEmpty {
-                    Text(row.venueLine)
+                    CompetitionAddressText(
+                        address: row.venueAddress,
+                        competitionID: row.id,
+                        tappedCompetitionID: $addressTapCompetitionID
+                    )
                         .font(.system(size: 15, weight: .regular))
-                        .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -1407,13 +2315,15 @@ struct CompetitionTabView: View {
 
         if areCompetitionEventIconsReady,
            let glyph = CompetitionEventIconFont.glyph(for: badge.eventID) {
-            Text(glyph)
-                .font(.custom(CompetitionEventIconFont.fontName, size: 13))
-                .foregroundStyle(color)
+            CompetitionEventGlyph(
+                glyph: glyph,
+                eventName: localizedEventShortName(for: badge.eventID),
+                size: 13,
+                color: color
+            )
                 .padding(.horizontal, 6)
-                .padding(.vertical, 4)
+                .padding(.vertical, 2)
                 .background(color.opacity(0.14), in: Capsule())
-                .accessibilityLabel(localizedEventShortName(for: badge.eventID))
         } else {
             Text(localizedEventShortName(for: badge.eventID))
                 .font(.system(size: 11, weight: .bold))
@@ -1425,65 +2335,36 @@ struct CompetitionTabView: View {
     }
 
     private func localizedEventShortName(for eventID: String) -> String {
-        switch eventID {
-        case "222":
-            return localizedCompetitionStringInView(key: "wca.event.short.2x2", languageCode: appLanguage)
-        case "333":
-            return localizedCompetitionStringInView(key: "wca.event.short.3x3", languageCode: appLanguage)
-        case "444":
-            return localizedCompetitionStringInView(key: "wca.event.short.4x4", languageCode: appLanguage)
-        case "555":
-            return localizedCompetitionStringInView(key: "wca.event.short.5x5", languageCode: appLanguage)
-        case "666":
-            return localizedCompetitionStringInView(key: "wca.event.short.6x6", languageCode: appLanguage)
-        case "777":
-            return localizedCompetitionStringInView(key: "wca.event.short.7x7", languageCode: appLanguage)
-        case "333oh":
-            return localizedCompetitionStringInView(key: "wca.event.short.oh", languageCode: appLanguage)
-        case "333bf":
-            return localizedCompetitionStringInView(key: "wca.event.short.bf", languageCode: appLanguage)
-        case "333fm":
-            return localizedCompetitionStringInView(key: "wca.event.short.fm", languageCode: appLanguage)
-        case "clock":
-            return localizedCompetitionStringInView(key: "wca.event.short.clock", languageCode: appLanguage)
-        case "minx":
-            return localizedCompetitionStringInView(key: "wca.event.short.megaminx", languageCode: appLanguage)
-        case "pyram":
-            return localizedCompetitionStringInView(key: "wca.event.short.pyraminx", languageCode: appLanguage)
-        case "skewb":
-            return localizedCompetitionStringInView(key: "wca.event.short.skewb", languageCode: appLanguage)
-        case "sq1":
-            return localizedCompetitionStringInView(key: "wca.event.short.square1", languageCode: appLanguage)
-        case "444bf":
-            return localizedCompetitionStringInView(key: "wca.event.short.444bf", languageCode: appLanguage)
-        case "555bf":
-            return localizedCompetitionStringInView(key: "wca.event.short.555bf", languageCode: appLanguage)
-        case "333mbf":
-            return localizedCompetitionStringInView(key: "wca.event.short.mbf", languageCode: appLanguage)
-        default:
-            return eventID
+        CompetitionEventPresentation.localizedFullName(
+            for: eventID,
+            languageCode: appLanguage
+        )
+    }
+
+    @ViewBuilder
+    private func competitionListItem(_ item: CompetitionListItem) -> some View {
+        switch item {
+        case .year(let year):
+            competitionYearSeparator(year)
+        case .competition(let row):
+            competitionListRow(row, rowIndex: row.rowIndex)
         }
     }
 
     @ViewBuilder
     private func competitionListRow(_ rowModel: CompetitionRowModel, rowIndex: Int) -> some View {
         let cardStyle = CompetitionCardStyleOption(rawValue: competitionCardStyle) ?? .list
-        let row = competitionListRowBase(rowModel, rowIndex: rowIndex, cardStyle: cardStyle)
-
         if cardStyle == .compact {
-            if #available(iOS 16.0, *) {
-                row
-                    .alignmentGuide(.listRowSeparatorLeading) { dimensions in
-                        dimensions[.leading] + 8
-                    }
-                    .alignmentGuide(.listRowSeparatorTrailing) { dimensions in
-                        dimensions[.trailing] - 8
-                    }
-            } else {
-                row
-            }
+            compactCompetitionRow(rowModel, rowIndex: rowIndex)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    openCompetitionRowIfNeeded(rowModel, cardStyle: cardStyle)
+                }
+                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
         } else {
-            row
+            competitionListRowBase(rowModel, rowIndex: rowIndex, cardStyle: cardStyle)
         }
     }
 
@@ -1493,24 +2374,29 @@ struct CompetitionTabView: View {
         cardStyle: CompetitionCardStyleOption
     ) -> some View {
         Button {
-            if cardStyle == .compact, compactStatusTapCompetitionID == rowModel.id {
-                compactStatusTapCompetitionID = nil
-                return
-            }
-            selectedCompetitionForDetail = CompetitionDetailSelection(id: rowModel.id)
+            openCompetitionRowIfNeeded(rowModel, cardStyle: cardStyle)
         } label: {
             competitionRow(rowModel, rowIndex: rowIndex)
         }
         .buttonStyle(.plain)
         .listRowInsets(EdgeInsets(top: cardStyle == .compact ? 0 : 4, leading: cardStyle == .compact ? 8 : 16, bottom: cardStyle == .compact ? 0 : 4, trailing: cardStyle == .compact ? 8 : 16))
-        .listRowSeparator(cardStyle == .glass ? .hidden : .visible)
+        .listRowSeparator(cardStyle == .glass || cardStyle == .compact ? .hidden : .visible)
         .listRowBackground(Color.clear)
-        .onAppear {
-            guard rowModel.id == publishedCompetitionRowModels.last?.id else { return }
-            Task {
-                await loadMoreCompetitionsIfNeeded()
-            }
+    }
+
+    private func openCompetitionRowIfNeeded(
+        _ rowModel: CompetitionRowModel,
+        cardStyle: CompetitionCardStyleOption
+    ) {
+        if addressTapCompetitionID == rowModel.id {
+            addressTapCompetitionID = nil
+            return
         }
+        if cardStyle == .compact, compactStatusTapCompetitionID == rowModel.id {
+            compactStatusTapCompetitionID = nil
+            return
+        }
+        selectedCompetitionForDetail = CompetitionDetailSelection(id: rowModel.id)
     }
 
     private func competitionForRow(id: String) -> CompetitionSummary? {
@@ -1649,11 +2535,26 @@ struct CompetitionTabView: View {
     ) -> CompactRegistrationDisplayStatus {
         let now = Date()
 
+        if !competition.usesCubingChinaDetailSource {
+            switch competition.registrationStatus {
+            case .open:
+                return .open
+            case .full:
+                return .limitReached
+            case .notYetOpened:
+                return .notOpenYet
+            case .past:
+                return .closed
+            case .none:
+                break
+            }
+        }
+
         switch status {
         case .registrationOpen:
             return .open
         case .waitlist:
-            return competition.countryISO2.uppercased() == "CN" ? .limitReached : .open
+            return competition.usesCubingChinaDetailSource ? .limitReached : .open
         case .registrationNotOpenYet:
             return .notOpenYet
         case .ended, .ongoing:
@@ -1673,7 +2574,10 @@ struct CompetitionTabView: View {
     private func compactRegistrationStatusSymbol(for status: CompactRegistrationDisplayStatus) -> String {
         switch status {
         case .open:
-            return "person.fill.checkmark"
+            if #available(iOS 26.0, *) {
+                return "person.badge.plus.fill"
+            }
+            return "person.fill.badge.plus"
         case .closed:
             return "person.fill.xmark"
         case .limitReached:
@@ -1686,37 +2590,27 @@ struct CompetitionTabView: View {
     private func compactRegistrationStatusColor(for status: CompactRegistrationDisplayStatus) -> Color {
         switch status {
         case .open:
-            return .green
+            return Color(uiColor: .systemGreen).opacity(colorScheme == .dark ? 0.86 : 0.76)
         case .closed:
-            return .red
+            return Color(uiColor: .systemRed).opacity(colorScheme == .dark ? 0.86 : 0.76)
         case .limitReached:
-            return .orange
+            return Color(uiColor: .systemOrange).opacity(colorScheme == .dark ? 0.90 : 0.80)
         case .notOpenYet:
-            return Color(red: 0.05, green: 0.24, blue: 0.55)
+            return Color(uiColor: .systemBlue).opacity(colorScheme == .dark ? 0.86 : 0.76)
         }
     }
 
     private func compactRegistrationStatusAccessibilityTitle(for status: CompactRegistrationDisplayStatus) -> String {
         switch status {
         case .open:
-            return "Registration open"
+            return localizedCompetitionStringInView(key: "competitions.registration.open", languageCode: appLanguage)
         case .closed:
-            return "Registration closed"
+            return localizedCompetitionStringInView(key: "competitions.registration.closed", languageCode: appLanguage)
         case .limitReached:
-            return "Competitor limit reached"
+            return localizedCompetitionStringInView(key: "competitions.registration.full_short", languageCode: appLanguage)
         case .notOpenYet:
-            return "Registration not open yet"
+            return localizedCompetitionStringInView(key: "competitions.registration.not_open_yet", languageCode: appLanguage)
         }
-    }
-
-    private func compactRegistrationStatusAlert(
-        for status: CompactRegistrationDisplayStatus,
-        competition: CompetitionSummary
-    ) -> CompetitionStatusAlert {
-        CompetitionStatusAlert(
-            title: "Registration",
-            message: compactRegistrationStatusMessage(for: status, competition: competition)
-        )
     }
 
     private func compactRegistrationStatusMessage(
@@ -1725,61 +2619,46 @@ struct CompetitionTabView: View {
     ) -> String {
         switch status {
         case .open:
-            return "Registration is open!"
+            return localizedCompetitionStringInView(key: "competitions.registration.open_message", languageCode: appLanguage)
         case .limitReached:
-            return "Competitor limit reached, new registrations will go to the waiting list."
+            return localizedCompetitionStringInView(key: "competitions.registration.full_message", languageCode: appLanguage)
         case .notOpenYet:
             let registrationOpenDate = competition.localizedRegistrationStartOverride ?? competition.registrationOpen
             if let registrationOpenDate, registrationOpenDate > Date() {
-                return "Registration will open in \(compactRelativeTimeDescription(until: registrationOpenDate))."
+                return String(
+                    format: localizedCompetitionStringInView(
+                        key: "competitions.registration.will_open_format",
+                        languageCode: appLanguage
+                    ),
+                    compactRelativeTimeDescription(until: registrationOpenDate)
+                )
             }
-            return "Registration details are not available yet."
+            return localizedCompetitionStringInView(key: "competitions.registration.details_unavailable", languageCode: appLanguage)
         case .closed:
             let now = Date()
             if competition.endDate < Calendar.current.startOfDay(for: now) {
-                return "Registration has closed. Competition has ended."
+                return localizedCompetitionStringInView(key: "competitions.registration.closed_ended", languageCode: appLanguage)
             }
             if competition.startDate <= now {
-                return "Registration has closed. Competition has started."
+                return localizedCompetitionStringInView(key: "competitions.registration.closed_started", languageCode: appLanguage)
             }
-            return "Registration has closed. Competition will start in \(compactRelativeTimeDescription(until: competition.startDate))."
+            return String(
+                format: localizedCompetitionStringInView(
+                    key: "competitions.registration.closed_starts_format",
+                    languageCode: appLanguage
+                ),
+                compactRelativeTimeDescription(until: competition.startDate)
+            )
         }
     }
 
     private func compactRelativeTimeDescription(until date: Date) -> String {
-        let calendar = Calendar.current
-        let now = calendar.startOfDay(for: Date())
-        let target = calendar.startOfDay(for: date)
-        let components = calendar.dateComponents([.month, .weekOfYear, .day], from: now, to: target)
-        let months = max(components.month ?? 0, 0)
-        let weeks = max(components.weekOfYear ?? 0, 0)
-        let days = max(components.day ?? 0, 0)
-
-        if months > 0 {
-            return months == 1 ? "1 month" : "\(months) months"
-        }
-        if weeks > 0 {
-            return weeks == 1 ? "1 week" : "\(weeks) weeks"
-        }
-        return days == 1 ? "1 day" : "\(days) days"
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = appLocale(for: appLanguage)
+        formatter.unitsStyle = .full
+        formatter.dateTimeStyle = .named
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
-
-
-    private func compactRegistrationStatusAlert(for row: CompetitionRowModel) -> CompetitionStatusAlert {
-        CompetitionStatusAlert(
-            title: "Registration",
-            message: row.compactStatusMessage
-        )
-    }
-
-    private func compactAddressText(for row: CompetitionRowModel) -> Text {
-        guard !row.compactAddressCountry.isEmpty else {
-            return Text("")
-        }
-
-        return Text(row.compactAddressCountry).fontWeight(.semibold) + Text(row.compactAddressRemainder)
-    }
-
     private func compactAddressParts(for competition: CompetitionSummary) -> [String] {
         let countryName = appLocale(for: appLanguage).localizedString(forRegionCode: competition.countryISO2) ?? competition.countryISO2
         var parts = [countryName]
@@ -1792,7 +2671,7 @@ struct CompetitionTabView: View {
         if let localizedRegionLine = competition.localizedRegionLineOverride, !localizedRegionLine.isEmpty {
             let region = localizedRegionLine.components(separatedBy: "·").first ?? localizedRegionLine
             let regionParts = compactSplitAddressComponent(region)
-            if competition.countryISO2 == "CN", regionParts.count >= 2 {
+            if competition.usesCubingChinaDetailSource, regionParts.count >= 2 {
                 return [regionParts[1], regionParts[0]] + Array(regionParts.dropFirst(2))
             }
             return regionParts.filter { $0.caseInsensitiveCompare(countryName) != .orderedSame }
@@ -1812,7 +2691,7 @@ struct CompetitionTabView: View {
     }
 
     private func compactSplitAddressComponent(_ component: String) -> [String] {
-        component
+        CompetitionService.parseAddress(component).displayText
             .replacingOccurrences(of: " · ", with: ",")
             .replacingOccurrences(of: "·", with: ",")
             .split(separator: ",")
@@ -1914,6 +2793,17 @@ struct CompetitionTabView: View {
             return .ongoing
         }
 
+        switch competition.registrationStatus {
+        case .notYetOpened:
+            return .registrationNotOpenYet
+        case .full:
+            return .waitlist
+        case .open:
+            return .registrationOpen
+        case .past, .none:
+            break
+        }
+
         if let open = competition.registrationOpen,
            let close = competition.registrationClose,
            open <= now && close >= now {
@@ -1997,8 +2887,7 @@ struct CompetitionTabView: View {
            !publishedVisibleCompetitions.isEmpty,
            let lastLoadedFilterDate,
            Date().timeIntervalSince(lastLoadedFilterDate) < 60 {
-            isLoading = false
-            isLoadingMore = false
+            competitionListLoadPhase = nextPage == nil ? .completed : .loadingMore
             return
         }
 
@@ -2009,13 +2898,14 @@ struct CompetitionTabView: View {
             }
         }
 
-        errorMessage = nil
-
-        if competitions.isEmpty,
-           let runtimeSnapshot = CompetitionListRuntimeCache.shared.snapshot(for: expectedSignature) {
-            restoreCompetitionRuntimeSnapshot(runtimeSnapshot)
-            markCompetitionFilterLoaded(signature: expectedSignature)
-            return
+        let runtimeSnapshot = CompetitionListRuntimeCache.shared.snapshot(for: expectedSignature)
+        if let runtimeSnapshot {
+            if displayedFilterSignature != expectedSignature {
+                restoreCompetitionRuntimeSnapshot(runtimeSnapshot)
+            }
+            displayedFilterSignature = expectedSignature
+        } else if displayedFilterSignature != expectedSignature {
+            resetCompetitionListForQueryTransition(signature: expectedSignature)
         }
 
         let cachedSnapshot = await CompetitionService.cachedCompetitions(for: query)
@@ -2023,47 +2913,29 @@ struct CompetitionTabView: View {
             cachedSnapshot?.competitions ?? [],
             languageCode: appLanguage
         )
-        competitions = uniqueCompetitions(localizedCachedCompetitions)
-        syncVisibleCompetitionsSnapshot(query: query)
-        publishVisibleCompetitionsSnapshot()
-        nextPage = nil
-        isLoading = publishedVisibleCompetitions.isEmpty
-        isLoadingMore = false
-        storeCompetitionRuntimeSnapshot(signature: expectedSignature)
-
-        if publishedVisibleCompetitions.isEmpty {
-            do {
-                try await loadMoreCompetitions(minimumVisibleCount: 1, replaceExisting: true)
-                isLoading = false
+        if competitions.isEmpty, !localizedCachedCompetitions.isEmpty {
+            let cached = uniqueCompetitions(localizedCachedCompetitions)
+            let lookup = await Task.detached(priority: .userInitiated) {
+                Dictionary(uniqueKeysWithValues: cached.map { ($0.id, $0) })
+            }.value
+            competitionLookupStore.setListSnapshot(cached, lookup: lookup)
+            await publishVisibleCompetitionsSnapshot(expectedSignature: expectedSignature)
+            displayedFilterSignature = expectedSignature
+            loadedCompetitionCount = competitions.count
+            totalCompetitionCount = cachedSnapshot?.totalCount
+            if let totalCount = cachedSnapshot?.totalCount,
+               cachedSnapshot?.competitions.count ?? 0 >= totalCount {
+                nextPage = nil
+                competitionListLoadPhase = .completed
                 storeCompetitionRuntimeSnapshot(signature: expectedSignature)
-
-                if nextPage == nil {
-                    await CompetitionService.cacheCompetitions(
-                        competitions,
-                        totalCount: competitions.count,
-                        for: query
-                    )
-                }
-                markCompetitionFilterLoaded(signature: expectedSignature)
-                return
-            } catch {
-                if isCancellationLikeError(error) {
-                    return
-                }
-                competitions = []
-                errorMessage = competitionListErrorMessage(for: error)
-                competitionLookupStore.clear()
-                isLoading = false
-                isLoadingMore = false
-                return
             }
         }
-
-        isLoading = false
-        isLoadingMore = false
+        if publishedVisibleCompetitions.isEmpty {
+            competitionListLoadPhase = .initialLoading
+        }
 
         do {
-            try await refreshFirstCompetitionPageFromNetwork(
+            try await loadAllCompetitionPages(
                 for: query,
                 expectedSignature: expectedSignature,
                 cachedCompetitions: competitions
@@ -2076,10 +2948,11 @@ struct CompetitionTabView: View {
                 competitions = []
                 visibleCompetitionsSnapshot = []
                 publishedVisibleCompetitions = []
-                publishedCompetitionRowModels = []
+                publishedCompetitionListItems = []
                 competitionLookupStore.clear()
-                errorMessage = competitionListErrorMessage(for: error)
+                competitionListDataRevision &+= 1
             }
+            competitionListLoadPhase = .failed(competitionListErrorMessage(for: error))
         }
 
         markCompetitionFilterLoaded(signature: expectedSignature)
@@ -2089,80 +2962,25 @@ struct CompetitionTabView: View {
     private func refreshCompetitionsForPullToRefresh() async {
         let query = competitionQuery
         let expectedSignature = filterSignature
-        let hadVisibleCompetitions = !competitions.isEmpty
-
-        errorMessage = nil
-
-        do {
-            var aggregated: [CompetitionSummary] = []
-            var pageToFetch: Int? = 1
-            var totalCount: Int?
-            var visibleCompetitions: [CompetitionSummary] = []
-
-            while let page = pageToFetch {
-                let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
-
-                aggregated = uniqueCompetitions(aggregated + result.competitions)
-                visibleCompetitions = normalizedVisibleCompetitions(aggregated, query: query)
-                pageToFetch = result.nextPage
-                totalCount = result.totalCount ?? totalCount
-
-                if hadVisibleCompetitions || !visibleCompetitions.isEmpty || result.nextPage == nil {
-                    break
-                }
+        guard activeLoadSignature == nil else { return }
+        activeLoadSignature = expectedSignature
+        defer {
+            if activeLoadSignature == expectedSignature {
+                activeLoadSignature = nil
             }
-
-            guard expectedSignature == filterSignature else { return }
-
-            if !visibleCompetitions.isEmpty || publishedVisibleCompetitions.isEmpty {
-                competitions = uniqueCompetitions(aggregated)
-                visibleCompetitionsSnapshot = uniqueCompetitions(visibleCompetitions)
-                publishVisibleCompetitionsSnapshot()
-            }
-            nextPage = pageToFetch
-            isLoading = false
-            isLoadingMore = false
-            storeCompetitionRuntimeSnapshot(signature: expectedSignature)
-            markCompetitionFilterLoaded(signature: expectedSignature)
-
-            announceRefreshSuccess()
-
-            if let totalCount, pageToFetch == nil {
-                await CompetitionService.cacheCompetitions(
-                    competitions,
-                    totalCount: totalCount,
-                    for: query
-                )
-            }
-
-        } catch {
-            if isCancellationLikeError(error) {
-                return
-            }
-            if publishedVisibleCompetitions.isEmpty {
-                errorMessage = competitionListErrorMessage(for: error)
-            }
-            isLoading = false
-            isLoadingMore = false
         }
-    }
-
-    @MainActor
-    private func loadMoreCompetitionsIfNeeded() async {
-        guard isActive else { return }
-        guard !isLoading, !isLoadingMore, nextPage != nil, errorMessage == nil else { return }
-        isLoadingMore = true
-        defer { isLoadingMore = false }
-
         do {
-            try await loadMoreCompetitions(minimumVisibleCount: 1, replaceExisting: false)
+            try await loadAllCompetitionPages(
+                for: query,
+                expectedSignature: expectedSignature,
+                cachedCompetitions: competitions
+            )
+            announceRefreshSuccess()
         } catch {
             if isCancellationLikeError(error) {
                 return
             }
-            if publishedVisibleCompetitions.isEmpty {
-                errorMessage = competitionListErrorMessage(for: error)
-            }
+            competitionListLoadPhase = .failed(competitionListErrorMessage(for: error))
         }
     }
 
@@ -2172,30 +2990,6 @@ struct CompetitionTabView: View {
         lastLoadedFilterDate = Date()
     }
 
-    @MainActor
-    private func loadMoreCompetitions(minimumVisibleCount: Int, replaceExisting: Bool) async throws {
-        var aggregated: [CompetitionSummary] = replaceExisting ? [] : competitions
-        var pageToFetch = replaceExisting ? 1 : nextPage
-        let query = competitionQuery
-        let targetVisibleCount = max(1, minimumVisibleCount)
-
-        while let page = pageToFetch {
-            let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
-            aggregated = uniqueCompetitions(aggregated + result.competitions)
-            pageToFetch = result.nextPage
-
-            let visibleCompetitions = normalizedVisibleCompetitions(aggregated, query: query)
-            if visibleCompetitions.count >= targetVisibleCount || result.nextPage == nil {
-                break
-            }
-        }
-
-        competitions = uniqueCompetitions(aggregated)
-        visibleCompetitionsSnapshot = normalizedVisibleCompetitions(aggregated, query: query)
-        publishVisibleCompetitionsSnapshot()
-        nextPage = pageToFetch
-        storeCompetitionRuntimeSnapshot()
-    }
 
     @MainActor
     private func announceRefreshSuccess() {
@@ -2215,34 +3009,154 @@ struct CompetitionTabView: View {
     }
 
     @MainActor
-    private func refreshFirstCompetitionPageFromNetwork(
+    private func loadAllCompetitionPages(
         for query: CompetitionQuery,
         expectedSignature: String,
         cachedCompetitions: [CompetitionSummary]
     ) async throws {
-        guard expectedSignature == filterSignature else { return }
+        guard expectedSignature == filterSignature, isActive else { return }
 
-        let result = try await CompetitionService.fetchCompetitionsPage(query: query, page: 1)
-        competitions = mergedCompetitions(cached: cachedCompetitions, fresh: result.competitions)
-        syncVisibleCompetitionsSnapshot(query: query)
-        publishVisibleCompetitionsSnapshot()
-        nextPage = result.nextPage
+        var freshByID: [String: CompetitionSummary] = [:]
+        var pageToFetch: Int? = 1
+        var totalCount: Int?
+        var pagesSincePublish = 0
+        var lastProgressPublishDate = Date.distantPast
+        let hasCachedPresentation = !cachedCompetitions.isEmpty
+            && !publishedCompetitionListItems.isEmpty
+        let preservesCompletedPresentation = competitionListLoadPhase == .completed
+            && !publishedCompetitionListItems.isEmpty
+
+        if !preservesCompletedPresentation {
+            competitionListLoadPhase = publishedVisibleCompetitions.isEmpty
+                ? .initialLoading
+                : .loadingMore
+        }
+
+        while let page = pageToFetch {
+            try Task.checkCancellation()
+            let result: CompetitionPageResult
+            do {
+                result = try await CompetitionService.fetchCompetitionsPage(query: query, page: page)
+            } catch let serviceError as CompetitionServiceError {
+                guard let retryDelay = serviceError.rateLimitRetryDelay else { throw serviceError }
+                let delay = min(max(retryDelay, 1), 3_600)
+                if !preservesCompletedPresentation {
+                    competitionListLoadPhase = .rateLimited(Date().addingTimeInterval(delay))
+                }
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                try Task.checkCancellation()
+                guard expectedSignature == filterSignature, isActive else { return }
+                competitionListLoadPhase = preservesCompletedPresentation
+                    ? .completed
+                    : (publishedCompetitionListItems.isEmpty ? .initialLoading : .loadingMore)
+                continue
+            }
+            try Task.checkCancellation()
+            guard expectedSignature == filterSignature, isActive else { return }
+
+            for competition in result.competitions {
+                freshByID[competition.id] = competition
+            }
+            pageToFetch = result.nextPage
+            totalCount = result.totalCount ?? totalCount
+            pagesSincePublish += 1
+
+            let isFirstPage = page == 1
+            let isComplete = pageToFetch == nil
+            let now = Date()
+            if isFirstPage
+                || isComplete
+                || now.timeIntervalSince(lastProgressPublishDate) >= Self.paginationProgressPublishInterval {
+                // Keep the count truthful while avoiding a full List diff for
+                // every 25-item API response.
+                loadedCompetitionCount = freshByID.count
+                totalCompetitionCount = totalCount
+                self.nextPage = pageToFetch
+                lastProgressPublishDate = now
+            }
+            let pageBatchSize = competitionPaginationPublishPageBatchSize(loadedCount: freshByID.count)
+            let shouldPublishIncrementally = !hasCachedPresentation
+                && (isFirstPage || pagesSincePublish >= pageBatchSize)
+            if isComplete || shouldPublishIncrementally {
+                if isComplete {
+                    competitionListLoadPhase = .completed
+                }
+                let fresh = Array(freshByID.values)
+                await publishCompetitionPaginationBatch(
+                    fresh,
+                    cachedCompetitions: isComplete ? [] : cachedCompetitions,
+                    freshLoadedCount: freshByID.count,
+                    totalCount: totalCount,
+                    nextPage: pageToFetch,
+                    query: query,
+                    expectedSignature: expectedSignature
+                )
+                if !isComplete, !preservesCompletedPresentation {
+                    competitionListLoadPhase = .loadingMore
+                }
+                pagesSincePublish = 0
+            }
+
+            guard pageToFetch != nil else { break }
+            try await Task.sleep(nanoseconds: 45_000_000)
+        }
+
+        guard expectedSignature == filterSignature, isActive else { return }
+        competitionListLoadPhase = .completed
+        nextPage = nil
         storeCompetitionRuntimeSnapshot(signature: expectedSignature)
+        await CompetitionService.cacheCompetitions(
+            Array(freshByID.values),
+            totalCount: totalCount,
+            for: query
+        )
+    }
 
-        if result.nextPage == nil {
-            await CompetitionService.cacheCompetitions(
-                result.competitions,
-                totalCount: result.totalCount ?? result.competitions.count,
-                for: query
-            )
+    private func competitionPaginationPublishPageBatchSize(loadedCount: Int) -> Int {
+        switch loadedCount {
+        case ..<250:
+            return 3
+        case ..<1_000:
+            return 8
+        case ..<3_000:
+            return 16
+        default:
+            return 28
         }
     }
 
-    private func mergedCompetitions(
-        cached: [CompetitionSummary],
-        fresh: [CompetitionSummary]
-    ) -> [CompetitionSummary] {
-        uniqueCompetitions(fresh + cached)
+    @MainActor
+    private func publishCompetitionPaginationBatch(
+        _ freshCompetitions: [CompetitionSummary],
+        cachedCompetitions: [CompetitionSummary],
+        freshLoadedCount: Int,
+        totalCount: Int?,
+        nextPage: Int?,
+        query: CompetitionQuery,
+        expectedSignature: String
+    ) async {
+        let preparedSnapshot = await Task.detached(priority: .utility) {
+            var seenIDs = Set<String>()
+            let merged = (freshCompetitions + cachedCompetitions).filter { competition in
+                seenIDs.insert(competition.id).inserted
+            }
+            let normalized = CompetitionService.filterCompetitions(merged, for: query)
+            let lookup = Dictionary(uniqueKeysWithValues: normalized.map { ($0.id, $0) })
+            return (normalized, lookup)
+        }.value
+        guard !Task.isCancelled, expectedSignature == filterSignature, isActive else { return }
+
+        let normalized = preparedSnapshot.0
+        competitionLookupStore.setListSnapshot(normalized, lookup: preparedSnapshot.1)
+        displayedFilterSignature = expectedSignature
+        loadedCompetitionCount = freshLoadedCount
+        totalCompetitionCount = totalCount
+        self.nextPage = nextPage
+        let listItems = await makeCompetitionListItems(for: normalized)
+        guard !Task.isCancelled, expectedSignature == filterSignature, isActive else { return }
+        publishPreparedCompetitionListItems(listItems)
+        updateBottomAccessoryVisibility()
+        storeCompetitionRuntimeSnapshot(signature: expectedSignature)
     }
 
     private func uniqueCompetitions(_ competitions: [CompetitionSummary]) -> [CompetitionSummary] {
@@ -2252,46 +3166,47 @@ struct CompetitionTabView: View {
         }
     }
 
-    private func normalizedVisibleCompetitions(
-        _ competitions: [CompetitionSummary],
-        query: CompetitionQuery
-    ) -> [CompetitionSummary] {
-        let sortedCompetitions = CompetitionService.filterCompetitions(
-            uniqueCompetitions(competitions),
-            for: query
-        )
-        return uniqueCompetitions(filterCompetitionsForVisibleStatus(sortedCompetitions, query: query))
-    }
-
-    private func syncVisibleCompetitionsSnapshot(query: CompetitionQuery) {
-        visibleCompetitionsSnapshot = normalizedVisibleCompetitions(competitions, query: query)
-    }
-
-    private func publishVisibleCompetitionsSnapshot() {
-        let published = uniqueCompetitions(visibleCompetitionsSnapshot)
-        publishedVisibleCompetitions = published
-        let rowModels = makeCompetitionRowModels(for: published)
-        if publishedCompetitionRowModels != rowModels {
-            publishedCompetitionRowModels = rowModels
-        }
-        updateCompetitionListDerivedState(for: published)
+    @MainActor
+    private func resetCompetitionListForQueryTransition(signature: String) {
+        competitionLookupStore.clear()
+        publishedCompetitionListItems = []
+        topCuberStatesByCompetitionID = [:]
+        loadedCompetitionCount = 0
+        totalCompetitionCount = nil
+        nextPage = 1
+        competitionListLoadPhase = .initialLoading
+        competitionListDataRevision &+= 1
+        displayedFilterSignature = signature
         updateBottomAccessoryVisibility()
     }
 
-    private func makeCompetitionRowModels(for publishedCompetitions: [CompetitionSummary]) -> [CompetitionRowModel] {
-        publishedCompetitions.enumerated().map { index, competition in
+    @MainActor
+    private func publishVisibleCompetitionsSnapshot(expectedSignature: String) async {
+        let published = uniqueCompetitions(visibleCompetitionsSnapshot)
+        let listItems = await makeCompetitionListItems(for: published)
+        guard !Task.isCancelled, expectedSignature == filterSignature, isActive else { return }
+        publishedVisibleCompetitions = published
+        publishPreparedCompetitionListItems(listItems)
+        updateBottomAccessoryVisibility()
+        storeCompetitionRuntimeSnapshot(signature: expectedSignature)
+    }
+
+    @MainActor
+    private func makeCompetitionRowModels(for publishedCompetitions: [CompetitionSummary]) async -> [CompetitionRowModel] {
+        let languageCode = appLanguage
+        let preparedRows = await Task.detached(priority: .userInitiated) {
+            CompetitionRowPreparation.prepare(
+                publishedCompetitions,
+                languageCode: languageCode
+            )
+        }.value
+        guard !Task.isCancelled else { return [] }
+
+        return preparedRows.map { prepared in
+            let competition = prepared.competition
             let availabilityStatus = competitionAvailabilityStatus(for: competition)
             let rowClass = cubingRowClass(for: competition)
             let compactStatus = compactRegistrationDisplayStatus(for: competition, availabilityStatus: availabilityStatus)
-            let addressParts = compactAddressParts(for: competition)
-            let addressCountry = addressParts.first ?? ""
-            let addressRemainder = addressParts.dropFirst().map { ", \($0)" }.joined()
-            let name = competition.name
-            let compactDisplayName = competition.compactDisplayName
-            let flagEmoji = competitionFlagEmoji(for: competition.countryISO2)
-            let dateRangeText = localizedCompetitionDateRange(for: competition)
-            let locationLine = competition.locationLine
-            let venueLine = competition.venueLine
             let competitorLimit = competition.competitorLimit
             let statusBadgeTitle = statusBadgeTitle(
                 for: availabilityStatus,
@@ -2304,42 +3219,64 @@ struct CompetitionTabView: View {
 
             return CompetitionRowModel(
                 id: competition.id,
-                rowIndex: index,
+                rowIndex: prepared.rowIndex,
+                startYear: prepared.competitionYear,
+                showsYearSeparator: prepared.showsYearSeparator,
                 contentHash: competitionRowContentHash(
-                    rowIndex: index,
-                    name: name,
-                    compactDisplayName: compactDisplayName,
-                    flagEmoji: flagEmoji,
-                    dateRangeText: dateRangeText,
-                    locationLine: locationLine,
-                    venueLine: venueLine,
+                    rowIndex: prepared.rowIndex,
+                    startYear: prepared.competitionYear,
+                    showsYearSeparator: prepared.showsYearSeparator,
+                    name: prepared.name,
+                    compactDisplayName: prepared.compactDisplayName,
+                    flagEmoji: prepared.flagEmoji,
+                    dateRangeText: prepared.dateRangeText,
+                    locationLine: prepared.locationLine,
+                    venueLine: prepared.venueLine,
                     competitorLimit: competitorLimit,
                     statusBadgeTitle: statusBadgeTitle,
                     statusTint: statusTint,
                     compactStatus: compactStatus,
                     compactStatusMessage: compactStatusMessage,
-                    compactAddressCountry: addressCountry,
-                    compactAddressRemainder: addressRemainder
+                    compactAddressCountry: prepared.compactAddressCountry,
+                    compactAddress: prepared.compactAddress,
+                    venueAddress: prepared.venueAddress
                 ),
-                name: name,
-                compactDisplayName: compactDisplayName,
-                flagEmoji: flagEmoji,
-                dateRangeText: dateRangeText,
-                locationLine: locationLine,
-                venueLine: venueLine,
+                name: prepared.name,
+                compactDisplayName: prepared.compactDisplayName,
+                flagEmoji: prepared.flagEmoji,
+                dateRangeText: prepared.dateRangeText,
+                locationLine: prepared.locationLine,
+                venueLine: prepared.venueLine,
                 competitorLimit: competitorLimit,
                 statusBadgeTitle: statusBadgeTitle,
                 statusTint: statusTint,
                 compactStatus: compactStatus,
                 compactStatusMessage: compactStatusMessage,
-                compactAddressCountry: addressCountry,
-                compactAddressRemainder: addressRemainder
+                compactAddressCountry: prepared.compactAddressCountry,
+                compactAddress: prepared.compactAddress,
+                venueAddress: prepared.venueAddress
             )
         }
     }
 
+    @MainActor
+    private func makeCompetitionListItems(for competitions: [CompetitionSummary]) async -> [CompetitionListItem] {
+        let rowModels = await makeCompetitionRowModels(for: competitions)
+        var items: [CompetitionListItem] = []
+        items.reserveCapacity(rowModels.count + 32)
+        for row in rowModels {
+            if row.showsYearSeparator {
+                items.append(.year(row.startYear))
+            }
+            items.append(.competition(row))
+        }
+        return items
+    }
+
     private func competitionRowContentHash(
         rowIndex: Int,
+        startYear: Int,
+        showsYearSeparator: Bool,
         name: String,
         compactDisplayName: String,
         flagEmoji: String,
@@ -2352,10 +3289,13 @@ struct CompetitionTabView: View {
         compactStatus: CompactRegistrationDisplayStatus,
         compactStatusMessage: String,
         compactAddressCountry: String,
-        compactAddressRemainder: String
+        compactAddress: CompetitionService.ParsedAddress,
+        venueAddress: CompetitionService.ParsedAddress
     ) -> Int {
         var hasher = Hasher()
         hasher.combine(rowIndex)
+        hasher.combine(startYear)
+        hasher.combine(showsYearSeparator)
         hasher.combine(name)
         hasher.combine(compactDisplayName)
         hasher.combine(flagEmoji)
@@ -2368,50 +3308,29 @@ struct CompetitionTabView: View {
         hasher.combine(compactStatus)
         hasher.combine(compactStatusMessage)
         hasher.combine(compactAddressCountry)
-        hasher.combine(compactAddressRemainder)
+        hasher.combine(compactAddress)
+        hasher.combine(venueAddress)
         return hasher.finalize()
-    }
-
-    private func updateCompetitionListDerivedState(for publishedCompetitions: [CompetitionSummary]) {
-        var ongoingCount = 0
-        var upcomingCount = 0
-        var registrationOpenCount = 0
-
-        for competition in publishedCompetitions {
-            switch competitionAvailabilityStatus(for: competition) {
-            case .ongoing:
-                ongoingCount += 1
-            case .upcoming:
-                upcomingCount += 1
-            case .registrationOpen:
-                registrationOpenCount += 1
-            default:
-                break
-            }
-        }
-
-        competitionNavigationSubtitleText = [
-            "\(ongoingCount) \(localizedCompetitionStringInView(key: "competitions.status.ongoing", languageCode: appLanguage))",
-            "\(upcomingCount) \(localizedCompetitionStringInView(key: "competitions.status.upcoming", languageCode: appLanguage))",
-            "\(registrationOpenCount) \(localizedCompetitionStringInView(key: "competitions.status.registration_open", languageCode: appLanguage))"
-        ].joined(separator: " · ")
-
     }
 
     @MainActor
     private func restoreCompetitionRuntimeSnapshot(_ snapshot: CompetitionListRuntimeCache.Snapshot) {
-        guard !snapshot.publishedVisibleCompetitions.isEmpty else { return }
-        competitions = uniqueCompetitions(snapshot.competitions)
-        visibleCompetitionsSnapshot = uniqueCompetitions(snapshot.visibleCompetitionsSnapshot)
-        publishedVisibleCompetitions = uniqueCompetitions(snapshot.publishedVisibleCompetitions)
-        publishedCompetitionRowModels = makeCompetitionRowModels(for: publishedVisibleCompetitions)
-        updateCompetitionListDerivedState(for: publishedVisibleCompetitions)
+        guard !snapshot.competitions.isEmpty else { return }
+        competitionLookupStore.setListSnapshot(
+            snapshot.competitions,
+            lookup: snapshot.competitionsByID
+        )
+        competitionLookupStore.setPreparedDisplayItems(snapshot.displayItems)
+        if publishedCompetitionListItems != snapshot.displayItems {
+            publishedCompetitionListItems = snapshot.displayItems
+            competitionListDataRevision &+= 1
+        }
         updateBottomAccessoryVisibility()
         nextPage = snapshot.nextPage
+        loadedCompetitionCount = snapshot.loadedCount
+        totalCompetitionCount = snapshot.totalCount
         topCuberStatesByCompetitionID = snapshot.topCuberStatesByCompetitionID
-        errorMessage = nil
-        isLoading = false
-        isLoadingMore = false
+        competitionListLoadPhase = snapshot.nextPage == nil ? .completed : .loadingMore
     }
 
     @MainActor
@@ -2419,14 +3338,26 @@ struct CompetitionTabView: View {
         guard !publishedVisibleCompetitions.isEmpty else { return }
         CompetitionListRuntimeCache.shared.store(
             CompetitionListRuntimeCache.Snapshot(
-                competitions: uniqueCompetitions(competitions),
-                visibleCompetitionsSnapshot: uniqueCompetitions(visibleCompetitionsSnapshot),
-                publishedVisibleCompetitions: uniqueCompetitions(publishedVisibleCompetitions),
+                competitions: publishedVisibleCompetitions,
+                competitionsByID: competitionLookupStore.competitionsByID,
+                displayItems: competitionLookupStore.preparedDisplayItems.isEmpty
+                    ? publishedCompetitionListItems
+                    : competitionLookupStore.preparedDisplayItems,
                 nextPage: nextPage,
+                loadedCount: loadedCompetitionCount,
+                totalCount: totalCompetitionCount,
                 topCuberStatesByCompetitionID: topCuberStatesByCompetitionID
             ),
             for: signature ?? filterSignature
         )
+    }
+
+    @MainActor
+    private func publishPreparedCompetitionListItems(_ items: [CompetitionListItem]) {
+        competitionLookupStore.setPreparedDisplayItems(items)
+        guard publishedCompetitionListItems != items else { return }
+        publishedCompetitionListItems = items
+        competitionListDataRevision &+= 1
     }
 
     @MainActor
@@ -2483,24 +3414,6 @@ struct CompetitionTabView: View {
         storeCompetitionRuntimeSnapshot()
     }
 
-
-    private func filterCompetitionsForVisibleStatus(
-        _ competitions: [CompetitionSummary],
-        query: CompetitionQuery
-    ) -> [CompetitionSummary] {
-        guard query.status == .registrationOpen else {
-            return competitions
-        }
-
-        return competitions.filter { competition in
-            guard cubingRowClass(for: competition) == "info",
-                  let waitlistStart = competition.localizedWaitlistStartOverride else {
-                return true
-            }
-
-            return Date() >= waitlistStart
-        }
-    }
 
     private func localizedCompetitionDateRange(for competition: CompetitionSummary) -> String {
         let locale = appLocale(for: appLanguage)

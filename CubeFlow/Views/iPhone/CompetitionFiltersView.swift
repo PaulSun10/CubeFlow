@@ -6,10 +6,13 @@ struct CompetitionFiltersPopover: View {
     @Binding var selectedEvents: Set<CompetitionEventFilter>
     @Binding var selectedYear: CompetitionYearFilter
     @Binding var selectedStatus: CompetitionStatusFilter
+    let availablePastYears: [Int]
     @Binding var showsTopCubers: Bool
     let appLanguage: String
     @Binding var showsFilterPopover: Bool
     @State private var showsRegionPicker = false
+    @State private var showsTopCubersInfo = false
+    @State private var areEventIconsReady = CompetitionEventIconFont.isAvailable
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -39,51 +42,83 @@ struct CompetitionFiltersPopover: View {
             CompetitionEventMultiSelectSection(
                 title: localizedCompetitionStringInView(key: "competitions.filter.event", languageCode: appLanguage),
                 selectedEvents: $selectedEvents,
+                appLanguage: appLanguage,
+                areEventIconsReady: areEventIconsReady
+            )
+
+            CompetitionStatusFilterControl(
+                title: localizedCompetitionStringInView(key: "competitions.filter.status", languageCode: appLanguage),
+                selection: $selectedStatus,
                 appLanguage: appLanguage
             )
 
-            CompetitionFilterMenuRow(
-                title: localizedCompetitionStringInView(key: "competitions.filter.year", languageCode: appLanguage),
-                selectionTitle: selectedYear.localizedTitle(languageCode: appLanguage)
-            ) {
-                ForEach(CompetitionYearFilter.allCases) { year in
+            if selectedStatus == .past {
+                CompetitionFilterMenuRow(
+                    title: localizedCompetitionStringInView(key: "competitions.filter.year", languageCode: appLanguage),
+                    selectionTitle: selectedYear.localizedTitle(languageCode: appLanguage)
+                ) {
                     Button {
-                        selectedYear = year
+                        selectedYear = .all
                     } label: {
                         CompetitionFilterOptionLabel(
-                            title: year.localizedTitle(languageCode: appLanguage),
-                            isSelected: selectedYear == year
+                            title: CompetitionYearFilter.all.localizedTitle(languageCode: appLanguage),
+                            isSelected: selectedYear == .all
                         )
                     }
-                }
-            }
 
-            CompetitionFilterMenuRow(
-                title: localizedCompetitionStringInView(key: "competitions.filter.status", languageCode: appLanguage),
-                selectionTitle: selectedStatus.localizedTitle(languageCode: appLanguage)
-            ) {
-                ForEach(CompetitionStatusFilter.selectableCases) { status in
-                    Button {
-                        selectedStatus = status
-                    } label: {
-                        CompetitionFilterOptionLabel(
-                            title: status.localizedTitle(languageCode: appLanguage),
-                            isSelected: selectedStatus == status
-                        )
+                    ForEach(pastYearOptions, id: \.self) { year in
+                        Button {
+                            selectedYear = .year(year)
+                        } label: {
+                            CompetitionFilterOptionLabel(
+                                title: String(year),
+                                isSelected: selectedYear == .year(year)
+                            )
+                        }
                     }
                 }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
-            Toggle(isOn: $showsTopCubers) {
+            HStack(spacing: 8) {
                 Text(localizedCompetitionStringInView(key: "competitions.filter.show_top_cubers", languageCode: appLanguage))
                     .font(.system(size: 16, weight: .medium))
+                Button {
+                    showsTopCubersInfo = true
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .popover(
+                    isPresented: $showsTopCubersInfo,
+                    attachmentAnchor: .rect(.bounds),
+                    arrowEdge: .bottom
+                ) {
+                    Text(localizedCompetitionStringInView(key: "competitions.filter.top_cubers_info", languageCode: appLanguage))
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 11)
+                        .frame(width: 260)
+                        .compatiblePopoverCompactAdaptation()
+                }
+                Spacer(minLength: 8)
+                Toggle("", isOn: $showsTopCubers)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
             }
-            .toggleStyle(.switch)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 18)
         .frame(width: 290)
+        .animation(.easeInOut(duration: 0.22), value: selectedStatus)
         .task {
+            areEventIconsReady = CompetitionEventIconFont.ensureRegistered()
             await CompetitionService.warmRecognizedCountriesCache()
         }
         .sheet(isPresented: $showsRegionPicker) {
@@ -93,15 +128,89 @@ struct CompetitionFiltersPopover: View {
             )
         }
     }
+
+    private var pastYearOptions: [Int] {
+        var years = Set(availablePastYears)
+        if case .year(let selectedYear) = selectedYear {
+            years.insert(selectedYear)
+        }
+        return years.sorted(by: >)
+    }
+}
+
+private struct CompetitionStatusFilterControl: View {
+    let title: String
+    @Binding var selection: CompetitionStatusFilter
+    let appLanguage: String
+    @Namespace private var selectionIndicator
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 4) {
+                ForEach(CompetitionStatusFilter.selectableCases) { status in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.22)) {
+                            selection = status
+                        }
+                    } label: {
+                        Text(status.localizedTitle(languageCode: appLanguage))
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(selection == status ? Color.white : Color.primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background {
+                                if selection == status {
+                                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                        .fill(Color.accentColor)
+                                        .matchedGeometryEffect(
+                                            id: "competition-status-selection",
+                                            in: selectionIndicator
+                                        )
+                                }
+                            }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(3)
+            .background(
+                Color(uiColor: .secondarySystemFill).opacity(0.56),
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+            )
+        }
+    }
 }
 
 struct CompetitionFilterOptionLabel: View {
     let title: String
     let isSelected: Bool
+    var eventID: String? = nil
+    var areEventIconsReady = true
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(title)
+            HStack(spacing: 7) {
+                if areEventIconsReady,
+                   let eventID,
+                   let image = CompetitionEventIconFont.templateImage(
+                       for: eventID,
+                       title: title,
+                       pointSize: 14
+                   ) {
+                    Image(uiImage: image)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .foregroundStyle(.primary)
+                        .accessibilityLabel(title)
+                }
+                Text(title)
+            }
             Spacer(minLength: 12)
             if isSelected {
                 Image(systemName: "checkmark")
@@ -115,6 +224,7 @@ private struct CompetitionEventMultiSelectSection: View {
     let title: String
     @Binding var selectedEvents: Set<CompetitionEventFilter>
     let appLanguage: String
+    let areEventIconsReady: Bool
 
     private var allSelectableEvents: Set<CompetitionEventFilter> {
         Set(CompetitionEventFilter.selectableCases)
@@ -166,7 +276,9 @@ private struct CompetitionEventMultiSelectSection: View {
                     } label: {
                         CompetitionFilterOptionLabel(
                             title: event.localizedTitle(languageCode: appLanguage),
-                            isSelected: isSelected(event)
+                            isSelected: isSelected(event),
+                            eventID: event.wcaEventID,
+                            areEventIconsReady: areEventIconsReady
                         )
                     }
                 }
@@ -183,6 +295,7 @@ private struct CompetitionEventMultiSelectSection: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 11)
+                .competitionFilterControlSurface()
             }
             .buttonStyle(.plain)
             .compatibleMenuActionDismissBehaviorDisabled()
@@ -243,6 +356,7 @@ private struct CompetitionFilterButtonRow: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 11)
+                .competitionFilterControlSurface()
             }
             .buttonStyle(.plain)
         }
@@ -275,9 +389,24 @@ private struct CompetitionFilterMenuRow<MenuContent: View>: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 11)
+                .competitionFilterControlSurface()
             }
             .buttonStyle(.plain)
         }
+    }
+}
+
+private extension View {
+    func competitionFilterControlSurface() -> some View {
+        background(
+            Color(uiColor: .secondarySystemFill).opacity(0.48),
+            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color(uiColor: .separator).opacity(0.24), lineWidth: 0.5)
+        }
+        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -356,7 +485,7 @@ private struct CompetitionRegionPickerView: View {
                         )
                     }
                 } catch {
-                    errorMessage = error.localizedDescription
+                    errorMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
                     countries = []
                 }
 

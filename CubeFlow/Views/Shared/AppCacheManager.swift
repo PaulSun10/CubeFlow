@@ -2,6 +2,7 @@ import Foundation
 
 struct AppCacheReport: Sendable, Hashable {
     let competitionListBytes: Int64
+    let competitionDetailBytes: Int64
     let competitionLocalizedNamesBytes: Int64
     let competitionTopCubersBytes: Int64
     let recognizedCountriesBytes: Int64
@@ -9,6 +10,7 @@ struct AppCacheReport: Sendable, Hashable {
 
     static let empty = AppCacheReport(
         competitionListBytes: 0,
+        competitionDetailBytes: 0,
         competitionLocalizedNamesBytes: 0,
         competitionTopCubersBytes: 0,
         recognizedCountriesBytes: 0,
@@ -20,7 +22,7 @@ struct AppCacheReport: Sendable, Hashable {
     }
 
     var totalBytes: Int64 {
-        competitionListBytes + competitionSupportBytes + competitionTopCubersBytes + wcaResultsBytes
+        competitionListBytes + competitionDetailBytes + competitionSupportBytes + competitionTopCubersBytes + wcaResultsBytes
     }
 }
 
@@ -38,6 +40,9 @@ enum AppCacheManager {
     nonisolated static func currentReport() -> AppCacheReport {
         AppCacheReport(
             competitionListBytes: fileSize(for: cacheFileURL("competition-query-cache-v2.json")),
+            competitionDetailBytes:
+                fileSize(for: cacheFileURL("competition-detail-cache-v2.json"))
+                + fileSize(for: cacheFileURL("competition-detail-cache-v1.json")),
             competitionLocalizedNamesBytes: fileSize(for: cacheFileURL("competition-localized-names-v6.json")),
             competitionTopCubersBytes: fileSize(for: cacheFileURL("competition-top-cubers-cache-v1.json")),
             recognizedCountriesBytes: fileSize(for: cacheFileURL("competition-recognized-countries.json")),
