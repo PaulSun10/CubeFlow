@@ -4120,7 +4120,7 @@ private final class CompetitionCubingLiveSession: ObservableObject {
         do {
             try await task.send(.string(text))
         } catch {
-            connectionError = error.localizedDescription
+            connectionError = appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode())
         }
     }
 
@@ -4142,7 +4142,7 @@ private final class CompetitionCubingLiveSession: ObservableObject {
                 handleIncomingMessage(payloadText)
             } catch {
                 if Task.isCancelled { return }
-                connectionError = error.localizedDescription
+                connectionError = appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode())
                 isLoadingResults = false
                 isLoadingMessages = false
                 return
@@ -4464,43 +4464,93 @@ private func secondaryCompetitionLiveResultText(best: Int, average: Int, eventID
 }
 
 private func competitionLiveShortEventTitle(for eventID: String, languageCode: String) -> String {
-    switch eventID {
-    case "222":
-        return localizedCompetitionStringInView(key: "wca.event.short.2x2", languageCode: languageCode)
-    case "333":
-        return localizedCompetitionStringInView(key: "wca.event.short.3x3", languageCode: languageCode)
-    case "444":
-        return localizedCompetitionStringInView(key: "wca.event.short.4x4", languageCode: languageCode)
-    case "555":
-        return localizedCompetitionStringInView(key: "wca.event.short.5x5", languageCode: languageCode)
-    case "666":
-        return localizedCompetitionStringInView(key: "wca.event.short.6x6", languageCode: languageCode)
-    case "777":
-        return localizedCompetitionStringInView(key: "wca.event.short.7x7", languageCode: languageCode)
-    case "333oh":
-        return localizedCompetitionStringInView(key: "wca.event.short.oh", languageCode: languageCode)
-    case "333bf":
-        return localizedCompetitionStringInView(key: "wca.event.short.bf", languageCode: languageCode)
-    case "333fm":
-        return localizedCompetitionStringInView(key: "wca.event.short.fm", languageCode: languageCode)
-    case "clock":
-        return localizedCompetitionStringInView(key: "wca.event.short.clock", languageCode: languageCode)
-    case "minx":
-        return localizedCompetitionStringInView(key: "wca.event.short.minx", languageCode: languageCode)
-    case "pyram":
-        return localizedCompetitionStringInView(key: "wca.event.short.pyram", languageCode: languageCode)
-    case "skewb":
-        return localizedCompetitionStringInView(key: "wca.event.short.skewb", languageCode: languageCode)
-    case "sq1":
-        return localizedCompetitionStringInView(key: "wca.event.short.sq1", languageCode: languageCode)
-    case "444bf":
-        return localizedCompetitionStringInView(key: "wca.event.short.444bf", languageCode: languageCode)
-    case "555bf":
-        return localizedCompetitionStringInView(key: "wca.event.short.555bf", languageCode: languageCode)
-    case "333mbf":
-        return localizedCompetitionStringInView(key: "wca.event.short.mbf", languageCode: languageCode)
-    default:
-        return eventID.uppercased()
+    CompetitionEventPresentation.localizedFullName(
+        for: eventID,
+        languageCode: languageCode
+    )
+}
+
+private struct CompetitionEventIconPopoverButton: View {
+    let glyph: String
+    let eventTitle: String
+    let size: CGFloat
+    var color: Color = .primary
+
+    @State private var showsEventName = false
+
+    var body: some View {
+        Button {
+            showsEventName = true
+        } label: {
+            CompetitionEventGlyph(
+                glyph: glyph,
+                eventName: eventTitle,
+                size: size,
+                color: color
+            )
+                .frame(minWidth: 30, minHeight: 32)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(eventTitle)
+        .background {
+            VerticalTextPopoverPresenter(
+                isPresented: $showsEventName,
+                text: eventTitle,
+                glyph: glyph,
+                glyphFontName: CompetitionEventIconFont.fontName,
+                glyphFontSize: size
+            )
+        }
+    }
+}
+
+private struct CompetitionEventIconNameLabel: View {
+    let glyph: String?
+    let eventTitle: String
+    let name: String
+    var iconSize: CGFloat = 15
+    var iconWidth: CGFloat = 22
+    var spacing: CGFloat = 7
+    var nameFont: Font = .system(size: 14, weight: .medium)
+    var iconColor: Color = .primary
+    var nameColor: Color = .primary
+    var lineLimit: Int? = 2
+    var showsIconPopover = true
+    var reservesIconSpace = false
+
+    var body: some View {
+        HStack(alignment: .center, spacing: spacing) {
+            if let glyph {
+                Group {
+                    if showsIconPopover {
+                        CompetitionEventIconPopoverButton(
+                            glyph: glyph,
+                            eventTitle: eventTitle,
+                            size: iconSize,
+                            color: iconColor
+                        )
+                    } else {
+                        CompetitionEventGlyph(
+                            glyph: glyph,
+                            eventName: eventTitle,
+                            size: iconSize,
+                            color: iconColor
+                        )
+                    }
+                }
+                .frame(width: iconWidth, alignment: .center)
+            } else if reservesIconSpace {
+                Color.clear
+                    .frame(width: iconWidth, height: 1)
+            }
+
+            Text(name)
+                .font(nameFont)
+                .foregroundStyle(nameColor)
+                .lineLimit(lineLimit)
+                .minimumScaleFactor(0.75)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 
@@ -4513,10 +4563,12 @@ private struct CompetitionLiveEventIconView: View {
 
     var body: some View {
         if isReady, let glyph = CompetitionEventIconFont.glyph(for: eventID) {
-            Text(glyph)
-                .font(.custom(CompetitionEventIconFont.fontName, size: size))
-                .foregroundStyle(color)
-                .accessibilityLabel(competitionLiveShortEventTitle(for: eventID, languageCode: languageCode))
+            CompetitionEventGlyph(
+                glyph: glyph,
+                eventName: competitionLiveShortEventTitle(for: eventID, languageCode: languageCode),
+                size: size,
+                color: color
+            )
         } else {
             Text(competitionLiveShortEventTitle(for: eventID, languageCode: languageCode))
                 .font(.system(size: 11, weight: .semibold))
@@ -4524,6 +4576,926 @@ private struct CompetitionLiveEventIconView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.65)
         }
+    }
+}
+
+private struct CompetitionWCALiveScheduleItem: Identifiable {
+    let round: CompetitionWCALiveRound
+    let startTime: Date
+    let endTime: Date
+
+    var id: String { round.id }
+}
+
+private enum CompetitionWCALiveResultStatistic: Hashable {
+    case average
+    case best
+}
+
+private struct CompetitionWCALiveCompetitorEventGroup: Identifiable {
+    let id: String
+    let name: String
+    let results: [CompetitionWCALiveCompetitorResult]
+}
+
+private struct CompetitionWCARecordTagView: View {
+    let tag: String
+    var usesLitePersonalRecord = false
+    var usesListSizing = false
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        Text(tag.uppercased())
+            .font(.system(size: usesListSizing ? 11 : 8, weight: .semibold))
+            .foregroundStyle(foregroundColor)
+            .lineLimit(1)
+            .padding(.horizontal, usesListSizing ? 8 : 4)
+            .padding(.vertical, usesListSizing ? 6 : 3)
+            .background(backgroundColor)
+            .clipShape(RoundedRectangle(cornerRadius: usesListSizing ? 4 : 3, style: .continuous))
+            .fixedSize()
+            .accessibilityLabel(tag.uppercased())
+    }
+
+    private var backgroundColor: Color {
+        switch tag.uppercased() {
+        case "WR": Color(red: 244 / 255, green: 67 / 255, blue: 54 / 255)
+        case "CR": Color(red: 255 / 255, green: 235 / 255, blue: 59 / 255)
+        case "NR": Color(red: 0 / 255, green: 230 / 255, blue: 118 / 255)
+        case "PR" where usesLitePersonalRecord:
+            colorScheme == .dark
+                ? Color(red: 66 / 255, green: 66 / 255, blue: 66 / 255)
+                : Color(red: 238 / 255, green: 238 / 255, blue: 238 / 255)
+        case "PR": Color(red: 25 / 255, green: 118 / 255, blue: 210 / 255)
+        default: Color.secondary.opacity(0.18)
+        }
+    }
+
+    private var foregroundColor: Color {
+        switch tag.uppercased() {
+        case "CR", "NR": .black
+        case "PR" where usesLitePersonalRecord: colorScheme == .dark ? .white : .black
+        case "WR", "PR": .white
+        default: .primary
+        }
+    }
+}
+
+private struct CompetitionWCALiveRoundDetailView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
+    private let initialRound: CompetitionWCALiveRound
+    let competitionID: Int
+    let languageCode: String
+    let areEventIconsReady: Bool
+
+    @StateObject private var realtimeManager: CompetitionWCALiveRealtimeManager
+
+    @State private var selectedResult: CompetitionWCALiveResultPreview?
+    @State private var selectedCompetitorContent: CompetitionWCALiveCompetitorContent?
+    @State private var isLoadingCompetitorContent = false
+    @State private var competitorContentLoadFailed = false
+    @State private var resultSummaryHeight: CGFloat = 0
+    @State private var allResultsHeight: CGFloat = 0
+
+    init(
+        round: CompetitionWCALiveRound,
+        competitionID: Int,
+        languageCode: String,
+        areEventIconsReady: Bool
+    ) {
+        initialRound = round
+        self.competitionID = competitionID
+        self.languageCode = languageCode
+        self.areEventIconsReady = areEventIconsReady
+        _realtimeManager = StateObject(
+            wrappedValue: CompetitionWCALiveRealtimeManager(
+                round: round,
+                languageCode: languageCode
+            )
+        )
+    }
+
+    private var round: CompetitionWCALiveRound {
+        realtimeManager.round
+    }
+
+    private var currentSelectedResult: CompetitionWCALiveResultPreview? {
+        guard let selectedResult else { return nil }
+        return round.results.first(where: { $0.id == selectedResult.id }) ?? selectedResult
+    }
+
+    private var roundDisplayTitle: String {
+        "\(CompetitionEventPresentation.normalizedName(for: round.eventID, fallback: round.eventName, languageCode: languageCode)) - \(round.roundName)"
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .center, spacing: 8) {
+                    ScrollAwareContentTitle(title: roundDisplayTitle)
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer(minLength: 8)
+                }
+
+                switch realtimeManager.roundContentState {
+                case .loading:
+                    VStack(spacing: 10) {
+                        ProgressView()
+                        Text(
+                            appLocalizedString(
+                                "common.loading",
+                                languageCode: languageCode,
+                                defaultValue: "Loading…"
+                            )
+                        )
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 36)
+
+                case .failed:
+                    VStack(spacing: 10) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 24, weight: .medium))
+                            .foregroundStyle(.secondary)
+                        Text(
+                            appLocalizedString(
+                                "common.unable_to_load",
+                                languageCode: languageCode,
+                                defaultValue: "Unable to load"
+                            )
+                        )
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 36)
+
+                case .loaded where round.results.isEmpty:
+                    VStack(spacing: 10) {
+                        Image(systemName: "list.number")
+                            .font(.system(size: 26, weight: .medium))
+                            .foregroundStyle(.secondary)
+                        Text(
+                            appLocalizedString(
+                                "competitions.detail.live.wca.no_results",
+                                languageCode: languageCode,
+                                defaultValue: "No results yet"
+                            )
+                        )
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 36)
+
+                case .loaded:
+                    VStack(spacing: 0) {
+                        resultHeader
+
+                        Divider()
+
+                        ForEach(Array(round.results.enumerated()), id: \.element.id) { index, result in
+                            if index > 0 { Divider() }
+                            Button {
+                                withAnimation(.easeOut(duration: 0.18)) {
+                                    selectedCompetitorContent = nil
+                                    isLoadingCompetitorContent = false
+                                    competitorContentLoadFailed = false
+                                    resultSummaryHeight = 0
+                                    allResultsHeight = 0
+                                    selectedResult = result
+                                }
+                            } label: {
+                                resultRow(result)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .background(Color(uiColor: .systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                    .shadow(color: .black.opacity(0.12), radius: 1.5, y: 1)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+        .background(Color(uiColor: .systemBackground))
+        .scrollAwareNavigationTitle(roundDisplayTitle)
+        .overlay {
+            if let selectedResult = currentSelectedResult {
+                resultDialog(selectedResult)
+                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                    .zIndex(10)
+            }
+        }
+        .onAppear {
+            realtimeManager.configure(round: initialRound, languageCode: languageCode)
+            realtimeManager.start()
+        }
+        .onDisappear {
+            realtimeManager.stop()
+        }
+        .onChange(of: scenePhase) { phase in
+            switch phase {
+            case .active:
+                realtimeManager.resume()
+            case .background:
+                realtimeManager.suspend()
+            case .inactive:
+                break
+            @unknown default:
+                break
+            }
+        }
+    }
+
+    private var resultHeader: some View {
+        HStack(spacing: 0) {
+            resultHeaderText("#", width: 40, alignment: .trailing)
+                .padding(.leading, 10)
+                .padding(.trailing, 8)
+            resultHeaderText(
+                localizedCompetitionStringInView(
+                    key: "competitions.detail.competitors_column.name",
+                    languageCode: languageCode
+                ),
+                width: nil,
+                alignment: .leading
+            )
+            .padding(.leading, 10)
+            .padding(.trailing, 0)
+            ForEach(resultStatistics, id: \.self) { statistic in
+                resultHeaderText(
+                    resultStatisticTitle(statistic),
+                    width: resultStatisticWidth(statistic),
+                    alignment: .trailing
+                )
+                .padding(.leading, 10)
+                .padding(.trailing, statistic == resultStatistics.last ? 22 : 6)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func resultHeaderText(_ text: String, width: CGFloat?, alignment: Alignment) -> some View {
+        Text(text)
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.primary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.65)
+            .frame(maxWidth: width == nil ? .infinity : nil, alignment: alignment)
+            .frame(width: width, alignment: alignment)
+    }
+
+    private func resultRow(_ result: CompetitionWCALiveResultPreview) -> some View {
+        HStack(spacing: 0) {
+            Text(result.ranking.map(String.init) ?? "")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(resultRankingForegroundColor(result))
+                .frame(width: 40, alignment: .trailing)
+                .frame(maxHeight: .infinity)
+                .padding(.leading, 10)
+                .padding(.trailing, 8)
+                .background(resultRankingBackgroundColor(result))
+
+            Text(result.name)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .padding(.leading, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            ForEach(Array(resultStatistics.enumerated()), id: \.element) { index, statistic in
+                resultValue(
+                    resultStatisticValue(statistic, result: result),
+                    recordTag: resultStatisticRecordTag(statistic, result: result),
+                    width: resultStatisticWidth(statistic),
+                    emphasized: index == 0
+                )
+                .padding(.leading, 10)
+                .padding(.trailing, statistic == resultStatistics.last ? 22 : 6)
+            }
+        }
+        .frame(height: 34)
+        .contentShape(Rectangle())
+    }
+
+    private func resultValue(
+        _ value: String,
+        recordTag: String?,
+        width: CGFloat,
+        emphasized: Bool
+    ) -> some View {
+        ZStack(alignment: .topTrailing) {
+            Text(value)
+                .font(.system(size: 14, weight: emphasized ? .semibold : .regular))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+
+            if let recordTag, !recordTag.isEmpty {
+                CompetitionWCARecordTagView(tag: recordTag, usesLitePersonalRecord: true)
+                    .offset(x: 21, y: -5)
+            }
+        }
+        .frame(width: width, alignment: .trailing)
+    }
+
+    private var resultStatistics: [CompetitionWCALiveResultStatistic] {
+        let attemptCount = round.numberOfAttempts
+            ?? round.results.map(\.attempts.count).max()
+            ?? 0
+        let computesAverage = round.eventID != "333mbf"
+            && [3, 5].contains(attemptCount)
+
+        guard computesAverage else { return [.best] }
+        let sortsByBest = round.sortBy?.lowercased() == "best"
+            || (["1", "2", "3"].contains(round.formatID ?? "") && round.sortBy == nil)
+        return sortsByBest ? [.best, .average] : [.average, .best]
+    }
+
+    private func resultStatisticTitle(_ statistic: CompetitionWCALiveResultStatistic) -> String {
+        switch statistic {
+        case .best:
+            return appLocalizedString("common.best", languageCode: languageCode, defaultValue: "Best")
+        case .average:
+            if (round.numberOfAttempts ?? round.results.map(\.attempts.count).max()) == 3 {
+                return appLocalizedString("wca.results_mean", languageCode: languageCode, defaultValue: "Mean")
+            }
+            return appLocalizedString("wca.results_average", languageCode: languageCode, defaultValue: "Average")
+        }
+    }
+
+    private func resultStatisticWidth(_ statistic: CompetitionWCALiveResultStatistic) -> CGFloat {
+        statistic == .average ? 72 : 62
+    }
+
+    private func resultRankingBackgroundColor(_ result: CompetitionWCALiveResultPreview) -> Color {
+        if result.isAdvancingQuestionable == true {
+            return Color(red: 255 / 255, green: 245 / 255, blue: 157 / 255)
+        }
+        if result.isAdvancing == true {
+            return Color(red: 0 / 255, green: 230 / 255, blue: 118 / 255)
+        }
+        return .clear
+    }
+
+    private func resultRankingForegroundColor(_ result: CompetitionWCALiveResultPreview) -> Color {
+        result.isAdvancing == true || result.isAdvancingQuestionable == true ? .black : .primary
+    }
+
+    private func resultStatisticValue(
+        _ statistic: CompetitionWCALiveResultStatistic,
+        result: CompetitionWCALiveResultPreview
+    ) -> String {
+        switch statistic {
+        case .average: formatCompetitionLiveResultValue(result.average, eventID: round.eventID)
+        case .best: formatCompetitionLiveResultValue(result.best, eventID: round.eventID)
+        }
+    }
+
+    private func resultStatisticRecordTag(
+        _ statistic: CompetitionWCALiveResultStatistic,
+        result: CompetitionWCALiveResultPreview
+    ) -> String? {
+        switch statistic {
+        case .average: result.averageRecordTag
+        case .best: result.singleRecordTag
+        }
+    }
+
+    private func resultDialog(_ result: CompetitionWCALiveResultPreview) -> some View {
+        GeometryReader { proxy in
+            let maximumCardHeight = min(max(proxy.size.height - 64, 180), 680)
+
+            ZStack {
+                Color.black.opacity(0.42)
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture { closeResultDialog() }
+
+                Group {
+                    if let selectedCompetitorContent {
+                        if allResultsHeight > maximumCardHeight {
+                            ScrollView {
+                                measuredCompetitorResultsContent(selectedCompetitorContent)
+                            }
+                            .frame(height: maximumCardHeight)
+                        } else {
+                            measuredCompetitorResultsContent(selectedCompetitorContent)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    } else if resultSummaryHeight > maximumCardHeight {
+                        ScrollView {
+                            measuredResultSummaryContent(result)
+                        }
+                        .frame(height: maximumCardHeight)
+                    } else {
+                        measuredResultSummaryContent(result)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .onPreferenceChange(ResultSummaryHeightPreferenceKey.self) { height in
+                    guard height > 0, abs(resultSummaryHeight - height) > 0.5 else { return }
+                    resultSummaryHeight = height
+                }
+                .onPreferenceChange(AllResultsHeightPreferenceKey.self) { height in
+                    guard height > 0, abs(allResultsHeight - height) > 0.5 else { return }
+                    allResultsHeight = height
+                }
+                .frame(width: min(max(proxy.size.width - 32, 280), 430))
+                .background(Color(uiColor: .secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color(uiColor: .separator).opacity(0.55), lineWidth: 0.5)
+                }
+                .overlay(alignment: .topTrailing) {
+                    resultDialogCloseButton
+                        .padding(12)
+                }
+                .shadow(color: .black.opacity(0.24), radius: 24, y: 10)
+            }
+        }
+    }
+
+    private func resultSummaryContent(_ result: CompetitionWCALiveResultPreview) -> some View {
+        VStack(alignment: .leading, spacing: 22) {
+            Text(result.ranking.map { "\(result.name) #\($0)" } ?? result.name)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.trailing, 38)
+
+            resultNameField(result)
+
+            if let country = nonempty(result.region) {
+                resultDetailField(
+                    title: appLocalizedString(
+                        "competitions.detail.live.wca.country",
+                        languageCode: languageCode,
+                        defaultValue: "Country"
+                    ),
+                    value: country
+                )
+            }
+
+            if let attempts = formattedAttempts(result) {
+                resultDetailField(
+                    title: appLocalizedString(
+                        "competitions.detail.live.wca.attempts",
+                        languageCode: languageCode,
+                        defaultValue: "Attempts"
+                    ),
+                    value: attempts
+                )
+            }
+
+            ForEach(resultStatistics, id: \.self) { statistic in
+                if let value = nonempty(resultStatisticValue(statistic, result: result)) {
+                    resultDetailField(
+                        title: resultStatisticTitle(statistic),
+                        value: value,
+                        recordTag: resultStatisticRecordTag(statistic, result: result)
+                    )
+                }
+            }
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .selectableContent()
+    }
+
+    private func measuredResultSummaryContent(_ result: CompetitionWCALiveResultPreview) -> some View {
+        resultSummaryContent(result)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: ResultSummaryHeightPreferenceKey.self,
+                        value: proxy.size.height
+                    )
+                }
+            }
+    }
+
+    private func competitorResultsContent(_ content: CompetitionWCALiveCompetitorContent) -> some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Button {
+                withAnimation(.easeOut(duration: 0.16)) {
+                    selectedCompetitorContent = nil
+                    allResultsHeight = 0
+                }
+            } label: {
+                Label(
+                    appLocalizedString("common.back", languageCode: languageCode, defaultValue: "Back"),
+                    systemImage: "chevron.left"
+                )
+                .font(.system(size: 15, weight: .semibold))
+            }
+
+            Text(
+                content.countryISO2.map {
+                    "\(content.name) \(competitionFlagEmoji(for: $0))"
+                } ?? content.name
+            )
+            .font(.system(size: 24, weight: .bold))
+            .foregroundStyle(.primary)
+            .fixedSize(horizontal: false, vertical: true)
+
+            if let wcaID = nonempty(content.wcaID) {
+                NavigationLink {
+                    WCAProfileView(wcaID: wcaID, displayName: content.name)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image("wca_logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20, height: 20)
+
+                        Text("WCA Profile")
+                            .font(.system(size: 15, weight: .semibold))
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundStyle(.tint)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            ForEach(competitorEventGroups(content.results)) { group in
+                VStack(alignment: .leading, spacing: 7) {
+                    Text(group.name)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(.primary)
+
+                    competitorEventResultsTable(group)
+                }
+            }
+
+            if content.results.isEmpty {
+                Text(
+                    appLocalizedString(
+                        "competitions.detail.live.wca.no_results",
+                        languageCode: languageCode,
+                        defaultValue: "No results yet"
+                    )
+                )
+                .font(.system(size: 15))
+                .foregroundStyle(.secondary)
+            }
+
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .selectableContent()
+    }
+
+    private func measuredCompetitorResultsContent(
+        _ content: CompetitionWCALiveCompetitorContent
+    ) -> some View {
+        competitorResultsContent(content)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: AllResultsHeightPreferenceKey.self,
+                        value: proxy.size.height
+                    )
+                }
+            }
+    }
+
+    private func competitorEventResultsTable(_ group: CompetitionWCALiveCompetitorEventGroup) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                resultHeaderText("#", width: 34, alignment: .trailing)
+                    .padding(.horizontal, 6)
+                resultHeaderText(
+                    appLocalizedString("competitions.detail.live.wca.round", languageCode: languageCode, defaultValue: "Round"),
+                    width: nil,
+                    alignment: .leading
+                )
+                .padding(.leading, 8)
+
+                if let sample = group.results.first {
+                    ForEach(competitorResultStatistics(sample), id: \.self) { statistic in
+                        resultHeaderText(
+                            competitorResultStatisticTitle(statistic, result: sample),
+                            width: resultStatisticWidth(statistic),
+                            alignment: .trailing
+                        )
+                        .padding(.horizontal, 6)
+                    }
+                }
+            }
+            .padding(.vertical, 6)
+
+            Divider()
+
+            ForEach(Array(group.results.enumerated()), id: \.element.id) { index, result in
+                if index > 0 { Divider() }
+                HStack(spacing: 0) {
+                    Text(result.ranking.map(String.init) ?? "")
+                        .font(.system(size: 14))
+                        .foregroundStyle(competitorResultRankingForegroundColor(result))
+                        .frame(width: 34, alignment: .trailing)
+                        .frame(maxHeight: .infinity)
+                        .padding(.horizontal, 6)
+                        .background(competitorResultRankingBackgroundColor(result))
+
+                    Text(result.roundName)
+                        .font(.system(size: 14))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .padding(.leading, 8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    ForEach(Array(competitorResultStatistics(result).enumerated()), id: \.element) { index, statistic in
+                        resultValue(
+                            competitorResultStatisticValue(statistic, result: result),
+                            recordTag: competitorResultStatisticRecordTag(statistic, result: result),
+                            width: resultStatisticWidth(statistic),
+                            emphasized: index == 0
+                        )
+                        .padding(.horizontal, 6)
+                    }
+                }
+                .frame(height: 36)
+            }
+        }
+        .background(Color(uiColor: .tertiarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .stroke(Color(uiColor: .separator).opacity(0.5), lineWidth: 0.5)
+        }
+    }
+
+    @ViewBuilder
+    private var resultDialogCloseButton: some View {
+        if #available(iOS 26.0, *) {
+            Button(action: closeResultDialog) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(.primary)
+                    .frame(width: 38, height: 38)
+                    .contentShape(Circle())
+                    .glassEffect(.regular.interactive(), in: .circle)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 44, height: 44)
+            .accessibilityLabel(
+                appLocalizedString(
+                    "competitions.detail.live.wca.close",
+                    languageCode: languageCode,
+                    defaultValue: "Close"
+                )
+            )
+        } else {
+            Button(action: closeResultDialog) {
+                Image(systemName: "xmark")
+                    .font(.body.weight(.semibold))
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel(
+                appLocalizedString(
+                    "competitions.detail.live.wca.close",
+                    languageCode: languageCode,
+                    defaultValue: "Close"
+                )
+            )
+        }
+    }
+
+    private func resultNameField(_ result: CompetitionWCALiveResultPreview) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(
+                appLocalizedString(
+                    "competitions.detail.live.wca.name",
+                    languageCode: languageCode,
+                    defaultValue: "Name"
+                )
+            )
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(.primary)
+
+            Text(result.name)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if result.personID != nil {
+                Button {
+                    loadCompetitorContent(for: result)
+                } label: {
+                    HStack(spacing: 7) {
+                        if isLoadingCompetitorContent {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text(
+                            appLocalizedString(
+                                "competitions.detail.live.wca.all_results",
+                                languageCode: languageCode,
+                                defaultValue: "All results"
+                            )
+                        )
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .font(.system(size: 15, weight: .semibold))
+                }
+                .disabled(isLoadingCompetitorContent)
+                .padding(.top, 1)
+
+                if competitorContentLoadFailed {
+                    Text(
+                        appLocalizedString(
+                            "common.unable_to_load",
+                            languageCode: languageCode,
+                            defaultValue: "Unable to load"
+                        )
+                    )
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func formattedAttempts(_ result: CompetitionWCALiveResultPreview) -> String? {
+        let attempts = result.attempts.compactMap { attempt -> String? in
+            nonempty(formatCompetitionLiveResultValue(attempt, eventID: round.eventID))
+        }
+        return nonempty(attempts.joined(separator: ", "))
+    }
+
+    private func nonempty(_ value: String?) -> String? {
+        guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !trimmed.isEmpty else {
+            return nil
+        }
+        return trimmed
+    }
+
+    private func competitorEventGroups(
+        _ results: [CompetitionWCALiveCompetitorResult]
+    ) -> [CompetitionWCALiveCompetitorEventGroup] {
+        Dictionary(grouping: results, by: \.eventID)
+            .compactMap { eventID, eventResults in
+                guard let first = eventResults.first else { return nil }
+                return CompetitionWCALiveCompetitorEventGroup(
+                    id: eventID,
+                    name: first.eventName,
+                    results: eventResults.sorted {
+                        ($0.roundNumber ?? Int.max) < ($1.roundNumber ?? Int.max)
+                    }
+                )
+            }
+            .sorted {
+                ($0.results.first?.eventRank ?? Int.max) < ($1.results.first?.eventRank ?? Int.max)
+            }
+    }
+
+    private func competitorResultStatistics(
+        _ result: CompetitionWCALiveCompetitorResult
+    ) -> [CompetitionWCALiveResultStatistic] {
+        guard result.eventID != "333mbf", [3, 5].contains(result.numberOfAttempts) else {
+            return [.best]
+        }
+        return result.sortBy == "best" ? [.best, .average] : [.average, .best]
+    }
+
+    private func competitorResultStatisticTitle(
+        _ statistic: CompetitionWCALiveResultStatistic,
+        result: CompetitionWCALiveCompetitorResult
+    ) -> String {
+        switch statistic {
+        case .best:
+            return appLocalizedString("common.best", languageCode: languageCode, defaultValue: "Best")
+        case .average:
+            let key = result.numberOfAttempts == 3 ? "wca.results_mean" : "wca.results_average"
+            let fallback = result.numberOfAttempts == 3 ? "Mean" : "Average"
+            return appLocalizedString(key, languageCode: languageCode, defaultValue: fallback)
+        }
+    }
+
+    private func competitorResultStatisticValue(
+        _ statistic: CompetitionWCALiveResultStatistic,
+        result: CompetitionWCALiveCompetitorResult
+    ) -> String {
+        switch statistic {
+        case .best: formatCompetitionLiveResultValue(result.best, eventID: result.eventID)
+        case .average: formatCompetitionLiveResultValue(result.average, eventID: result.eventID)
+        }
+    }
+
+    private func competitorResultStatisticRecordTag(
+        _ statistic: CompetitionWCALiveResultStatistic,
+        result: CompetitionWCALiveCompetitorResult
+    ) -> String? {
+        switch statistic {
+        case .best: result.singleRecordTag
+        case .average: result.averageRecordTag
+        }
+    }
+
+    private func competitorResultRankingBackgroundColor(
+        _ result: CompetitionWCALiveCompetitorResult
+    ) -> Color {
+        if result.isAdvancingQuestionable == true {
+            return Color(red: 255 / 255, green: 245 / 255, blue: 157 / 255)
+        }
+        if result.isAdvancing == true {
+            return Color(red: 0 / 255, green: 230 / 255, blue: 118 / 255)
+        }
+        return .clear
+    }
+
+    private func competitorResultRankingForegroundColor(
+        _ result: CompetitionWCALiveCompetitorResult
+    ) -> Color {
+        result.isAdvancing == true || result.isAdvancingQuestionable == true ? .black : .primary
+    }
+
+    private func loadCompetitorContent(for result: CompetitionWCALiveResultPreview) {
+        guard let personID = result.personID, !isLoadingCompetitorContent else { return }
+        isLoadingCompetitorContent = true
+        competitorContentLoadFailed = false
+
+        Task {
+            let content = await CompetitionService.fetchWCALiveCompetitorContent(
+                personID: personID,
+                languageCode: languageCode
+            )
+            guard selectedResult?.id == result.id else { return }
+            isLoadingCompetitorContent = false
+            competitorContentLoadFailed = content == nil
+            if let content {
+                withAnimation(.easeOut(duration: 0.18)) {
+                    allResultsHeight = 0
+                    selectedCompetitorContent = content
+                }
+            }
+        }
+    }
+
+    private func closeResultDialog() {
+        withAnimation(.easeIn(duration: 0.16)) {
+            selectedResult = nil
+            selectedCompetitorContent = nil
+            isLoadingCompetitorContent = false
+            competitorContentLoadFailed = false
+            resultSummaryHeight = 0
+            allResultsHeight = 0
+        }
+    }
+
+    private func resultDetailField(title: String, value: String, recordTag: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.primary)
+
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
+                Text(value)
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let recordTag, !recordTag.isEmpty {
+                    CompetitionWCARecordTagView(tag: recordTag, usesLitePersonalRecord: true)
+                }
+            }
+        }
+    }
+}
+
+private struct ResultSummaryHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct AllResultsHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 
@@ -4731,17 +5703,20 @@ private struct CompetitionCubingLiveSection: View {
     private func roundSummaryCard(_ round: CompetitionLiveRoundOption) -> some View {
         liveCard {
             VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    CompetitionLiveEventIconView(
-                        eventID: round.eventID,
-                        languageCode: appLanguage,
-                        isReady: areCompetitionEventIconsReady,
-                        color: .orange,
-                        size: 18
+                HStack(alignment: .center, spacing: 8) {
+                    CompetitionEventIconNameLabel(
+                        glyph: areCompetitionEventIconsReady
+                            ? CompetitionEventIconFont.glyph(for: round.eventID, title: roundLabel(round))
+                            : nil,
+                        eventTitle: competitionLiveShortEventTitle(for: round.eventID, languageCode: appLanguage),
+                        name: roundLabel(round),
+                        iconSize: 18,
+                        iconWidth: 22,
+                        spacing: 8,
+                        nameFont: .system(size: 16, weight: .semibold),
+                        iconColor: .orange,
+                        lineLimit: 2
                     )
-                    Text(roundLabel(round))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.primary)
                     Spacer()
                     if session.onlineNumber > 0 {
                         Text(String(
@@ -5425,6 +6400,22 @@ struct CompetitionDetailView: View {
         case .available:
             return localizedCompetitionStringInView(key: "competitions.detail.live_body_available", languageCode: appLanguage)
         case .unavailable:
+private struct CompetitionWCALiveSectionHeadingModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 22, weight: .bold))
+            .foregroundStyle(.primary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private extension View {
+    func wcaLiveSectionHeadingStyle() -> some View {
+        modifier(CompetitionWCALiveSectionHeadingModifier())
+    }
+}
+
             return localizedCompetitionStringInView(key: "competitions.detail.live_body_unavailable", languageCode: appLanguage)
         case .upcoming:
             return localizedCompetitionStringInView(key: "competitions.detail.live_body_upcoming", languageCode: appLanguage)
