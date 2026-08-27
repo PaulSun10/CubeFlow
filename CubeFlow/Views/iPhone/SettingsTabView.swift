@@ -24,6 +24,9 @@ struct SettingsTabView: View {
 
     @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.colorScheme) private var currentColorScheme
+    #if DEBUG
+    @Environment(\.isMarketingPreview) private var isMarketingPreview
+    #endif
     @ObservedObject private var ganTimer = GANTimerBluetoothManager.shared
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
@@ -44,7 +47,7 @@ struct SettingsTabView: View {
     @AppStorage("inspectionAlertVoiceMode") private var inspectionAlertVoiceMode: String = InspectionAlertVoiceMode.off.rawValue
     @AppStorage("averageDisplayOption") private var averageDisplayOption: String = AverageDisplayOption.ao5AndAo12.rawValue
     @AppStorage("timerUpdatingMode") private var timerUpdatingMode: String = TimerUpdatingMode.on.rawValue
-    @AppStorage("timerAccuracy") private var timerAccuracy: String = TimerAccuracy.thousandths.rawValue
+    @AppStorage("timerAccuracy") private var timerAccuracy: String = SolveTimeAccuracy.thousandths.rawValue
     @AppStorage("enteringTimesWith") private var enteringTimesWith: String = TimeEntryMode.timer.rawValue
     @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = false
     @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
@@ -92,6 +95,7 @@ struct SettingsTabView: View {
     @State private var showingGANDevicePicker = false
     @State private var showingCompetitionCalculator = false
     @StateObject private var wcaAuth = WCAAuthManager.shared
+    @StateObject private var fontDownloadManager = TimerFontDownloadManager.shared
 
     let isActive: Bool
 
@@ -151,6 +155,7 @@ struct SettingsTabView: View {
                 CompetitionCalculatorSheet(appLanguage: appLanguage)
             }
             .onAppear {
+                normalizeUnavailableFontSelections()
                 if enteringTimesWith == TimeEntryMode.gan.rawValue {
                     ganTimer.prepareIfNeeded()
                 }
@@ -409,6 +414,20 @@ private extension SettingsTabView {
                 Text("settings.data_transfer_title")
             }
 
+            #if DEBUG
+            if !isMarketingPreview {
+                Section {
+                    NavigationLink {
+                        MarketingPreviewCatalogView()
+                    } label: {
+                        Label("Marketing Preview", systemImage: "camera.viewfinder")
+                    }
+                } header: {
+                    Text("Development")
+                }
+            }
+            #endif
+
             Section {
                 NavigationLink {
                     AboutCubeFlowView()
@@ -631,9 +650,9 @@ private extension SettingsTabView {
                     fontDesign: $timerTextFontDesign,
                     fontDesignTarget: .timerFontDesign,
                     defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                    fontWeight: $timerTextFontWeight,
-                    fontWeightTarget: .timerFontWeight,
-                    defaultFontWeight: TimerFontWeightOption.semibold.rawValue,
+                    fontStyle: $timerTextFontWeight,
+                    fontStyleTarget: .timerFontWeight,
+                    defaultFontStyle: TimerFontWeightOption.semibold.rawValue,
                     previewKind: .timer
                 )
             }
@@ -656,9 +675,9 @@ private extension SettingsTabView {
                     fontDesign: $scrambleTextFontDesign,
                     fontDesignTarget: .scrambleFontDesign,
                     defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                    fontWeight: $scrambleTextFontWeight,
-                    fontWeightTarget: .scrambleFontWeight,
-                    defaultFontWeight: TimerFontWeightOption.medium.rawValue,
+                    fontStyle: $scrambleTextFontWeight,
+                    fontStyleTarget: .scrambleFontWeight,
+                    defaultFontStyle: TimerFontWeightOption.medium.rawValue,
                     previewKind: .scramble,
                     scrambleDisplayMode: $scrambleDisplayMode
                 )
@@ -695,9 +714,9 @@ private extension SettingsTabView {
                     fontDesign: $averageTextFontDesign,
                     fontDesignTarget: .averageFontDesign,
                     defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                    fontWeight: $averageTextFontWeight,
-                    fontWeightTarget: .averageFontWeight,
-                    defaultFontWeight: TimerFontWeightOption.medium.rawValue,
+                    fontStyle: $averageTextFontWeight,
+                    fontStyleTarget: .averageFontWeight,
+                    defaultFontStyle: TimerFontWeightOption.medium.rawValue,
                     previewKind: .average
                 )
             }
@@ -779,9 +798,9 @@ private extension SettingsTabView {
 
                 listSettingsMenuRow(
                     titleKey: "settings.timer_accuracy",
-                    selectedKey: TimerAccuracy(rawValue: timerAccuracy)?.localizedKey ?? "settings.timer_accuracy_001"
+                    selectedKey: SolveTimeAccuracy(rawValue: timerAccuracy)?.localizedKey ?? "settings.timer_accuracy_001"
                 ) {
-                    ForEach(TimerAccuracy.allCases) { accuracy in
+                    ForEach(SolveTimeAccuracy.allCases) { accuracy in
                         Button(accuracy.localizedKey) {
                             timerAccuracy = accuracy.rawValue
                         }
@@ -1115,7 +1134,7 @@ private extension SettingsTabView {
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("common.refresh") {
+                    Button(appLocalizedString("common.refresh", languageCode: appLanguage, defaultValue: "Refresh")) {
                         ganTimer.startDeviceDiscovery()
                     }
                 }
@@ -1281,7 +1300,7 @@ private extension SettingsTabView {
             defaultFilename: exportDefaultFilename
         ) { result in
             if case .failure(let error) = result {
-                importExportAlertMessage = error.localizedDescription
+                importExportAlertMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
             }
         }
     }
@@ -1314,12 +1333,7 @@ private extension SettingsTabView {
                     try await wcaAuth.signIn()
                 }
             } catch {
-                if let localizedError = error as? LocalizedError,
-                   let errorDescription = localizedError.errorDescription {
-                    wcaAlertMessage = errorDescription
-                } else {
-                    wcaAlertMessage = error.localizedDescription
-                }
+                wcaAlertMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
             }
         }
     }
@@ -1339,7 +1353,7 @@ private extension SettingsTabView {
         UIApplication.shared.setAlternateIconName(option.alternateIconName) { error in
             Task { @MainActor in
                 if let error {
-                    appIconAlertMessage = error.localizedDescription
+                    appIconAlertMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
                 } else {
                     selectedAppIcon = option.rawValue
                 }
@@ -1360,7 +1374,7 @@ private extension SettingsTabView {
             exportDefaultFilename = package.defaultFilename
             showingExportPicker = true
         } catch {
-            importExportAlertMessage = error.localizedDescription
+            importExportAlertMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
         }
     }
 
@@ -1404,7 +1418,7 @@ private extension SettingsTabView {
                 if let transferError = error as? DataTransferError, transferError == .unsupportedImportFile {
                     importExportAlertMessage = appLocalizedString("settings.import_unsupported", languageCode: appLanguage)
                 } else {
-                    importExportAlertMessage = error.localizedDescription
+                    importExportAlertMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
                 }
             }
         }
@@ -1422,7 +1436,7 @@ private extension SettingsTabView {
                 if let transferError = error as? DataTransferError, transferError == .unsupportedImportFile {
                     importExportAlertMessage = appLocalizedString("settings.import_unsupported", languageCode: appLanguage)
                 } else {
-                    importExportAlertMessage = error.localizedDescription
+                    importExportAlertMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
                 }
             }
         }
@@ -1534,9 +1548,9 @@ private extension SettingsTabView {
         fontDesign: Binding<String>? = nil,
         fontDesignTarget: AppearanceSelectionTarget? = nil,
         defaultFontDesign: String? = nil,
-        fontWeight: Binding<String>? = nil,
-        fontWeightTarget: AppearanceSelectionTarget? = nil,
-        defaultFontWeight: String? = nil,
+        fontStyle: Binding<String>? = nil,
+        fontStyleTarget: AppearanceSelectionTarget? = nil,
+        defaultFontStyle: String? = nil,
         previewKind: TextAppearancePreviewKind? = nil,
         scrambleDisplayMode: Binding<String>? = nil,
         photoData: Binding<Data?>? = nil,
@@ -1596,23 +1610,28 @@ private extension SettingsTabView {
                     )
                 }
 
-                if let fontWeight, let defaultFontWeight {
+                if let fontStyle, let defaultFontStyle {
                     Divider()
-                    appearanceFontWeightRow(
-                        value: fontWeight,
-                        target: fontWeightTarget ?? .timerFontWeight,
-                        defaultValue: defaultFontWeight
+                    appearanceFontStyleRow(
+                        value: fontStyle,
+                        target: fontStyleTarget ?? .timerFontWeight,
+                        defaultValue: defaultFontStyle
                     )
                 }
 
-                if let previewKind, let fontSize, let fontDesign, let fontWeight {
+                if let previewKind, let fontSize, let fontDesign, let fontStyle {
+                    let design = resolvedFontDesignOption(fontDesign.wrappedValue)
+                    let preferredWeight = preferredLegacyWeight(for: fontStyleTarget ?? .timerFontWeight)
                     Divider()
                     appearancePreviewRow(
                         kind: previewKind,
                         configuration: configuration.wrappedValue,
                         fontSize: fontSize.wrappedValue,
-                        fontDesign: resolvedFontDesignOption(fontDesign.wrappedValue),
-                        fontWeight: TimerFontWeightOption(rawValue: fontWeight.wrappedValue) ?? .medium
+                        fontDesign: design,
+                        fontStyle: design.resolvedStyle(
+                            rawValue: fontStyle.wrappedValue,
+                            preferredLegacyWeight: preferredWeight
+                        )
                     )
                 }
 
@@ -1782,26 +1801,35 @@ private extension SettingsTabView {
         )
     }
 
-    func appearanceFontWeightRow(
+    func appearanceFontStyleRow(
         value: Binding<String>,
         target: AppearanceSelectionTarget,
         defaultValue: String
     ) -> AnyView {
+        let design = fontDesignOption(forStyleTarget: target)
+        let styles = design.availableStyles(preferredLegacyWeight: preferredLegacyWeight(for: target))
+        let selectedStyle = design.resolvedStyle(
+            rawValue: value.wrappedValue,
+            preferredLegacyWeight: preferredLegacyWeight(for: target)
+        )
         return AnyView(
             Button {
                 appearanceSelectionTarget = target
             } label: {
                 HStack {
-                    Text("settings.font_weight_label")
+                    Text("settings.font_style_label")
                         .font(.system(size: 16, weight: .medium))
                     Spacer()
-                    fontWeightMenuLabel(TimerFontWeightOption(rawValue: value.wrappedValue) ?? .medium)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.tertiary)
+                    fontStyleMenuLabel(selectedStyle, design: design)
+                    if styles.count > 1 {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
             .buttonStyle(.plain)
+            .disabled(styles.count <= 1)
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
         )
@@ -1809,43 +1837,42 @@ private extension SettingsTabView {
 
     @ViewBuilder
     func fontDesignMenuLabel(_ option: TimerFontDesignOption) -> some View {
-        Text(option.localizedKey)
-            .font(.system(size: 15, weight: .medium, design: option.fontDesign))
-            .compatibleFontWidth(option)
+        if option.isAvailable {
+            let style = option.resolvedStyle(rawValue: "regular", preferredLegacyWeight: .regular)
+            Text(option.localizedKey)
+                .font(option.font(size: 15, style: style))
+                .compatibleFontWidth(option)
+        } else {
+            Text(option.localizedKey)
+                .font(.system(size: 15, weight: .regular))
+        }
     }
 
     var orderedFontDesignOptions: [TimerFontDesignOption] {
-        var options: [TimerFontDesignOption] = [
-            .default,
-            .rounded,
-            .serif,
-            .monospaced
-        ]
-
-        if #available(iOS 16.0, *) {
-            options.append(contentsOf: [
-                .expanded,
-                .condensed,
-                .compressed
-            ])
-        }
-
-        return options
+        TimerFontDesignOption.availableOptions
     }
 
     func resolvedFontDesignOption(_ rawValue: String) -> TimerFontDesignOption {
-        let option = TimerFontDesignOption(rawValue: rawValue) ?? .default
-        if #unavailable(iOS 16.0),
-           option == .expanded || option == .condensed || option == .compressed {
-            return .default
-        }
-        return option
+        TimerFontDesignOption.resolvedAvailableOption(rawValue: rawValue)
+    }
+
+    func normalizeUnavailableFontSelections() {
+        let timer = resolvedFontDesignOption(timerTextFontDesign).rawValue
+        let scramble = resolvedFontDesignOption(scrambleTextFontDesign).rawValue
+        let average = resolvedFontDesignOption(averageTextFontDesign).rawValue
+        if timer != timerTextFontDesign { timerTextFontDesign = timer }
+        if scramble != scrambleTextFontDesign { scrambleTextFontDesign = scramble }
+        if average != averageTextFontDesign { averageTextFontDesign = average }
+        normalizeFontStyleSelection(for: .timerFontWeight)
+        normalizeFontStyleSelection(for: .scrambleFontWeight)
+        normalizeFontStyleSelection(for: .averageFontWeight)
     }
 
     @ViewBuilder
-    func fontWeightMenuLabel(_ option: TimerFontWeightOption) -> some View {
-        Text(option.localizedKey)
-            .font(.system(size: 15, weight: option.fontWeight))
+    func fontStyleMenuLabel(_ option: TimerFontStyleOption, design: TimerFontDesignOption) -> some View {
+        Text(option.name)
+            .font(design.font(size: 15, style: option))
+            .compatibleFontWidth(design)
     }
 
     func fontDesignBinding(for target: AppearanceSelectionTarget) -> Binding<String> {
@@ -1874,6 +1901,44 @@ private extension SettingsTabView {
         }
     }
 
+    func fontDesignOption(forStyleTarget target: AppearanceSelectionTarget) -> TimerFontDesignOption {
+        switch target {
+        case .timerFontWeight:
+            return resolvedFontDesignOption(timerTextFontDesign)
+        case .scrambleFontWeight:
+            return resolvedFontDesignOption(scrambleTextFontDesign)
+        case .averageFontWeight:
+            return resolvedFontDesignOption(averageTextFontDesign)
+        case .timerFontDesign, .scrambleFontDesign, .averageFontDesign:
+            return .default
+        }
+    }
+
+    func preferredLegacyWeight(for target: AppearanceSelectionTarget) -> TimerFontWeightOption {
+        target == .timerFontWeight ? .semibold : .medium
+    }
+
+    func normalizeFontStyleSelection(for target: AppearanceSelectionTarget) {
+        let design = fontDesignOption(forStyleTarget: target)
+        let binding = fontWeightBinding(for: target)
+        let resolved = design.resolvedStyle(
+            rawValue: binding.wrappedValue,
+            preferredLegacyWeight: preferredLegacyWeight(for: target)
+        )
+        if binding.wrappedValue != resolved.id {
+            binding.wrappedValue = resolved.id
+        }
+    }
+
+    func styleTarget(forDesignTarget target: AppearanceSelectionTarget) -> AppearanceSelectionTarget? {
+        switch target {
+        case .timerFontDesign: return .timerFontWeight
+        case .scrambleFontDesign: return .scrambleFontWeight
+        case .averageFontDesign: return .averageFontWeight
+        case .timerFontWeight, .scrambleFontWeight, .averageFontWeight: return nil
+        }
+    }
+
     func defaultFontWeightValue(for target: AppearanceSelectionTarget) -> String {
         switch target {
         case .timerFontWeight:
@@ -1893,16 +1958,18 @@ private extension SettingsTabView {
                 List {
                     ForEach(orderedFontDesignOptions) { option in
                         Button {
-                            fontDesignBinding(for: target).wrappedValue = option.rawValue
-                            appearanceSelectionTarget = nil
+                            selectFontDesign(option, for: target)
                         } label: {
                             HStack {
                                 fontDesignMenuLabel(option)
                                 Spacer()
-                                if fontDesignBinding(for: target).wrappedValue == option.rawValue {
+                                if option.isAvailable,
+                                   fontDesignBinding(for: target).wrappedValue == option.rawValue {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(.tint)
+                                } else {
+                                    fontDownloadAccessory(for: option)
                                 }
                             }
                         }
@@ -1911,6 +1978,9 @@ private extension SettingsTabView {
 
                     Button("common.reset") {
                         fontDesignBinding(for: target).wrappedValue = TimerFontDesignOption.default.rawValue
+                        if let styleTarget = styleTarget(forDesignTarget: target) {
+                            normalizeFontStyleSelection(for: styleTarget)
+                        }
                         appearanceSelectionTarget = nil
                     }
                     .disabled(fontDesignBinding(for: target).wrappedValue == TimerFontDesignOption.default.rawValue)
@@ -1921,17 +1991,23 @@ private extension SettingsTabView {
             .compatibleMediumLargeSheet()
 
         case .timerFontWeight, .scrambleFontWeight, .averageFontWeight:
+            let design = fontDesignOption(forStyleTarget: target)
+            let styles = design.availableStyles(preferredLegacyWeight: preferredLegacyWeight(for: target))
+            let selectedStyle = design.resolvedStyle(
+                rawValue: fontWeightBinding(for: target).wrappedValue,
+                preferredLegacyWeight: preferredLegacyWeight(for: target)
+            )
             CompatibleNavigationContainer {
                 List {
-                    ForEach(TimerFontWeightOption.allCases) { option in
+                    ForEach(styles) { option in
                         Button {
-                            fontWeightBinding(for: target).wrappedValue = option.rawValue
+                            fontWeightBinding(for: target).wrappedValue = option.id
                             appearanceSelectionTarget = nil
                         } label: {
                             HStack {
-                                fontWeightMenuLabel(option)
+                                fontStyleMenuLabel(option, design: design)
                                 Spacer()
-                                if fontWeightBinding(for: target).wrappedValue == option.rawValue {
+                                if selectedStyle.id == option.id {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(.tint)
@@ -1942,16 +2018,86 @@ private extension SettingsTabView {
                     }
 
                     Button("common.reset") {
-                        fontWeightBinding(for: target).wrappedValue = defaultFontWeightValue(for: target)
+                        let defaultStyle = design.resolvedStyle(
+                            rawValue: defaultFontWeightValue(for: target),
+                            preferredLegacyWeight: preferredLegacyWeight(for: target)
+                        )
+                        fontWeightBinding(for: target).wrappedValue = defaultStyle.id
                         appearanceSelectionTarget = nil
                     }
-                    .disabled(fontWeightBinding(for: target).wrappedValue == defaultFontWeightValue(for: target))
+                    .disabled(selectedStyle.id == design.resolvedStyle(
+                        rawValue: defaultFontWeightValue(for: target),
+                        preferredLegacyWeight: preferredLegacyWeight(for: target)
+                    ).id)
                 }
-                .navigationTitle(appLocalizedString("settings.font_weight_label", languageCode: appLanguage))
+                .navigationTitle(appLocalizedString("settings.font_style_label", languageCode: appLanguage, defaultValue: "Font Style"))
                 .navigationBarTitleDisplayMode(.inline)
             }
             .compatibleMediumSheet()
         }
+    }
+
+    private func selectFontDesign(
+        _ option: TimerFontDesignOption,
+        for target: AppearanceSelectionTarget
+    ) {
+        if option.isAvailable {
+            applyFontDesign(option, for: target)
+            return
+        }
+
+#if canImport(UIKit)
+        guard option.isSystemDownloadable else { return }
+        fontDownloadManager.start(option)
+#endif
+    }
+
+    @ViewBuilder
+    private func fontDownloadAccessory(for option: TimerFontDesignOption) -> some View {
+        switch fontDownloadManager.state(for: option) {
+        case .downloading(let progress):
+            if let progress {
+                ProgressView(value: progress)
+                    .progressViewStyle(.circular)
+                    .controlSize(.small)
+                    .accessibilityLabel(
+                        Text("Downloading ") + Text(option.localizedKey)
+                    )
+                    .accessibilityValue("\(Int(progress * 100)) percent")
+            } else {
+                ProgressView()
+                    .controlSize(.small)
+                    .accessibilityLabel(
+                        Text("Downloading ") + Text(option.localizedKey)
+                    )
+            }
+
+        case .failed:
+            Label("Retry", systemImage: "arrow.clockwise")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.red)
+
+        case .downloaded:
+            EmptyView()
+
+        case nil:
+            if option.isSystemDownloadable {
+                Label("Download", systemImage: "icloud.and.arrow.down")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func applyFontDesign(
+        _ option: TimerFontDesignOption,
+        for target: AppearanceSelectionTarget
+    ) {
+        fontDesignBinding(for: target).wrappedValue = option.rawValue
+        if let styleTarget = styleTarget(forDesignTarget: target) {
+            normalizeFontStyleSelection(for: styleTarget)
+        }
+        appearanceSelectionTarget = nil
     }
 
     func appearancePreviewRow(
@@ -1959,7 +2105,7 @@ private extension SettingsTabView {
         configuration: AppearanceConfiguration,
         fontSize: Double,
         fontDesign: TimerFontDesignOption,
-        fontWeight: TimerFontWeightOption
+        fontStyle: TimerFontStyleOption
     ) -> AnyView {
         let previewText: Text = {
             switch kind {
@@ -1985,7 +2131,7 @@ private extension SettingsTabView {
                         configuration: configuration,
                         fontSize: fontSize,
                         fontDesign: fontDesign,
-                        fontWeight: fontWeight
+                        fontStyle: fontStyle
                     )
                     .multilineTextAlignment(.center)
                     Spacer()
@@ -2006,10 +2152,10 @@ private extension SettingsTabView {
         configuration: AppearanceConfiguration,
         fontSize: Double,
         fontDesign: TimerFontDesignOption,
-        fontWeight: TimerFontWeightOption
+        fontStyle: TimerFontStyleOption
     ) -> some View {
         let base = text
-            .font(.system(size: fontSize, weight: fontWeight.fontWeight, design: fontDesign.fontDesign))
+            .font(fontDesign.font(size: fontSize, style: fontStyle))
             .compatibleFontWidth(fontDesign)
 
         switch configuration.style {
@@ -2195,7 +2341,7 @@ private struct CacheSettingsView: View {
                 )
                 cacheActionRow(
                     target: .competitionDetails,
-                    sizeText: appLocalizedString("settings.cache_session_only", languageCode: appLanguage)
+                    sizeText: AppCacheManager.formattedSize(report.competitionDetailBytes)
                 )
                 cacheActionRow(
                     target: .topCubers,
@@ -2504,12 +2650,7 @@ private enum TimerUpdatingMode: String, CaseIterable, Identifiable {
     }
 }
 
-private enum TimerAccuracy: String, CaseIterable, Identifiable {
-    case hundredths
-    case thousandths
-
-    var id: String { rawValue }
-
+private extension SolveTimeAccuracy {
     var localizedKey: LocalizedStringKey {
         switch self {
         case .hundredths: "settings.timer_accuracy_01"
@@ -2517,12 +2658,6 @@ private enum TimerAccuracy: String, CaseIterable, Identifiable {
         }
     }
 
-    var decimals: Int {
-        switch self {
-        case .hundredths: 2
-        case .thousandths: 3
-        }
-    }
 }
 
 private enum TimeEntryMode: String, CaseIterable, Identifiable {
@@ -2610,6 +2745,7 @@ private struct CompetitionCalculatorSheet: View {
     let appLanguage: String
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     @FocusState private var focusedAttemptID: UUID?
     @State private var attempts = Self.makeEmptyAttempts()
 
@@ -2621,19 +2757,28 @@ private struct CompetitionCalculatorSheet: View {
         guard enteredAttempts.count == 5 else {
             return appLocalizedString("settings.competition_calculator_waiting", languageCode: appLanguage)
         }
-        return SolveMetrics.formatAverage(CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts))
+        return SolveMetrics.formatAverage(
+            CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts),
+            decimals: solveTimeAccuracy.decimals
+        )
     }
 
     private var bestPossibleAverageText: String? {
         guard enteredAttempts.count == 4 else { return nil }
         let bestAttempt = CompetitionCalculatorAttempt(timeText: "0.001", result: .solved)
-        return SolveMetrics.formatAverage(CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts + [bestAttempt]))
+        return SolveMetrics.formatAverage(
+            CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts + [bestAttempt]),
+            decimals: solveTimeAccuracy.decimals
+        )
     }
 
     private var worstPossibleAverageText: String? {
         guard enteredAttempts.count == 4 else { return nil }
         let worstAttempt = CompetitionCalculatorAttempt(timeText: "", result: .dnf)
-        return SolveMetrics.formatAverage(CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts + [worstAttempt]))
+        return SolveMetrics.formatAverage(
+            CompetitionCalculatorMetrics.averageOfFive(for: enteredAttempts + [worstAttempt]),
+            decimals: solveTimeAccuracy.decimals
+        )
     }
 
     var body: some View {

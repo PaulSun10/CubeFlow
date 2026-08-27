@@ -16,9 +16,41 @@ private struct ScrambleDisplayHeightPreferenceKey: PreferenceKey {
     }
 }
 
+private struct ManualTimeInputHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct ManualTimeEntryHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct FloatingScrambleFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect?
+
+    static func reduce(value: inout CGRect?, nextValue: () -> CGRect?) {
+        value = nextValue() ?? value
+    }
+}
+
+private enum TimerLayoutCoordinateSpace {
+    static let name = "TimerTabView.Layout"
+}
+
 struct TimerTabView: View {
+    #if DEBUG
+    private let marketingPreviewConfiguration: MarketingTimerPreviewConfiguration?
+    #endif
     @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     @ObservedObject private var ganTimer = GANTimerBluetoothManager.shared
     @ObservedObject private var smartCube = SmartCubeBluetoothManager.shared
     @StateObject private var nearbyBattleManager = NearbyBattleManager()
@@ -57,7 +89,6 @@ struct TimerTabView: View {
     @AppStorage("inspectionAlertVoiceMode") private var inspectionAlertVoiceMode: String = InspectionAlertVoiceMode.off.rawValue
     @AppStorage("averageDisplayOption") private var averageDisplayOption: String = AverageDisplayOption.ao5AndAo12.rawValue
     @AppStorage("timerUpdatingMode") private var timerUpdatingMode: String = "on"
-    @AppStorage("timerAccuracy") private var timerAccuracy: String = "thousandths"
     @AppStorage("enteringTimesWith") private var enteringTimesWith: String = "timer"
     @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = false
     @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
@@ -133,13 +164,26 @@ struct TimerTabView: View {
     @State private var localBattleSecondDisplayTime: Double?
     @State private var didScoreCurrentLocalBattleRound = false
     @State private var scrambleDisplayMeasuredHeight: CGFloat = 0
+    @State private var manualTimeInputHeight: CGFloat = 0
+    @State private var manualTimeEntryHeight: CGFloat = 0
+    @State private var floatingScrambleFrame: CGRect?
     @State private var smartCubeTargetFacelets: String?
     @State private var smartCubeIsReady = false
     @State private var smartCubeSolveStartMoveIndex = 0
 
     private let hiddenTimerVerticalOffset: CGFloat = 18
+    private let manualTimeEntrySpacing: CGFloat = 12
     private let ganResultChoices: [SolveResult] = [.solved, .plusTwo, .dnf]
     private let ganResultAutoCommitDelay: TimeInterval = 1.5
+
+    #if DEBUG
+    init(marketingPreviewConfiguration: MarketingTimerPreviewConfiguration? = nil) {
+        self.marketingPreviewConfiguration = marketingPreviewConfiguration
+        _selectedEvent = State(initialValue: marketingPreviewConfiguration?.event ?? .threeByThree)
+        _elapsedSeconds = State(initialValue: marketingPreviewConfiguration?.elapsedSeconds ?? 0)
+        _currentScramble = State(initialValue: marketingPreviewConfiguration?.scramble ?? "")
+    }
+    #endif
 
     private var timerReservedFrameHeight: CGFloat {
         max(CGFloat(timerTextFontSize) * 1.45, 110)
@@ -255,7 +299,7 @@ struct TimerTabView: View {
             Text(scrambleDisplayText),
             size: resolvedScrambleTextFontSize,
             design: resolvedScrambleTextFontDesign,
-            weight: resolvedScrambleTextFontWeight
+            style: resolvedScrambleTextFontStyle
         )
         .id(scrambleDisplayText)
         .foregroundStyle(scrambleTextStyle)
@@ -429,39 +473,48 @@ struct TimerTabView: View {
     }
 
     private var timerDecimals: Int {
-        timerAccuracy == "hundredths" ? 2 : 3
+        solveTimeAccuracy.decimals
     }
 
     private var resolvedTimerTextFontDesign: TimerFontDesignOption {
-        TimerFontDesignOption(rawValue: timerTextFontDesign) ?? .default
+        TimerFontDesignOption.resolvedAvailableOption(rawValue: timerTextFontDesign)
     }
 
     private var resolvedScrambleTextFontDesign: TimerFontDesignOption {
-        TimerFontDesignOption(rawValue: scrambleTextFontDesign) ?? .default
+        TimerFontDesignOption.resolvedAvailableOption(rawValue: scrambleTextFontDesign)
     }
 
     private var resolvedAverageTextFontDesign: TimerFontDesignOption {
-        TimerFontDesignOption(rawValue: averageTextFontDesign) ?? .default
+        TimerFontDesignOption.resolvedAvailableOption(rawValue: averageTextFontDesign)
     }
 
-    private var resolvedTimerTextFontWeight: TimerFontWeightOption {
-        TimerFontWeightOption(rawValue: timerTextFontWeight) ?? .semibold
+    private var resolvedTimerTextFontStyle: TimerFontStyleOption {
+        resolvedTimerTextFontDesign.resolvedStyle(
+            rawValue: timerTextFontWeight,
+            preferredLegacyWeight: .semibold
+        )
     }
 
-    private var resolvedScrambleTextFontWeight: TimerFontWeightOption {
-        TimerFontWeightOption(rawValue: scrambleTextFontWeight) ?? .medium
+    private var resolvedScrambleTextFontStyle: TimerFontStyleOption {
+        resolvedScrambleTextFontDesign.resolvedStyle(
+            rawValue: scrambleTextFontWeight,
+            preferredLegacyWeight: .medium
+        )
     }
 
-    private var resolvedAverageTextFontWeight: TimerFontWeightOption {
-        TimerFontWeightOption(rawValue: averageTextFontWeight) ?? .medium
+    private var resolvedAverageTextFontStyle: TimerFontStyleOption {
+        resolvedAverageTextFontDesign.resolvedStyle(
+            rawValue: averageTextFontWeight,
+            preferredLegacyWeight: .medium
+        )
     }
 
     private func configuredFont(
         size: Double,
         design: TimerFontDesignOption,
-        weight: TimerFontWeightOption
+        style: TimerFontStyleOption
     ) -> Font {
-        .system(size: size, weight: weight.fontWeight, design: design.fontDesign)
+        design.font(size: size, style: style)
     }
 
     @ViewBuilder
@@ -469,15 +522,15 @@ struct TimerTabView: View {
         _ text: Text,
         size: Double,
         design: TimerFontDesignOption,
-        weight: TimerFontWeightOption
+        style: TimerFontStyleOption
     ) -> some View {
         text
-            .font(configuredFont(size: size, design: design, weight: weight))
+            .font(configuredFont(size: size, design: design, style: style))
             .compatibleFontWidth(design)
     }
 
     private var timerTickInterval: TimeInterval {
-        timerAccuracy == "hundredths" ? 0.01 : 0.001
+        solveTimeAccuracy == .hundredths ? 0.01 : 0.001
     }
 
     private var shouldHideNonTimerContent: Bool {
@@ -579,18 +632,20 @@ struct TimerTabView: View {
             if showsOverlayTimer {
                 Color.clear
                     .frame(height: max(timerTextFontSize * 1.25, 96))
+                    .allowsHitTesting(false)
             } else {
                 Color.clear
                     .frame(height: max(timerTextFontSize * 1.25, 96))
+                    .allowsHitTesting(false)
             }
 
             Color.clear
                 .frame(height: max(resolvedAverageTextFontSize * 1.3, 34))
+                .allowsHitTesting(false)
 
             Spacer()
         }
         .padding(.horizontal, 24)
-        .simultaneousGesture(dismissTypingKeyboardGesture)
     }
 
     private var smartCubeTimerPanel: some View {
@@ -669,13 +724,6 @@ struct TimerTabView: View {
         }
     }
 
-    private var dismissTypingKeyboardGesture: some Gesture {
-        TapGesture().onEnded {
-            guard enteringTimesWith == "typing", isTypingFieldFocused else { return }
-            isTypingFieldFocused = false
-        }
-    }
-
     private var localBattleModeMenu: some View {
         LocalBattleModeMenu(mode: localBattleMode, onSelectMode: setLocalBattleMode)
     }
@@ -727,37 +775,71 @@ struct TimerTabView: View {
     var body: some View {
         CompatibleNavigationContainer {
             ZStack {
-                timerBackgroundView.ignoresSafeArea()
+                timerBackgroundView
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        guard enteringTimesWith == "typing", isTypingFieldFocused else { return }
+                        isTypingFieldFocused = false
+                    }
 
                 if localBattleMode == .solo {
                     soloTimerContent
+                        .ignoresSafeArea(.keyboard, edges: .bottom)
                 } else {
                     localBattleContent
                 }
 
                 if localBattleMode == .solo {
-                    GeometryReader { proxy in
-                        let timerCenterY = proxy.frame(in: .global).midY + hiddenTimerVerticalOffset
+                    if enteringTimesWith == "typing" {
+                        GeometryReader { proxy in
+                            manualTimeEntryContent
+                            .frame(maxWidth: min(proxy.size.width - 48, 420))
+                            .offset(y: manualTimeEntryTop(in: proxy))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        }
+                        .ignoresSafeArea(.keyboard, edges: .bottom)
+                    } else {
+                        GeometryReader { proxy in
+                            let timerCenterY = proxy.frame(in: .global).midY + hiddenTimerVerticalOffset
 
-                        timerDisplayView
-                            .position(
-                                x: proxy.size.width / 2,
-                                y: timerCenterY
-                            )
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-
-                        if !shouldHideNonTimerContent {
-                            averageDisplayView
+                            timerDisplayView
                                 .position(
                                     x: proxy.size.width / 2,
-                                    y: timerCenterY + averageOverlayVerticalOffset
+                                    y: timerCenterY
                                 )
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                                .allowsHitTesting(false)
+
+                            if !shouldHideNonTimerContent {
+                                averageDisplayView
+                                    .position(
+                                        x: proxy.size.width / 2,
+                                        y: timerCenterY + averageOverlayVerticalOffset
+                                    )
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                                    .allowsHitTesting(false)
+                            }
                         }
+                        .allowsHitTesting(false)
+                        .ignoresSafeArea()
                     }
-                    .allowsHitTesting(enteringTimesWith == "typing")
-                    .ignoresSafeArea()
+                }
+
+                if localBattleMode == .solo && enteringTimesWith == "timer" {
+                    GeometryReader { _ in
+                        VStack(spacing: 0) {
+                            // Controls and scramble content remain outside the timer hit region.
+                            Color.clear
+                                .frame(height: timerGestureTopReserveHeight)
+                                .allowsHitTesting(false)
+
+                            Color.clear
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .contentShape(Rectangle())
+                                .gesture(startTimerGesture)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    }
                 }
 
                 if let floatingPlacement = floatingDrawScramblePlacement,
@@ -782,6 +864,7 @@ struct TimerTabView: View {
                     }
                     .padding(.horizontal, floatingPlacement == .bottomCenter ? 24 : 0)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
                 }
 
                 if localBattleMode == .solo && showsGANResultPopup {
@@ -794,28 +877,15 @@ struct TimerTabView: View {
                         .transition(.scale(scale: 0.96).combined(with: .opacity))
                 }
             }
+            .coordinateSpace(name: TimerLayoutCoordinateSpace.name)
+            .onPreferenceChange(FloatingScrambleFramePreferenceKey.self) { frame in
+                floatingScrambleFrame = frame
+            }
             .animation(.easeInOut(duration: 0.18), value: showsGANResultPopup)
             .onAppear {
+                normalizeUnavailableFontSelections()
                 updateTimerAppearances()
                 updateTimerBackgroundImage()
-            }
-            .overlay {
-                if localBattleMode == .solo && enteringTimesWith == "timer" {
-                    GeometryReader { _ in
-                        VStack(spacing: 0) {
-                            // Reserve top area for event menu so menu taps don't start/stop timer.
-                            Color.clear
-                                .frame(height: timerGestureTopReserveHeight)
-                                .allowsHitTesting(false)
-
-                            Color.clear
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .contentShape(Rectangle())
-                                .gesture(startTimerGesture)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    }
-                }
             }
             .compatibleNavigationBarHidden()
         }
@@ -838,6 +908,7 @@ struct TimerTabView: View {
             prepareSmartCubeScrambleTarget()
         }
     }
+
         .onChange(of: timerBackgroundAppearanceData) { _ in
             updateTimerBackgroundAppearance()
             updateTimerBackgroundImage()
@@ -943,7 +1014,7 @@ struct TimerTabView: View {
                 discardPendingSolve()
             }
         } message: {
-            Text(SolveMetrics.formatTime(pendingSolveTime ?? 0, decimals: 3))
+            Text(SolveMetrics.formatTime(pendingSolveTime ?? 0, decimals: timerDecimals))
         }
         .sheet(isPresented: $showingMblindSheet) {
             mblindScrambleSheet
@@ -951,12 +1022,13 @@ struct TimerTabView: View {
         .sheet(isPresented: $showingMblindCountPicker) {
             mblindCountPickerSheet
         }
-        .sheet(isPresented: $showingScrambleDiagram) {
+        .fullScreenCover(isPresented: $showingScrambleDiagram) {
             if let scrambleDiagramPuzzleKey {
                 ScrambleDiagramSheet(
                     title: "timer.scramble_diagram",
                     puzzleKey: scrambleDiagramPuzzleKey,
-                    scramble: currentScramble
+                    scramble: currentScramble,
+                    exportAppearance: timerScrambleExportAppearance
                 )
             }
         }
@@ -982,6 +1054,25 @@ struct TimerTabView: View {
             .frame(width: 0, height: 0)
         )
     }
+
+    private func normalizeUnavailableFontSelections() {
+        if resolvedTimerTextFontDesign.rawValue != timerTextFontDesign {
+            timerTextFontDesign = resolvedTimerTextFontDesign.rawValue
+        }
+        if resolvedScrambleTextFontDesign.rawValue != scrambleTextFontDesign {
+            scrambleTextFontDesign = resolvedScrambleTextFontDesign.rawValue
+        }
+        if resolvedAverageTextFontDesign.rawValue != averageTextFontDesign {
+            averageTextFontDesign = resolvedAverageTextFontDesign.rawValue
+        }
+        let timerStyle = resolvedTimerTextFontStyle.id
+        let scrambleStyle = resolvedScrambleTextFontStyle.id
+        let averageStyle = resolvedAverageTextFontStyle.id
+        if timerStyle != timerTextFontWeight { timerTextFontWeight = timerStyle }
+        if scrambleStyle != scrambleTextFontWeight { scrambleTextFontWeight = scrambleStyle }
+        if averageStyle != averageTextFontWeight { averageTextFontWeight = averageStyle }
+    }
+
 // Event selection
     private var eventMenu: some View {
         Menu {
@@ -1024,7 +1115,7 @@ struct TimerTabView: View {
         }
         .tint(.primary)
         .buttonStyle(.plain)
-        .disabled(enteringTimesWith == "smartCube")
+        .disabled(enteringTimesWith == "smartCube" || isMarketingPreviewTimer)
     }
 
     private var startTimerGesture: some Gesture {
@@ -1697,27 +1788,17 @@ struct TimerTabView: View {
     }
 
     private func averageMetricRow(titleKey: LocalizedStringKey, value: Double?) -> some View {
-        let averageString = SolveMetrics.formatAverage(value)
+        let averageString = SolveMetrics.formatAverage(value, decimals: timerDecimals)
         return configuredText(
             Text("\(Text(titleKey)): \(averageString)"),
             size: resolvedAverageTextFontSize,
             design: resolvedAverageTextFontDesign,
-            weight: resolvedAverageTextFontWeight
+            style: resolvedAverageTextFontStyle
         )
     }
 
     private func formatDisplayedTime(_ seconds: Double) -> String {
-        let clamped = max(0, seconds)
-        let hours = Int(clamped) / 3600
-        let minutes = (Int(clamped) % 3600) / 60
-        let remainingSeconds = clamped - Double(hours * 3600 + minutes * 60)
-        if hours > 0 {
-            return String(format: "%d:%02d:%0*.*f", hours, minutes, timerDecimals + 3, timerDecimals, remainingSeconds)
-        }
-        if minutes > 0 {
-            return String(format: "%d:%0*.*f", minutes, timerDecimals + 3, timerDecimals, remainingSeconds)
-        }
-        return String(format: "%.\(timerDecimals)f", remainingSeconds)
+        SolveMetrics.formatTime(seconds, decimals: timerDecimals)
     }
 
     private func announceInspectionCheckpointsIfNeeded() {
@@ -1772,33 +1853,80 @@ struct TimerTabView: View {
     @ViewBuilder
     private var timerDisplayView: some View {
         if enteringTimesWith == "typing" {
-            VStack(spacing: 12) {
-                TextField(LocalizedStringKey("timer.typing_placeholder"), text: $typedTimeInput)
-                    .font(.system(size: 40, weight: .semibold))
-                    .multilineTextAlignment(.center)
-                    .keyboardType(.decimalPad)
-                    .focused($isTypingFieldFocused)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 18)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-
-                Button("timer.typing_save") {
-                    saveTypedTime()
-                }
-                .compatibleProminentButtonFromIOS16(tint: .blue)
-                .disabled(parseTypedTime(typedTimeInput) == nil)
-            }
+            manualTimeInputField
         } else {
             configuredText(
                 Text(timerText),
                 size: timerTextFontSize,
                 design: resolvedTimerTextFontDesign,
-                weight: resolvedTimerTextFontWeight
+                style: resolvedTimerTextFontStyle
             )
                 .monospacedDigit()
                 .foregroundStyle(timerTextStyle)
                 .contentShape(Rectangle())
         }
+    }
+
+    private var manualTimeEntryContent: some View {
+        VStack(spacing: manualTimeEntrySpacing) {
+            manualTimeInputField
+
+            Button("timer.typing_save") {
+                saveTypedTime()
+            }
+            .compatibleProminentButtonFromIOS16(tint: .blue)
+            .disabled(parseTypedTime(typedTimeInput) == nil)
+
+            if !shouldHideNonTimerContent {
+                averageDisplayView
+                    .allowsHitTesting(false)
+            }
+        }
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .preference(key: ManualTimeEntryHeightPreferenceKey.self, value: proxy.size.height)
+            }
+        }
+        .onPreferenceChange(ManualTimeEntryHeightPreferenceKey.self) { height in
+            manualTimeEntryHeight = height
+        }
+    }
+
+    private var manualTimeInputField: some View {
+        TextField(LocalizedStringKey("timer.typing_placeholder"), text: $typedTimeInput)
+            .font(.system(size: 40, weight: .semibold))
+            .multilineTextAlignment(.center)
+            .keyboardType(.decimalPad)
+            .focused($isTypingFieldFocused)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(key: ManualTimeInputHeightPreferenceKey.self, value: proxy.size.height)
+                }
+            }
+            .onPreferenceChange(ManualTimeInputHeightPreferenceKey.self) { height in
+                manualTimeInputHeight = height
+            }
+    }
+
+    private func manualTimeEntryTop(in proxy: GeometryProxy) -> CGFloat {
+        let centeredTop = proxy.size.height / 2 - manualTimeInputHeight / 2
+
+        guard manualTimeEntryHeight > 0,
+              floatingDrawScramblePlacement != nil,
+              canShowScrambleDiagram,
+              let floatingScrambleFrame else {
+            return centeredTop
+        }
+
+        let localOriginY = proxy.frame(in: .named(TimerLayoutCoordinateSpace.name)).minY
+        let scrambleTop = floatingScrambleFrame.minY - localOriginY
+        let maximumBottom = scrambleTop - manualTimeEntrySpacing
+        return min(centeredTop, maximumBottom - manualTimeEntryHeight)
     }
 
     private func saveTypedTime() {
@@ -1909,6 +2037,13 @@ struct TimerTabView: View {
     }
 
     private func generateNewScramble() {
+        #if DEBUG
+        if let marketingPreviewConfiguration {
+            currentScramble = marketingPreviewConfiguration.scramble
+            return
+        }
+        #endif
+
         if selectedEvent == .twoByTwo {
             if isGenerating2x2 { return }
             isGenerating2x2 = true
@@ -2079,6 +2214,14 @@ struct TimerTabView: View {
                 }
             }
         }
+    }
+
+    private var isMarketingPreviewTimer: Bool {
+        #if DEBUG
+        marketingPreviewConfiguration != nil
+        #else
+        false
+        #endif
     }
 
     private func preferredScramble(for event: PuzzleEvent) -> String {
@@ -2305,14 +2448,36 @@ struct TimerTabView: View {
             if let scrambleDiagramPuzzleKey {
                 let aspectRatio = ScrambleDiagramView.diagramAspectRatio(for: scrambleDiagramPuzzleKey)
                 let height = drawScrambleFloatingSize / aspectRatio
-                ScrambleDiagramView(puzzleKey: scrambleDiagramPuzzleKey, scramble: currentScramble)
+                ScrambleDiagramView(
+                    puzzleKey: scrambleDiagramPuzzleKey,
+                    scramble: currentScramble,
+                    exportAppearance: timerScrambleExportAppearance
+                )
                     .frame(width: drawScrambleFloatingSize, height: height)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        showingScrambleDiagram = true
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear.preference(
+                                key: FloatingScrambleFramePreferenceKey.self,
+                                value: proxy.frame(in: .named(TimerLayoutCoordinateSpace.name))
+                            )
+                        }
                     }
             }
         }
+    }
+
+    private var timerScrambleExportAppearance: ScrambleExportAppearance {
+        .timer(
+            TimerScrambleExportConfiguration(
+                backgroundAppearance: timerBackgroundAppearance,
+                backgroundImage: decodedTimerBackgroundImage,
+                textAppearance: scrambleTextAppearance,
+                fontDesign: resolvedScrambleTextFontDesign,
+                fontStyle: resolvedScrambleTextFontStyle,
+                fontSize: resolvedScrambleTextFontSize,
+                colorScheme: colorScheme
+            )
+        )
     }
 
     private func handleSpacebarTrigger() {

@@ -9,7 +9,8 @@ enum SolveMetrics {
         }
 
         let precision = max(0, decimals)
-        let clampedSeconds = max(0, seconds)
+        let scale = pow(10.0, Double(precision))
+        let clampedSeconds = floor(max(0, seconds) * scale) / scale
         guard clampedSeconds >= 60 else {
             return String(format: "%.\(precision)f", clampedSeconds)
         }
@@ -28,10 +29,10 @@ enum SolveMetrics {
         return String(format: "%d:%02d:%@", hours, minutes, secondsText)
     }
 
-    nonisolated static func formatAverage(_ seconds: Double?) -> String {
+    nonisolated static func formatAverage(_ seconds: Double?, decimals: Int) -> String {
         guard let seconds else { return currentAppLocalizedString("common.not_available") }
         if seconds.isNaN { return currentAppLocalizedString("common.dnf") }
-        return formatTime(seconds, decimals: 2)
+        return formatTime(seconds, decimals: decimals)
     }
 
     @MainActor
@@ -58,7 +59,7 @@ enum SolveMetrics {
     }
 
     @MainActor
-    static func displayTime(for solve: Solve, decimals: Int = 3) -> String {
+    static func displayTime(for solve: Solve, decimals: Int) -> String {
         switch solve.result {
         case .solved:
             return formatTime(solve.time, decimals: decimals)
@@ -69,7 +70,7 @@ enum SolveMetrics {
         }
     }
 
-    nonisolated static func displayTime(for solve: SessionSolveSample, decimals: Int = 3) -> String {
+    nonisolated static func displayTime(for solve: SessionSolveSample, decimals: Int) -> String {
         switch SolveResult(rawValue: solve.resultRaw) ?? .solved {
         case .solved:
             return formatTime(solve.time, decimals: decimals)

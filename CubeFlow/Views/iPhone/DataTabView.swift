@@ -10,6 +10,7 @@ private let solvesDidChangeNotification = Notification.Name("CubeFlowSolvesDidCh
 @MainActor
 struct DataTabView: View {
     @Environment(\.managedObjectContext) private var modelContext
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
 
     private let usesSystemBottomAccessory: Bool
     @Binding private var isBottomAccessoryVisible: Bool
@@ -114,7 +115,8 @@ struct DataTabView: View {
         return SessionSnapshotKey(
             sessionID: selectedSession.id,
             solveCount: sessionSolves.count,
-            languageCode: appLanguage
+            languageCode: appLanguage,
+            timeDecimals: solveTimeAccuracy.decimals
         )
     }
 
@@ -290,6 +292,12 @@ struct DataTabView: View {
             }
         }
         .onChange(of: appLanguage) { _ in
+            recordSnapshotKey = nil
+            if selectedSegment == .record {
+                refreshRecordSnapshot()
+            }
+        }
+        .onChange(of: solveTimeAccuracy) { _ in
             recordSnapshotKey = nil
             if selectedSegment == .record {
                 refreshRecordSnapshot()
@@ -671,7 +679,7 @@ struct DataTabView: View {
 
                 Spacer()
 
-                Text(SolveMetrics.formatAverage(entry.value))
+                Text(SolveMetrics.formatAverage(entry.value, decimals: solveTimeAccuracy.decimals))
                     .font(.system(size: 24, weight: .semibold))
                     .monospacedDigit()
                     .foregroundStyle(entry.isPersonalBest ? .orange : .primary)
@@ -698,7 +706,7 @@ struct DataTabView: View {
                     .foregroundStyle(.primary)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(SolveMetrics.displayTime(for: solve))
+                    Text(SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals))
                         .font(.system(size: 28, weight: .semibold))
                         .monospacedDigit()
                         .foregroundStyle(personalBestSingleSolveIDs.contains(solve.id) ? .orange : .primary)
@@ -1089,7 +1097,8 @@ struct DataTabView: View {
             let snapshot = DataTabComputation.buildRecordSnapshotData(
                 from: samples,
                 notAvailable: notAvailable,
-                languageCode: languageCode
+                languageCode: languageCode,
+                timeDecimals: snapshotKey.timeDecimals
             )
 
             await MainActor.run {
@@ -1738,6 +1747,7 @@ private struct DataBottomSearchBarGlassModifier: ViewModifier {
 }
 
 private struct DataSolveSearchView: View {
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     let sessionID: UUID
     let fallbackPuzzleKey: String?
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -1817,12 +1827,15 @@ private struct DataSolveSearchView: View {
         .onChange(of: appLanguage) { _ in
             searchableTextByID = makeSearchIndex(for: solves)
         }
+        .onChange(of: solveTimeAccuracy) { _ in
+            searchableTextByID = makeSearchIndex(for: solves)
+        }
     }
 
     private func searchResultRow(_ solve: SessionSolveSample) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(alignment: .firstTextBaseline) {
-                Text(SolveMetrics.displayTime(for: solve))
+                Text(SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals))
                     .font(.system(size: 20, weight: .semibold))
                     .monospacedDigit()
                 Spacer()
@@ -1916,7 +1929,7 @@ private struct DataSolveSearchView: View {
         let isoDate = isoDateFormatter.string(from: solve.date)
         let rawSeconds = String(format: "%.3f", solve.time)
         return normalized([
-            SolveMetrics.displayTime(for: solve),
+            SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals),
             rawSeconds,
             solve.comment,
             solve.scramble,
@@ -2013,6 +2026,7 @@ private struct RecordHistoryEntry: Identifiable, Sendable {
 
 private struct RecordHistorySheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     @AppStorage("appLanguage") private var appLanguage: String = "en"
 
     let solves: [SessionSolveSample]
@@ -2109,15 +2123,15 @@ private struct RecordHistorySheet: View {
                     HStack(spacing: 8) {
                         Text(
                             entry.metric == .single
-                                ? SolveMetrics.formatTime(entry.value, decimals: 3)
-                                : SolveMetrics.formatAverage(entry.value)
+                                ? SolveMetrics.formatTime(entry.value, decimals: solveTimeAccuracy.decimals)
+                                : SolveMetrics.formatAverage(entry.value, decimals: solveTimeAccuracy.decimals)
                         )
                             .font(.system(size: 19, weight: .semibold))
                             .monospacedDigit()
                             .foregroundStyle(.primary)
 
                         if let improvement = entry.improvement {
-                            Text("−\(SolveMetrics.formatTime(improvement, decimals: 3))")
+                            Text("−\(SolveMetrics.formatTime(improvement, decimals: solveTimeAccuracy.decimals))")
                                 .font(.system(size: 13, weight: .semibold))
                                 .monospacedDigit()
                                 .foregroundStyle(.green)
@@ -2234,6 +2248,7 @@ private struct RecordHistorySheet: View {
 private struct SolveDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var modelContext
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     private let sample: SessionSolveSample
     private let position: Int?
     private let fallbackPuzzleKey: String?
@@ -2241,6 +2256,12 @@ private struct SolveDetailSheet: View {
     @State private var showingScrambleDetail = false
     @State private var isShowingDeleteSolveAlert = false
     @State private var commentText: String
+    @State private var sharedSolveImage: SharedImageItem?
+    @State private var isRenderingShareImage = false
+    @State private var shareErrorMessage: String?
+    @State private var showingShareOptions = false
+    @State private var shareContentKind: SolveShareContentKind = .solveCard
+    @State private var shareBackground: SolveShareBackground = .light
 
     init(sample: SessionSolveSample, position: Int?, fallbackPuzzleKey: String?) {
         self.sample = sample
@@ -2280,7 +2301,7 @@ private struct SolveDetailSheet: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.secondary)
 
-                        Text(SolveMetrics.displayTime(for: sample))
+                        Text(SolveMetrics.displayTime(for: sample, decimals: solveTimeAccuracy.decimals))
                             .font(.system(size: 44, weight: .semibold))
                             .monospacedDigit()
                     }
@@ -2290,7 +2311,11 @@ private struct SolveDetailSheet: View {
 
                     if canShowScrambleDiagram, let puzzleKey {
                         let aspectRatio = ScrambleDiagramView.diagramAspectRatio(for: puzzleKey)
-                        ScrambleDiagramView(puzzleKey: puzzleKey, scramble: sample.scramble)
+                        ScrambleDiagramView(
+                            puzzleKey: puzzleKey,
+                            scramble: sample.scramble,
+                            exportAppearance: .solveDetail(.light)
+                        )
                             .aspectRatio(aspectRatio, contentMode: .fit)
                             .frame(maxWidth: .infinity)
                     }
@@ -2305,6 +2330,38 @@ private struct SolveDetailSheet: View {
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showingShareOptions = true
+                    } label: {
+                        if isRenderingShareImage {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                    .disabled(isRenderingShareImage)
+                    .accessibilityLabel("Share this solve")
+                    .popover(
+                        isPresented: $showingShareOptions,
+                        attachmentAnchor: .rect(.bounds),
+                        arrowEdge: .top
+                    ) {
+                        solveShareOptions
+                    }
+                    .alert(
+                        "Unable to Share Solve",
+                        isPresented: Binding(
+                            get: { shareErrorMessage != nil },
+                            set: { if !$0 { shareErrorMessage = nil } }
+                        )
+                    ) {
+                        Button("OK", role: .cancel) { shareErrorMessage = nil }
+                    } message: {
+                        Text(shareErrorMessage ?? "")
+                    }
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         saveComment()
@@ -2314,6 +2371,9 @@ private struct SolveDetailSheet: View {
                     }
                     .accessibilityLabel(Text("common.done"))
                 }
+            }
+            .sheet(item: $sharedSolveImage) { item in
+                SystemShareSheet(items: [item.image])
             }
             .onDisappear(perform: saveComment)
             .alert("delete.solve.title", isPresented: $isShowingDeleteSolveAlert) {
@@ -2331,6 +2391,7 @@ private struct SolveDetailSheet: View {
                             .font(.system(size: 17, weight: .medium))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(24)
+                            .selectableContent()
                     }
                     .compatibleSoftScrollEdgeEffect()
                     .navigationTitle(appLocalizedString("common.scramble", languageCode: appLanguage))
@@ -2466,11 +2527,96 @@ private struct SolveDetailSheet: View {
         }
         dismiss()
     }
+
+    @ViewBuilder
+    private var solveShareOptions: some View {
+        let options = VStack(alignment: .leading, spacing: 18) {
+            Text("Share Solve")
+                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text("Content")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Picker("Content", selection: $shareContentKind) {
+                    ForEach(availableShareContentKinds) { kind in
+                        Text(kind.title).tag(kind)
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+            }
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text("Background")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Picker("Background", selection: $shareBackground) {
+                    ForEach(SolveShareBackground.allCases) { background in
+                        Text(background.title).tag(background)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+            }
+
+            Button {
+                shareSolve(contentKind: shareContentKind, background: shareBackground)
+            } label: {
+                Label("Share", systemImage: "square.and.arrow.up")
+                    .frame(maxWidth: .infinity)
+            }
+            .compatibleProminentButtonFromIOS16(tint: .blue)
+            .disabled(isRenderingShareImage)
+        }
+        .padding(18)
+        .frame(width: 310)
+
+        if #available(iOS 16.4, *) {
+            options.presentationCompactAdaptation(.popover)
+        } else {
+            options
+        }
+    }
+
+    private var availableShareContentKinds: [SolveShareContentKind] {
+        canShowScrambleDiagram
+            ? SolveShareContentKind.allCases
+            : [.solveCard]
+    }
+
+    private func shareSolve(
+        contentKind: SolveShareContentKind,
+        background: SolveShareBackground
+    ) {
+        guard !isRenderingShareImage else { return }
+        showingShareOptions = false
+        isRenderingShareImage = true
+        Task {
+            defer { isRenderingShareImage = false }
+            do {
+                let image = try await SolveShareRenderer.render(
+                    sample: sample,
+                    position: position,
+                    puzzleKey: puzzleKey,
+                    comment: commentText,
+                    decimals: solveTimeAccuracy.decimals,
+                    contentKind: contentKind,
+                    background: background
+                )
+                sharedSolveImage = SharedImageItem(image: image)
+            } catch {
+                shareErrorMessage = (error as? LocalizedError)?.errorDescription
+                    ?? error.localizedDescription
+            }
+        }
+    }
 }
 
 
 private struct AverageDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     let entry: AverageListEntry
     let metric: AverageDetailMetric
     let personalBestSingleSolveIDs: Set<UUID>
@@ -2532,7 +2678,7 @@ private struct AverageDetailSheet: View {
 
     private var standardDeviationLabel: String {
         let value = standardDeviation.map {
-            SolveMetrics.formatTime($0, decimals: 2)
+            SolveMetrics.formatTime($0, decimals: solveTimeAccuracy.decimals)
         } ?? "-"
         return "(σ = \(value))"
     }
@@ -2552,16 +2698,16 @@ private struct AverageDetailSheet: View {
                     averageSummaryRow(
                         title: metric.title(languageCode: appLanguage),
                         secondaryTitle: standardDeviationLabel,
-                        value: SolveMetrics.formatAverage(entry.value),
+                        value: SolveMetrics.formatAverage(entry.value, decimals: solveTimeAccuracy.decimals),
                         isPrimary: true
                     )
                     averageSummaryRow(
                         title: dataTabLocalizedString(for: "data.best_time", languageCode: appLanguage),
-                        value: bestSolve.map { SolveMetrics.displayTime(for: $0) } ?? appLocalizedString("common.not_available", languageCode: appLanguage)
+                        value: bestSolve.map { SolveMetrics.displayTime(for: $0, decimals: solveTimeAccuracy.decimals) } ?? appLocalizedString("common.not_available", languageCode: appLanguage)
                     )
                     averageSummaryRow(
                         title: dataTabLocalizedString(for: "data.worst_time", languageCode: appLanguage),
-                        value: worstSolve.map { SolveMetrics.displayTime(for: $0) } ?? appLocalizedString("common.not_available", languageCode: appLanguage)
+                        value: worstSolve.map { SolveMetrics.displayTime(for: $0, decimals: solveTimeAccuracy.decimals) } ?? appLocalizedString("common.not_available", languageCode: appLanguage)
                     )
                 }
 
@@ -2627,7 +2773,7 @@ private struct AverageDetailSheet: View {
     }
 
     private func averageSolveRow(_ solve: SessionSolveSample, position: Int) -> some View {
-        let timeText = SolveMetrics.displayTime(for: solve)
+        let timeText = SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals)
         let displayText = trimmedSolveIDs.contains(solve.id) ? "(\(timeText))" : timeText
 
         return Button {
@@ -3363,6 +3509,7 @@ private struct AnimatedSessionSolveCountText: View {
 }
 
 private struct TimeTrendSheet: View {
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     let solves: [SessionSolveSample]
     let appLanguage: String
 
@@ -3480,7 +3627,7 @@ private struct TimeTrendSheet: View {
                     .foregroundStyle(.secondary.opacity(0.5))
                     .annotation(position: .top) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(SolveMetrics.formatTime(selected.time, decimals: 3))
+                            Text(SolveMetrics.formatTime(selected.time, decimals: solveTimeAccuracy.decimals))
                                 .font(.system(size: 12, weight: .semibold))
                             Text(SolveMetrics.displayDate(selected.date, languageCode: appLanguage))
                                 .font(.system(size: 10, weight: .medium))
@@ -3524,7 +3671,7 @@ private struct TimeTrendSheet: View {
                     .foregroundStyle(.secondary.opacity(0.5))
                     .annotation(position: .top) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("\(SolveMetrics.formatTime(bin.lower, decimals: 2)) - \(SolveMetrics.formatTime(bin.upper, decimals: 2))")
+                            Text("\(SolveMetrics.formatTime(bin.lower, decimals: solveTimeAccuracy.decimals)) - \(SolveMetrics.formatTime(bin.upper, decimals: solveTimeAccuracy.decimals))")
                                 .font(.system(size: 12, weight: .semibold))
                             Text("\(bin.count)")
                                 .font(.system(size: 10, weight: .medium))

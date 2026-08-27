@@ -943,7 +943,10 @@ extension SmartCubeBluetoothManager: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        connectionState = .failed(error?.localizedDescription ?? "Failed to connect")
+        connectionState = .failed(
+            error.map { appUserFacingErrorMessage($0, languageCode: currentAppLanguageCode()) }
+                ?? "Failed to connect"
+        )
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
@@ -960,7 +963,7 @@ extension SmartCubeBluetoothManager: CBCentralManagerDelegate {
 extension SmartCubeBluetoothManager: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let error {
-            connectionState = .failed(error.localizedDescription)
+            connectionState = .failed(appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode()))
             return
         }
         let services = peripheral.services ?? []

@@ -1,7 +1,11 @@
+
 import SwiftUI
 
 #if os(iOS)
 struct IPhoneContentView: View {
+    #if DEBUG
+    private let marketingPreviewConfiguration: MarketingTimerPreviewConfiguration?
+    #endif
     @State private var selectedTab: IPhoneTab = .timer
     @State private var algsSearchRequestID = 0
     @State private var competitionSearchRequestID = 0
@@ -12,6 +16,12 @@ struct IPhoneContentView: View {
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
     @AppStorage("algBrowseViewModeStore") private var algBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
+
+    #if DEBUG
+    init(marketingPreviewConfiguration: MarketingTimerPreviewConfiguration? = nil) {
+        self.marketingPreviewConfiguration = marketingPreviewConfiguration
+    }
+    #endif
 
     private var contentLocale: Locale {
         appLocale(for: appLanguage)
@@ -26,7 +36,7 @@ struct IPhoneContentView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            TimerTabView()
+            timerTabContent
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.timer", languageCode: appLanguage))
@@ -90,6 +100,7 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.settings)
         }
+        .compatibleSoftScrollEdgeEffect()
         .compatibleTabViewBottomAccessory(isEnabled: shouldShowTabBottomAccessory) {
             tabBottomAccessoryContent
         }
@@ -103,6 +114,15 @@ struct IPhoneContentView: View {
         .onChange(of: requestedIPhoneTab) { _ in
             handleRequestedTab()
         }
+    }
+
+    @ViewBuilder
+    private var timerTabContent: some View {
+        #if DEBUG
+        TimerTabView(marketingPreviewConfiguration: marketingPreviewConfiguration)
+        #else
+        TimerTabView()
+        #endif
     }
 
     private var shouldShowTabBottomAccessory: Bool {

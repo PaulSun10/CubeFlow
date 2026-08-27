@@ -2,6 +2,7 @@ import SwiftUI
 
 #if os(iOS)
 struct TimerGANResultPopup: View {
+    @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     let pendingSolveTime: Double?
     let inputMode: GANResultInputMode
     let choices: [SolveResult]
@@ -16,7 +17,7 @@ struct TimerGANResultPopup: View {
             Text("timer.solve_result.title")
                 .font(.system(size: 17, weight: .semibold))
 
-            Text(SolveMetrics.formatTime(pendingSolveTime ?? 0, decimals: 3))
+            Text(SolveMetrics.formatTime(pendingSolveTime ?? 0, decimals: solveTimeAccuracy.decimals))
                 .font(.system(size: 34, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .frame(maxWidth: .infinity, alignment: .center)

@@ -90,6 +90,7 @@ struct CubeFlowApp: App {
     #endif
 
     private let persistenceController = PersistenceController.shared
+    @AppStorage("timerAccuracy") private var timerAccuracy = SolveTimeAccuracy.thousandths.rawValue
 
     var body: some Scene {
         WindowGroup {
@@ -106,5 +107,6 @@ struct CubeFlowApp: App {
             #endif
         }
         .environment(\.managedObjectContext, persistenceController.container.viewContext)
+        .environment(\.solveTimeAccuracy, SolveTimeAccuracy.resolved(from: timerAccuracy))
     }
 }

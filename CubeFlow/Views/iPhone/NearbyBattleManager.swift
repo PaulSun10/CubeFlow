@@ -179,7 +179,7 @@ final class NearbyBattleManager: NSObject, ObservableObject {
             let data = try JSONEncoder().encode(message)
             try session.send(data, toPeers: session.connectedPeers, with: mode)
         } catch {
-            phase = .failed(error.localizedDescription)
+            phase = .failed(appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode()))
         }
     }
 
@@ -244,7 +244,7 @@ extension NearbyBattleManager: MCNearbyServiceAdvertiserDelegate {
 
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
         DispatchQueue.main.async {
-            self.phase = .failed(error.localizedDescription)
+            self.phase = .failed(appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode()))
         }
     }
 }
@@ -269,7 +269,7 @@ extension NearbyBattleManager: MCNearbyServiceBrowserDelegate {
 
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
         DispatchQueue.main.async {
-            self.phase = .failed(error.localizedDescription)
+            self.phase = .failed(appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode()))
         }
     }
 }

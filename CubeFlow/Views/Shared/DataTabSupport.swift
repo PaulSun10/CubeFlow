@@ -68,6 +68,7 @@ struct SessionSnapshotKey: Equatable, Sendable {
     let sessionID: UUID
     let solveCount: Int
     let languageCode: String
+    let timeDecimals: Int
 }
 
 struct RecordAverageMetric: Identifiable, Sendable {
@@ -344,7 +345,8 @@ enum DataTabComputation {
     nonisolated static func buildRecordSnapshotData(
         from solves: [SessionSolveSample],
         notAvailable: String,
-        languageCode: String
+        languageCode: String,
+        timeDecimals: Int
     ) -> RecordSnapshot {
         let availableMetrics = RecordAverageMetric.defaultMetrics.filter { solves.count >= $0.solveCount }
         let validTimes = solves.compactMap { $0.adjustedTime }
@@ -361,7 +363,7 @@ enum DataTabComputation {
                     metricRawValue: "single",
                     title: dataTabLocalizedString(for: "data.single", languageCode: languageCode),
                     secondaryTitle: nil,
-                    value: SolveMetrics.displayTime(for: currentSingle)
+                    value: SolveMetrics.displayTime(for: currentSingle, decimals: timeDecimals)
                 )
             )
         }
@@ -373,9 +375,10 @@ enum DataTabComputation {
                 title: metric.localizedTitle(languageCode: languageCode),
                 secondaryTitle: standardDeviationLabel(
                     solves: currentWindow,
-                    trimmingCount: metric.trimCount
+                    trimmingCount: metric.trimCount,
+                    decimals: timeDecimals
                 ),
-                value: SolveMetrics.formatAverage(value)
+                value: SolveMetrics.formatAverage(value, decimals: timeDecimals)
             )
         }
 
@@ -389,7 +392,7 @@ enum DataTabComputation {
                     metricRawValue: "single",
                     title: dataTabLocalizedString(for: "data.single", languageCode: languageCode),
                     secondaryTitle: nil,
-                    value: SolveMetrics.displayTime(for: bestSingle)
+                    value: SolveMetrics.displayTime(for: bestSingle, decimals: timeDecimals)
                 )
             )
         }
@@ -409,19 +412,20 @@ enum DataTabComputation {
                 title: metric.localizedTitle(languageCode: languageCode),
                 secondaryTitle: standardDeviationLabel(
                     solves: bestWindow,
-                    trimmingCount: metric.trimCount
+                    trimmingCount: metric.trimCount,
+                    decimals: timeDecimals
                 ),
-                value: SolveMetrics.formatAverage(bestValue)
+                value: SolveMetrics.formatAverage(bestValue, decimals: timeDecimals)
             )
         }
 
         return RecordSnapshot(
             sessionMeanText: validTimes.isEmpty
                 ? notAvailable
-                : SolveMetrics.formatTime(validTimes.reduce(0, +) / Double(validTimes.count), decimals: 3),
+                : SolveMetrics.formatTime(validTimes.reduce(0, +) / Double(validTimes.count), decimals: timeDecimals),
             sessionMeanSuffix: validCount < solves.count ? "(\(validCount)/\(solves.count))" : nil,
-            bestTimeText: validTimes.min().map { SolveMetrics.formatTime($0, decimals: 3) } ?? notAvailable,
-            worstTimeText: validTimes.max().map { SolveMetrics.formatTime($0, decimals: 3) } ?? notAvailable,
+            bestTimeText: validTimes.min().map { SolveMetrics.formatTime($0, decimals: timeDecimals) } ?? notAvailable,
+            worstTimeText: validTimes.max().map { SolveMetrics.formatTime($0, decimals: timeDecimals) } ?? notAvailable,
             currentStats: currentStats,
             bestStats: bestStats
         )
@@ -429,10 +433,11 @@ enum DataTabComputation {
 
     nonisolated private static func standardDeviationLabel(
         solves: [SessionSolveSample],
-        trimmingCount: Int
+        trimmingCount: Int,
+        decimals: Int
     ) -> String? {
         SolveMetrics.standardDeviation(from: solves, trimmingCount: trimmingCount).map {
-            "(σ = \(SolveMetrics.formatTime($0, decimals: 2)))"
+            "(σ = \(SolveMetrics.formatTime($0, decimals: decimals)))"
         }
     }
 

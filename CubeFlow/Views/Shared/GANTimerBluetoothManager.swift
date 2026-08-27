@@ -433,7 +433,7 @@ extension GANTimerBluetoothManager: CBCentralManagerDelegate {
         lastZeroIdlePacketDate = nil
         isHandsOn = false
         if let error {
-            connectionState = .failed(error.localizedDescription)
+            connectionState = .failed(appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode()))
         } else {
             connectionState = .disconnected
         }
