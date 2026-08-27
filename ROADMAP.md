@@ -34,6 +34,30 @@ This roadmap ranks unfinished work by user value, urgency, dependencies, and imp
 - Verify selection mode, graph actions, rotation, sheets, and iOS 26/27 navigation transitions.
 - Add a focused regression checklist before release.
 
+### iOS 26+ Horizontal Selector Liquid Glass Unification
+
+**Why it matters:** CubeFlow currently has several independently styled horizontal capsule selectors. On iOS 26 and later, these should follow the same native Liquid Glass language instead of mixing custom fills, materials, and simulated edge blur.
+
+**Status:** Implemented. Horizontal peer selectors now share one availability-aware style: native Liquid Glass on iOS 26+, with their existing appearance retained on earlier systems.
+
+**Product direction:**
+
+- Introduce one shared horizontal selector component/style that owns availability checks, shape, spacing, selection state, animation, and feedback.
+- On iOS 26 and later, use native SwiftUI Liquid Glass APIs, including `GlassEffectContainer`, interactive glass, native glass button styles where appropriate, and system-supported morphing rather than custom blur or material simulation.
+- On earlier iOS versions, preserve the existing selector appearance and behavior. Do not spend additional time polishing the custom Competitors separator-edge blur solely for the fallback.
+- Do not apply glass indiscriminately to read-only badges, status tags, table headers, date tabs, or horizontal data tables. This task is limited to interactive capsule/segmented selection controls.
+- Verify light/dark appearance, Reduce Transparency, Dynamic Type, localization width, VoiceOver, selection feedback, rapid switching, and horizontal scrolling before replacing existing styles.
+
+**Initial audit scope:**
+
+- `AlgTabView`: all three hybrid subset selector contexts currently using duplicated `hybridSubsetPicker` / `hybridSubsetCapsule` implementations.
+- `WCAMyResultsView`: the horizontal event selector in Results.
+- `CompetitionTabView`: `CompetitionDetailTabStrip`, the Competitors event selector, and the Cubing China schedule event selector.
+- Native segmented controls with custom surrounding surfaces in `DataTabView`, `CompetitionTabView`, and `AlgTabView`: confirm whether the system already supplies the correct iOS 26 Glass treatment and remove conflicting custom chrome rather than wrapping Glass twice.
+- `TimerLocalBattleView`: audit event and handicap selectors for inclusion if they function as peer capsule choices rather than menus.
+
+**Completion criteria:** Every interactive horizontal capsule selector uses the shared abstraction; iOS 26+ receives native system Glass without custom blur/tint simulation, earlier systems retain their current fallback, and no page contains a one-off availability branch for the same selector pattern.
+
 ### Performance And Energy Follow-up
 
 **Why it matters:** Previous hangs were reduced substantially, but sustained High Energy Impact still affects battery life and confidence during competitions.
@@ -50,6 +74,8 @@ This roadmap ranks unfinished work by user value, urgency, dependencies, and imp
 - Standardize cache age, refresh, stale-data, and offline states.
 - Preserve the last successful competition-day snapshot.
 - Surface source-specific errors instead of generic empty content.
+- Detect loss of connectivity before starting uncached requests and show an explicit offline state instead of an indefinite loading indicator.
+- Keep cached competition pages usable offline, label stale content clearly, and provide a native retry action when connectivity returns.
 
 ## P2 - Smart Cube Usability
 

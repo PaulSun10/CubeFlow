@@ -674,14 +674,15 @@ struct AlgTrainerHomeView: View {
             }
         }
         .listStyle(.plain)
-        .navigationTitle(localizedAlgString(key: "algs.trainer.title", languageCode: appLanguage))
-        .navigationBarTitleDisplayMode(.inline)
+        .scrollAwareNavigationTitle(localizedAlgString(key: "algs.trainer.title", languageCode: appLanguage))
     }
 
     private var headerSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 6) {
-                Text(localizedAlgString(key: "algs.trainer.title", languageCode: appLanguage))
+                ScrollAwareContentTitle(
+                    title: localizedAlgString(key: "algs.trainer.title", languageCode: appLanguage)
+                )
                     .font(.system(size: 34, weight: .bold))
 
                 Text(localizedAlgString(key: "algs.trainer.home_subtitle", languageCode: appLanguage))

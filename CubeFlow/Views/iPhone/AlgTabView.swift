@@ -1631,9 +1631,11 @@ struct AlgCaseListView: View {
 
     private var hybridSubsetPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(subsets) { subset in
-                    hybridSubsetCapsule(subset)
+            HorizontalCapsuleSelectorGroup(spacing: 8) {
+                HStack(spacing: 8) {
+                    ForEach(subsets) { subset in
+                        hybridSubsetCapsule(subset)
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -1648,14 +1650,13 @@ struct AlgCaseListView: View {
         } label: {
             Text(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
                 .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
                 .lineLimit(1)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .background(
+                .horizontalCapsuleSelectorSurface(isSelected: isSelected) {
                     Capsule(style: .continuous)
                         .fill(isSelected ? Color.blue : Color.secondary.opacity(0.10))
-                )
+                }
         }
         .buttonStyle(.plain)
     }
@@ -1859,8 +1860,7 @@ struct AlgSubsetGroupListView: View {
                 gridContent
             }
         }
-        .navigationTitle(displayGroupTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .scrollAwareNavigationTitle(displayGroupTitle)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -2012,7 +2012,7 @@ struct AlgSubsetGroupListView: View {
 
     private var headerContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(displayGroupTitle)
+            ScrollAwareContentTitle(title: displayGroupTitle)
                 .font(.system(size: 34, weight: .bold))
 
             Text(
@@ -2203,9 +2203,11 @@ struct AlgSubsetGroupListView: View {
 
     private var hybridSubsetPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(group.subsets) { subset in
-                    hybridSubsetCapsule(subset)
+            HorizontalCapsuleSelectorGroup(spacing: 8) {
+                HStack(spacing: 8) {
+                    ForEach(group.subsets) { subset in
+                        hybridSubsetCapsule(subset)
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -2220,14 +2222,13 @@ struct AlgSubsetGroupListView: View {
         } label: {
             Text(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
                 .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
                 .lineLimit(1)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .background(
+                .horizontalCapsuleSelectorSurface(isSelected: isSelected) {
                     Capsule(style: .continuous)
                         .fill(isSelected ? Color.blue : Color.secondary.opacity(0.10))
-                )
+                }
         }
         .buttonStyle(.plain)
     }
@@ -2410,8 +2411,7 @@ private struct AlgCaseGroupListView: View {
                 gridContent
             }
         }
-        .navigationTitle(group.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .scrollAwareNavigationTitle(group.title)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -2563,7 +2563,7 @@ private struct AlgCaseGroupListView: View {
 
     private var headerContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(group.title)
+            ScrollAwareContentTitle(title: group.title)
                 .font(.system(size: 34, weight: .bold))
 
             Text(payload.set)
@@ -2702,9 +2702,11 @@ private struct AlgCaseGroupListView: View {
 
     private var hybridSubsetPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(groupSubsets) { subset in
-                    hybridSubsetCapsule(subset)
+            HorizontalCapsuleSelectorGroup(spacing: 8) {
+                HStack(spacing: 8) {
+                    ForEach(groupSubsets) { subset in
+                        hybridSubsetCapsule(subset)
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -2719,14 +2721,13 @@ private struct AlgCaseGroupListView: View {
         } label: {
             Text(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
                 .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
                 .lineLimit(1)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .background(
+                .horizontalCapsuleSelectorSurface(isSelected: isSelected) {
                     Capsule(style: .continuous)
                         .fill(isSelected ? Color.blue : Color.secondary.opacity(0.10))
-                )
+                }
         }
         .buttonStyle(.plain)
     }
@@ -2978,8 +2979,7 @@ struct AlgSubsetCaseListView: View {
                 gridContent
             }
         }
-        .navigationTitle(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
-        .navigationBarTitleDisplayMode(.inline)
+        .scrollAwareNavigationTitle(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -3113,7 +3113,9 @@ struct AlgSubsetCaseListView: View {
 
     private var headerContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
+            ScrollAwareContentTitle(
+                title: localizedAlgSubgroup(subset.title, languageCode: appLanguage)
+            )
                 .font(.system(size: 34, weight: .bold))
 
             Text(payload.set)
@@ -5180,8 +5182,13 @@ struct AlgCaseDetailView: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
-        .navigationTitle(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
-        .navigationBarTitleDisplayMode(.inline)
+        .scrollAwareNavigationTitle(
+            localizedAlgCaseName(
+                setID: payload.set,
+                caseName: algCase.displayName,
+                languageCode: appLanguage
+            )
+        )
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -5229,7 +5236,13 @@ struct AlgCaseDetailView: View {
                 .frame(width: 84, height: 84)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: appLanguage))
+                ScrollAwareContentTitle(
+                    title: localizedAlgCaseName(
+                        setID: payload.set,
+                        caseName: algCase.displayName,
+                        languageCode: appLanguage
+                    )
+                )
                     .font(.system(size: 34, weight: .bold))
 
                 Text(headerMetadata)
