@@ -265,7 +265,8 @@ final class WCAAuthManager: NSObject, ObservableObject {
             name: payload.name,
             wcaId: payload.wcaId,
             email: payload.email,
-            avatarURL: payload.avatar?.thumbUrl ?? payload.avatar?.url
+            avatarURL: payload.avatar?.thumbUrl ?? payload.avatar?.url,
+            avatarIsDefault: payload.avatar?.isDefault
         )
     }
 
@@ -370,6 +371,7 @@ struct WCAUserProfile: Codable {
     let wcaId: String?
     let email: String?
     let avatarURL: String?
+    let avatarIsDefault: Bool?
 
     var displayName: String {
         name.isEmpty ? "WCA" : name
@@ -424,6 +426,7 @@ private struct WCAProfilePayload: Decodable {
 private struct WCAAvatarPayload: Decodable {
     let url: String?
     let thumbUrl: String?
+    let isDefault: Bool?
 }
 
 enum WCAAuthError: LocalizedError {

@@ -3,8 +3,77 @@ import Foundation
 struct WCAPersonResultsPage: Sendable, Codable {
     let contentLanguage: String
     let summary: WCAPersonResultsSummary
+    let previousIdentityText: String?
     let personalRecords: [WCAPersonalRecord]
+    let medalCollection: WCAMedalCollection?
+    let recordCollection: WCARecordCollection?
     let resultsSections: [WCAEventResultsSection]
+}
+
+struct WCAPersonProfileIdentity: Sendable, Codable {
+    let wcaId: String
+    let name: String
+    let avatarURL: String?
+    let avatarIsDefault: Bool?
+    let countryISO2: String?
+    let delegateStatus: String?
+    let teams: [WCAPersonTeamMembership]
+    let roles: [WCAPersonRoleMembership]
+}
+
+struct WCAMedalCollection: Hashable, Sendable, Codable {
+    let title: String
+    let goldLabel: String
+    let goldCount: Int
+    let silverLabel: String
+    let silverCount: Int
+    let bronzeLabel: String
+    let bronzeCount: Int
+
+    nonisolated var total: Int { goldCount + silverCount + bronzeCount }
+
+    func label(for type: WCAMedalType) -> String {
+        switch type {
+        case .gold: return goldLabel
+        case .silver: return silverLabel
+        case .bronze: return bronzeLabel
+        }
+    }
+
+    func count(for type: WCAMedalType) -> Int {
+        switch type {
+        case .gold: return goldCount
+        case .silver: return silverCount
+        case .bronze: return bronzeCount
+        }
+    }
+}
+
+struct WCARecordCollection: Hashable, Sendable, Codable {
+    let title: String
+    let worldLabel: String
+    let worldCount: Int?
+    let continentLabel: String
+    let continentCount: Int?
+    let nationalLabel: String
+    let nationalCount: Int?
+
+    nonisolated var total: Int { (worldCount ?? 0) + (continentCount ?? 0) + (nationalCount ?? 0) }
+}
+
+struct WCAPersonTeamMembership: Hashable, Sendable, Codable {
+    let friendlyID: String
+    let name: String?
+    let isLeader: Bool
+    let isSeniorMember: Bool
+}
+
+struct WCAPersonRoleMembership: Hashable, Sendable, Codable {
+    let id: Int
+    let groupType: String
+    let groupName: String
+    let groupFriendlyID: String?
+    let status: String?
 }
 
 struct WCAPersonResultsSummary: Sendable, Codable {
@@ -21,36 +90,20 @@ struct WCAEventDescriptor: Identifiable, Hashable, Sendable, Codable {
 
     var id: String { code }
 
-    private var shortLabelLocalizationKey: String? {
-        switch code {
-        case "333": return "wca.event.short.3x3"
-        case "222": return "wca.event.short.2x2"
-        case "444": return "wca.event.short.4x4"
-        case "555": return "wca.event.short.5x5"
-        case "666": return "wca.event.short.6x6"
-        case "777": return "wca.event.short.7x7"
-        case "333oh": return "wca.event.short.oh"
-        case "clock": return "wca.event.short.clock"
-        case "minx": return "wca.event.short.megaminx"
-        case "pyram": return "wca.event.short.pyraminx"
-        case "skewb": return "wca.event.short.skewb"
-        case "sq1": return "wca.event.short.square1"
-        default: return nil
-        }
-    }
-
     var shortLabel: String {
-        guard let key = shortLabelLocalizationKey else {
-            return name
-        }
-        return Bundle.main.localizedString(forKey: key, value: name, table: nil)
+        CompetitionEventPresentation.normalizedName(
+            for: code,
+            fallback: name,
+            languageCode: Locale.preferredLanguages.first ?? "en"
+        )
     }
 
     func localizedShortLabel(languageCode: String) -> String {
-        guard let key = shortLabelLocalizationKey else {
-            return name
-        }
-        return appLocalizedString(key, languageCode: languageCode, defaultValue: name)
+        CompetitionEventPresentation.normalizedName(
+            for: code,
+            fallback: name,
+            languageCode: languageCode
+        )
     }
 }
 
@@ -64,6 +117,7 @@ struct WCAPersonalRecord: Identifiable, Hashable, Sendable, Codable {
     let averageWorldRank: String?
     let averageContinentRank: String?
     let averageNationalRank: String?
+    let oddRankReason: String?
 
     var id: String { event.code }
 }
@@ -77,6 +131,9 @@ struct WCACompetitionResult: Identifiable, Hashable, Sendable, Codable {
     let place: String?
     let single: String?
     let average: String?
+    let podiumPlace: WCAMedalType?
+    let singleEmphasis: WCAResultEmphasis?
+    let averageEmphasis: WCAResultEmphasis?
     let solves: [WCAAttemptResult]
 }
 
@@ -114,9 +171,205 @@ enum WCAResultsFetchError: LocalizedError {
 }
 
 enum WCAResultsService {
+    private struct UserProfileEnvelope: Decodable {
+        struct User: Decodable {
+            struct Avatar: Decodable {
+                let thumbUrl: String?
+                let url: String?
+                let isDefault: Bool?
+            }
+
+            struct Team: Decodable {
+                let friendlyId: String
+                let name: String?
+                let leader: Bool
+                let seniorMember: Bool
+            }
+
+            let id: Int
+            let name: String
+            let avatar: Avatar?
+            let countryIso2: String?
+            let delegateStatus: String?
+            let teams: [Team]?
+        }
+
+        let user: User
+    }
+
+    private struct PersonProfileEnvelope: Decodable {
+        struct Person: Decodable {
+            struct Avatar: Decodable {
+                let thumbUrl: String?
+                let url: String?
+                let isDefault: Bool?
+            }
+
+            struct Team: Decodable {
+                let friendlyId: String
+                let name: String?
+                let leader: Bool
+                let seniorMember: Bool
+            }
+
+            let name: String
+            let avatar: Avatar?
+            let countryIso2: String?
+            let delegateStatus: String?
+            let teams: [Team]?
+        }
+
+        let person: Person
+    }
+
+    private struct PublicUserRole: Decodable {
+        struct Group: Decodable {
+            struct Metadata: Decodable {
+                let friendlyId: String?
+            }
+
+            let name: String
+            let groupType: String
+            let metadata: Metadata?
+        }
+
+        struct Metadata: Decodable {
+            let status: String?
+        }
+
+        let id: Int
+        let group: Group
+        let metadata: Metadata?
+    }
+
     struct CachedPersonResultsSnapshot: Sendable {
         let page: WCAPersonResultsPage
         let lastUpdated: Date
+    }
+
+    static func fetchPersonIdentity(wcaId: String) async throws -> WCAPersonProfileIdentity {
+        let trimmedWCAID = wcaId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedWCAID.isEmpty else {
+            throw WCAResultsFetchError.missingWCAID
+        }
+        guard let url = URL(string: "https://www.worldcubeassociation.org/api/v0/users/\(trimmedWCAID)") else {
+            throw WCAResultsFetchError.invalidPersonURL
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        if let (data, response) = try? await URLSession.shared.data(for: request),
+           let httpResponse = response as? HTTPURLResponse,
+           200 ..< 300 ~= httpResponse.statusCode,
+           let payload = try? decoder.decode(UserProfileEnvelope.self, from: data) {
+            let publicRoles = (try? await fetchPublicRoles(userID: payload.user.id)) ?? []
+
+            return WCAPersonProfileIdentity(
+                wcaId: trimmedWCAID,
+                name: payload.user.name,
+                avatarURL: payload.user.avatar?.url ?? payload.user.avatar?.thumbUrl,
+                avatarIsDefault: payload.user.avatar?.isDefault,
+                countryISO2: payload.user.countryIso2,
+                delegateStatus: payload.user.delegateStatus,
+                teams: (payload.user.teams ?? []).map {
+                    WCAPersonTeamMembership(
+                        friendlyID: $0.friendlyId,
+                        name: $0.name,
+                        isLeader: $0.leader,
+                        isSeniorMember: $0.seniorMember
+                    )
+                },
+                roles: publicRoles.map {
+                    WCAPersonRoleMembership(
+                        id: $0.id,
+                        groupType: $0.group.groupType,
+                        groupName: $0.group.name,
+                        groupFriendlyID: $0.group.metadata?.friendlyId,
+                        status: $0.metadata?.status
+                    )
+                }
+            )
+        }
+
+        return try await fetchPersonIdentityWithoutUserRoles(
+            wcaId: trimmedWCAID,
+            decoder: decoder
+        )
+    }
+
+    private static func fetchPersonIdentityWithoutUserRoles(
+        wcaId: String,
+        decoder: JSONDecoder
+    ) async throws -> WCAPersonProfileIdentity {
+        guard let url = URL(string: "https://www.worldcubeassociation.org/api/v0/persons/\(wcaId)") else {
+            throw WCAResultsFetchError.invalidPersonURL
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200 ..< 300 ~= httpResponse.statusCode else {
+            throw WCAResultsFetchError.requestFailed
+        }
+        guard let payload = try? decoder.decode(PersonProfileEnvelope.self, from: data) else {
+            throw WCAResultsFetchError.invalidHTML
+        }
+
+        return WCAPersonProfileIdentity(
+            wcaId: wcaId,
+            name: payload.person.name,
+            avatarURL: payload.person.avatar?.url ?? payload.person.avatar?.thumbUrl,
+            avatarIsDefault: payload.person.avatar?.isDefault,
+            countryISO2: payload.person.countryIso2,
+            delegateStatus: payload.person.delegateStatus,
+            teams: (payload.person.teams ?? []).map {
+                WCAPersonTeamMembership(
+                    friendlyID: $0.friendlyId,
+                    name: $0.name,
+                    isLeader: $0.leader,
+                    isSeniorMember: $0.seniorMember
+                )
+            },
+            roles: []
+        )
+    }
+
+    private static func fetchPublicRoles(userID: Int) async throws -> [PublicUserRole] {
+        var components = URLComponents(string: "https://www.worldcubeassociation.org/api/v0/user_roles")
+        components?.queryItems = [
+            URLQueryItem(name: "userId", value: String(userID)),
+            URLQueryItem(name: "isActive", value: "true"),
+            URLQueryItem(name: "isGroupHidden", value: "false"),
+            URLQueryItem(
+                name: "sort",
+                value: "lead,eligibleVoter,groupTypeRank,status:desc,groupName"
+            ),
+            URLQueryItem(name: "per_page", value: "100")
+        ]
+        guard let url = components?.url else {
+            throw WCAResultsFetchError.invalidPersonURL
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              200 ..< 300 ~= httpResponse.statusCode else {
+            throw WCAResultsFetchError.requestFailed
+        }
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode([PublicUserRole].self, from: data)
     }
 
     static func fetchPersonResults(
@@ -147,7 +400,7 @@ enum WCAResultsService {
             throw WCAResultsFetchError.requestFailed
         }
 
-        let parsedPage = try WCAResultsHTMLParser.parse(html: html, requestedLanguageCode: appLanguageCode)
+        let parsedPage = try parsePersonResultsHTML(html, requestedLanguageCode: appLanguageCode)
         await WCAResultsPageCacheStore.shared.store(parsedPage, for: cacheKey, lastUpdated: Date())
         return parsedPage
     }
@@ -173,6 +426,13 @@ enum WCAResultsService {
         await WCAResultsPageCacheStore.shared.clear()
     }
 
+    nonisolated static func parsePersonResultsHTML(
+        _ html: String,
+        requestedLanguageCode: String
+    ) throws -> WCAPersonResultsPage {
+        try WCAResultsHTMLParser.parse(html: html, requestedLanguageCode: requestedLanguageCode)
+    }
+
     static func enrichPersonResults(
         _ page: WCAPersonResultsPage,
         appLanguageCode: String
@@ -192,15 +452,13 @@ enum WCAResultsService {
         for page: WCAPersonResultsPage,
         appLanguageCode: String
     ) async -> WCAPersonResultsPage {
-        let competitionIDs = Set(
-            page.resultsSections
-                .flatMap(\.results)
-                .compactMap { competitionIdentifier(from: $0.competitionPath) }
-        )
+        let competitionIDs = Set(page.resultsSections.flatMap(\.results).compactMap {
+            competitionIdentifier(from: $0.competitionPath)
+        })
         let countryCodesByCompetition = await WCAResultsSupplementalStore.shared.countryCodes(
             for: competitionIDs
-        ) { ids in
-            await fetchCompetitionCountryCodes(for: ids)
+        ) { _ in
+            await fetchCompetitionCountryCodes(wcaId: page.summary.wcaId)
         }
         let localizedNames = cubingLanguageCode(for: appLanguageCode) == "zh_cn"
             ? await WCAResultsSupplementalStore.shared.localizedCompetitionNames {
@@ -226,6 +484,9 @@ enum WCAResultsService {
                         place: result.place,
                         single: result.single,
                         average: result.average,
+                        podiumPlace: result.podiumPlace,
+                        singleEmphasis: result.singleEmphasis,
+                        averageEmphasis: result.averageEmphasis,
                         solves: result.solves
                     )
                 }
@@ -235,48 +496,37 @@ enum WCAResultsService {
         return WCAPersonResultsPage(
             contentLanguage: page.contentLanguage,
             summary: page.summary,
+            previousIdentityText: page.previousIdentityText,
             personalRecords: page.personalRecords,
+            medalCollection: page.medalCollection,
+            recordCollection: page.recordCollection,
             resultsSections: mappedSections
         )
     }
 
-    private static func fetchCompetitionCountryCodes(for competitionIDs: Set<String>) async -> [String: String] {
-        guard !competitionIDs.isEmpty else { return [:] }
-
-        return await withTaskGroup(of: (String, String?).self, returning: [String: String].self) { group in
-            for competitionID in competitionIDs {
-                group.addTask {
-                    (competitionID, await fetchCompetitionCountryCode(for: competitionID))
-                }
-            }
-
-            var lookup: [String: String] = [:]
-            for await (competitionID, countryCode) in group {
-                if let countryCode {
-                    lookup[competitionID] = countryCode
-                }
-            }
-            return lookup
+    private static func fetchCompetitionCountryCodes(wcaId: String) async -> [String: String] {
+        guard let encodedID = wcaId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+              let url = URL(string: "https://www.worldcubeassociation.org/api/v0/persons/\(encodedID)/competitions") else {
+            return [:]
         }
-    }
 
-    private static func fetchCompetitionCountryCode(for competitionID: String) async -> String? {
-        guard let encodedID = competitionID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "https://www.worldcubeassociation.org/api/v0/competitions/\(encodedID)") else {
-            return nil
-        }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
 
-        guard let (data, response) = try? await URLSession.shared.data(from: url),
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
               let httpResponse = response as? HTTPURLResponse,
               200 ..< 300 ~= httpResponse.statusCode,
-              let competition = try? decoder.decode(WCACompetitionCountryPayload.self, from: data) else {
-            return nil
+              let competitions = try? decoder.decode([WCACompetitionCountryPayload].self, from: data) else {
+            return [:]
         }
 
-        return competition.countryIso2
+        return competitions.reduce(into: [:]) { lookup, competition in
+            lookup[competition.id] = competition.countryIso2
+        }
     }
 
     private static func competitionIdentifier(from value: String?) -> String? {
@@ -464,14 +714,82 @@ private struct StoredWCAResultsPageSnapshot: Codable, Sendable {
 private enum WCAResultsHTMLParser {
     nonisolated static func parse(html: String, requestedLanguageCode: String) throws -> WCAPersonResultsPage {
         let summary = try parseSummary(from: html)
+        let previousIdentityText = parsePreviousIdentityText(from: html)
         let personalRecords = try parsePersonalRecords(from: html)
+        let medalCollection = parseMedalCollection(from: html)
+        let recordCollection = parseRecordCollection(from: html)
         let resultsSections = try parseResultsSections(from: html)
         return WCAPersonResultsPage(
             contentLanguage: requestedLanguageCode,
             summary: summary,
+            previousIdentityText: previousIdentityText,
             personalRecords: personalRecords,
+            medalCollection: medalCollection,
+            recordCollection: recordCollection,
             resultsSections: resultsSections
         )
+    }
+
+    private nonisolated static func parsePreviousIdentityText(from html: String) -> String? {
+        firstCapture(
+            in: html,
+            pattern: #"<!--\s*Handle multiple sub ids\.?\s*-->\s*<h4[^>]*>\s*\((.*?)\)\s*</h4>"#
+        )
+        .map(cleanHTML)
+        .flatMap(emptyToNil)
+    }
+
+    private nonisolated static func parseMedalCollection(from html: String) -> WCAMedalCollection? {
+        guard let section = firstCapture(
+            in: html,
+            pattern: #"<div class="[^"]*medal-collection[^"]*">(.*?)</div>"#
+        ) else { return nil }
+
+        let labels = captures(in: section, pattern: #"<th[^>]*>(.*?)</th>"#)
+            .compactMap(\.first)
+            .map(cleanHTML)
+        let counts = Dictionary(uniqueKeysWithValues: captures(
+            in: section,
+            pattern: #"data-place="(gold|silver|bronze)"[^>]*>\s*(\d+)\s*</a>"#
+        ).compactMap { groups -> (String, Int)? in
+            guard groups.count >= 2, let count = Int(groups[1]) else { return nil }
+            return (groups[0].lowercased(), count)
+        })
+        guard labels.count >= 3,
+              let gold = counts["gold"], let silver = counts["silver"], let bronze = counts["bronze"] else {
+            return nil
+        }
+
+        let collection = WCAMedalCollection(
+            title: firstCapture(in: section, pattern: #"<h3[^>]*>(.*?)</h3>"#).map(cleanHTML) ?? "Medal Collection",
+            goldLabel: labels[0], goldCount: gold,
+            silverLabel: labels[1], silverCount: silver,
+            bronzeLabel: labels[2], bronzeCount: bronze
+        )
+        return collection.total > 0 ? collection : nil
+    }
+
+    private nonisolated static func parseRecordCollection(from html: String) -> WCARecordCollection? {
+        guard let section = firstCapture(
+            in: html,
+            pattern: #"<div class="[^"]*record-collection[^"]*">(.*?)</div>"#
+        ) else { return nil }
+
+        let labels = captures(in: section, pattern: #"<th[^>]*>(.*?)</th>"#)
+            .compactMap(\.first)
+            .map(cleanHTML)
+        let values = captures(in: section, pattern: #"<td[^>]*>(.*?)</td>"#)
+            .compactMap(\.first)
+            .map { Int(cleanHTML($0)) }
+        guard labels.count >= 3, values.count >= 3 else { return nil }
+
+        let collection = WCARecordCollection(
+            title: firstCapture(in: section, pattern: #"<h3[^>]*>(.*?)</h3>"#).map(cleanHTML) ?? "Record Collection",
+            worldLabel: labels[0], worldCount: values[0],
+            continentLabel: labels[1], continentCount: values[1],
+            nationalLabel: labels[2], nationalCount: values[2]
+        )
+        return collection.total > 0 ? collection : nil
     }
 
     private nonisolated static func parseSummary(from html: String) throws -> WCAPersonResultsSummary {
@@ -517,9 +835,9 @@ private enum WCAResultsHTMLParser {
             return nil
         }
 
-        let cells = captures(in: rowHTML, pattern: #"<td[^>]*>(.*?)</td>"#)
-            .compactMap { $0.first }
-            .map(cleanHTML)
+        let cellHTML = captures(in: rowHTML, pattern: #"<td[^>]*>(.*?)</td>"#)
+            .compactMap(\.first)
+        let cells = cellHTML.map(cleanHTML)
 
         guard cells.count >= 9 else {
             return nil
@@ -534,7 +852,12 @@ private enum WCAResultsHTMLParser {
             average: emptyToNil(cells[5]),
             averageWorldRank: emptyToNil(cells[6]),
             averageContinentRank: emptyToNil(cells[7]),
-            averageNationalRank: emptyToNil(cells[8])
+            averageNationalRank: emptyToNil(cells[8]),
+            oddRankReason: cellHTML.count > 9
+                ? firstCapture(in: cellHTML[9], pattern: #"title="([^"]+)""#).map {
+                    decodeHTMLEntities(in: $0)
+                }
+                : nil
         )
     }
 
@@ -562,13 +885,15 @@ private enum WCAResultsHTMLParser {
             pattern: #"<td colspan="12" class="event">.*?</i>\s*(.*?)\s*</td>"#
         ).map(cleanHTML) ?? eventCode
 
-        let rowHTMLs = captures(in: bodyHTML, pattern: #"<tr class="result[^"]*">(.*?)</tr>"#)
-            .compactMap { $0.first }
+        let rowHTMLs = captures(in: bodyHTML, pattern: #"<tr class="([^"]*\bresult\b[^"]*)">(.*?)</tr>"#)
 
         var currentCompetitionName: String?
         var currentCompetitionPath: String?
 
-        let results = rowHTMLs.enumerated().compactMap { index, rowHTML -> WCACompetitionResult? in
+        let results = rowHTMLs.enumerated().compactMap { index, groups -> WCACompetitionResult? in
+            guard groups.count >= 2 else { return nil }
+            let rowClass = groups[0]
+            let rowHTML = groups[1]
             let cells = captures(in: rowHTML, pattern: #"<td class="([^"]*)"[^>]*>(.*?)</td>"#)
             guard cells.count >= 7 else { return nil }
 
@@ -614,6 +939,9 @@ private enum WCAResultsHTMLParser {
                 place: place,
                 single: single,
                 average: average,
+                podiumPlace: podiumPlace(from: rowClass),
+                singleEmphasis: WCAResultEmphasis.from(cssClass: cells[3].first ?? ""),
+                averageEmphasis: WCAResultEmphasis.from(cssClass: cells[5].first ?? ""),
                 solves: solveValues
             )
         }
@@ -623,6 +951,14 @@ private enum WCAResultsHTMLParser {
             event: WCAEventDescriptor(code: eventCode, name: eventName),
             results: results
         )
+    }
+
+    private nonisolated static func podiumPlace(from cssClass: String) -> WCAMedalType? {
+        let classes = Set(cssClass.lowercased().split(whereSeparator: { $0.isWhitespace }))
+        if classes.contains("gold-place") { return .gold }
+        if classes.contains("silver-place") { return .silver }
+        if classes.contains("bronze-place") { return .bronze }
+        return nil
     }
 
     fileprivate nonisolated static func captures(in text: String, pattern: String) -> [[String]] {
