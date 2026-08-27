@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -284,18 +286,22 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>CubeFlow uses Bluetooth to connect to compatible smart timers and smart cubes.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_cubeflow._tcp</string>
 	</array>
+	<key>NSCalendarsUsageDescription</key>
+	<string>CubeFlow adds competition schedule events you choose to your calendar.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>CubeFlow adds competition schedule events you choose to your calendar.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>CubeFlow uses the local network to connect nearby devices for head-to-head battles.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Used to show your current location on the competitions map.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>CubeFlow saves competition images and scramble diagrams you choose to your photo library.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

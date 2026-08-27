@@ -1,4 +1,7 @@
 {
+  "features" : [
+    "refractivity"
+  ],
   "fill-specializations" : [
     {
       "value" : "automatic"
@@ -260,11 +263,16 @@
         }
       ],
       "opacity" : 1,
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : true,
+        "strength" : 0.5
+      },
       "shadow" : {
         "kind" : "layer-color",
         "opacity" : 1
       },
-      "specular" : false,
+      "specular" : true,
       "translucency" : {
         "enabled" : true,
         "value" : 0.5
