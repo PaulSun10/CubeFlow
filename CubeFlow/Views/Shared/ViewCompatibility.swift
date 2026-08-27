@@ -8,7 +8,7 @@ struct CompatibleNavigationContainer<Content: View>: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, macOS 13.0, *) {
             NavigationStack {
                 content.compatibleSoftScrollEdgeEffect()
             }
@@ -227,7 +227,7 @@ extension View {
                 self.fontWidth(.compressed)
             case .condensed:
                 self.fontWidth(.condensed)
-            case .default, .monospaced, .rounded, .serif:
+            default:
                 self
             }
         } else {

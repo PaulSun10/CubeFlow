@@ -137,26 +137,122 @@ nonisolated func appLocalizedBundle(for languageCode: String) -> Bundle? {
 }
 
 nonisolated func appLocalizedString(_ key: String, languageCode: String, defaultValue: String? = nil) -> String {
-    let fallbackValue = defaultValue ?? key
+    let explicitFallback = defaultValue.flatMap { value in
+        value == key || appLooksLikeLocalizationKey(value) ? nil : value
+    }
+    let fallbackValue = explicitFallback ?? appHumanReadableLocalizationFallback(for: key, languageCode: languageCode)
     let cacheKey = "\(languageCode)\u{1F}\(key)\u{1F}\(fallbackValue)"
     if let cached = AppLocalizationCache.shared.localizedString(for: cacheKey) {
         return cached
     }
 
-    let resolved: String
-    if let bundle = appLocalizedBundle(for: languageCode) {
-        let localized = bundle.localizedString(forKey: key, value: fallbackValue, table: nil)
-        if localized != key || fallbackValue == key {
-            resolved = localized
-        } else {
-            resolved = Bundle.main.localizedString(forKey: key, value: fallbackValue, table: nil)
+    var resolved: String?
+    for candidate in appLocalizationCandidates(for: languageCode) {
+        guard let path = Bundle.main.path(forResource: candidate, ofType: "lproj"),
+              let bundle = Bundle(path: path) else {
+            continue
         }
-    } else {
-        resolved = Bundle.main.localizedString(forKey: key, value: fallbackValue, table: nil)
+        let localized = bundle.localizedString(forKey: key, value: nil, table: nil)
+        if localized != key, !appLooksLikeLocalizationKey(localized) {
+            resolved = localized
+            break
+        }
     }
 
-    AppLocalizationCache.shared.setLocalizedString(resolved, for: cacheKey)
-    return resolved
+    if resolved == nil {
+        let localized = Bundle.main.localizedString(forKey: key, value: nil, table: nil)
+        if localized != key, !appLooksLikeLocalizationKey(localized) {
+            resolved = localized
+        }
+    }
+
+    let safeResolved = resolved ?? fallbackValue
+    AppLocalizationCache.shared.setLocalizedString(safeResolved, for: cacheKey)
+    return safeResolved
+}
+
+nonisolated func appUserFacingErrorMessage(_ error: Error, languageCode: String) -> String {
+    let rawMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+    return appUserFacingMessage(rawMessage, languageCode: languageCode)
+}
+
+nonisolated func appUserFacingMessage(_ message: String?, languageCode: String) -> String {
+    let trimmed = message?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    guard !trimmed.isEmpty, !appLooksLikeLocalizationKey(trimmed) else {
+        return appLocalizedString(
+            "common.error_generic",
+            languageCode: languageCode,
+            defaultValue: appHumanReadableLocalizationFallback(
+                for: "common.error_generic",
+                languageCode: languageCode
+            )
+        )
+    }
+    return trimmed
+}
+
+nonisolated private func appLooksLikeLocalizationKey(_ value: String) -> Bool {
+    guard value.contains("."), !value.contains(where: { $0.isWhitespace }) else { return false }
+    return value.unicodeScalars.allSatisfy { scalar in
+        CharacterSet.alphanumerics.contains(scalar)
+            || scalar == "."
+            || scalar == "_"
+            || scalar == "-"
+    }
+}
+
+nonisolated private func appHumanReadableLocalizationFallback(for key: String, languageCode: String) -> String {
+    let normalizedKey = key.lowercased()
+    if normalizedKey.contains("unavailable") || normalizedKey.contains("unable_to_load") {
+        return appFallbackPhrase(
+            languageCode: languageCode,
+            english: "This content is currently unavailable.",
+            simplifiedChinese: "当前无法显示此内容。",
+            traditionalChinese: "目前無法顯示此內容。"
+        )
+    }
+    if normalizedKey.contains("error")
+        || normalizedKey.contains("failed")
+        || normalizedKey.contains("failure")
+        || normalizedKey.contains("timeout") {
+        return appFallbackPhrase(
+            languageCode: languageCode,
+            english: "Something went wrong. Please try again.",
+            simplifiedChinese: "出现了一些问题，请重试。",
+            traditionalChinese: "發生了一些問題，請再試一次。"
+        )
+    }
+
+    let finalComponent = key.split(separator: ".").last.map(String.init) ?? key
+    let words = finalComponent
+        .replacingOccurrences(of: "_", with: " ")
+        .replacingOccurrences(of: "-", with: " ")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !words.isEmpty else {
+        return appFallbackPhrase(
+            languageCode: languageCode,
+            english: "Content",
+            simplifiedChinese: "内容",
+            traditionalChinese: "內容"
+        )
+    }
+    return words.prefix(1).uppercased() + words.dropFirst()
+}
+
+nonisolated private func appFallbackPhrase(
+    languageCode: String,
+    english: String,
+    simplifiedChinese: String,
+    traditionalChinese: String
+) -> String {
+    let normalized = languageCode.replacingOccurrences(of: "_", with: "-").lowercased()
+    if normalized == "zh-hans" || normalized == "zh-cn" || normalized == "zh" {
+        return simplifiedChinese
+    }
+    if normalized == "zh-hant" || normalized == "zh-tw" || normalized == "zh-hk" {
+        return traditionalChinese
+    }
+    return english
 }
 
 nonisolated func currentAppLocalizedString(_ key: String, defaultValue: String? = nil) -> String {
