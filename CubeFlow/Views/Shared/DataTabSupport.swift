@@ -71,6 +71,24 @@ struct SessionSnapshotKey: Equatable, Sendable {
     let timeDecimals: Int
 }
 
+struct SessionStatisticsSnapshot: Equatable, Sendable {
+    let solveCount: Int
+    let mean: Double?
+    let best: Double?
+    let currentAverages: [AverageListType: Double]
+
+    static let empty = SessionStatisticsSnapshot(
+        solveCount: 0,
+        mean: nil,
+        best: nil,
+        currentAverages: [:]
+    )
+
+    nonisolated func currentAverage(for type: AverageListType) -> Double? {
+        currentAverages[type]
+    }
+}
+
 struct RecordAverageMetric: Identifiable, Sendable {
     enum Kind: Sendable {
         case meanOfThree
@@ -211,6 +229,16 @@ enum AverageListType: String, CaseIterable, Identifiable, Sendable {
             return .percentage(0.05)
         }
     }
+
+    nonisolated func currentValue(from solves: [SessionSolveSample]) -> Double? {
+        guard solves.count >= solveCount else { return nil }
+        let metric = RecordAverageMetric(
+            title: rawValue,
+            solveCount: solveCount,
+            kind: recordMetricKind
+        )
+        return metric.averageValue(from: Array(solves.prefix(solveCount)))
+    }
 }
 
 struct AverageListEntry: Identifiable, Sendable {
@@ -306,6 +334,23 @@ struct FenwickTree: Sendable {
 }
 
 enum DataTabComputation {
+    nonisolated static func buildSessionStatisticsSnapshot(
+        from solves: [SessionSolveSample]
+    ) -> SessionStatisticsSnapshot {
+        let validTimes = solves.compactMap(\.adjustedTime)
+        let currentAverages = Dictionary(
+            uniqueKeysWithValues: AverageListType.allCases.compactMap { type in
+                type.currentValue(from: solves).map { (type, $0) }
+            }
+        )
+        return SessionStatisticsSnapshot(
+            solveCount: solves.count,
+            mean: validTimes.isEmpty ? nil : validTimes.reduce(0, +) / Double(validTimes.count),
+            best: validTimes.min(),
+            currentAverages: currentAverages
+        )
+    }
+
     nonisolated static func buildAverageEntriesSnapshot(
         from solves: [SessionSolveSample],
         averageType: AverageListType
@@ -351,6 +396,7 @@ enum DataTabComputation {
         let availableMetrics = RecordAverageMetric.defaultMetrics.filter { solves.count >= $0.solveCount }
         let validTimes = solves.compactMap { $0.adjustedTime }
         let validCount = validTimes.count
+        let sessionStatistics = buildSessionStatisticsSnapshot(from: solves)
 
         let evaluations = availableMetrics.map { metric in
             (metric, evaluateRecordMetric(metric: metric, solves: solves, includeWindowValues: true))
@@ -368,7 +414,10 @@ enum DataTabComputation {
             )
         }
         currentStats += evaluations.compactMap { metric, evaluation -> RecordStatItem? in
-            guard let value = evaluation.currentValue else { return nil }
+            let value = AverageListType(rawValue: metric.title)
+                .flatMap { sessionStatistics.currentAverage(for: $0) }
+                ?? evaluation.currentValue
+            guard let value else { return nil }
             let currentWindow = Array(solves.prefix(metric.solveCount))
             return RecordStatItem(
                 metricRawValue: metric.title,
@@ -420,11 +469,13 @@ enum DataTabComputation {
         }
 
         return RecordSnapshot(
-            sessionMeanText: validTimes.isEmpty
-                ? notAvailable
-                : SolveMetrics.formatTime(validTimes.reduce(0, +) / Double(validTimes.count), decimals: timeDecimals),
-            sessionMeanSuffix: validCount < solves.count ? "(\(validCount)/\(solves.count))" : nil,
-            bestTimeText: validTimes.min().map { SolveMetrics.formatTime($0, decimals: timeDecimals) } ?? notAvailable,
+            sessionMeanText: sessionStatistics.mean
+                .map { SolveMetrics.formatTime($0, decimals: timeDecimals) }
+                ?? notAvailable,
+            sessionMeanSuffix: validCount < solves.count
+                ? "(\(NumeralPresentation.formatInteger(validCount))/\(NumeralPresentation.formatInteger(solves.count)))"
+                : nil,
+            bestTimeText: sessionStatistics.best.map { SolveMetrics.formatTime($0, decimals: timeDecimals) } ?? notAvailable,
             worstTimeText: validTimes.max().map { SolveMetrics.formatTime($0, decimals: timeDecimals) } ?? notAvailable,
             currentStats: currentStats,
             bestStats: bestStats

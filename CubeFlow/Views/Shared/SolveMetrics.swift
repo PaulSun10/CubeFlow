@@ -1,7 +1,12 @@
 import Foundation
 
 enum SolveMetrics {
-    nonisolated static func formatTime(_ seconds: Double, decimals: Int) -> String {
+    nonisolated static func formatTime(
+        _ seconds: Double,
+        decimals: Int,
+        numeralScope: NumeralScope = .app,
+        numeralPreferences: NumeralPreferencesSnapshot? = nil
+    ) -> String {
         guard seconds.isFinite else {
             return seconds.isNaN
                 ? currentAppLocalizedString("common.dnf")
@@ -11,28 +16,44 @@ enum SolveMetrics {
         let precision = max(0, decimals)
         let scale = pow(10.0, Double(precision))
         let clampedSeconds = floor(max(0, seconds) * scale) / scale
-        guard clampedSeconds >= 60 else {
-            return String(format: "%.\(precision)f", clampedSeconds)
+        let rawValue: String
+        if clampedSeconds < 60 {
+            rawValue = String(format: "%.\(precision)f", clampedSeconds)
+        } else {
+            let totalMinutes = Int(clampedSeconds / 60)
+            let secondsRemainder = clampedSeconds - Double(totalMinutes * 60)
+            let secondsWidth = precision > 0 ? precision + 3 : 2
+            let secondsText = String(format: "%0\(secondsWidth).\(precision)f", secondsRemainder)
+
+            if totalMinutes < 60 {
+                rawValue = "\(totalMinutes):\(secondsText)"
+            } else {
+                let hours = totalMinutes / 60
+                let minutes = totalMinutes % 60
+                rawValue = String(format: "%d:%02d:%@", hours, minutes, secondsText)
+            }
         }
-
-        let totalMinutes = Int(clampedSeconds / 60)
-        let secondsRemainder = clampedSeconds - Double(totalMinutes * 60)
-        let secondsWidth = precision > 0 ? precision + 3 : 2
-        let secondsText = String(format: "%0\(secondsWidth).\(precision)f", secondsRemainder)
-
-        guard totalMinutes >= 60 else {
-            return "\(totalMinutes):\(secondsText)"
-        }
-
-        let hours = totalMinutes / 60
-        let minutes = totalMinutes % 60
-        return String(format: "%d:%02d:%@", hours, minutes, secondsText)
+        return NumeralPresentation.presentNumericText(
+            rawValue,
+            scope: numeralScope,
+            preferences: numeralPreferences
+        )
     }
 
-    nonisolated static func formatAverage(_ seconds: Double?, decimals: Int) -> String {
+    nonisolated static func formatAverage(
+        _ seconds: Double?,
+        decimals: Int,
+        numeralScope: NumeralScope = .app,
+        numeralPreferences: NumeralPreferencesSnapshot? = nil
+    ) -> String {
         guard let seconds else { return currentAppLocalizedString("common.not_available") }
         if seconds.isNaN { return currentAppLocalizedString("common.dnf") }
-        return formatTime(seconds, decimals: decimals)
+        return formatTime(
+            seconds,
+            decimals: decimals,
+            numeralScope: numeralScope,
+            numeralPreferences: numeralPreferences
+        )
     }
 
     @MainActor
@@ -59,23 +80,33 @@ enum SolveMetrics {
     }
 
     @MainActor
-    static func displayTime(for solve: Solve, decimals: Int) -> String {
+    static func displayTime(
+        for solve: Solve,
+        decimals: Int,
+        numeralScope: NumeralScope = .app,
+        numeralPreferences: NumeralPreferencesSnapshot? = nil
+    ) -> String {
         switch solve.result {
         case .solved:
-            return formatTime(solve.time, decimals: decimals)
+            return formatTime(solve.time, decimals: decimals, numeralScope: numeralScope, numeralPreferences: numeralPreferences)
         case .plusTwo:
-            return "\(formatTime(solve.time + 2, decimals: decimals))+"
+            return "\(formatTime(solve.time + 2, decimals: decimals, numeralScope: numeralScope, numeralPreferences: numeralPreferences))+"
         case .dnf:
             return currentAppLocalizedString("common.dnf")
         }
     }
 
-    nonisolated static func displayTime(for solve: SessionSolveSample, decimals: Int) -> String {
+    nonisolated static func displayTime(
+        for solve: SessionSolveSample,
+        decimals: Int,
+        numeralScope: NumeralScope = .app,
+        numeralPreferences: NumeralPreferencesSnapshot? = nil
+    ) -> String {
         switch SolveResult(rawValue: solve.resultRaw) ?? .solved {
         case .solved:
-            return formatTime(solve.time, decimals: decimals)
+            return formatTime(solve.time, decimals: decimals, numeralScope: numeralScope, numeralPreferences: numeralPreferences)
         case .plusTwo:
-            return "\(formatTime(solve.time + 2, decimals: decimals))+"
+            return "\(formatTime(solve.time + 2, decimals: decimals, numeralScope: numeralScope, numeralPreferences: numeralPreferences))+"
         case .dnf:
             return currentAppLocalizedString("common.dnf")
         }

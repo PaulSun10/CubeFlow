@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "ダークグレー";
 "settings.app_icon_gray" = "グレー";
 "settings.app_icon_light_gray" = "ライトグレー";
-"settings.section.timer" = "タイマー";
+"settings.section.timer" = "計時";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "未サインイン";
 "settings.wca_connected" = "接続済み";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "これ以上大会はありません";
 "competitions.reload" = "再読み込み";
+
+// Numeral presentation
+"settings.numeral_app" = "App の数字";
+"settings.numeral_timer" = "タイマーの数字";
+"settings.numeral_statistics" = "統計の数字";
+"settings.numeral_financial" = "大字";
+"settings.numeral_number_format" = "数値形式";
+"settings.numeral_digits" = "数字";
+"settings.numeral_chinese_numerals" = "漢数字";
+"settings.numeral_decimal_style" = "小数点スタイル";
+"settings.numeral_period" = "ピリオド";
+"settings.numeral_chinese_decimal" = "漢字の小数点";
+"settings.numeral_system.systemDefault" = "システムデフォルト";
+"settings.numeral_system.westernArabic" = "西アラビア数字";
+"settings.numeral_system.easternArabic" = "東アラビア数字";
+"settings.numeral_system.bangla" = "ベンガル";
+"settings.numeral_system.burmese" = "ビルマ";
+"settings.numeral_system.devanagari" = "デーヴァナーガリー";
+"settings.numeral_system.gujarati" = "グジャラーティー";
+"settings.numeral_system.gurmukhi" = "グルムキー";
+"settings.numeral_system.kannada" = "カンナダ";
+"settings.numeral_system.khmer" = "クメール";
+"settings.numeral_system.malayalam" = "マラヤーラム";
+"settings.numeral_system.meitei" = "メイテイ";
+"settings.numeral_system.odia" = "オディア";
+"settings.numeral_system.olChiki" = "オル・チキ";
+"settings.numeral_system.telugu" = "テルグ";
+"settings.numeral_system.urdu" = "ウルドゥー";
+"settings.numeral_system.simplifiedChinese" = "簡体字中国語";
+"settings.numeral_system.traditionalChinese" = "繁体字中国語";

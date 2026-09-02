@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "Koyu Gri";
 "settings.app_icon_gray" = "Gri";
 "settings.app_icon_light_gray" = "Açık Gri";
-"settings.section.timer" = "Zamanlayıcı";
+"settings.section.timer" = "Süre Ölçümü";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Oturum açılmadı";
 "settings.wca_connected" = "Bağlandı";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "Başka yarışma yok";
 "competitions.reload" = "Yeniden yükle";
+
+// Numeral presentation
+"settings.numeral_app" = "Uygulama Rakamları";
+"settings.numeral_timer" = "Zamanlayıcı Rakamları";
+"settings.numeral_statistics" = "İstatistik Rakamları";
+"settings.numeral_financial" = "Finansal";
+"settings.numeral_number_format" = "Sayı Biçimi";
+"settings.numeral_digits" = "Rakamlar";
+"settings.numeral_chinese_numerals" = "Çince Sayılar";
+"settings.numeral_decimal_style" = "Ondalık Biçimi";
+"settings.numeral_period" = "Nokta";
+"settings.numeral_chinese_decimal" = "Çince Ondalık";
+"settings.numeral_system.systemDefault" = "Sistem Varsayılanı";
+"settings.numeral_system.westernArabic" = "Batı Arap";
+"settings.numeral_system.easternArabic" = "Doğu Arap";
+"settings.numeral_system.bangla" = "Bengal";
+"settings.numeral_system.burmese" = "Birmanca";
+"settings.numeral_system.devanagari" = "Devanagari";
+"settings.numeral_system.gujarati" = "Gujarati";
+"settings.numeral_system.gurmukhi" = "Gurmukhi";
+"settings.numeral_system.kannada" = "Kannada";
+"settings.numeral_system.khmer" = "Khmer";
+"settings.numeral_system.malayalam" = "Malayalam";
+"settings.numeral_system.meitei" = "Meitei";
+"settings.numeral_system.odia" = "Odia";
+"settings.numeral_system.olChiki" = "Ol Chiki";
+"settings.numeral_system.telugu" = "Telugu";
+"settings.numeral_system.urdu" = "Urdu";
+"settings.numeral_system.simplifiedChinese" = "Basitleştirilmiş Çince";
+"settings.numeral_system.traditionalChinese" = "Geleneksel Çince";

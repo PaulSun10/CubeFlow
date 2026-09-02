@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "गहरा भूरा";
 "settings.app_icon_gray" = "धूसर";
 "settings.app_icon_light_gray" = "हल्का भूरा";
-"settings.section.timer" = "टाइमर";
+"settings.section.timer" = "समय मापन";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "साइन इन नहीं है";
 "settings.wca_connected" = "जुड़ा हुआ";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "और कोई प्रतियोगिता नहीं";
 "competitions.reload" = "फिर से लोड करें";
+
+// Numeral presentation
+"settings.numeral_app" = "ऐप अंक";
+"settings.numeral_timer" = "टाइमर अंक";
+"settings.numeral_statistics" = "सांख्यिकी अंक";
+"settings.numeral_financial" = "वित्तीय";
+"settings.numeral_number_format" = "संख्या प्रारूप";
+"settings.numeral_digits" = "अंक";
+"settings.numeral_chinese_numerals" = "चीनी संख्याएँ";
+"settings.numeral_decimal_style" = "दशमलव शैली";
+"settings.numeral_period" = "बिंदु";
+"settings.numeral_chinese_decimal" = "चीनी दशमलव";
+"settings.numeral_system.systemDefault" = "सिस्टम डिफ़ॉल्ट";
+"settings.numeral_system.westernArabic" = "पश्चिमी अरबी";
+"settings.numeral_system.easternArabic" = "पूर्वी अरबी";
+"settings.numeral_system.bangla" = "बांग्ला";
+"settings.numeral_system.burmese" = "बर्मी";
+"settings.numeral_system.devanagari" = "देवनागरी";
+"settings.numeral_system.gujarati" = "गुजराती";
+"settings.numeral_system.gurmukhi" = "गुरमुखी";
+"settings.numeral_system.kannada" = "कन्नड़";
+"settings.numeral_system.khmer" = "खमेर";
+"settings.numeral_system.malayalam" = "मलयालम";
+"settings.numeral_system.meitei" = "मैतेई";
+"settings.numeral_system.odia" = "ओड़िया";
+"settings.numeral_system.olChiki" = "ओल चिकी";
+"settings.numeral_system.telugu" = "तेलुगु";
+"settings.numeral_system.urdu" = "उर्दू";
+"settings.numeral_system.simplifiedChinese" = "सरलीकृत चीनी";
+"settings.numeral_system.traditionalChinese" = "पारंपरिक चीनी";

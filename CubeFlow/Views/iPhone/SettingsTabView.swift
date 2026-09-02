@@ -4,6 +4,82 @@ import CoreData
 import UniformTypeIdentifiers
 
 #if os(iOS)
+private enum TimerCustomizationPage: String, Hashable {
+    case root
+    case scramblePosition
+    case backgroundStyle
+    case timerStyle
+    case scrambleStyle
+    case statisticsStyle
+    case statistics
+    case scrambleDiagram
+    case scrambleDiagramColors
+
+    var section: TimerCustomizationSection? {
+        switch self {
+        case .root:
+            nil
+        case .scramblePosition:
+            .layout
+        case .backgroundStyle, .timerStyle, .scrambleStyle, .statisticsStyle:
+            .style
+        case .statistics, .scrambleDiagram, .scrambleDiagramColors:
+            .components
+        }
+    }
+}
+
+private enum TimerCustomizationSection: Hashable {
+    case layout
+    case style
+    case components
+}
+
+private enum TimerCustomizationListRow: Hashable, Identifiable {
+    case arrangement
+    case splitOrder
+    case minimalMode
+    case navigation(TimerCustomizationPage)
+    case nextScrambleToggle
+    case back(TimerCustomizationSection)
+    case scramblePositionEditor
+    case appearanceEditor(TimerCustomizationPage)
+    case statistic(TimerStatisticMetric)
+    case cardsStatisticsArrangement
+    case cardsPositionsHeader
+    case cardsStatisticSlot(Int)
+    case diagramPlacement
+    case diagramSize
+    case colorPuzzle
+    case colorPreview
+    case colorFace(Int)
+    case colorHelp
+    case colorReset
+    case numeralSystem(NumeralScope)
+    case chineseFinancial(NumeralScope)
+    case chineseNumberFormat(NumeralScope)
+    case chineseDecimalStyle(NumeralScope)
+
+    var id: Self { self }
+}
+
+private enum AppNumeralSettingsRow: Hashable, Identifiable {
+    case numeralSystem
+    case chineseFinancial
+    case chineseNumberFormat
+    case chineseDecimalStyle
+
+    var id: Self { self }
+}
+
+private struct TimerCustomizationListRowHost: View {
+    let content: AnyView
+
+    var body: some View {
+        content
+    }
+}
+
 struct SettingsTabView: View {
     enum AppearanceSelectionTarget: String, Identifiable {
         case timerFontDesign
@@ -33,6 +109,11 @@ struct SettingsTabView: View {
         animation: .default
     )
     private var sessions: FetchedResults<Session>
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Solve.date, ascending: false)],
+        animation: .default
+    )
+    private var solves: FetchedResults<Solve>
 
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("timerBackgroundAppearanceData") private var timerBackgroundAppearanceData: Data?
@@ -54,7 +135,7 @@ struct SettingsTabView: View {
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
     @AppStorage("competitionsBackgroundImageData") private var competitionsBackgroundImageData: Data?
     @AppStorage("drawScramblePlacement") private var drawScramblePlacement: String = DrawScramblePlacement.inline.rawValue
-    @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = 132
+    @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = TimerCustomizationDefaults.drawScrambleSize
     @AppStorage("scrambleDiagramColorSchemeData") private var scrambleDiagramColorSchemeData: Data?
     @AppStorage("timerTextFontSize") private var timerTextFontSize: Double = 64
     @AppStorage("scrambleTextFontSize") private var scrambleTextFontSize: Double = 20
@@ -65,8 +146,32 @@ struct SettingsTabView: View {
     @AppStorage("timerTextFontWeight") private var timerTextFontWeight: String = TimerFontWeightOption.semibold.rawValue
     @AppStorage("scrambleTextFontWeight") private var scrambleTextFontWeight: String = TimerFontWeightOption.medium.rawValue
     @AppStorage("averageTextFontWeight") private var averageTextFontWeight: String = TimerFontWeightOption.medium.rawValue
+    @AppStorage("timerArrangement") private var timerArrangement: String = TimerArrangement.classic.rawValue
+    @AppStorage("timerMinimalMode") private var timerMinimalMode: Bool = false
+    @AppStorage("timerMinimalArrangementMigrationCompleted") private var timerMinimalArrangementMigrationCompleted: Bool = false
+    @AppStorage("timerSplitOrder") private var timerSplitOrder: String = TimerSplitOrder.statisticsLeading.rawValue
+    @AppStorage("timerScrambleVerticalPosition") private var timerScrambleVerticalPosition: Double = 0
+    @AppStorage("timerStatisticsSelection") private var timerStatisticsSelection: String = ""
+    @AppStorage("timerClassicStatisticsSelection") private var timerClassicStatisticsSelection: String = ""
+    @AppStorage("timerCardsStatisticsSelection") private var timerCardsStatisticsSelection: String = ""
+    @AppStorage("timerCardsTwoStatisticsArrangement") private var timerCardsTwoStatisticsArrangement: String = TimerCardsTwoStatisticArrangement.vertical.rawValue
+    @AppStorage("timerCardsThreeStatisticsArrangement") private var timerCardsThreeStatisticsArrangement: String = TimerCardsThreeStatisticArrangement.topEmphasis.rawValue
+    @AppStorage("timerCardsStatisticsPositions") private var timerCardsStatisticsPositions: String = ""
+    @AppStorage("showNextScrambleButton") private var showNextScrambleButton: Bool = true
     @AppStorage("selectedAppIcon") private var selectedAppIcon: String = AppIconOption.red.rawValue
     @AppStorage("competitionCardStyle") private var competitionCardStyle: String = CompetitionCardStyleOption.list.rawValue
+    @AppStorage("appNumeralSystem") private var appNumeralSystem = NumeralSystem.systemDefault.rawValue
+    @AppStorage("timerNumeralSystem") private var timerNumeralSystem = NumeralPreferenceKeys.inheritedRawValue
+    @AppStorage("statisticsNumeralSystem") private var statisticsNumeralSystem = NumeralPreferenceKeys.inheritedRawValue
+    @AppStorage("appNumeralChineseFinancial") private var appNumeralChineseFinancial = false
+    @AppStorage("timerNumeralChineseFinancial") private var timerNumeralChineseFinancial = false
+    @AppStorage("statisticsNumeralChineseFinancial") private var statisticsNumeralChineseFinancial = false
+    @AppStorage("appNumeralChineseNumberFormat") private var appNumeralChineseNumberFormat = ChineseNumeralNumberFormat.digits.rawValue
+    @AppStorage("timerNumeralChineseNumberFormat") private var timerNumeralChineseNumberFormat = ChineseNumeralNumberFormat.digits.rawValue
+    @AppStorage("statisticsNumeralChineseNumberFormat") private var statisticsNumeralChineseNumberFormat = ChineseNumeralNumberFormat.digits.rawValue
+    @AppStorage("appNumeralChineseDecimalStyle") private var appNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
+    @AppStorage("timerNumeralChineseDecimalStyle") private var timerNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
+    @AppStorage("statisticsNumeralChineseDecimalStyle") private var statisticsNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
 
     @State private var timerBackgroundAppearance = AppearanceConfiguration.defaultBackground
     @State private var competitionsBackgroundAppearance = AppearanceConfiguration.defaultBackground
@@ -92,6 +197,8 @@ struct SettingsTabView: View {
     @State private var appIconAlertMessage: String?
     @State private var wcaDestination: WCASettingsDestination?
     @State private var appearanceSelectionTarget: AppearanceSelectionTarget?
+    @State private var timerCustomizationPath: [TimerCustomizationPage] = []
+    @State private var selectedScrambleColorPuzzle: ScrambleColorPuzzle = .cube
     @State private var showingGANDevicePicker = false
     @State private var showingCompetitionCalculator = false
     @StateObject private var wcaAuth = WCAAuthManager.shared
@@ -155,6 +262,7 @@ struct SettingsTabView: View {
                 CompetitionCalculatorSheet(appLanguage: appLanguage)
             }
             .onAppear {
+                migrateTimerArrangementPreferencesIfNeeded()
                 normalizeUnavailableFontSelections()
                 if enteringTimesWith == TimeEntryMode.gan.rawValue {
                     ganTimer.prepareIfNeeded()
@@ -343,6 +451,11 @@ private extension SettingsTabView {
             }
 
             Section {
+                ForEach(appNumeralSettingsRows) { row in
+                    TimerCustomizationListRowHost(content: appNumeralSettingsListRow(row))
+                        .transition(.opacity)
+                }
+
                 NavigationLink {
                     timerTabAppearanceSettingsList
                 } label: {
@@ -383,14 +496,6 @@ private extension SettingsTabView {
                     )
                 }
 
-                NavigationLink {
-                    scrambleDiagramSettingsList
-                } label: {
-                    settingsNavigationLabel(
-                        titleKey: "settings.draw_scramble_position",
-                        valueKey: DrawScramblePlacement(rawValue: drawScramblePlacement)?.localizedKey ?? "settings.draw_scramble_position_inline"
-                    )
-                }
             } header: {
                 Text("settings.section.timer")
             }
@@ -440,6 +545,7 @@ private extension SettingsTabView {
         }
         .listStyle(.insetGrouped)
         .background(Color(.systemGroupedBackground))
+        .animation(.easeInOut(duration: 0.27), value: appNumeralSystem)
     }
 
     @ViewBuilder
@@ -589,141 +695,1256 @@ private extension SettingsTabView {
         }
     }
 
+    private var appNumeralSettingsRows: [AppNumeralSettingsRow] {
+        var rows: [AppNumeralSettingsRow] = [.numeralSystem]
+        if selectedNumeralSystem(for: .app)?.isChinese == true {
+            rows += [.chineseFinancial, .chineseNumberFormat, .chineseDecimalStyle]
+        }
+        return rows
+    }
+
+    private func appNumeralSettingsListRow(_ row: AppNumeralSettingsRow) -> AnyView {
+        switch row {
+        case .numeralSystem:
+            AnyView(numeralSystemMenuRow(for: .app))
+        case .chineseFinancial:
+            AnyView(Toggle(
+                localizedNumeralSetting("settings.numeral_financial", fallback: "Financial"),
+                isOn: numeralFinancialBinding(for: .app)
+            ))
+        case .chineseNumberFormat:
+            AnyView(chineseNumberFormatMenuRow(for: .app))
+        case .chineseDecimalStyle:
+            AnyView(chineseDecimalStyleMenuRow(for: .app))
+        }
+    }
+
+    private func chineseNumeralRows(for scope: NumeralScope) -> [TimerCustomizationListRow] {
+        guard selectedNumeralSystem(for: scope)?.isChinese == true else { return [] }
+        return [
+            .chineseFinancial(scope),
+            .chineseNumberFormat(scope),
+            .chineseDecimalStyle(scope)
+        ]
+    }
+
+    private func numeralSystemMenuRow(for scope: NumeralScope) -> some View {
+        let rawSelection = numeralSystemBinding(for: scope).wrappedValue
+        return HStack {
+            Text(localizedNumeralSetting(numeralScopeTitleKey(scope), fallback: numeralScopeFallback(scope)))
+            Spacer()
+            Menu {
+                if scope != .app {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.27)) {
+                            numeralSystemBinding(for: scope).wrappedValue = NumeralPreferenceKeys.inheritedRawValue
+                        }
+                    } label: {
+                        numeralMenuLabel(
+                            title: localizedNumeralSetting("settings.numeral_app", fallback: "App Numerals"),
+                            preview: numeralPreview(for: .app)
+                        )
+                    }
+                }
+                ForEach(NumeralSystem.allCases) { system in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.27)) {
+                            numeralSystemBinding(for: scope).wrappedValue = system.rawValue
+                        }
+                    } label: {
+                        numeralMenuLabel(
+                            title: localizedNumeralSystem(system),
+                            preview: numeralPreview(for: system, scope: scope)
+                        )
+                    }
+                }
+            } label: {
+                timerCustomizationMenuValue(localizedNumeralSelection(rawSelection, scope: scope))
+            }
+            .tint(.secondary)
+        }
+    }
+
+    private func chineseNumberFormatMenuRow(for scope: NumeralScope) -> some View {
+        let binding = numeralNumberFormatBinding(for: scope)
+        let selected = ChineseNumeralNumberFormat(rawValue: binding.wrappedValue) ?? .digits
+        return HStack {
+            Text(localizedNumeralSetting("settings.numeral_number_format", fallback: "Number Format"))
+            Spacer()
+            Menu {
+                ForEach(ChineseNumeralNumberFormat.allCases) { format in
+                    Button(localizedChineseNumberFormat(format)) {
+                        binding.wrappedValue = format.rawValue
+                    }
+                }
+            } label: {
+                timerCustomizationMenuValue(localizedChineseNumberFormat(selected))
+            }
+            .tint(.secondary)
+        }
+    }
+
+    private func chineseDecimalStyleMenuRow(for scope: NumeralScope) -> some View {
+        let binding = numeralDecimalStyleBinding(for: scope)
+        let selected = ChineseNumeralDecimalStyle(rawValue: binding.wrappedValue) ?? .period
+        return HStack {
+            Text(localizedNumeralSetting("settings.numeral_decimal_style", fallback: "Decimal Style"))
+            Spacer()
+            Menu {
+                ForEach(ChineseNumeralDecimalStyle.allCases) { style in
+                    Button(localizedChineseDecimalStyle(style)) {
+                        binding.wrappedValue = style.rawValue
+                    }
+                }
+            } label: {
+                timerCustomizationMenuValue(localizedChineseDecimalStyle(selected))
+            }
+            .tint(.secondary)
+        }
+    }
+
+    private func numeralSystemBinding(for scope: NumeralScope) -> Binding<String> {
+        switch scope {
+        case .app: $appNumeralSystem
+        case .timer: $timerNumeralSystem
+        case .statistics: $statisticsNumeralSystem
+        }
+    }
+
+    private func numeralFinancialBinding(for scope: NumeralScope) -> Binding<Bool> {
+        switch scope {
+        case .app: $appNumeralChineseFinancial
+        case .timer: $timerNumeralChineseFinancial
+        case .statistics: $statisticsNumeralChineseFinancial
+        }
+    }
+
+    private func numeralNumberFormatBinding(for scope: NumeralScope) -> Binding<String> {
+        switch scope {
+        case .app: $appNumeralChineseNumberFormat
+        case .timer: $timerNumeralChineseNumberFormat
+        case .statistics: $statisticsNumeralChineseNumberFormat
+        }
+    }
+
+    private func numeralDecimalStyleBinding(for scope: NumeralScope) -> Binding<String> {
+        switch scope {
+        case .app: $appNumeralChineseDecimalStyle
+        case .timer: $timerNumeralChineseDecimalStyle
+        case .statistics: $statisticsNumeralChineseDecimalStyle
+        }
+    }
+
+    private func selectedNumeralSystem(for scope: NumeralScope) -> NumeralSystem? {
+        NumeralSystem(rawValue: numeralSystemBinding(for: scope).wrappedValue)
+    }
+
+    private func localizedNumeralSelection(_ rawValue: String, scope: NumeralScope) -> String {
+        if scope != .app, rawValue == NumeralPreferenceKeys.inheritedRawValue {
+            return localizedNumeralSetting("settings.numeral_app", fallback: "App Numerals")
+        }
+        return localizedNumeralSystem(NumeralSystem(rawValue: rawValue) ?? .systemDefault)
+    }
+
+    private func localizedNumeralSystem(_ system: NumeralSystem) -> String {
+        localizedNumeralSetting(system.localizationKey, fallback: system.defaultTitle)
+    }
+
+    private func numeralMenuLabel(title: String, preview: String) -> some View {
+        Text(verbatim: "\(preview)   \(title)")
+    }
+
+    private func numeralPreview(for scope: NumeralScope) -> String {
+        NumeralPresentation.presentNumericText(
+            "12",
+            scope: scope,
+            preferences: numeralPreferencesSnapshot
+        )
+    }
+
+    private func numeralPreview(for system: NumeralSystem, scope: NumeralScope) -> String {
+        switch system {
+        case .simplifiedChinese:
+            return "贰"
+        case .traditionalChinese:
+            return "貳"
+        default:
+            break
+        }
+
+        let preference = NumeralScopePreference(
+            system: system,
+            chineseOptions: ChineseNumeralOptions(
+                financial: numeralFinancialBinding(for: scope).wrappedValue,
+                numberFormat: ChineseNumeralNumberFormat(
+                    rawValue: numeralNumberFormatBinding(for: scope).wrappedValue
+                ) ?? .digits,
+                decimalStyle: ChineseNumeralDecimalStyle(
+                    rawValue: numeralDecimalStyleBinding(for: scope).wrappedValue
+                ) ?? .period
+            )
+        )
+        return NumeralPresentation.presentNumericText(
+            "12",
+            scope: .app,
+            preferences: NumeralPreferencesSnapshot(
+                app: preference,
+                timerOverride: nil,
+                statisticsOverride: nil
+            )
+        )
+    }
+
+    private func localizedChineseNumberFormat(_ format: ChineseNumeralNumberFormat) -> String {
+        localizedNumeralSetting(
+            format == .digits ? "settings.numeral_digits" : "settings.numeral_chinese_numerals",
+            fallback: format == .digits ? "Digits" : "Chinese Numerals"
+        )
+    }
+
+    private func localizedChineseDecimalStyle(_ style: ChineseNumeralDecimalStyle) -> String {
+        localizedNumeralSetting(
+            style == .period ? "settings.numeral_period" : "settings.numeral_chinese_decimal",
+            fallback: style == .period ? "Period" : "Chinese Decimal"
+        )
+    }
+
+    private func numeralScopeTitleKey(_ scope: NumeralScope) -> String {
+        switch scope {
+        case .app: "settings.numeral_app"
+        case .timer: "settings.numeral_timer"
+        case .statistics: "settings.numeral_statistics"
+        }
+    }
+
+    private func numeralScopeFallback(_ scope: NumeralScope) -> String {
+        switch scope {
+        case .app: "App Numerals"
+        case .timer: "Timer Numerals"
+        case .statistics: "Statistics Numerals"
+        }
+    }
+
+    private func localizedNumeralSetting(_ key: String, fallback: String) -> String {
+        appLocalizedString(key, languageCode: appLanguage, defaultValue: fallback)
+    }
+
+    private var numeralPreferencesSnapshot: NumeralPreferencesSnapshot {
+        NumeralPreferencesSnapshot(
+            app: storedNumeralPreference(for: .app) ?? NumeralPreferencesSnapshot.defaults.app,
+            timerOverride: storedNumeralPreference(for: .timer),
+            statisticsOverride: storedNumeralPreference(for: .statistics)
+        )
+    }
+
+    private func storedNumeralPreference(for scope: NumeralScope) -> NumeralScopePreference? {
+        guard let system = selectedNumeralSystem(for: scope) else { return nil }
+        return NumeralScopePreference(
+            system: system,
+            chineseOptions: ChineseNumeralOptions(
+                financial: numeralFinancialBinding(for: scope).wrappedValue,
+                numberFormat: ChineseNumeralNumberFormat(
+                    rawValue: numeralNumberFormatBinding(for: scope).wrappedValue
+                ) ?? .digits,
+                decimalStyle: ChineseNumeralDecimalStyle(
+                    rawValue: numeralDecimalStyleBinding(for: scope).wrappedValue
+                ) ?? .period
+            )
+        )
+    }
+
     var timerTabAppearanceSettingsList: some View {
-        List {
+        let previewStreak = timerPreviewStreak
+        return List {
             Section {
-                NavigationLink {
-                    timerBackgroundSettingsList
-                } label: {
-                    settingsNavigationLabel(titleKey: "settings.timer_bg_label")
-                }
+                VStack(spacing: 24) {
+                    TimerCustomizationPreview(
+                        arrangement: resolvedTimerArrangement,
+                        minimalMode: timerMinimalMode,
+                        splitOrder: resolvedTimerSplitOrder,
+                        scramblePosition: timerScrambleVerticalPosition,
+                        backgroundAppearance: timerBackgroundAppearance,
+                        backgroundImageData: timerBackgroundImageData,
+                        timerAppearance: timerTextAppearance,
+                        scrambleAppearance: scrambleTextAppearance,
+                        statisticsAppearance: averageTextAppearance,
+                        timerFontDesign: resolvedFontDesignOption(timerTextFontDesign),
+                        timerFontStyle: resolvedTimerPreviewFontStyle,
+                        timerFontSize: timerTextFontSize,
+                        scrambleFontDesign: resolvedFontDesignOption(scrambleTextFontDesign),
+                        scrambleFontStyle: resolvedScramblePreviewFontStyle,
+                        scrambleFontSize: scrambleTextFontSize,
+                        statisticsFontDesign: resolvedFontDesignOption(averageTextFontDesign),
+                        statisticsFontStyle: resolvedStatisticsPreviewFontStyle,
+                        statisticsFontSize: averageTextFontSize,
+                        numeralPreferences: numeralPreferencesSnapshot,
+                        statistics: timerPreviewStatistics,
+                        cardsStatisticsConfiguration: resolvedCardsStatisticsConfiguration,
+                        diagramPlacement: previewDiagramPlacement,
+                        diagramSize: resolvedDrawScrambleFloatingSize,
+                        showsNextScrambleButton: showNextScrambleButton,
+                        streakCount: previewStreak.count,
+                        isTodaySolved: previewStreak.isTodaySolved
+                    )
+                    .layoutPriority(1)
 
-                NavigationLink {
-                    timerTextSettingsList
-                } label: {
-                    settingsNavigationLabel(titleKey: "settings.timer_text_label")
+                    Rectangle()
+                        .fill(Color(.separator))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 0.5)
+                        .accessibilityHidden(true)
                 }
-
-                NavigationLink {
-                    scrambleTextSettingsList
-                } label: {
-                    settingsNavigationLabel(titleKey: "settings.scramble_text_label")
-                }
-
-                NavigationLink {
-                    averageTextSettingsList
-                } label: {
-                    settingsNavigationLabel(titleKey: "settings.average_text_label")
-                }
+                .frame(maxWidth: .infinity)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            } header: {
+                Text(localizedTimerCustomization("settings.timer_live_preview", fallback: "Live Preview"))
             }
+
+            timerCustomizationLowerRegion
         }
         .listStyle(.insetGrouped)
+        .background(Color(.systemGroupedBackground))
+        .animation(.easeInOut(duration: 0.27), value: timerCustomizationPath)
+        .animation(.easeInOut(duration: 0.27), value: timerArrangement)
+        .animation(.easeInOut(duration: 0.27), value: timerMinimalMode)
+        .animation(.easeInOut(duration: 0.27), value: selectedTimerStatistics)
+        .animation(.easeInOut(duration: 0.27), value: selectedScrambleColorPuzzle)
+        .animation(.easeInOut(duration: 0.27), value: timerNumeralSystem)
+        .animation(.easeInOut(duration: 0.27), value: statisticsNumeralSystem)
+        .onChange(of: timerMinimalMode) { isEnabled in
+            guard isEnabled else { return }
+            switch currentTimerCustomizationPage {
+            case .statisticsStyle, .statistics, .scrambleDiagram, .scrambleDiagramColors:
+                withAnimation(.easeInOut(duration: 0.27)) {
+                    timerCustomizationPath.removeAll()
+                }
+            default:
+                break
+            }
+        }
         .navigationTitle(Text(appLocalizedString("settings.timer_tab", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
+        .onDisappear {
+            timerCustomizationPath.removeAll()
+        }
     }
 
-    var timerBackgroundSettingsList: some View {
-        List {
-            appearanceEditorSection {
-                appearanceEditorCard(
-                    titleKey: "settings.timer_bg_label",
-                    configuration: $timerBackgroundAppearance,
-                    photoData: $timerBackgroundImageData,
-                    allowsPhoto: true
+    private var currentTimerCustomizationPage: TimerCustomizationPage {
+        timerCustomizationPath.last ?? .root
+    }
+
+    private var resolvedTimerArrangement: TimerArrangement {
+        TimerArrangement.resolved(storedRawValue: timerArrangement)
+    }
+
+    private var resolvedTimerSplitOrder: TimerSplitOrder {
+        TimerSplitOrder.resolved(
+            storedRawValue: timerSplitOrder,
+            legacyArrangementRawValue: timerArrangement
+        )
+    }
+
+    private var selectedTimerStatistics: [TimerStatisticMetric] {
+        TimerStatisticSelection.resolved(
+            arrangement: resolvedTimerArrangement,
+            sharedStoredValue: timerStatisticsSelection,
+            classicStoredValue: timerClassicStatisticsSelection,
+            cardsStoredValue: timerCardsStatisticsSelection,
+            legacyDisplayOption: AverageDisplayOption(rawValue: averageDisplayOption) ?? .ao5AndAo12
+        )
+    }
+
+    private var resolvedCardsTwoStatisticsArrangement: TimerCardsTwoStatisticArrangement {
+        TimerCardsTwoStatisticArrangement(rawValue: timerCardsTwoStatisticsArrangement) ?? .vertical
+    }
+
+    private var resolvedCardsThreeStatisticsArrangement: TimerCardsThreeStatisticArrangement {
+        TimerCardsThreeStatisticArrangement(rawValue: timerCardsThreeStatisticsArrangement) ?? .topEmphasis
+    }
+
+    private var resolvedCardsStatisticsConfiguration: TimerCardsStatisticsConfiguration {
+        TimerCardsStatisticsConfiguration.resolve(
+            selectedMetrics: TimerStatisticSelection.resolved(
+                arrangement: .cards,
+                sharedStoredValue: timerStatisticsSelection,
+                classicStoredValue: timerClassicStatisticsSelection,
+                cardsStoredValue: timerCardsStatisticsSelection,
+                legacyDisplayOption: AverageDisplayOption(rawValue: averageDisplayOption) ?? .ao5AndAo12
+            ),
+            twoArrangement: resolvedCardsTwoStatisticsArrangement,
+            threeArrangement: resolvedCardsThreeStatisticsArrangement,
+            positionStore: TimerCardsPositionStore.decode(timerCardsStatisticsPositions)
+        )
+    }
+
+    private var previewDiagramPlacement: DrawScramblePlacement {
+        DrawScramblePlacement(rawValue: drawScramblePlacement) ?? .inline
+    }
+
+    private var resolvedDrawScrambleFloatingSize: Double {
+        TimerCustomizationDefaults.resolvedDrawScrambleSize(drawScrambleFloatingSize)
+    }
+
+    private var resolvedTimerPreviewFontStyle: TimerFontStyleOption {
+        resolvedFontDesignOption(timerTextFontDesign).resolvedStyle(
+            rawValue: timerTextFontWeight,
+            preferredLegacyWeight: .semibold
+        )
+    }
+
+    private var resolvedScramblePreviewFontStyle: TimerFontStyleOption {
+        resolvedFontDesignOption(scrambleTextFontDesign).resolvedStyle(
+            rawValue: scrambleTextFontWeight,
+            preferredLegacyWeight: .medium
+        )
+    }
+
+    private var resolvedStatisticsPreviewFontStyle: TimerFontStyleOption {
+        resolvedFontDesignOption(averageTextFontDesign).resolvedStyle(
+            rawValue: averageTextFontWeight,
+            preferredLegacyWeight: .medium
+        )
+    }
+
+    private var timerPreviewStatistics: [TimerStatisticDisplayItem] {
+        selectedTimerStatistics.map { metric in
+            let rawValue: String = switch metric {
+            case .mean: "10.68"
+            case .best: "8.92"
+            case .mo3: "10.41"
+            case .ao5: "10.24"
+            case .ao12: "10.71"
+            case .ao50: "11.03"
+            case .ao100: "11.18"
+            case .solveCount: "128"
+            }
+            return TimerStatisticDisplayItem(
+                metric: metric,
+                title: appLocalizedString(metric.localizedKey, languageCode: appLanguage, defaultValue: metric.defaultTitle),
+                value: NumeralPresentation.presentNumericText(
+                    rawValue,
+                    scope: .statistics,
+                    preferences: numeralPreferencesSnapshot
                 )
+            )
+        }
+    }
+
+    private var timerPreviewStreak: (count: Int, isTodaySolved: Bool) {
+        let calendar = Calendar.current
+        let solvedDays = Set(solves.map { calendar.startOfDay(for: $0.date) })
+        let today = calendar.startOfDay(for: Date())
+        let isTodaySolved = solvedDays.contains(today)
+        var day = isTodaySolved
+            ? today
+            : (calendar.date(byAdding: .day, value: -1, to: today) ?? today)
+        var count = 0
+        while solvedDays.contains(day) {
+            count += 1
+            guard let previous = calendar.date(byAdding: .day, value: -1, to: day) else { break }
+            day = previous
+        }
+        return (count, isTodaySolved)
+    }
+
+    @ViewBuilder
+    private var timerCustomizationLowerRegion: some View {
+        Group {
+            timerCustomizationLayoutSection
+            timerCustomizationStyleSection
+            timerCustomizationComponentsSection
+        }
+    }
+
+    @ViewBuilder
+    private var timerCustomizationLayoutSection: some View {
+        Section {
+            ForEach(timerCustomizationLayoutRows) { row in
+                TimerCustomizationListRowHost(content: timerCustomizationListRow(row))
+                    .transition(.opacity)
+            }
+        } header: {
+            Text(localizedTimerCustomization("settings.timer_customization_layout", fallback: "Layout"))
+        } footer: {
+            if currentTimerCustomizationPage == .scramblePosition {
+                Text(localizedTimerCustomization(
+                    "settings.timer_scramble_position_help",
+                    fallback: "Long scrambles expand around this preferred position without changing it."
+                ))
+                .transition(.opacity)
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle(Text(appLocalizedString("settings.timer_bg_label", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    var timerTextSettingsList: some View {
-        List {
-            appearanceEditorSection {
-                appearanceEditorCard(
-                    titleKey: "settings.timer_text_label",
-                    configuration: $timerTextAppearance,
-                    fontSize: $timerTextFontSize,
-                    fontSizeTitleKey: "settings.timer_text_size",
-                    defaultFontSize: 64,
-                    fontDesign: $timerTextFontDesign,
-                    fontDesignTarget: .timerFontDesign,
-                    defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                    fontStyle: $timerTextFontWeight,
-                    fontStyleTarget: .timerFontWeight,
-                    defaultFontStyle: TimerFontWeightOption.semibold.rawValue,
-                    previewKind: .timer
-                )
+    @ViewBuilder
+    private var timerCustomizationStyleSection: some View {
+        Section {
+            ForEach(timerCustomizationStyleRows) { row in
+                TimerCustomizationListRowHost(content: timerCustomizationListRow(row))
+                    .transition(.opacity)
+            }
+        } header: {
+            Text(localizedTimerCustomization("settings.timer_customization_style", fallback: "Style"))
+        }
+    }
+
+    @ViewBuilder
+    private var timerCustomizationComponentsSection: some View {
+        Section {
+            ForEach(timerCustomizationComponentsRows) { row in
+                TimerCustomizationListRowHost(content: timerCustomizationListRow(row))
+                    .transition(.opacity)
+            }
+        } header: {
+            Text(localizedTimerCustomization("settings.timer_customization_components", fallback: "Components"))
+        } footer: {
+            if currentTimerCustomizationPage == .statistics {
+                Text(localizedTimerCustomization(
+                    "settings.timer_statistics_help",
+                    fallback: "Choose which existing session statistics appear on the Timer."
+                ))
+                .transition(.opacity)
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle(Text(appLocalizedString("settings.timer_text_label", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    var scrambleTextSettingsList: some View {
-        List {
-            appearanceEditorSection {
-                appearanceEditorCard(
-                    titleKey: "settings.scramble_text_label",
-                    configuration: $scrambleTextAppearance,
-                    fontSize: $scrambleTextFontSize,
-                    fontSizeTitleKey: "settings.scramble_text_size",
-                    defaultFontSize: 20,
-                    fontSizeMaximum: 45,
-                    fontDesign: $scrambleTextFontDesign,
-                    fontDesignTarget: .scrambleFontDesign,
-                    defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                    fontStyle: $scrambleTextFontWeight,
-                    fontStyleTarget: .scrambleFontWeight,
-                    defaultFontStyle: TimerFontWeightOption.medium.rawValue,
-                    previewKind: .scramble,
-                    scrambleDisplayMode: $scrambleDisplayMode
-                )
+    private var timerCustomizationLayoutRows: [TimerCustomizationListRow] {
+        if activeTimerCustomizationPage(in: .layout) != nil {
+            return [.back(.layout), .scramblePositionEditor]
+        }
+
+        var rows: [TimerCustomizationListRow] = []
+        if !timerMinimalMode {
+            rows.append(.arrangement)
+            if resolvedTimerArrangement == .split {
+                rows.append(.splitOrder)
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle(Text(appLocalizedString("settings.scramble_text_label", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
+        rows.append(.navigation(.scramblePosition))
+        rows.append(.minimalMode)
+        return rows
     }
 
-    var averageTextSettingsList: some View {
-        List {
-            Section {
-                listSettingsMenuRow(
-                    titleKey: "settings.average_display",
-                    selectedKey: AverageDisplayOption(rawValue: averageDisplayOption)?.localizedKey ?? "settings.average_display_ao5_ao12"
-                ) {
-                    ForEach(AverageDisplayOption.allCases) { option in
-                        Button(option.localizedKey) {
-                            averageDisplayOption = option.rawValue
+    private var timerCustomizationStyleRows: [TimerCustomizationListRow] {
+        if let page = activeTimerCustomizationPage(in: .style) {
+            var rows: [TimerCustomizationListRow] = [.back(.style), .appearanceEditor(page)]
+            let numeralScope: NumeralScope? = switch page {
+            case .timerStyle: .timer
+            case .statisticsStyle: .statistics
+            default: nil
+            }
+            if let numeralScope {
+                rows.append(.numeralSystem(numeralScope))
+                rows += chineseNumeralRows(for: numeralScope)
+            }
+            return rows
+        }
+
+        var rows: [TimerCustomizationListRow] = [
+            .navigation(.backgroundStyle),
+            .navigation(.timerStyle),
+            .navigation(.scrambleStyle)
+        ]
+        if !timerMinimalMode {
+            rows.append(.navigation(.statisticsStyle))
+        }
+        return rows
+    }
+
+    private var timerCustomizationComponentsRows: [TimerCustomizationListRow] {
+        switch activeTimerCustomizationPage(in: .components) {
+        case .statistics:
+            var rows = [.back(.components)]
+                + TimerStatisticMetric.allCases.map(TimerCustomizationListRow.statistic)
+            if resolvedTimerArrangement == .cards {
+                if selectedTimerStatistics.count == 2 || selectedTimerStatistics.count == 3 {
+                    rows.append(.cardsStatisticsArrangement)
+                }
+                if (2...4).contains(selectedTimerStatistics.count) {
+                    rows.append(.cardsPositionsHeader)
+                    rows += resolvedCardsStatisticsConfiguration.positionedMetrics.indices.map(
+                        TimerCustomizationListRow.cardsStatisticSlot
+                    )
+                }
+            }
+            return rows
+
+        case .scrambleDiagram:
+            var rows: [TimerCustomizationListRow] = [.back(.components), .diagramPlacement, .diagramSize]
+            rows.append(.navigation(.scrambleDiagramColors))
+            return rows
+
+        case .scrambleDiagramColors:
+            return [
+                .back(.components),
+                .colorPuzzle,
+                .colorPreview
+            ] + selectedScrambleColorPuzzle.faceLabels.indices.map(TimerCustomizationListRow.colorFace) + [
+                .colorHelp,
+                .colorReset
+            ]
+
+        default:
+            var rows: [TimerCustomizationListRow] = []
+            if !timerMinimalMode {
+                rows += [.navigation(.statistics), .navigation(.scrambleDiagram)]
+            }
+            rows.append(.nextScrambleToggle)
+            return rows
+        }
+    }
+
+    private func timerCustomizationListRow(_ row: TimerCustomizationListRow) -> AnyView {
+        switch row {
+        case .arrangement:
+            return AnyView(timerArrangementMenuRow)
+
+        case .splitOrder:
+            return AnyView(timerSplitOrderMenuRow)
+
+        case .minimalMode:
+            return AnyView(Toggle(
+                localizedTimerCustomization("settings.timer_minimal_mode", fallback: "Minimal Mode"),
+                isOn: $timerMinimalMode
+            ))
+
+        case .navigation(let page):
+            return timerCustomizationNavigationListRow(for: page)
+
+        case .nextScrambleToggle:
+            return AnyView(Toggle(
+                localizedTimerCustomization("settings.timer_show_next_scramble", fallback: "Show Next Scramble Button"),
+                isOn: $showNextScrambleButton
+            ))
+
+        case .back:
+            return AnyView(timerCustomizationBackRow)
+
+        case .scramblePositionEditor:
+            return AnyView(timerScramblePositionEditorRow)
+
+        case .appearanceEditor(let page):
+            return AnyView(
+                timerCustomizationAppearanceEditor(for: page)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(settingsCardBackgroundFillColor)
+            )
+
+        case .statistic(let metric):
+            return AnyView(Toggle(
+                localizedTimerCustomization(metric.localizedKey, fallback: metric.defaultTitle),
+                isOn: timerStatisticSelectionBinding(metric)
+            )
+            .disabled(isTimerStatisticDisabled(metric)))
+
+        case .cardsStatisticsArrangement:
+            return AnyView(timerCardsStatisticsArrangementMenuRow)
+
+        case .cardsPositionsHeader:
+            return AnyView(Text(localizedTimerCustomization(
+                "settings.timer_statistics_positions",
+                fallback: "Positions"
+            ))
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary))
+
+        case .cardsStatisticSlot(let index):
+            return AnyView(timerCardsStatisticSlotRow(index: index))
+
+        case .diagramPlacement:
+            if resolvedTimerArrangement.allowsIndependentDiagramPlacement {
+                return AnyView(timerDiagramPlacementMenuRow)
+            }
+            return AnyView(HStack {
+                Text(localizedTimerCustomization("settings.draw_scramble_position", fallback: "Position"))
+                Spacer()
+                Text(localizedTimerCustomization(
+                    "settings.timer_diagram_arrangement_controlled",
+                    fallback: "Controlled by Arrangement"
+                ))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.trailing)
+            })
+
+        case .diagramSize:
+            return AnyView(VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("settings.draw_scramble_size")
+                    Spacer()
+                    timerCustomizationResetButton(
+                        isDisabled: abs(resolvedDrawScrambleFloatingSize - TimerCustomizationDefaults.drawScrambleSize) < 0.5
+                    ) {
+                        drawScrambleFloatingSize = TimerCustomizationDefaults.drawScrambleSize
+                    }
+                    Text("\(Int(resolvedDrawScrambleFloatingSize.rounded()))")
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+                Slider(value: $drawScrambleFloatingSize, in: TimerCustomizationDefaults.drawScrambleSizeRange, step: 1)
+            })
+
+        case .colorPuzzle:
+            return AnyView(timerScrambleColorPuzzleMenuRow)
+
+        case .colorPreview:
+            return AnyView(
+                ScrambleColorPreviewStrip(colors: scrambleDiagramColorScheme.colors(for: selectedScrambleColorPuzzle))
+                    .padding(.vertical, 4)
+            )
+
+        case .colorFace(let index):
+            guard selectedScrambleColorPuzzle.faceLabels.indices.contains(index) else {
+                return AnyView(EmptyView())
+            }
+            return AnyView(ColorPicker(
+                selection: scrambleColorBinding(for: selectedScrambleColorPuzzle, index: index),
+                supportsOpacity: false
+            ) {
+                Text(selectedScrambleColorPuzzle.faceLabels[index])
+            })
+
+        case .colorHelp:
+            return AnyView(Text(selectedScrambleColorPuzzle.helpText)
+                .font(.footnote)
+                .foregroundStyle(.secondary))
+
+        case .colorReset:
+            return AnyView(Button("settings.draw_scramble_colors_reset", role: .destructive) {
+                scrambleDiagramColorScheme = .default
+            })
+
+        case .numeralSystem(let scope):
+            return AnyView(numeralSystemMenuRow(for: scope))
+
+        case .chineseFinancial(let scope):
+            return AnyView(Toggle(
+                localizedNumeralSetting("settings.numeral_financial", fallback: "Financial"),
+                isOn: numeralFinancialBinding(for: scope)
+            ))
+
+        case .chineseNumberFormat(let scope):
+            return AnyView(chineseNumberFormatMenuRow(for: scope))
+
+        case .chineseDecimalStyle(let scope):
+            return AnyView(chineseDecimalStyleMenuRow(for: scope))
+        }
+    }
+
+    private func timerCustomizationNavigationListRow(for page: TimerCustomizationPage) -> AnyView {
+        switch page {
+        case .scramblePosition:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.timer_scramble_position", fallback: "Scramble Text Position"),
+                destination: page
+            ))
+        case .backgroundStyle:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.timer_bg_label", fallback: "Background"),
+                destination: page
+            ))
+        case .timerStyle:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.timer_text_label", fallback: "Timer"),
+                destination: page
+            ))
+        case .scrambleStyle:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.scramble_text_label", fallback: "Scramble"),
+                destination: page
+            ))
+        case .statisticsStyle:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.timer_statistics", fallback: "Statistics"),
+                destination: page
+            ))
+        case .statistics:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.timer_statistics", fallback: "Statistics"),
+                value: "\(selectedTimerStatistics.count)",
+                destination: page
+            ))
+        case .scrambleDiagram:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.timer_scramble_diagram", fallback: "Scramble Diagram"),
+                destination: page
+            ))
+        case .scrambleDiagramColors:
+            return AnyView(timerCustomizationNavigationRow(
+                title: localizedTimerCustomization("settings.draw_scramble_colors", fallback: "Colors"),
+                destination: page
+            ))
+        case .root:
+            return AnyView(EmptyView())
+        }
+    }
+
+    @ViewBuilder
+    private var timerCustomizationBackRow: some View {
+        Button {
+            navigateBackInTimerCustomization()
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 13, weight: .semibold))
+                Text(localizedTimerCustomization("settings.timer_customization_back", fallback: "Back"))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var timerScramblePositionEditorRow: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(localizedTimerCustomization("settings.timer_scramble_position", fallback: "Scramble Text Position"))
+                Spacer()
+                Text("\(Int((Double(TimerArrangementLayout.normalizedScramblePosition(timerScrambleVerticalPosition)) * 100).rounded()))%")
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            Slider(value: $timerScrambleVerticalPosition, in: 0...1)
+            HStack {
+                Text(localizedTimerCustomization("settings.timer_scramble_position_top", fallback: "Top"))
+                Spacer()
+                Text(localizedTimerCustomization("settings.timer_scramble_position_timer", fallback: "Near Timer"))
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private func timerCustomizationAppearanceEditor(for page: TimerCustomizationPage) -> AnyView {
+        switch page {
+        case .backgroundStyle:
+            return appearanceEditorCard(
+                titleKey: "settings.timer_bg_label",
+                configuration: $timerBackgroundAppearance,
+                photoData: $timerBackgroundImageData,
+                allowsPhoto: true,
+                showsContainerBackground: false
+            )
+
+        case .timerStyle:
+            return appearanceEditorCard(
+                titleKey: "settings.timer_text_label",
+                configuration: $timerTextAppearance,
+                fontSize: $timerTextFontSize,
+                fontSizeTitleKey: "settings.timer_text_size",
+                defaultFontSize: 64,
+                fontDesign: $timerTextFontDesign,
+                fontDesignTarget: .timerFontDesign,
+                defaultFontDesign: TimerFontDesignOption.default.rawValue,
+                fontStyle: $timerTextFontWeight,
+                fontStyleTarget: .timerFontWeight,
+                defaultFontStyle: TimerFontWeightOption.semibold.rawValue,
+                previewKind: .timer,
+                showsContainerBackground: false
+            )
+
+        case .scrambleStyle:
+            return appearanceEditorCard(
+                titleKey: "settings.scramble_text_label",
+                configuration: $scrambleTextAppearance,
+                fontSize: $scrambleTextFontSize,
+                fontSizeTitleKey: "settings.scramble_text_size",
+                defaultFontSize: 20,
+                fontSizeMaximum: 45,
+                fontDesign: $scrambleTextFontDesign,
+                fontDesignTarget: .scrambleFontDesign,
+                defaultFontDesign: TimerFontDesignOption.default.rawValue,
+                fontStyle: $scrambleTextFontWeight,
+                fontStyleTarget: .scrambleFontWeight,
+                defaultFontStyle: TimerFontWeightOption.medium.rawValue,
+                previewKind: .scramble,
+                scrambleDisplayMode: $scrambleDisplayMode,
+                showsContainerBackground: false
+            )
+
+        case .statisticsStyle:
+            return appearanceEditorCard(
+                titleKey: "settings.timer_statistics",
+                configuration: $averageTextAppearance,
+                fontSize: $averageTextFontSize,
+                fontSizeTitleKey: "settings.average_text_size",
+                defaultFontSize: 20,
+                fontSizeMaximum: 56,
+                fontSizeIsAutomatic: resolvedTimerArrangement == .cards,
+                fontDesign: $averageTextFontDesign,
+                fontDesignTarget: .averageFontDesign,
+                defaultFontDesign: TimerFontDesignOption.default.rawValue,
+                fontStyle: $averageTextFontWeight,
+                fontStyleTarget: .averageFontWeight,
+                defaultFontStyle: TimerFontWeightOption.medium.rawValue,
+                previewKind: .average,
+                showsContainerBackground: false
+            )
+
+        default:
+            return AnyView(EmptyView())
+        }
+    }
+
+    private func activeTimerCustomizationPage(
+        in section: TimerCustomizationSection
+    ) -> TimerCustomizationPage? {
+        let page = currentTimerCustomizationPage
+        return page.section == section ? page : nil
+    }
+
+    private var timerDiagramPlacementMenuRow: some View {
+        let selected = independentDiagramPlacement
+        return HStack {
+            Text(localizedTimerCustomization("settings.draw_scramble_position", fallback: "Position"))
+            Spacer()
+            Menu {
+                ForEach([DrawScramblePlacement.bottomLeft, .bottomCenter, .bottomRight, .off]) { placement in
+                    Button(placement.localizedKey) {
+                        drawScramblePlacement = placement.rawValue
+                    }
+                }
+            } label: {
+                timerCustomizationMenuValue(localizedDiagramPlacement(selected))
+            }
+            .tint(.secondary)
+        }
+    }
+
+    private var independentDiagramPlacement: DrawScramblePlacement {
+        let placement = DrawScramblePlacement(rawValue: drawScramblePlacement) ?? .inline
+        return placement.isFloating ? placement : .off
+    }
+
+    private func localizedDiagramPlacement(_ placement: DrawScramblePlacement) -> String {
+        let key: String = switch placement {
+        case .inline: "settings.draw_scramble_position_inline"
+        case .bottomLeft: "settings.draw_scramble_position_bottom_left"
+        case .bottomRight: "settings.draw_scramble_position_bottom_right"
+        case .bottomCenter: "settings.draw_scramble_position_bottom_center"
+        case .off: "settings.draw_scramble_position_off"
+        }
+        return appLocalizedString(key, languageCode: appLanguage)
+    }
+
+    private var timerScrambleColorPuzzleMenuRow: some View {
+        HStack {
+            Text(localizedTimerCustomization("settings.draw_scramble_puzzle", fallback: "Puzzle"))
+            Spacer()
+            Menu {
+                ForEach(ScrambleColorPuzzle.allCases) { puzzle in
+                    Button(puzzle.title) {
+                        withAnimation(.easeInOut(duration: 0.27)) {
+                            selectedScrambleColorPuzzle = puzzle
                         }
                     }
                 }
+            } label: {
+                timerCustomizationMenuValue(selectedScrambleColorPuzzle.title)
             }
+            .tint(.secondary)
+        }
+    }
 
-            appearanceEditorSection {
-                appearanceEditorCard(
-                    titleKey: "settings.average_text_label",
-                    configuration: $averageTextAppearance,
-                    fontSize: $averageTextFontSize,
-                    fontSizeTitleKey: "settings.average_text_size",
-                    defaultFontSize: 20,
-                    fontSizeMaximum: 56,
-                    fontDesign: $averageTextFontDesign,
-                    fontDesignTarget: .averageFontDesign,
-                    defaultFontDesign: TimerFontDesignOption.default.rawValue,
-                    fontStyle: $averageTextFontWeight,
-                    fontStyleTarget: .averageFontWeight,
-                    defaultFontStyle: TimerFontWeightOption.medium.rawValue,
-                    previewKind: .average
-                )
+    private var timerArrangementMenuRow: some View {
+        HStack {
+            Text(localizedTimerCustomization("settings.timer_arrangement", fallback: "Arrangement"))
+            Spacer()
+            Menu {
+                ForEach(TimerArrangement.allCases) { arrangement in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.27)) {
+                            timerArrangement = arrangement.rawValue
+                        }
+                    } label: {
+                        Text(localizedTimerArrangement(arrangement))
+                    }
+                }
+            } label: {
+                timerCustomizationMenuValue(localizedTimerArrangement(resolvedTimerArrangement))
+            }
+            .tint(.secondary)
+        }
+    }
+
+    private var timerSplitOrderMenuRow: some View {
+        HStack {
+            Text(localizedTimerCustomization("settings.timer_split_order", fallback: "Component Order"))
+            Spacer()
+            Menu {
+                ForEach(TimerSplitOrder.allCases) { order in
+                    Button {
+                        timerSplitOrder = order.rawValue
+                    } label: {
+                        Text(localizedTimerSplitOrder(order))
+                    }
+                }
+            } label: {
+                timerCustomizationMenuValue(localizedTimerSplitOrder(resolvedTimerSplitOrder))
+            }
+            .tint(.secondary)
+        }
+    }
+
+    private var timerCardsStatisticsArrangementMenuRow: some View {
+        HStack {
+            Text(localizedTimerCustomization("settings.timer_statistics_arrangement", fallback: "Arrangement"))
+            Spacer()
+            if selectedTimerStatistics.count == 2 {
+                Menu {
+                    ForEach(TimerCardsTwoStatisticArrangement.allCases) { arrangement in
+                        Button(localizedCardsTwoArrangement(arrangement)) {
+                            timerCardsTwoStatisticsArrangement = arrangement.rawValue
+                            normalizeCardsPositionStore()
+                        }
+                    }
+                } label: {
+                    timerCustomizationMenuValue(localizedCardsTwoArrangement(resolvedCardsTwoStatisticsArrangement))
+                }
+                .tint(.secondary)
+            } else {
+                Menu {
+                    ForEach(TimerCardsThreeStatisticArrangement.allCases) { arrangement in
+                        Button(localizedCardsThreeArrangement(arrangement)) {
+                            timerCardsThreeStatisticsArrangement = arrangement.rawValue
+                            normalizeCardsPositionStore()
+                        }
+                    }
+                } label: {
+                    timerCustomizationMenuValue(localizedCardsThreeArrangement(resolvedCardsThreeStatisticsArrangement))
+                }
+                .tint(.secondary)
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle(Text(appLocalizedString("settings.average_text_label", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func timerCardsStatisticSlotRow(index: Int) -> some View {
+        let configuration = resolvedCardsStatisticsConfiguration
+        let keys = configuration.layout.slotLocalizationKeys
+        let metric = configuration.positionedMetrics.indices.contains(index)
+            ? configuration.positionedMetrics[index]
+            : nil
+        return HStack {
+            Text(localizedTimerCustomization(
+                keys.indices.contains(index) ? keys[index] : "settings.timer_statistics_positions",
+                fallback: "Position"
+            ))
+            Spacer()
+            if let metric {
+                Menu {
+                    ForEach(configuration.selectedMetrics) { candidate in
+                        Button(localizedTimerCustomization(candidate.localizedKey, fallback: candidate.defaultTitle)) {
+                            var store = TimerCardsPositionStore.decode(timerCardsStatisticsPositions)
+                            store = store.assigning(
+                                metric: candidate,
+                                to: index,
+                                layout: configuration.layout,
+                                selectedMetrics: configuration.selectedMetrics
+                            )
+                            timerCardsStatisticsPositions = store.encoded()
+                        }
+                    }
+                } label: {
+                    timerCustomizationMenuValue(localizedTimerCustomization(
+                        metric.localizedKey,
+                        fallback: metric.defaultTitle
+                    ))
+                }
+                .tint(.secondary)
+            }
+        }
+    }
+
+    private func localizedCardsTwoArrangement(_ arrangement: TimerCardsTwoStatisticArrangement) -> String {
+        localizedTimerCustomization(
+            arrangement == .vertical ? "settings.timer_cards_vertical" : "settings.timer_cards_horizontal",
+            fallback: arrangement == .vertical ? "Vertical" : "Horizontal"
+        )
+    }
+
+    private func localizedCardsThreeArrangement(_ arrangement: TimerCardsThreeStatisticArrangement) -> String {
+        localizedTimerCustomization(
+            arrangement == .topEmphasis ? "settings.timer_cards_top_emphasis" : "settings.timer_cards_bottom_emphasis",
+            fallback: arrangement == .topEmphasis ? "Top Emphasis" : "Bottom Emphasis"
+        )
+    }
+
+    private func timerCustomizationMenuValue(_ value: String) -> some View {
+        HStack(spacing: 5) {
+            Text(value)
+            Image(systemName: "chevron.down")
+                .font(.caption2.weight(.semibold))
+        }
+        .foregroundStyle(.secondary)
+    }
+
+    private func timerCustomizationResetButton(
+        isDisabled: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button("common.reset", action: action)
+            .font(.system(size: 14, weight: .medium))
+            .compatibleProminentButtonFromIOS16(tint: .blue)
+            .controlSize(.small)
+            .disabled(isDisabled)
+            .opacity(isDisabled ? 0.45 : 1)
+    }
+
+    private func timerCustomizationNavigationRow(
+        title: String,
+        value: String? = nil,
+        destination: TimerCustomizationPage
+    ) -> some View {
+        Button {
+            navigateForwardInTimerCustomization(to: destination)
+        } label: {
+            HStack {
+                Text(title)
+                    .foregroundStyle(.primary)
+                Spacer()
+                if let value {
+                    Text(value)
+                        .foregroundStyle(.secondary)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func navigateForwardInTimerCustomization(to page: TimerCustomizationPage) {
+        withAnimation(.easeInOut(duration: 0.27)) {
+            if currentTimerCustomizationPage.section == page.section {
+                timerCustomizationPath.append(page)
+            } else {
+                timerCustomizationPath = [page]
+            }
+        }
+    }
+
+    private func navigateBackInTimerCustomization() {
+        guard !timerCustomizationPath.isEmpty else { return }
+        withAnimation(.easeInOut(duration: 0.27)) {
+            _ = timerCustomizationPath.removeLast()
+        }
+    }
+
+    private func localizedTimerArrangement(_ arrangement: TimerArrangement) -> String {
+        localizedTimerCustomization(arrangement.localizedKey, fallback: arrangement.defaultTitle)
+    }
+
+    private func localizedTimerSplitOrder(_ order: TimerSplitOrder) -> String {
+        localizedTimerCustomization(order.localizedKey, fallback: order.defaultTitle)
+    }
+
+    private func migrateTimerArrangementPreferencesIfNeeded() {
+        let legacyArrangement = timerArrangement
+        let migration = TimerArrangementMigration.resolve(
+            storedArrangement: legacyArrangement,
+            minimalMode: timerMinimalMode,
+            completed: timerMinimalArrangementMigrationCompleted
+        )
+        let migratedArrangement = migration.arrangement
+        let migratedOrder = TimerSplitOrder.resolved(
+            storedRawValue: timerSplitOrder,
+            legacyArrangementRawValue: legacyArrangement
+        )
+        if timerArrangement != migratedArrangement.rawValue {
+            timerArrangement = migratedArrangement.rawValue
+        }
+        if timerSplitOrder != migratedOrder.rawValue {
+            timerSplitOrder = migratedOrder.rawValue
+        }
+        if timerMinimalMode != migration.minimalMode {
+            timerMinimalMode = migration.minimalMode
+        }
+        if timerMinimalArrangementMigrationCompleted != migration.completed {
+            timerMinimalArrangementMigrationCompleted = migration.completed
+        }
+        let normalizedPosition = Double(
+            TimerArrangementLayout.normalizedScramblePosition(timerScrambleVerticalPosition)
+        )
+        if timerScrambleVerticalPosition != normalizedPosition {
+            timerScrambleVerticalPosition = normalizedPosition
+        }
+        let normalizedDiagramSize = TimerCustomizationDefaults.resolvedDrawScrambleSize(drawScrambleFloatingSize)
+        if drawScrambleFloatingSize != normalizedDiagramSize {
+            drawScrambleFloatingSize = normalizedDiagramSize
+        }
+        let migratedClassicStatistics = TimerStatisticSelection.migratedClassicStoredValue(
+            sharedStoredValue: timerStatisticsSelection,
+            classicStoredValue: timerClassicStatisticsSelection,
+            legacyDisplayOption: AverageDisplayOption(rawValue: averageDisplayOption) ?? .ao5AndAo12
+        )
+        if timerClassicStatisticsSelection != migratedClassicStatistics {
+            timerClassicStatisticsSelection = migratedClassicStatistics
+        }
+        let migratedCardsStatistics = TimerStatisticSelection.migratedCardsStoredValue(
+            cardsStoredValue: timerCardsStatisticsSelection,
+            legacyDisplayOption: AverageDisplayOption(rawValue: averageDisplayOption) ?? .ao5AndAo12
+        )
+        if timerCardsStatisticsSelection != migratedCardsStatistics {
+            timerCardsStatisticsSelection = migratedCardsStatistics
+        }
+        normalizeCardsPositionStore()
+    }
+
+    private func localizedTimerCustomization(_ key: String, fallback: String) -> String {
+        appLocalizedString(key, languageCode: appLanguage, defaultValue: fallback)
+    }
+
+    private func timerStatisticSelectionBinding(_ metric: TimerStatisticMetric) -> Binding<Bool> {
+        Binding {
+            selectedTimerStatistics.contains(metric)
+        } set: { isSelected in
+            let metrics = TimerStatisticSelection.updating(
+                selectedTimerStatistics,
+                metric: metric,
+                isSelected: isSelected,
+                arrangement: resolvedTimerArrangement
+            )
+            let stored = TimerStatisticMetric.storedValue(for: metrics)
+            if resolvedTimerArrangement == .classic {
+                timerClassicStatisticsSelection = stored
+            } else if resolvedTimerArrangement == .cards {
+                timerCardsStatisticsSelection = stored
+                normalizeCardsPositionStore(selectedMetrics: metrics)
+            } else {
+                timerStatisticsSelection = stored
+            }
+        }
+    }
+
+    private func isTimerStatisticDisabled(_ metric: TimerStatisticMetric) -> Bool {
+        let maximumCount = TimerStatisticSelection.maximumCount(for: resolvedTimerArrangement)
+        return maximumCount != nil
+            && !selectedTimerStatistics.contains(metric)
+            && selectedTimerStatistics.count >= (maximumCount ?? .max)
+    }
+
+    private func normalizeCardsPositionStore(selectedMetrics: [TimerStatisticMetric]? = nil) {
+        let metrics = selectedMetrics ?? TimerStatisticSelection.resolved(
+            arrangement: .cards,
+            sharedStoredValue: timerStatisticsSelection,
+            classicStoredValue: timerClassicStatisticsSelection,
+            cardsStoredValue: timerCardsStatisticsSelection,
+            legacyDisplayOption: AverageDisplayOption(rawValue: averageDisplayOption) ?? .ao5AndAo12
+        )
+        let layout = TimerCardsStatisticsLayout.resolved(
+            count: metrics.count,
+            two: resolvedCardsTwoStatisticsArrangement,
+            three: resolvedCardsThreeStatisticsArrangement
+        )
+        let normalized = TimerCardsPositionStore.decode(timerCardsStatisticsPositions)
+            .normalizing(layout: layout, selectedMetrics: metrics)
+            .encoded()
+        if timerCardsStatisticsPositions != normalized {
+            timerCardsStatisticsPositions = normalized
+        }
     }
 
     var competitionTabAppearanceSettingsList: some View {
@@ -899,80 +2120,6 @@ private extension SettingsTabView {
         }
         .listStyle(.insetGrouped)
         .navigationTitle(Text(appLocalizedString("settings.entering_times_with", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    var scrambleDiagramSettingsList: some View {
-        List {
-            Section {
-                listSettingsMenuRow(
-                    titleKey: "settings.draw_scramble_position",
-                    selectedKey: DrawScramblePlacement(rawValue: drawScramblePlacement)?.localizedKey ?? "settings.draw_scramble_position_inline"
-                ) {
-                    ForEach(DrawScramblePlacement.allCases) { placement in
-                        Button(placement.localizedKey) {
-                            drawScramblePlacement = placement.rawValue
-                        }
-                    }
-                }
-
-                if (DrawScramblePlacement(rawValue: drawScramblePlacement) ?? .inline).isFloating {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("settings.draw_scramble_size")
-                            Spacer()
-                            Text("\(Int(drawScrambleFloatingSize.rounded()))")
-                                .foregroundStyle(.secondary)
-                                .monospacedDigit()
-                        }
-
-                        Slider(value: $drawScrambleFloatingSize, in: 96...500, step: 1)
-                    }
-                }
-            }
-
-            Section {
-                NavigationLink {
-                    scrambleDiagramColorSettingsList
-                } label: {
-                    settingsNavigationLabel(titleKey: "settings.draw_scramble_colors")
-                }
-            } footer: {
-                Text("settings.draw_scramble_colors_help")
-            }
-        }
-        .listStyle(.insetGrouped)
-        .navigationTitle(Text(appLocalizedString("settings.draw_scramble_position", languageCode: appLanguage)))
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    var scrambleDiagramColorSettingsList: some View {
-        List {
-            ForEach(ScrambleColorPuzzle.allCases) { puzzle in
-                Section {
-                    ScrambleColorPreviewStrip(colors: scrambleDiagramColorScheme.colors(for: puzzle))
-                        .padding(.vertical, 4)
-
-                    ForEach(Array(puzzle.faceLabels.enumerated()), id: \.offset) { index, label in
-                        ColorPicker(selection: scrambleColorBinding(for: puzzle, index: index), supportsOpacity: false) {
-                            Text(label)
-                        }
-                    }
-                } header: {
-                    Text(puzzle.title)
-                } footer: {
-                    Text(puzzle.helpText)
-                }
-            }
-
-            Section {
-                Button("settings.draw_scramble_colors_reset", role: .destructive) {
-                    scrambleDiagramColorScheme = .default
-                }
-            }
-        }
-        .listStyle(.insetGrouped)
-        .navigationTitle(Text(appLocalizedString("settings.draw_scramble_colors", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -1500,35 +2647,6 @@ private extension SettingsTabView {
         importProgressLabel = ""
     }
 
-    var appearanceOverviewCard: some View {
-        VStack(spacing: 0) {
-            settingsMenuRow(
-                titleKey: "settings.app_icon",
-                selectedKey: (AppIconOption(rawValue: selectedAppIcon) ?? .red).localizedKey
-            ) {
-                ForEach(AppIconOption.allCases) { option in
-                    Button(option.localizedKey) {
-                        applyAppIcon(option)
-                    }
-                }
-            }
-
-            Divider()
-
-            settingsMenuRow(
-                titleKey: "settings.competition_card_style",
-                selectedKey: (CompetitionCardStyleOption(rawValue: competitionCardStyle) ?? .list).localizedKey
-            ) {
-                ForEach(CompetitionCardStyleOption.allCases) { option in
-                    Button(option.localizedKey) {
-                        competitionCardStyle = option.rawValue
-                    }
-                }
-            }
-        }
-        .background(settingsCardBackground)
-    }
-
     var importConflictMessage: String {
         let conflictNames = pendingPreparedImport?.preview.sessionConflicts.map(\.displayName) ?? []
         let shownNames = conflictNames.prefix(4).joined(separator: ", ")
@@ -1545,6 +2663,7 @@ private extension SettingsTabView {
         fontSizeTitleKey: LocalizedStringKey? = nil,
         defaultFontSize: Double? = nil,
         fontSizeMaximum: Double = 96,
+        fontSizeIsAutomatic: Bool = false,
         fontDesign: Binding<String>? = nil,
         fontDesignTarget: AppearanceSelectionTarget? = nil,
         defaultFontDesign: String? = nil,
@@ -1554,7 +2673,8 @@ private extension SettingsTabView {
         previewKind: TextAppearancePreviewKind? = nil,
         scrambleDisplayMode: Binding<String>? = nil,
         photoData: Binding<Data?>? = nil,
-        allowsPhoto: Bool = false
+        allowsPhoto: Bool = false,
+        showsContainerBackground: Bool = true
     ) -> AnyView {
         AnyView(
             VStack(spacing: 0) {
@@ -1588,12 +2708,24 @@ private extension SettingsTabView {
 
                 if let fontSize, let fontSizeTitleKey, let defaultFontSize {
                     Divider()
-                    appearanceFontSizeRow(
-                        titleKey: fontSizeTitleKey,
-                        value: fontSize,
-                        defaultValue: defaultFontSize,
-                        maximumValue: fontSizeMaximum
-                    )
+                    if fontSizeIsAutomatic {
+                        HStack {
+                            Text(fontSizeTitleKey)
+                                .font(.system(size: 16, weight: .medium))
+                            Spacer()
+                            Text(localizedTimerCustomization("settings.timer_size_automatic", fallback: "Automatic"))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                    } else {
+                        appearanceFontSizeRow(
+                            titleKey: fontSizeTitleKey,
+                            value: fontSize,
+                            defaultValue: defaultFontSize,
+                            maximumValue: fontSizeMaximum
+                        )
+                    }
                 }
 
                 if let scrambleDisplayMode {
@@ -1636,7 +2768,11 @@ private extension SettingsTabView {
                 }
 
             }
-            .background(settingsCardBackground)
+            .background {
+                if showsContainerBackground {
+                    settingsCardBackground
+                }
+            }
         )
     }
 
@@ -1736,17 +2872,11 @@ private extension SettingsTabView {
 
                     Spacer()
 
-                    Button("common.reset") {
+                    timerCustomizationResetButton(
+                        isDisabled: abs(clampedValue.wrappedValue - min(defaultValue, maximumValue)) < 0.5
+                    ) {
                         value.wrappedValue = min(defaultValue, maximumValue)
                     }
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.blue)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .compatibleTintedGlassFromIOS16(.blue, in: Capsule())
-                    .buttonStyle(.plain)
-                    .disabled(abs(clampedValue.wrappedValue - min(defaultValue, maximumValue)) < 0.5)
-                    .opacity(abs(clampedValue.wrappedValue - min(defaultValue, maximumValue)) < 0.5 ? 0.45 : 1)
 
                     Text("\(Int(clampedValue.wrappedValue.rounded()))")
                         .font(.system(size: 15, weight: .medium))

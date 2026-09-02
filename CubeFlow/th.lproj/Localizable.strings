@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "สีเทาเข้ม";
 "settings.app_icon_gray" = "สีเทา";
 "settings.app_icon_light_gray" = "สีเทาอ่อน";
-"settings.section.timer" = "ตัวจับเวลา";
+"settings.section.timer" = "การจับเวลา";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "ไม่ได้ลงชื่อเข้าใช้";
 "settings.wca_connected" = "เชื่อมต่อแล้ว";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "ไม่มีการแข่งขันเพิ่มเติม";
 "competitions.reload" = "โหลดใหม่";
+
+// Numeral presentation
+"settings.numeral_app" = "ตัวเลขแอป";
+"settings.numeral_timer" = "ตัวเลขตัวจับเวลา";
+"settings.numeral_statistics" = "ตัวเลขสถิติ";
+"settings.numeral_financial" = "การเงิน";
+"settings.numeral_number_format" = "รูปแบบตัวเลข";
+"settings.numeral_digits" = "ตัวเลข";
+"settings.numeral_chinese_numerals" = "ตัวเลขจีน";
+"settings.numeral_decimal_style" = "รูปแบบทศนิยม";
+"settings.numeral_period" = "จุด";
+"settings.numeral_chinese_decimal" = "จุดทศนิยมจีน";
+"settings.numeral_system.systemDefault" = "ค่าเริ่มต้นของระบบ";
+"settings.numeral_system.westernArabic" = "อารบิกตะวันตก";
+"settings.numeral_system.easternArabic" = "อารบิกตะวันออก";
+"settings.numeral_system.bangla" = "เบงกาลี";
+"settings.numeral_system.burmese" = "พม่า";
+"settings.numeral_system.devanagari" = "เทวนาครี";
+"settings.numeral_system.gujarati" = "คุชราต";
+"settings.numeral_system.gurmukhi" = "คุรมุขี";
+"settings.numeral_system.kannada" = "กันนาดา";
+"settings.numeral_system.khmer" = "เขมร";
+"settings.numeral_system.malayalam" = "มาลายาลัม";
+"settings.numeral_system.meitei" = "เมเท";
+"settings.numeral_system.odia" = "โอเดีย";
+"settings.numeral_system.olChiki" = "โอลชิกิ";
+"settings.numeral_system.telugu" = "เตลูกู";
+"settings.numeral_system.urdu" = "อูรดู";
+"settings.numeral_system.simplifiedChinese" = "จีนตัวย่อ";
+"settings.numeral_system.traditionalChinese" = "จีนตัวเต็ม";

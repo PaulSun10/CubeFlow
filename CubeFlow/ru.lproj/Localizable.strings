@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "Темно-серый";
 "settings.app_icon_gray" = "Серый";
 "settings.app_icon_light_gray" = "Светло-серый";
-"settings.section.timer" = "Таймер";
+"settings.section.timer" = "Хронометраж";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Не авторизован";
 "settings.wca_connected" = "Подключено";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "Больше соревнований нет";
 "competitions.reload" = "Перезагрузить";
+
+// Numeral presentation
+"settings.numeral_app" = "Цифры приложения";
+"settings.numeral_timer" = "Цифры таймера";
+"settings.numeral_statistics" = "Цифры статистики";
+"settings.numeral_financial" = "Финансовые";
+"settings.numeral_number_format" = "Формат числа";
+"settings.numeral_digits" = "Цифры";
+"settings.numeral_chinese_numerals" = "Китайские числа";
+"settings.numeral_decimal_style" = "Десятичный стиль";
+"settings.numeral_period" = "Точка";
+"settings.numeral_chinese_decimal" = "Китайский разделитель";
+"settings.numeral_system.systemDefault" = "Системные";
+"settings.numeral_system.westernArabic" = "Западно-арабские";
+"settings.numeral_system.easternArabic" = "Восточно-арабские";
+"settings.numeral_system.bangla" = "Бенгальские";
+"settings.numeral_system.burmese" = "Бирманские";
+"settings.numeral_system.devanagari" = "Деванагари";
+"settings.numeral_system.gujarati" = "Гуджарати";
+"settings.numeral_system.gurmukhi" = "Гурмукхи";
+"settings.numeral_system.kannada" = "Каннада";
+"settings.numeral_system.khmer" = "Кхмерские";
+"settings.numeral_system.malayalam" = "Малаялам";
+"settings.numeral_system.meitei" = "Мейтей";
+"settings.numeral_system.odia" = "Ория";
+"settings.numeral_system.olChiki" = "Ол-чики";
+"settings.numeral_system.telugu" = "Телугу";
+"settings.numeral_system.urdu" = "Урду";
+"settings.numeral_system.simplifiedChinese" = "Упрощённый китайский";
+"settings.numeral_system.traditionalChinese" = "Традиционный китайский";

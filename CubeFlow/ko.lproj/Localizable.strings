@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "진한 회색";
 "settings.app_icon_gray" = "회색";
 "settings.app_icon_light_gray" = "밝은 회색";
-"settings.section.timer" = "타이머";
+"settings.section.timer" = "측정";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "로그인 안 됨";
 "settings.wca_connected" = "연결됨";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "더 이상 대회가 없습니다";
 "competitions.reload" = "다시 불러오기";
+
+// Numeral presentation
+"settings.numeral_app" = "App 숫자";
+"settings.numeral_timer" = "타이머 숫자";
+"settings.numeral_statistics" = "통계 숫자";
+"settings.numeral_financial" = "금융 숫자";
+"settings.numeral_number_format" = "숫자 형식";
+"settings.numeral_digits" = "자릿수";
+"settings.numeral_chinese_numerals" = "중국 숫자";
+"settings.numeral_decimal_style" = "소수점 스타일";
+"settings.numeral_period" = "마침표";
+"settings.numeral_chinese_decimal" = "중국식 소수점";
+"settings.numeral_system.systemDefault" = "시스템 기본값";
+"settings.numeral_system.westernArabic" = "서부 아라비아";
+"settings.numeral_system.easternArabic" = "동부 아라비아";
+"settings.numeral_system.bangla" = "벵골";
+"settings.numeral_system.burmese" = "버마";
+"settings.numeral_system.devanagari" = "데바나가리";
+"settings.numeral_system.gujarati" = "구자라트";
+"settings.numeral_system.gurmukhi" = "구르무키";
+"settings.numeral_system.kannada" = "칸나다";
+"settings.numeral_system.khmer" = "크메르";
+"settings.numeral_system.malayalam" = "말라얄람";
+"settings.numeral_system.meitei" = "메이테이";
+"settings.numeral_system.odia" = "오디아";
+"settings.numeral_system.olChiki" = "올 치키";
+"settings.numeral_system.telugu" = "텔루구";
+"settings.numeral_system.urdu" = "우르두";
+"settings.numeral_system.simplifiedChinese" = "중국어 간체";
+"settings.numeral_system.traditionalChinese" = "중국어 번체";

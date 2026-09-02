@@ -31,6 +31,516 @@ struct CubeFlowTests {
         #expect(SolveMetrics.formatAverage(10.243, decimals: 3) == "10.243")
     }
 
+    @Test func numeralPreferencesDefaultAndInheritanceResolution() {
+        let suiteName = "NumeralPreferencesTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let initial = NumeralPreferencesSnapshot.load(from: defaults)
+        #expect(initial.app.system == .systemDefault)
+        #expect(initial.resolved(for: .timer) == initial.app)
+        #expect(initial.resolved(for: .statistics) == initial.app)
+
+        defaults.set(NumeralSystem.bangla.rawValue, forKey: NumeralPreferenceKeys.appSystem)
+        defaults.set(NumeralSystem.urdu.rawValue, forKey: NumeralPreferenceKeys.timerSystem)
+        let overridden = NumeralPreferencesSnapshot.load(from: defaults)
+        #expect(overridden.resolved(for: .app).system == .bangla)
+        #expect(overridden.resolved(for: .timer).system == .urdu)
+        #expect(overridden.resolved(for: .statistics).system == .bangla)
+    }
+
+    @Test func unicodeNumeralSystemsUseDistinctFoundationNumberingSystems() {
+        let cases: [(NumeralSystem, String)] = [
+            (.westernArabic, "1024.08"),
+            (.easternArabic, "١٠٢٤٫٠٨"),
+            (.urdu, "۱۰۲۴٫۰۸"),
+            (.bangla, "১০২৪.০৮"),
+            (.burmese, "၁၀၂၄.၀၈"),
+            (.devanagari, "१०२४.०८"),
+            (.gujarati, "૧૦૨૪.૦૮"),
+            (.gurmukhi, "੧੦੨੪.੦੮"),
+            (.kannada, "೧೦೨೪.೦೮"),
+            (.khmer, "១០២៤.០៨"),
+            (.malayalam, "൧൦൨൪.൦൮"),
+            (.meitei, "꯱꯰꯲꯴.꯰꯸"),
+            (.odia, "୧୦୨୪.୦୮"),
+            (.olChiki, "᱑᱐᱒᱔.᱐᱘"),
+            (.telugu, "౧౦౨౪.౦౮")
+        ]
+
+        for (system, expected) in cases {
+            #expect(NumeralPresentation.presentNumericText(
+                "1024.08",
+                scope: .app,
+                preferences: numeralSnapshot(appSystem: system)
+            ) == expected)
+        }
+    }
+
+    @Test func chineseNumeralDimensionsRemainIndependent() {
+        let simplifiedDigits = numeralSnapshot(
+            appSystem: .simplifiedChinese,
+            appChinese: ChineseNumeralOptions(
+                financial: false,
+                numberFormat: .digits,
+                decimalStyle: .period
+            )
+        )
+        #expect(numeralText("0", preferences: simplifiedDigits) == "零")
+        #expect(numeralText("9.28", preferences: simplifiedDigits) == "九.二八")
+        #expect(numeralText("10.24", preferences: simplifiedDigits) == "一零.二四")
+        #expect(SolveMetrics.formatTime(
+            80.899,
+            decimals: 2,
+            numeralScope: .app,
+            numeralPreferences: simplifiedDigits
+        ) == "一分二零.八九")
+
+        let simplifiedPositional = numeralSnapshot(
+            appSystem: .simplifiedChinese,
+            appChinese: ChineseNumeralOptions(
+                financial: false,
+                numberFormat: .chineseNumerals,
+                decimalStyle: .chineseDecimal
+            )
+        )
+        #expect(numeralText("10.24", preferences: simplifiedPositional) == "十点二四")
+        #expect(numeralText("11.42", preferences: simplifiedPositional) == "十一点四二")
+        #expect(numeralText("21.08", preferences: simplifiedPositional) == "二十一点零八")
+        #expect(numeralText("128.05", preferences: simplifiedPositional) == "一百二十八点零五")
+        #expect(SolveMetrics.formatTime(
+            80.899,
+            decimals: 2,
+            numeralScope: .app,
+            numeralPreferences: simplifiedPositional
+        ) == "一分二十点八九")
+
+        let traditionalFinancial = numeralSnapshot(
+            appSystem: .traditionalChinese,
+            appChinese: ChineseNumeralOptions(
+                financial: true,
+                numberFormat: .chineseNumerals,
+                decimalStyle: .chineseDecimal
+            )
+        )
+        #expect(numeralText("10.24", preferences: traditionalFinancial) == "壹拾點貳肆")
+        #expect(numeralText("11.42", preferences: traditionalFinancial) == "壹拾壹點肆貳")
+        #expect(numeralText("21.08", preferences: traditionalFinancial) == "貳拾壹點零捌")
+        #expect(SolveMetrics.formatTime(
+            80.899,
+            decimals: 2,
+            numeralScope: .app,
+            numeralPreferences: traditionalFinancial
+        ) == "壹分貳拾點捌玖")
+    }
+
+    @Test func appTimerAndStatisticsNumeralsCanResolveIndependently() {
+        let snapshot = NumeralPreferencesSnapshot(
+            app: NumeralScopePreference(system: .bangla, chineseOptions: ChineseNumeralOptions()),
+            timerOverride: NumeralScopePreference(
+                system: .traditionalChinese,
+                chineseOptions: ChineseNumeralOptions(
+                    financial: true,
+                    numberFormat: .chineseNumerals,
+                    decimalStyle: .chineseDecimal
+                )
+            ),
+            statisticsOverride: NumeralScopePreference(
+                system: .simplifiedChinese,
+                chineseOptions: ChineseNumeralOptions(
+                    financial: false,
+                    numberFormat: .digits,
+                    decimalStyle: .period
+                )
+            )
+        )
+
+        #expect(NumeralPresentation.presentNumericText("10.24", scope: .app, preferences: snapshot) == "১০.২৪")
+        #expect(NumeralPresentation.presentNumericText("10.24", scope: .timer, preferences: snapshot) == "壹拾點貳肆")
+        #expect(NumeralPresentation.presentNumericText("10.24", scope: .statistics, preferences: snapshot) == "一零.二四")
+        #expect(SolveMetrics.formatTime(10.249, decimals: 2, numeralScope: .timer, numeralPreferences: snapshot) == "壹拾點貳肆")
+    }
+
+    @Test func numeralPresentationDoesNotMutateProtectedIdentifiers() {
+        #expect(NumeralPresentation.verbatimIdentifier("2025SUNP01") == "2025SUNP01")
+        #expect(NumeralPresentation.verbatimIdentifier("550E8400-E29B-41D4-A716-446655440000") == "550E8400-E29B-41D4-A716-446655440000")
+    }
+
+    private func numeralSnapshot(
+        appSystem: NumeralSystem,
+        appChinese: ChineseNumeralOptions = ChineseNumeralOptions()
+    ) -> NumeralPreferencesSnapshot {
+        NumeralPreferencesSnapshot(
+            app: NumeralScopePreference(system: appSystem, chineseOptions: appChinese),
+            timerOverride: nil,
+            statisticsOverride: nil
+        )
+    }
+
+    private func numeralText(
+        _ value: String,
+        preferences: NumeralPreferencesSnapshot
+    ) -> String {
+        NumeralPresentation.presentNumericText(value, scope: .app, preferences: preferences)
+    }
+
+    @Test func timerStatisticsSelectionMigratesLegacyAveragePreference() {
+        #expect(TimerStatisticMetric.resolvedSelection(storedValue: "", legacyDisplayOption: .none).isEmpty)
+        #expect(TimerStatisticMetric.resolvedSelection(storedValue: "", legacyDisplayOption: .ao5) == [.ao5])
+        #expect(TimerStatisticMetric.resolvedSelection(storedValue: "", legacyDisplayOption: .ao12) == [.ao12])
+        #expect(
+            TimerStatisticMetric.resolvedSelection(storedValue: "", legacyDisplayOption: .ao5AndAo12)
+                == [.ao5, .ao12]
+        )
+
+        let stored = TimerStatisticMetric.storedValue(for: [.solveCount, .best, .ao5])
+        #expect(stored == "best,ao5,solveCount")
+        #expect(
+            TimerStatisticMetric.resolvedSelection(storedValue: stored, legacyDisplayOption: .none)
+                == [.best, .ao5, .solveCount]
+        )
+        #expect(TimerStatisticMetric.storedValue(for: []) == "none")
+        #expect(
+            TimerStatisticMetric.resolvedSelection(storedValue: "none", legacyDisplayOption: .ao5AndAo12)
+                .isEmpty
+        )
+    }
+
+    @Test func classicStatisticsMigrationPreservesCanonicalFirstTwoWithoutChangingSharedSelection() {
+        let cases: [([TimerStatisticMetric], [TimerStatisticMetric])] = [
+            ([], []),
+            ([.ao12], [.ao12]),
+            ([.best, .ao5], [.best, .ao5]),
+            ([.mean, .best, .ao5, .ao12], [.mean, .best])
+        ]
+
+        for (sharedSelection, expectedClassicSelection) in cases {
+            let sharedStoredValue = TimerStatisticMetric.storedValue(for: sharedSelection)
+            let migratedClassicStoredValue = TimerStatisticSelection.migratedClassicStoredValue(
+                sharedStoredValue: sharedStoredValue,
+                classicStoredValue: "",
+                legacyDisplayOption: .none
+            )
+
+            #expect(
+                TimerStatisticMetric.resolvedSelection(
+                    storedValue: migratedClassicStoredValue,
+                    legacyDisplayOption: .none
+                ) == expectedClassicSelection
+            )
+            #expect(TimerStatisticMetric.storedValue(for: sharedSelection) == sharedStoredValue)
+        }
+    }
+
+    @Test func classicAndNonClassicStatisticsSelectionsRemainIndependent() {
+        let shared = TimerStatisticMetric.storedValue(for: [.mean, .ao5, .ao12, .ao100])
+        let classic = TimerStatisticMetric.storedValue(for: [.best, .ao5])
+
+        #expect(
+            TimerStatisticSelection.resolved(
+                arrangement: .classic,
+                sharedStoredValue: shared,
+                classicStoredValue: classic,
+                legacyDisplayOption: .none
+            ) == [.best, .ao5]
+        )
+        #expect(
+            TimerStatisticSelection.resolved(
+                arrangement: .cards,
+                sharedStoredValue: shared,
+                classicStoredValue: classic,
+                legacyDisplayOption: .none
+            ) == [.mean, .ao5, .ao12, .ao100]
+        )
+    }
+
+    @Test func classicStatisticsSelectionCannotExceedTwoMetrics() {
+        let selected: [TimerStatisticMetric] = [.ao5, .ao12]
+        #expect(
+            TimerStatisticSelection.updating(
+                selected,
+                metric: .ao100,
+                isSelected: true,
+                arrangement: .classic
+            ) == selected
+        )
+        #expect(
+            TimerStatisticSelection.updating(
+                selected,
+                metric: .ao5,
+                isSelected: false,
+                arrangement: .classic
+            ) == [.ao12]
+        )
+
+        let corruptClassicValue = TimerStatisticMetric.storedValue(for: [.mean, .best, .ao5, .ao12])
+        #expect(
+            TimerStatisticSelection.resolved(
+                arrangement: .classic,
+                sharedStoredValue: "none",
+                classicStoredValue: corruptClassicValue,
+                legacyDisplayOption: .none
+            ) == [.mean, .best]
+        )
+    }
+
+    @Test func drawScrambleSizeUses275DefaultAndSanitizesOnlyInvalidValues() {
+        #expect(TimerCustomizationDefaults.drawScrambleSize == 275)
+        #expect(TimerCustomizationDefaults.resolvedDrawScrambleSize(.nan) == 275)
+        #expect(TimerCustomizationDefaults.resolvedDrawScrambleSize(132) == 132)
+        #expect(TimerCustomizationDefaults.resolvedDrawScrambleSize(95) == 96)
+        #expect(TimerCustomizationDefaults.resolvedDrawScrambleSize(501) == 500)
+    }
+
+    @Test func timerSessionStatisticsMatchDataAverageForCompleteHistoricalSession() throws {
+        let samples = (0..<27).map { index in
+            SessionSolveSample(
+                id: UUID(),
+                date: Date(timeIntervalSince1970: TimeInterval(27 - index)),
+                time: 8 + Double(index) * 0.17,
+                resultRaw: SolveResult.solved.rawValue,
+                scramble: "",
+                comment: "",
+                eventRawValue: index < 26 ? "legacy-event" : PuzzleEvent.threeByThree.rawValue
+            )
+        }
+
+        let snapshot = DataTabComputation.buildSessionStatisticsSnapshot(from: samples)
+        let ao5Entry = try #require(
+            DataTabComputation.buildAverageEntriesSnapshot(from: samples, averageType: .ao5).first
+        )
+        let ao12Entry = try #require(
+            DataTabComputation.buildAverageEntriesSnapshot(from: samples, averageType: .ao12).first
+        )
+
+        #expect(snapshot.solveCount == 27)
+        #expect(snapshot.mean != nil)
+        let snapshotAo5 = try #require(snapshot.currentAverage(for: .ao5))
+        let snapshotAo12 = try #require(snapshot.currentAverage(for: .ao12))
+        let entryAo5 = try #require(ao5Entry.value)
+        let entryAo12 = try #require(ao12Entry.value)
+        #expect(abs(snapshotAo5 - entryAo5) < 1e-12)
+        #expect(abs(snapshotAo12 - entryAo12) < 1e-12)
+        #expect(snapshot.currentAverage(for: .ao100) == nil)
+    }
+
+    @Test func timerSessionStatisticsExposeAo100WhenSessionHasEnoughHistory() throws {
+        let samples = (0..<128).map { index in
+            SessionSolveSample(
+                id: UUID(),
+                date: Date(timeIntervalSince1970: TimeInterval(128 - index)),
+                time: 9 + Double(index % 19) * 0.11,
+                resultRaw: SolveResult.solved.rawValue,
+                scramble: "",
+                comment: "",
+                eventRawValue: PuzzleEvent.threeByThree.rawValue
+            )
+        }
+
+        let snapshot = DataTabComputation.buildSessionStatisticsSnapshot(from: samples)
+        let ao100Entry = try #require(
+            DataTabComputation.buildAverageEntriesSnapshot(from: samples, averageType: .ao100).first
+        )
+
+        #expect(snapshot.solveCount == 128)
+        #expect(snapshot.currentAverage(for: .ao100) == ao100Entry.value)
+    }
+
+    @Test func timerArrangementOwnsDiagramPlacementWhereRequired() {
+        #expect(TimerArrangement.classic.resolvedDiagramPlacement(from: .bottomLeft, splitOrder: .statisticsLeading) == .bottomLeft)
+        #expect(TimerArrangement.classic.resolvedDiagramPlacement(from: .inline, splitOrder: .statisticsLeading) == nil)
+        #expect(
+            TimerArrangement.split.resolvedDiagramPlacement(from: .bottomLeft, splitOrder: .statisticsLeading)
+                == .bottomRight
+        )
+        #expect(
+            TimerArrangement.split.resolvedDiagramPlacement(from: .bottomRight, splitOrder: .diagramLeading)
+                == .bottomLeft
+        )
+        #expect(TimerArrangement.cards.resolvedDiagramPlacement(from: .bottomCenter, splitOrder: .statisticsLeading) == nil)
+    }
+
+    @Test func legacyMinimalArrangementMigratesOnceWithoutOverwritingLaterChoices() {
+        let migration = TimerArrangementMigration.resolve(
+            storedArrangement: "minimal",
+            minimalMode: false,
+            completed: false
+        )
+        #expect(migration.arrangement == .classic)
+        #expect(migration.minimalMode)
+        #expect(migration.completed)
+
+        let laterChoice = TimerArrangementMigration.resolve(
+            storedArrangement: TimerArrangement.cards.rawValue,
+            minimalMode: false,
+            completed: true
+        )
+        #expect(laterChoice.arrangement == .cards)
+        #expect(!laterChoice.minimalMode)
+    }
+
+    @Test func minimalModeSuppressesPresentationWithoutChangingArrangement() {
+        let presentation = TimerEffectivePresentation(arrangement: .split, minimalMode: true)
+        #expect(presentation.arrangement == .split)
+        #expect(!presentation.showsStatistics)
+        #expect(!presentation.showsScrambleDiagram)
+        #expect(presentation.resolvedDiagramPlacement(from: .bottomLeft, splitOrder: .statisticsLeading) == nil)
+    }
+
+    @Test func classicAndCardsStatisticsSelectionsRemainIndependentAndBounded() {
+        let classic = TimerStatisticMetric.storedValue(for: [.best, .ao5])
+        let cards = TimerStatisticMetric.storedValue(for: [.mean, .mo3, .ao12, .solveCount])
+        #expect(TimerStatisticSelection.resolved(
+            arrangement: .classic,
+            sharedStoredValue: "none",
+            classicStoredValue: classic,
+            cardsStoredValue: cards,
+            legacyDisplayOption: .none
+        ) == [.best, .ao5])
+        #expect(TimerStatisticSelection.resolved(
+            arrangement: .cards,
+            sharedStoredValue: "none",
+            classicStoredValue: classic,
+            cardsStoredValue: cards,
+            legacyDisplayOption: .none
+        ) == [.mean, .mo3, .ao12, .solveCount])
+
+        let unchanged = TimerStatisticSelection.updating(
+            [.mean, .best, .ao5, .ao12],
+            metric: .ao100,
+            isSelected: true,
+            arrangement: .cards
+        )
+        #expect(unchanged == [.mean, .best, .ao5, .ao12])
+    }
+
+    @Test func cardsLayoutsResolveForEverySupportedSelectionCount() {
+        #expect(TimerCardsStatisticsLayout.resolved(count: 1, two: .horizontal, three: .bottomEmphasis) == .full)
+        #expect(TimerCardsStatisticsLayout.resolved(count: 2, two: .vertical, three: .bottomEmphasis) == .vertical)
+        #expect(TimerCardsStatisticsLayout.resolved(count: 2, two: .horizontal, three: .topEmphasis) == .horizontal)
+        #expect(TimerCardsStatisticsLayout.resolved(count: 3, two: .vertical, three: .topEmphasis) == .topEmphasis)
+        #expect(TimerCardsStatisticsLayout.resolved(count: 3, two: .vertical, three: .bottomEmphasis) == .bottomEmphasis)
+        #expect(TimerCardsStatisticsLayout.resolved(count: 4, two: .vertical, three: .topEmphasis) == .grid)
+    }
+
+    @Test func cardsPositionAssignmentsStayUniqueAndSwapOccupiedSlots() {
+        let selected: [TimerStatisticMetric] = [.mean, .ao5, .ao12]
+        let store = TimerCardsPositionStore()
+            .normalizing(layout: .topEmphasis, selectedMetrics: selected)
+        #expect(store.resolvedMetrics(for: .topEmphasis, selectedMetrics: selected) == selected)
+
+        let swapped = store.assigning(
+            metric: .ao12,
+            to: 0,
+            layout: .topEmphasis,
+            selectedMetrics: selected
+        )
+        #expect(swapped.resolvedMetrics(for: .topEmphasis, selectedMetrics: selected) == [.ao12, .ao5, .mean])
+        #expect(Set(swapped.resolvedMetrics(for: .topEmphasis, selectedMetrics: selected)).count == 3)
+    }
+
+    @Test func cardsPositionAssignmentsRecoverAfterSelectionChanges() {
+        var store = TimerCardsPositionStore()
+        store.assignments[TimerCardsStatisticsLayout.grid.rawValue] = ["ao100", "mean", "ao5", "ao12"]
+        let changed: [TimerStatisticMetric] = [.best, .ao5, .ao12, .ao100]
+        let resolved = store.resolvedMetrics(for: .grid, selectedMetrics: changed)
+        #expect(resolved == [.ao100, .ao5, .ao12, .best])
+        #expect(Set(resolved) == Set(changed))
+    }
+
+    @Test func legacySplitArrangementsMigrateWithoutLosingOrder() {
+        #expect(TimerArrangement.resolved(storedRawValue: "splitStatisticsLeading") == .split)
+        #expect(TimerArrangement.resolved(storedRawValue: "splitDiagramLeading") == .split)
+        #expect(
+            TimerSplitOrder.resolved(
+                storedRawValue: TimerSplitOrder.statisticsLeading.rawValue,
+                legacyArrangementRawValue: "splitDiagramLeading"
+            ) == .diagramLeading
+        )
+    }
+
+    @Test func timerScramblePositionUsesNormalizedAvailableGeometry() {
+        #expect(TimerArrangementLayout.normalizedScramblePosition(-1) == 0)
+        #expect(TimerArrangementLayout.normalizedScramblePosition(2) == 1)
+        #expect(TimerArrangementLayout.normalizedScramblePosition(.nan) == 0)
+        #expect(
+            TimerArrangementLayout.scrambleTop(
+                availableHeight: 200,
+                contentHeight: 80,
+                normalizedPosition: 0.5
+            ) == 60
+        )
+    }
+
+    @Test func manualEntryGroupOnlyMovesEnoughToClearDiagram() {
+        #expect(
+            TimerArrangementLayout.collisionAvoidingGroupTop(
+                containerHeight: 800,
+                groupHeight: 180,
+                obstructionMinY: 700,
+                minimumSpacing: 12
+            ) == 310
+        )
+        #expect(
+            TimerArrangementLayout.collisionAvoidingGroupTop(
+                containerHeight: 800,
+                groupHeight: 180,
+                obstructionMinY: 440,
+                minimumSpacing: 12
+            ) == 248
+        )
+        #expect(
+            TimerArrangementLayout.collisionAvoidingGroupTop(
+                containerHeight: 260,
+                groupHeight: 220,
+                obstructionMinY: 120,
+                minimumSpacing: 12
+            ) == 0
+        )
+    }
+
+    @Test func timerGeometryRejectsTransientInvalidDimensions() {
+        #expect(
+            TimerArrangementLayout.contentWidth(
+                containerWidth: 0,
+                horizontalInsets: 48,
+                maximum: 420
+            ) == 0
+        )
+        #expect(
+            TimerArrangementLayout.contentWidth(
+                containerWidth: .nan,
+                horizontalInsets: 48,
+                maximum: 420
+            ) == 0
+        )
+
+        let geometry = TimerArrangementLayout.geometry(
+            containerSize: CGSize(width: -10, height: CGFloat.infinity),
+            timerVerticalOffset: 18,
+            classicStatisticsHeight: 120,
+            classicStatisticsOffset: 80,
+            diagramPreferredWidth: 132,
+            diagramAspectRatio: 0
+        )
+        let frames = [
+            geometry.classicStatisticsFrame,
+            geometry.splitLeadingFrame,
+            geometry.splitTrailingFrame,
+            geometry.leadingCardFrame,
+            geometry.trailingCardFrame
+        ]
+        #expect(frames.allSatisfy { frame in
+            frame.origin.x.isFinite
+                && frame.origin.y.isFinite
+                && frame.width.isFinite
+                && frame.height.isFinite
+                && frame.width >= 0
+                && frame.height >= 0
+        })
+        #expect(geometry.leadingCardFrame.size == geometry.trailingCardFrame.size)
+    }
+
     #if DEBUG && os(iOS)
     @Test @MainActor func marketingTimerHeroUsesIsolatedDeterministicData() throws {
         let environment = MarketingPreviewEnvironment(preset: .timerThreeByThreeHero)

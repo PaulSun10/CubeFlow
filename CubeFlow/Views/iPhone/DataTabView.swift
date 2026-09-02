@@ -28,6 +28,10 @@ struct DataTabView: View {
     @AppStorage("dataSolveResultFilter") private var solveResultFilterRawValue = DataSolveResultFilter.all.rawValue
     @AppStorage("dataAverageSortOption") private var averageSortOptionRawValue = DataAverageSortOption.newest.rawValue
     @AppStorage("dataRecordFilterOption") private var recordFilterOptionRawValue = DataRecordFilterOption.all.rawValue
+    @AppStorage("appNumeralSystem") private var appNumeralSystem = NumeralSystem.systemDefault.rawValue
+    @AppStorage("appNumeralChineseFinancial") private var appNumeralChineseFinancial = false
+    @AppStorage("appNumeralChineseNumberFormat") private var appNumeralChineseNumberFormat = ChineseNumeralNumberFormat.digits.rawValue
+    @AppStorage("appNumeralChineseDecimalStyle") private var appNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
 
     @State private var selectedSegment: DataSegment = .time
     @State private var segmentTransitionDirection: Edge = .trailing
@@ -121,6 +125,12 @@ struct DataTabView: View {
     }
 
     var body: some View {
+        let _ = (
+            appNumeralSystem,
+            appNumeralChineseFinancial,
+            appNumeralChineseNumberFormat,
+            appNumeralChineseDecimalStyle
+        )
         CompatibleNavigationContainer {
             dataContent
             .navigationTitle(Text("tab.data"))
@@ -2711,7 +2721,10 @@ private struct AverageDetailSheet: View {
                     )
                 }
 
-                Section(String(format: dataTabLocalizedString(for: "common.solves_format", languageCode: appLanguage), entry.solves.count)) {
+                Section(NumeralPresentation.formatLocalizedInteger(
+                    entry.solves.count,
+                    template: dataTabLocalizedString(for: "common.solves_format", languageCode: appLanguage)
+                )) {
                     ForEach(Array(orderedSolves.enumerated()), id: \.element.id) { index, solve in
                         averageSolveRow(solve, position: entry.position + index)
                     }
@@ -3244,7 +3257,10 @@ private struct SessionManagementSheet: View {
     }
 
     private func sessionSolveCountText(_ count: Int) -> String {
-        String(format: dataTabLocalizedString(for: "common.solves_format", languageCode: appLanguage), count)
+        NumeralPresentation.formatLocalizedInteger(
+            count,
+            template: dataTabLocalizedString(for: "common.solves_format", languageCode: appLanguage)
+        )
     }
 
     private func toggleSelection(for session: Session) {
@@ -3673,7 +3689,7 @@ private struct TimeTrendSheet: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(SolveMetrics.formatTime(bin.lower, decimals: solveTimeAccuracy.decimals)) - \(SolveMetrics.formatTime(bin.upper, decimals: solveTimeAccuracy.decimals))")
                                 .font(.system(size: 12, weight: .semibold))
-                            Text("\(bin.count)")
+                            Text(NumeralPresentation.formatInteger(bin.count))
                                 .font(.system(size: 10, weight: .medium))
                         }
                         .padding(8)

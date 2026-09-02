@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "رمادي غامق";
 "settings.app_icon_gray" = "رمادي";
 "settings.app_icon_light_gray" = "رمادي فاتح";
-"settings.section.timer" = "الموقت";
+"settings.section.timer" = "التوقيت";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "لم يتم تسجيل الدخول";
 "settings.wca_connected" = "متصل";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "لا توجد مسابقات أخرى";
 "competitions.reload" = "إعادة التحميل";
+
+// Numeral presentation
+"settings.numeral_app" = "أرقام التطبيق";
+"settings.numeral_timer" = "أرقام المؤقت";
+"settings.numeral_statistics" = "أرقام الإحصاءات";
+"settings.numeral_financial" = "مالية";
+"settings.numeral_number_format" = "تنسيق الرقم";
+"settings.numeral_digits" = "أرقام";
+"settings.numeral_chinese_numerals" = "الأرقام الصينية";
+"settings.numeral_decimal_style" = "نمط العلامة العشرية";
+"settings.numeral_period" = "نقطة";
+"settings.numeral_chinese_decimal" = "فاصلة عشرية صينية";
+"settings.numeral_system.systemDefault" = "إعداد النظام الافتراضي";
+"settings.numeral_system.westernArabic" = "العربية الغربية";
+"settings.numeral_system.easternArabic" = "العربية الشرقية";
+"settings.numeral_system.bangla" = "البنغالية";
+"settings.numeral_system.burmese" = "البورمية";
+"settings.numeral_system.devanagari" = "الديفاناغارية";
+"settings.numeral_system.gujarati" = "الغوجاراتية";
+"settings.numeral_system.gurmukhi" = "الغورموخية";
+"settings.numeral_system.kannada" = "الكانادا";
+"settings.numeral_system.khmer" = "الخميرية";
+"settings.numeral_system.malayalam" = "المالايالامية";
+"settings.numeral_system.meitei" = "الميتي";
+"settings.numeral_system.odia" = "الأوديا";
+"settings.numeral_system.olChiki" = "أول تشيكي";
+"settings.numeral_system.telugu" = "التيلوغوية";
+"settings.numeral_system.urdu" = "الأردية";
+"settings.numeral_system.simplifiedChinese" = "الصينية المبسطة";
+"settings.numeral_system.traditionalChinese" = "الصينية التقليدية";

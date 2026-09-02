@@ -40,6 +40,14 @@ private struct FloatingScrambleFramePreferenceKey: PreferenceKey {
     }
 }
 
+private struct TimerTopControlsHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 private enum TimerLayoutCoordinateSpace {
     static let name = "TimerTabView.Layout"
 }
@@ -94,7 +102,31 @@ struct TimerTabView: View {
     @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
     @AppStorage("drawScramblePlacement") private var drawScramblePlacement: String = DrawScramblePlacement.inline.rawValue
-    @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = 132
+    @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = TimerCustomizationDefaults.drawScrambleSize
+    @AppStorage("timerArrangement") private var timerArrangement: String = TimerArrangement.classic.rawValue
+    @AppStorage("timerMinimalMode") private var timerMinimalMode: Bool = false
+    @AppStorage("timerMinimalArrangementMigrationCompleted") private var timerMinimalArrangementMigrationCompleted: Bool = false
+    @AppStorage("timerSplitOrder") private var timerSplitOrder: String = TimerSplitOrder.statisticsLeading.rawValue
+    @AppStorage("timerScrambleVerticalPosition") private var timerScrambleVerticalPosition: Double = 0
+    @AppStorage("timerStatisticsSelection") private var timerStatisticsSelection: String = ""
+    @AppStorage("timerClassicStatisticsSelection") private var timerClassicStatisticsSelection: String = ""
+    @AppStorage("timerCardsStatisticsSelection") private var timerCardsStatisticsSelection: String = ""
+    @AppStorage("timerCardsTwoStatisticsArrangement") private var timerCardsTwoStatisticsArrangement: String = TimerCardsTwoStatisticArrangement.vertical.rawValue
+    @AppStorage("timerCardsThreeStatisticsArrangement") private var timerCardsThreeStatisticsArrangement: String = TimerCardsThreeStatisticArrangement.topEmphasis.rawValue
+    @AppStorage("timerCardsStatisticsPositions") private var timerCardsStatisticsPositions: String = ""
+    @AppStorage("showNextScrambleButton") private var showNextScrambleButton: Bool = true
+    @AppStorage("appNumeralSystem") private var appNumeralSystem = NumeralSystem.systemDefault.rawValue
+    @AppStorage("timerNumeralSystem") private var timerNumeralSystem = NumeralPreferenceKeys.inheritedRawValue
+    @AppStorage("statisticsNumeralSystem") private var statisticsNumeralSystem = NumeralPreferenceKeys.inheritedRawValue
+    @AppStorage("appNumeralChineseFinancial") private var appNumeralChineseFinancial = false
+    @AppStorage("timerNumeralChineseFinancial") private var timerNumeralChineseFinancial = false
+    @AppStorage("statisticsNumeralChineseFinancial") private var statisticsNumeralChineseFinancial = false
+    @AppStorage("appNumeralChineseNumberFormat") private var appNumeralChineseNumberFormat = ChineseNumeralNumberFormat.digits.rawValue
+    @AppStorage("timerNumeralChineseNumberFormat") private var timerNumeralChineseNumberFormat = ChineseNumeralNumberFormat.digits.rawValue
+    @AppStorage("statisticsNumeralChineseNumberFormat") private var statisticsNumeralChineseNumberFormat = ChineseNumeralNumberFormat.digits.rawValue
+    @AppStorage("appNumeralChineseDecimalStyle") private var appNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
+    @AppStorage("timerNumeralChineseDecimalStyle") private var timerNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
+    @AppStorage("statisticsNumeralChineseDecimalStyle") private var statisticsNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
     @AppStorage("smartCubeFixedView") private var smartCubeFixedViewRawValue = SmartCubeFixedView.urf.rawValue
     @AppStorage("smartCubeReadySound") private var smartCubeReadySound = true
 
@@ -134,8 +166,7 @@ struct TimerTabView: View {
     @State private var showingMblindCountPicker = false
     @State private var showingScrambleDiagram = false
     @State private var mblindCountSelection: Int = 3
-    @State private var filteredSolvesSnapshot: [Solve] = []
-    @State private var sessionSolvesSnapshot: [Solve] = []
+    @State private var sessionStatisticsSnapshot = SessionStatisticsSnapshot.empty
     @State private var solvedDayCountsSnapshot: [Date: Int] = [:]
     @State private var streakCountSnapshot: Int = 0
     @State private var longestStreakSnapshot: Int = 0
@@ -167,11 +198,12 @@ struct TimerTabView: View {
     @State private var manualTimeInputHeight: CGFloat = 0
     @State private var manualTimeEntryHeight: CGFloat = 0
     @State private var floatingScrambleFrame: CGRect?
+    @State private var timerTopControlsHeight: CGFloat = 0
     @State private var smartCubeTargetFacelets: String?
     @State private var smartCubeIsReady = false
     @State private var smartCubeSolveStartMoveIndex = 0
 
-    private let hiddenTimerVerticalOffset: CGFloat = 18
+    private let hiddenTimerVerticalOffset = TimerArrangementLayout.defaultTimerVerticalOffset
     private let manualTimeEntrySpacing: CGFloat = 12
     private let ganResultChoices: [SolveResult] = [.solved, .plusTwo, .dnf]
     private let ganResultAutoCommitDelay: TimeInterval = 1.5
@@ -186,23 +218,26 @@ struct TimerTabView: View {
     #endif
 
     private var timerReservedFrameHeight: CGFloat {
-        max(CGFloat(timerTextFontSize) * 1.45, 110)
-    }
-
-    private var scrambleMaxHeightBeforeTimer: CGFloat {
-        max(96, UIScreen.main.bounds.height / 2 + hiddenTimerVerticalOffset - timerReservedFrameHeight / 2 - 112)
+        TimerArrangementLayout.timerReservedHeight(
+            fontSize: CGFloat(timerTextFontSize)
+        )
     }
 
     private var averageOverlayVerticalOffset: CGFloat {
-        CGFloat(timerTextFontSize) * 0.62 + CGFloat(resolvedAverageTextFontSize) * 0.55 + 10
+        TimerArrangementLayout.classicStatisticsOffset(
+            timerFontSize: CGFloat(timerTextFontSize),
+            statisticsFontSize: CGFloat(resolvedAverageTextFontSize)
+        )
     }
 
     private var resolvedScrambleTextFontSize: Double {
-        min(scrambleTextFontSize, 45)
+        guard scrambleTextFontSize.isFinite, scrambleTextFontSize > 0 else { return 20 }
+        return min(scrambleTextFontSize, 45)
     }
 
     private var resolvedAverageTextFontSize: Double {
-        min(averageTextFontSize, 56)
+        guard averageTextFontSize.isFinite, averageTextFontSize > 0 else { return 20 }
+        return min(averageTextFontSize, 56)
     }
 
     private var resolvedScrambleDisplayMode: ScrambleDisplayMode {
@@ -227,10 +262,6 @@ struct TimerTabView: View {
             return .threeByThree
         }
         return event
-    }
-
-    private var filteredSolves: [Solve] {
-        filteredSolvesSnapshot
     }
 
     private var mblindScrambleSheet: some View {
@@ -356,18 +387,6 @@ struct TimerTabView: View {
         .buttonStyle(.plain)
     }
 
-    private var sessionSolves: [Solve] {
-        sessionSolvesSnapshot
-    }
-
-    private var ao5: Double? {
-        SolveMetrics.trimmedAverage(from: filteredSolves, count: 5)
-    }
-
-    private var ao12: Double? {
-        SolveMetrics.trimmedAverage(from: filteredSolves, count: 12)
-    }
-
     private var timerTextStyle: AnyShapeStyle {
         if enteringTimesWith == "smartCube", !isRunning, smartCubeIsReady {
             return AnyShapeStyle(Color.green)
@@ -400,6 +419,118 @@ struct TimerTabView: View {
 
     private var resolvedAverageDisplayOption: AverageDisplayOption {
         AverageDisplayOption(rawValue: averageDisplayOption) ?? .ao5AndAo12
+    }
+
+    private var resolvedTimerArrangement: TimerArrangement {
+        TimerArrangement.resolved(storedRawValue: timerArrangement)
+    }
+
+    private var resolvedTimerSplitOrder: TimerSplitOrder {
+        TimerSplitOrder.resolved(
+            storedRawValue: timerSplitOrder,
+            legacyArrangementRawValue: timerArrangement
+        )
+    }
+
+    private var effectiveTimerPresentation: TimerEffectivePresentation {
+        TimerEffectivePresentation(arrangement: resolvedTimerArrangement, minimalMode: timerMinimalMode)
+    }
+
+    private var resolvedDrawScrambleFloatingSize: Double {
+        TimerCustomizationDefaults.resolvedDrawScrambleSize(drawScrambleFloatingSize)
+    }
+
+    private func migrateTimerArrangementPreferencesIfNeeded() {
+        let legacyArrangement = timerArrangement
+        let migration = TimerArrangementMigration.resolve(
+            storedArrangement: legacyArrangement,
+            minimalMode: timerMinimalMode,
+            completed: timerMinimalArrangementMigrationCompleted
+        )
+        let migratedArrangement = migration.arrangement
+        let migratedOrder = TimerSplitOrder.resolved(
+            storedRawValue: timerSplitOrder,
+            legacyArrangementRawValue: legacyArrangement
+        )
+        if timerArrangement != migratedArrangement.rawValue {
+            timerArrangement = migratedArrangement.rawValue
+        }
+        if timerSplitOrder != migratedOrder.rawValue {
+            timerSplitOrder = migratedOrder.rawValue
+        }
+        if timerMinimalMode != migration.minimalMode {
+            timerMinimalMode = migration.minimalMode
+        }
+        if timerMinimalArrangementMigrationCompleted != migration.completed {
+            timerMinimalArrangementMigrationCompleted = migration.completed
+        }
+        let normalizedPosition = Double(
+            TimerArrangementLayout.normalizedScramblePosition(timerScrambleVerticalPosition)
+        )
+        if timerScrambleVerticalPosition != normalizedPosition {
+            timerScrambleVerticalPosition = normalizedPosition
+        }
+        let normalizedDiagramSize = TimerCustomizationDefaults.resolvedDrawScrambleSize(drawScrambleFloatingSize)
+        if drawScrambleFloatingSize != normalizedDiagramSize {
+            drawScrambleFloatingSize = normalizedDiagramSize
+        }
+        let migratedClassicStatistics = TimerStatisticSelection.migratedClassicStoredValue(
+            sharedStoredValue: timerStatisticsSelection,
+            classicStoredValue: timerClassicStatisticsSelection,
+            legacyDisplayOption: resolvedAverageDisplayOption
+        )
+        if timerClassicStatisticsSelection != migratedClassicStatistics {
+            timerClassicStatisticsSelection = migratedClassicStatistics
+        }
+        let migratedCardsStatistics = TimerStatisticSelection.migratedCardsStoredValue(
+            cardsStoredValue: timerCardsStatisticsSelection,
+            legacyDisplayOption: resolvedAverageDisplayOption
+        )
+        if timerCardsStatisticsSelection != migratedCardsStatistics {
+            timerCardsStatisticsSelection = migratedCardsStatistics
+        }
+    }
+
+    private var selectedTimerStatistics: [TimerStatisticMetric] {
+        TimerStatisticSelection.resolved(
+            arrangement: resolvedTimerArrangement,
+            sharedStoredValue: timerStatisticsSelection,
+            classicStoredValue: timerClassicStatisticsSelection,
+            cardsStoredValue: timerCardsStatisticsSelection,
+            legacyDisplayOption: resolvedAverageDisplayOption
+        )
+    }
+
+    private var resolvedCardsStatisticsConfiguration: TimerCardsStatisticsConfiguration {
+        TimerCardsStatisticsConfiguration.resolve(
+            selectedMetrics: TimerStatisticSelection.resolved(
+                arrangement: .cards,
+                sharedStoredValue: timerStatisticsSelection,
+                classicStoredValue: timerClassicStatisticsSelection,
+                cardsStoredValue: timerCardsStatisticsSelection,
+                legacyDisplayOption: resolvedAverageDisplayOption
+            ),
+            twoArrangement: TimerCardsTwoStatisticArrangement(rawValue: timerCardsTwoStatisticsArrangement) ?? .vertical,
+            threeArrangement: TimerCardsThreeStatisticArrangement(rawValue: timerCardsThreeStatisticsArrangement) ?? .topEmphasis,
+            positionStore: TimerCardsPositionStore.decode(timerCardsStatisticsPositions)
+        )
+    }
+
+    private var resolvedArrangementDiagramPlacement: DrawScramblePlacement? {
+        effectiveTimerPresentation.resolvedDiagramPlacement(
+            from: resolvedDrawScramblePlacement,
+            splitOrder: resolvedTimerSplitOrder
+        )
+    }
+
+    private var showsArrangedDiagram: Bool {
+        guard canShowScrambleDiagram, effectiveTimerPresentation.showsScrambleDiagram else { return false }
+        switch resolvedTimerArrangement {
+        case .classic:
+            return resolvedArrangementDiagramPlacement != nil
+        case .split, .cards:
+            return true
+        }
     }
 
     private var timerText: String {
@@ -476,6 +607,24 @@ struct TimerTabView: View {
         solveTimeAccuracy.decimals
     }
 
+    private var numeralPreferencesSnapshot: NumeralPreferencesSnapshot {
+        _ = (
+            appNumeralSystem,
+            timerNumeralSystem,
+            statisticsNumeralSystem,
+            appNumeralChineseFinancial,
+            timerNumeralChineseFinancial,
+            statisticsNumeralChineseFinancial,
+            appNumeralChineseNumberFormat,
+            timerNumeralChineseNumberFormat,
+            statisticsNumeralChineseNumberFormat,
+            appNumeralChineseDecimalStyle,
+            timerNumeralChineseDecimalStyle,
+            statisticsNumeralChineseDecimalStyle
+        )
+        return .load()
+    }
+
     private var resolvedTimerTextFontDesign: TimerFontDesignOption {
         TimerFontDesignOption.resolvedAvailableOption(rawValue: timerTextFontDesign)
     }
@@ -550,7 +699,11 @@ struct TimerTabView: View {
         case "off", "inspectionOnly":
             return appLocalizedString("timer.solving", languageCode: appLanguage)
         case "seconds":
-            return String(Int(elapsedSeconds.rounded(.down)))
+            return NumeralPresentation.formatInteger(
+                Int(elapsedSeconds.rounded(.down)),
+                scope: .timer,
+                preferences: numeralPreferencesSnapshot
+            )
         default:
             return formatDisplayedTime(elapsedSeconds)
         }
@@ -568,84 +721,118 @@ struct TimerTabView: View {
                 return appLocalizedString("inspection.speech.plus_two", languageCode: appLanguage)
             }
             let remaining = max(0, 15 - inspectionElapsed)
-            return String(Int(ceil(remaining)))
+            return NumeralPresentation.formatInteger(
+                Int(ceil(remaining)),
+                scope: .timer,
+                preferences: numeralPreferencesSnapshot
+            )
         }
     }
 
     private var soloTimerContent: some View {
-        VStack(spacing: 0) {
-            if !shouldHideNonTimerContent {
-                ZStack {
-                    HStack {
-                        localBattleModeMenu
-                            .zIndex(10)
-
-                        Spacer()
-
-                        StreakButton(
-                            isTodaySolved: isTodaySolved,
-                            streakCount: streakCount,
-                            longestStreak: longestStreak,
-                            solvedDayCounts: solvedDayCounts,
-                            fireRedImageName: "streak_fire_red",
-                            fireGrayImageName: "streak_fire_gray"
-                        )
-                    }
-
-                    eventMenu
-                }
-                .padding(.top, 8)
-
-                HStack(alignment: .top, spacing: 10) {
-                    scrambleDisplayContainer
-                        .animation(.snappy(duration: 0.22, extraBounce: 0), value: scrambleDisplayText)
-
-                    VStack(spacing: 6) {
-                        if canShowScrambleDiagram && resolvedDrawScramblePlacement == .inline {
-                            circularGlassIconButton(systemName: "eye") {
-                                showingScrambleDiagram = true
+        GeometryReader { proxy in
+            VStack(spacing: 0) {
+                if !shouldHideNonTimerContent {
+                    timerTopControls
+                        .background {
+                            GeometryReader { controlsProxy in
+                                Color.clear.preference(
+                                    key: TimerTopControlsHeightPreferenceKey.self,
+                                    value: controlsProxy.size.height
+                                )
                             }
                         }
 
+                    let availableHeight = TimerArrangementLayout.scrambleAvailableHeight(
+                        containerHeight: proxy.size.height,
+                        timerVerticalOffset: hiddenTimerVerticalOffset,
+                        timerReservedHeight: timerReservedFrameHeight,
+                        topControlsHeight: timerTopControlsHeight
+                    )
+                    positionedScrambleArea(availableHeight: availableHeight)
+
+                    if enteringTimesWith == "smartCube" {
+                        smartCubeTimerPanel
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, TimerArrangementLayout.timerContentHorizontalInset)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .onPreferenceChange(TimerTopControlsHeightPreferenceKey.self) { height in
+            timerTopControlsHeight = height
+        }
+    }
+
+    private var timerTopControls: some View {
+        ZStack {
+            HStack {
+                localBattleModeMenu
+                    .zIndex(10)
+
+                Spacer()
+
+                StreakButton(
+                    isTodaySolved: isTodaySolved,
+                    streakCount: streakCount,
+                    longestStreak: longestStreak,
+                    solvedDayCounts: solvedDayCounts,
+                    fireRedImageName: "streak_fire_red",
+                    fireGrayImageName: "streak_fire_gray"
+                )
+            }
+
+            eventMenu
+        }
+        .padding(.top, TimerArrangementLayout.topControlsTopInset)
+    }
+
+    private func positionedScrambleArea(availableHeight: CGFloat) -> some View {
+        let safeAvailableHeight = TimerArrangementLayout.nonnegativeFinite(availableHeight, fallback: 72)
+        let measuredContentHeight = max(
+            TimerArrangementLayout.nonnegativeFinite(scrambleDisplayMeasuredHeight),
+            TimerArrangementLayout.scrambleContentMinimumHeight
+        )
+        let top = TimerArrangementLayout.scrambleTop(
+            availableHeight: safeAvailableHeight,
+            contentHeight: measuredContentHeight,
+            normalizedPosition: timerScrambleVerticalPosition
+        )
+
+        return ZStack(alignment: .top) {
+            HStack(alignment: .top, spacing: TimerArrangementLayout.scrambleAccessorySpacing) {
+                scrambleDisplayContainer(maxHeight: safeAvailableHeight)
+                    .animation(.snappy(duration: 0.22, extraBounce: 0), value: scrambleDisplayText)
+
+                VStack(spacing: TimerArrangementLayout.scrambleAccessoryButtonSpacing) {
+                    if canShowScrambleDiagram,
+                       effectiveTimerPresentation.showsScrambleDiagram,
+                       resolvedTimerArrangement.allowsIndependentDiagramPlacement,
+                       resolvedDrawScramblePlacement == .inline {
+                        circularGlassIconButton(systemName: "eye") {
+                            showingScrambleDiagram = true
+                        }
+                    }
+
+                    if showNextScrambleButton {
                         circularGlassIconButton(systemName: "arrow.clockwise") {
                             generateNewScramble()
                         }
+                    }
 
-                        if selectedEvent == .threeByThreeMBLD {
-                            circularGlassIconButton(systemName: "gearshape") {
-                                mblindCountSelection = mblindScrambleCount
-                                showingMblindCountPicker = true
-                            }
+                    if selectedEvent == .threeByThreeMBLD {
+                        circularGlassIconButton(systemName: "gearshape") {
+                            mblindCountSelection = mblindScrambleCount
+                            showingMblindCountPicker = true
                         }
                     }
                 }
-                .padding(.top, 10)
-                .padding(.bottom, 6)
-
-                if enteringTimesWith == "smartCube" {
-                    smartCubeTimerPanel
-                }
             }
-
-            Spacer()
-
-            if showsOverlayTimer {
-                Color.clear
-                    .frame(height: max(timerTextFontSize * 1.25, 96))
-                    .allowsHitTesting(false)
-            } else {
-                Color.clear
-                    .frame(height: max(timerTextFontSize * 1.25, 96))
-                    .allowsHitTesting(false)
-            }
-
-            Color.clear
-                .frame(height: max(resolvedAverageTextFontSize * 1.3, 34))
-                .allowsHitTesting(false)
-
-            Spacer()
+            .padding(.top, top)
         }
-        .padding(.horizontal, 24)
+        .frame(height: safeAvailableHeight, alignment: .top)
     }
 
     private var smartCubeTimerPanel: some View {
@@ -680,33 +867,26 @@ struct TimerTabView: View {
     }
 
     @ViewBuilder
-    private var scrambleDisplayContainer: some View {
-        Group {
-            if resolvedScrambleDisplayMode == .scroll {
-                ScrollView(.vertical, showsIndicators: false) {
-                    scrambleDisplayButton
-                        .padding(.vertical, 1)
-                        .background {
-                            GeometryReader { proxy in
-                                Color.clear
-                                    .preference(key: ScrambleDisplayHeightPreferenceKey.self, value: proxy.size.height)
-                            }
-                        }
-                }
-            } else {
+    private func scrambleDisplayContainer(maxHeight: CGFloat) -> some View {
+        let safeMaxHeight = TimerArrangementLayout.nonnegativeFinite(maxHeight)
+        ScrollView(.vertical, showsIndicators: resolvedScrambleDisplayMode == .scroll) {
+            Group {
                 scrambleDisplayButton
-                    .background {
-                        GeometryReader { proxy in
-                            Color.clear
-                                .preference(key: ScrambleDisplayHeightPreferenceKey.self, value: proxy.size.height)
-                        }
-                    }
+            }
+            .padding(.vertical, 1)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(key: ScrambleDisplayHeightPreferenceKey.self, value: proxy.size.height)
+                }
             }
         }
-        .frame(maxHeight: scrambleMaxHeightBeforeTimer, alignment: .top)
-        .clipped()
+        .frame(maxHeight: safeMaxHeight, alignment: .top)
         .onPreferenceChange(ScrambleDisplayHeightPreferenceKey.self) { height in
-            scrambleDisplayMeasuredHeight = min(height, scrambleMaxHeightBeforeTimer)
+            scrambleDisplayMeasuredHeight = min(
+                TimerArrangementLayout.nonnegativeFinite(height),
+                safeMaxHeight
+            )
         }
     }
 
@@ -793,33 +973,22 @@ struct TimerTabView: View {
                 if localBattleMode == .solo {
                     if enteringTimesWith == "typing" {
                         GeometryReader { proxy in
+                            let containerSize = TimerArrangementLayout.sanitizedSize(proxy.size)
+                            let contentWidth = TimerArrangementLayout.contentWidth(
+                                containerWidth: containerSize.width,
+                                horizontalInsets: 48,
+                                maximum: 420
+                            )
                             manualTimeEntryContent
-                            .frame(maxWidth: min(proxy.size.width - 48, 420))
-                            .offset(y: manualTimeEntryTop(in: proxy))
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                                .frame(width: contentWidth)
+                                .position(
+                                    x: containerSize.width / 2,
+                                    y: manualTimeEntryTop(in: proxy) + manualTimeEntryHeight / 2
+                                )
                         }
                         .ignoresSafeArea(.keyboard, edges: .bottom)
                     } else {
-                        GeometryReader { proxy in
-                            let timerCenterY = proxy.frame(in: .global).midY + hiddenTimerVerticalOffset
-
-                            timerDisplayView
-                                .position(
-                                    x: proxy.size.width / 2,
-                                    y: timerCenterY
-                                )
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-
-                            if !shouldHideNonTimerContent {
-                                averageDisplayView
-                                    .position(
-                                        x: proxy.size.width / 2,
-                                        y: timerCenterY + averageOverlayVerticalOffset
-                                    )
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                                    .allowsHitTesting(false)
-                            }
-                        }
+                        timerArrangementCenterLayer
                         .allowsHitTesting(false)
                         .ignoresSafeArea()
                     }
@@ -842,28 +1011,8 @@ struct TimerTabView: View {
                     }
                 }
 
-                if let floatingPlacement = floatingDrawScramblePlacement,
-                   canShowScrambleDiagram,
-                   localBattleMode == .solo,
-                   !shouldHideNonTimerContent {
-                    VStack {
-                        Spacer()
-                        HStack {
-                            if floatingPlacement == .bottomLeft {
-                                floatingScrambleDiagram
-                                Spacer()
-                            } else if floatingPlacement == .bottomCenter {
-                                Spacer(minLength: 0)
-                                floatingScrambleDiagram
-                                Spacer(minLength: 0)
-                            } else {
-                                Spacer()
-                                floatingScrambleDiagram
-                            }
-                        }
-                    }
-                    .padding(.horizontal, floatingPlacement == .bottomCenter ? 24 : 0)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                if localBattleMode == .solo && !shouldHideNonTimerContent {
+                    timerArrangementBottomLayer
                     .ignoresSafeArea(.keyboard, edges: .bottom)
                 }
 
@@ -883,6 +1032,7 @@ struct TimerTabView: View {
             }
             .animation(.easeInOut(duration: 0.18), value: showsGANResultPopup)
             .onAppear {
+                migrateTimerArrangementPreferencesIfNeeded()
                 normalizeUnavailableFontSelections()
                 updateTimerAppearances()
                 updateTimerBackgroundImage()
@@ -892,11 +1042,14 @@ struct TimerTabView: View {
         .compatibleTabBarVisibility(hidden: shouldHideTabBar)
     .task {
         ensureSessionExists()
-        restoreSelectedEventFromSession()
+        var restoredEvent = synchronizeSelectedSession(idRawValue: selectedSessionID)
         if enteringTimesWith == "smartCube" {
             selectedEvent = .threeByThree
+            restoredEvent = .threeByThree
         }
-        refreshSolveSnapshots()
+        if enteringTimesWith == "smartCube" {
+            refreshSolveSnapshots(for: restoredEvent)
+        }
         refreshStreakSnapshots()
         if currentScramble.isEmpty {
             generateNewScramble()
@@ -968,27 +1121,41 @@ struct TimerTabView: View {
             guard enteringTimesWith == "gan", ganInspectionStartsOnPress, eventID != nil else { return }
             handleGANInspectionToggle()
         }
-        .onChange(of: selectedEvent) { _ in
+        .onChange(of: selectedEvent) { newEvent in
+            floatingScrambleFrame = nil
             if enteringTimesWith == "smartCube", selectedEvent != .threeByThree {
                 selectedEvent = .threeByThree
                 return
             }
             persistSelectedEventToSession()
-            refreshSolveSnapshots()
+            refreshSolveSnapshots(for: newEvent)
             generateNewScramble()
             resetLocalBattleScrambles()
         }
-        .onChange(of: selectedSessionID) { _ in
-            restoreSelectedEventFromSession()
-            refreshSolveSnapshots()
+        .onChange(of: timerArrangement) { _ in
+            floatingScrambleFrame = nil
+        }
+        .onChange(of: timerSplitOrder) { _ in
+            floatingScrambleFrame = nil
+        }
+        .onChange(of: drawScramblePlacement) { _ in
+            floatingScrambleFrame = nil
+        }
+        .onChange(of: selectedSessionID) { newSessionID in
+            _ = synchronizeSelectedSession(idRawValue: newSessionID)
+        }
+        .onChange(of: sessions.count) { _ in
+            _ = synchronizeSelectedSession(idRawValue: selectedSessionID)
         }
         .onChange(of: solves.count) { _ in
             refreshSolveSnapshots()
             refreshStreakSnapshots()
         }
+        .onReceive(NotificationCenter.default.publisher(for: solvesDidChangeNotification)) { _ in
+            refreshSolveSnapshots()
+        }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CubeFlowSessionsWillDelete"))) { _ in
-            filteredSolvesSnapshot = []
-            sessionSolvesSnapshot = []
+            sessionStatisticsSnapshot = .empty
         }
         .onChange(of: shouldHideNonTimerContent) { newValue in
             if newValue {
@@ -1014,7 +1181,12 @@ struct TimerTabView: View {
                 discardPendingSolve()
             }
         } message: {
-            Text(SolveMetrics.formatTime(pendingSolveTime ?? 0, decimals: timerDecimals))
+            Text(SolveMetrics.formatTime(
+                pendingSolveTime ?? 0,
+                decimals: timerDecimals,
+                numeralScope: .timer,
+                numeralPreferences: numeralPreferencesSnapshot
+            ))
         }
         .sheet(isPresented: $showingMblindSheet) {
             mblindScrambleSheet
@@ -1075,47 +1247,10 @@ struct TimerTabView: View {
 
 // Event selection
     private var eventMenu: some View {
-        Menu {
-            ForEach(PuzzleEvent.regularCases, id: \.self) { event in
-                if event == .fourByFour {
-                    Menu("timer.menu.4x4") {
-                        ForEach(PuzzleEvent.fourByFourCases, id: \.self) { event in
-                            Button(LocalizedStringKey(event == .fourByFour ? "event.4x4_standard" : event.localizationKey)) {
-                                selectedEvent = event
-                            }
-                        }
-                    }
-                } else if event != .fourByFourFast {
-                    Button(LocalizedStringKey(event.localizationKey)) {
-                        selectedEvent = event
-                    }
-                }
-            }
-
-            Menu("timer.menu.bld") {
-                ForEach(PuzzleEvent.blindfoldedCases, id: \.self) { event in
-                    Button(LocalizedStringKey(event.localizationKey)) {
-                        selectedEvent = event
-                    }
-                }
-            }
-        } label: {
-            HStack(spacing: 8) {
-                Text(LocalizedStringKey(selectedEvent.localizationKey))
-                    .font(.system(size: 17, weight: .medium))
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .semibold))
-            }
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .contentShape(.capsule)
-            .clipShape(.capsule)
-            .compatibleGlassFromIOS16(in: Capsule())
-        }
-        .tint(.primary)
-        .buttonStyle(.plain)
-        .disabled(enteringTimesWith == "smartCube" || isMarketingPreviewTimer)
+        TimerEventMenu(
+            selection: $selectedEvent,
+            isEnabled: enteringTimesWith != "smartCube" && !isMarketingPreviewTimer
+        )
     }
 
     private var startTimerGesture: some Gesture {
@@ -1770,35 +1905,92 @@ struct TimerTabView: View {
         return nil
     }
 
-    private var averageDisplayView: some View {
-        VStack(spacing: 6) {
-            switch resolvedAverageDisplayOption {
-            case .none:
-                EmptyView()
-            case .ao5:
-                averageMetricRow(titleKey: "data.ao5", value: ao5)
-            case .ao12:
-                averageMetricRow(titleKey: "data.ao12", value: ao12)
-            case .ao5AndAo12:
-                averageMetricRow(titleKey: "data.ao5", value: ao5)
-                averageMetricRow(titleKey: "data.ao12", value: ao12)
-            }
-        }
-        .foregroundStyle(averageTextStyle)
+    private var statisticsDisplayItems: [TimerStatisticDisplayItem] {
+        selectedTimerStatistics.map(statisticDisplayItem(for:))
     }
 
-    private func averageMetricRow(titleKey: LocalizedStringKey, value: Double?) -> some View {
-        let averageString = SolveMetrics.formatAverage(value, decimals: timerDecimals)
-        return configuredText(
-            Text("\(Text(titleKey)): \(averageString)"),
-            size: resolvedAverageTextFontSize,
-            design: resolvedAverageTextFontDesign,
-            style: resolvedAverageTextFontStyle
+    private var cardStatisticsDisplayItems: [TimerStatisticDisplayItem] {
+        resolvedCardsStatisticsConfiguration.positionedMetrics.map(statisticDisplayItem(for:))
+    }
+
+    private var averageDisplayView: some View {
+        statisticsDisplayView(layout: .vertical, automaticSize: false)
+    }
+
+    private func statisticsDisplayView(
+        layout: TimerStatisticsView.Layout,
+        automaticSize: Bool
+    ) -> some View {
+        TimerStatisticsView(
+            items: statisticsDisplayItems,
+            layout: layout,
+            appearance: averageTextAppearance,
+            fontDesign: resolvedAverageTextFontDesign,
+            fontStyle: resolvedAverageTextFontStyle,
+            fontSize: resolvedAverageTextFontSize,
+            usesAutomaticSize: automaticSize
+        )
+    }
+
+    private func statisticDisplayItem(for metric: TimerStatisticMetric) -> TimerStatisticDisplayItem {
+        let presentation: (value: String, isAvailable: Bool)
+        switch metric {
+        case .mean:
+            presentation = formattedAveragePresentation(sessionStatisticsSnapshot.mean)
+        case .best:
+            presentation = formattedAveragePresentation(sessionStatisticsSnapshot.best)
+        case .mo3:
+            presentation = formattedAveragePresentation(sessionStatisticsSnapshot.currentAverage(for: .mo3))
+        case .ao5:
+            presentation = formattedAveragePresentation(sessionStatisticsSnapshot.currentAverage(for: .ao5))
+        case .ao12:
+            presentation = formattedAveragePresentation(sessionStatisticsSnapshot.currentAverage(for: .ao12))
+        case .ao50:
+            presentation = formattedAveragePresentation(sessionStatisticsSnapshot.currentAverage(for: .ao50))
+        case .ao100:
+            presentation = formattedAveragePresentation(sessionStatisticsSnapshot.currentAverage(for: .ao100))
+        case .solveCount:
+            presentation = (
+                NumeralPresentation.formatInteger(
+                    sessionStatisticsSnapshot.solveCount,
+                    scope: .statistics,
+                    preferences: numeralPreferencesSnapshot
+                ),
+                true
+            )
+        }
+
+        return TimerStatisticDisplayItem(
+            metric: metric,
+            title: appLocalizedString(
+                metric.localizedKey,
+                languageCode: appLanguage,
+                defaultValue: metric.defaultTitle
+            ),
+            value: presentation.value,
+            isAvailable: presentation.isAvailable
+        )
+    }
+
+    private func formattedAveragePresentation(_ value: Double?) -> (value: String, isAvailable: Bool) {
+        (
+            SolveMetrics.formatAverage(
+                value,
+                decimals: timerDecimals,
+                numeralScope: .statistics,
+                numeralPreferences: numeralPreferencesSnapshot
+            ),
+            value != nil
         )
     }
 
     private func formatDisplayedTime(_ seconds: Double) -> String {
-        SolveMetrics.formatTime(seconds, decimals: timerDecimals)
+        SolveMetrics.formatTime(
+            seconds,
+            decimals: timerDecimals,
+            numeralScope: .timer,
+            numeralPreferences: numeralPreferencesSnapshot
+        )
     }
 
     private func announceInspectionCheckpointsIfNeeded() {
@@ -1867,6 +2059,166 @@ struct TimerTabView: View {
         }
     }
 
+    private var timerArrangementCenterLayer: some View {
+        GeometryReader { proxy in
+            let geometry = timerArrangementGeometry(for: proxy.size)
+
+            timerDisplayView
+                .position(geometry.timerCenter)
+
+            if !shouldHideNonTimerContent,
+               resolvedTimerArrangement == .classic,
+               effectiveTimerPresentation.showsStatistics,
+               !statisticsDisplayItems.isEmpty {
+                statisticsDisplayView(layout: .verticalCentered, automaticSize: false)
+                    .frame(
+                        width: geometry.classicStatisticsFrame.width,
+                        height: geometry.classicStatisticsFrame.height
+                    )
+                    .position(
+                        x: geometry.classicStatisticsFrame.midX,
+                        y: geometry.classicStatisticsFrame.midY
+                    )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var timerArrangementBottomLayer: some View {
+        GeometryReader { proxy in
+            let geometry = timerArrangementGeometry(for: proxy.size)
+            switch resolvedTimerArrangement {
+            case .classic:
+                if let placement = resolvedArrangementDiagramPlacement,
+                   canShowScrambleDiagram,
+                   effectiveTimerPresentation.showsScrambleDiagram {
+                    independentDiagramLayer(placement: placement, geometry: geometry)
+                }
+
+            case .split:
+                splitBottomLayer(geometry: geometry)
+
+            case .cards:
+                cardsBottomLayer(geometry: geometry)
+            }
+        }
+        .transition(.opacity)
+    }
+
+    private func independentDiagramLayer(
+        placement: DrawScramblePlacement,
+        geometry: TimerArrangementLayout.Geometry
+    ) -> some View {
+        let frame = geometry.independentDiagramFrame(
+            placement: placement,
+            aspectRatio: resolvedScrambleDiagramAspectRatio
+        )
+        return floatingScrambleDiagram(width: frame.width)
+            .position(x: frame.midX, y: frame.midY)
+    }
+
+    private func splitBottomLayer(geometry: TimerArrangementLayout.Geometry) -> some View {
+        let statisticsFrame = resolvedTimerSplitOrder == .statisticsLeading
+            ? geometry.splitLeadingFrame
+            : geometry.splitTrailingFrame
+        let diagramFrame = resolvedTimerSplitOrder == .statisticsLeading
+            ? geometry.splitTrailingFrame
+            : geometry.splitLeadingFrame
+        let diagramWidth = min(
+            TimerArrangementLayout.nonnegativeFinite(CGFloat(resolvedDrawScrambleFloatingSize)),
+            diagramFrame.width,
+            diagramFrame.height * resolvedScrambleDiagramAspectRatio
+        )
+
+        return ZStack {
+            if effectiveTimerPresentation.showsStatistics {
+                splitStatistics(width: statisticsFrame.width, height: statisticsFrame.height)
+                    .position(x: statisticsFrame.midX, y: statisticsFrame.midY)
+            }
+
+            if effectiveTimerPresentation.showsScrambleDiagram {
+                arrangedDiagram(width: diagramWidth)
+                    .position(
+                        x: diagramFrame.midX,
+                        y: diagramFrame.maxY - (diagramWidth / resolvedScrambleDiagramAspectRatio) / 2
+                    )
+            }
+        }
+    }
+
+    private func cardsBottomLayer(geometry: TimerArrangementLayout.Geometry) -> some View {
+        let statisticsFrame = geometry.leadingCardFrame
+        let diagramFrame = geometry.trailingCardFrame
+        let diagramWidth = TimerArrangementLayout.cardDiagramWidth(
+            in: diagramFrame,
+            aspectRatio: resolvedScrambleDiagramAspectRatio
+        )
+
+        return ZStack {
+            if effectiveTimerPresentation.showsStatistics {
+                TimerCardStatisticsView(
+                    items: cardStatisticsDisplayItems,
+                    layout: resolvedCardsStatisticsConfiguration.layout,
+                    appearance: averageTextAppearance,
+                    fontDesign: resolvedAverageTextFontDesign,
+                    fontStyle: resolvedAverageTextFontStyle,
+                    preferredFontSize: resolvedAverageTextFontSize
+                )
+                .padding(TimerArrangementLayout.cardContentInset)
+                .frame(width: statisticsFrame.width, height: statisticsFrame.height)
+                .compatibleGlassFromIOS16(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .position(x: statisticsFrame.midX, y: statisticsFrame.midY)
+            }
+
+            if effectiveTimerPresentation.showsScrambleDiagram {
+                arrangedDiagram(width: min(diagramWidth, CGFloat(resolvedDrawScrambleFloatingSize)))
+                    .frame(width: diagramFrame.width, height: diagramFrame.height)
+                    .compatibleGlassFromIOS16(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .position(x: diagramFrame.midX, y: diagramFrame.midY)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func splitStatistics(width: CGFloat, height: CGFloat) -> some View {
+        if effectiveTimerPresentation.showsStatistics, !statisticsDisplayItems.isEmpty {
+            statisticsDisplayView(layout: .vertical, automaticSize: false)
+                .frame(width: width, height: height, alignment: .bottomLeading)
+        }
+    }
+
+    @ViewBuilder
+    private func arrangedDiagram(width: CGFloat) -> some View {
+        if canShowScrambleDiagram {
+            floatingScrambleDiagram(width: width)
+        }
+    }
+
+    private var statisticsColumnHeight: CGFloat {
+        TimerArrangementLayout.statisticsColumnHeight(
+            itemCount: statisticsDisplayItems.count,
+            fontSize: CGFloat(resolvedAverageTextFontSize)
+        )
+    }
+
+    private var resolvedScrambleDiagramAspectRatio: CGFloat {
+        guard let scrambleDiagramPuzzleKey else { return 1 }
+        return TimerArrangementLayout.positiveFinite(
+            ScrambleDiagramView.diagramAspectRatio(for: scrambleDiagramPuzzleKey)
+        )
+    }
+
+    private func timerArrangementGeometry(for size: CGSize) -> TimerArrangementLayout.Geometry {
+        TimerArrangementLayout.geometry(
+            containerSize: size,
+            timerVerticalOffset: hiddenTimerVerticalOffset,
+            classicStatisticsHeight: statisticsColumnHeight,
+            classicStatisticsOffset: averageOverlayVerticalOffset,
+            diagramPreferredWidth: CGFloat(resolvedDrawScrambleFloatingSize),
+            diagramAspectRatio: resolvedScrambleDiagramAspectRatio
+        )
+    }
+
     private var manualTimeEntryContent: some View {
         VStack(spacing: manualTimeEntrySpacing) {
             manualTimeInputField
@@ -1877,7 +2229,9 @@ struct TimerTabView: View {
             .compatibleProminentButtonFromIOS16(tint: .blue)
             .disabled(parseTypedTime(typedTimeInput) == nil)
 
-            if !shouldHideNonTimerContent {
+            if !shouldHideNonTimerContent,
+               effectiveTimerPresentation.showsStatistics,
+               !statisticsDisplayItems.isEmpty {
                 averageDisplayView
                     .allowsHitTesting(false)
             }
@@ -1914,19 +2268,18 @@ struct TimerTabView: View {
     }
 
     private func manualTimeEntryTop(in proxy: GeometryProxy) -> CGFloat {
-        let centeredTop = proxy.size.height / 2 - manualTimeInputHeight / 2
-
-        guard manualTimeEntryHeight > 0,
-              floatingDrawScramblePlacement != nil,
-              canShowScrambleDiagram,
-              let floatingScrambleFrame else {
-            return centeredTop
-        }
-
         let localOriginY = proxy.frame(in: .named(TimerLayoutCoordinateSpace.name)).minY
-        let scrambleTop = floatingScrambleFrame.minY - localOriginY
-        let maximumBottom = scrambleTop - manualTimeEntrySpacing
-        return min(centeredTop, maximumBottom - manualTimeEntryHeight)
+        let obstructionMinY: CGFloat? = if showsArrangedDiagram, let floatingScrambleFrame {
+            floatingScrambleFrame.minY - localOriginY
+        } else {
+            nil
+        }
+        return TimerArrangementLayout.collisionAvoidingGroupTop(
+            containerHeight: proxy.size.height,
+            groupHeight: manualTimeEntryHeight,
+            obstructionMinY: obstructionMinY,
+            minimumSpacing: manualTimeEntrySpacing
+        )
     }
 
     private func saveTypedTime() {
@@ -1968,10 +2321,33 @@ struct TimerTabView: View {
         }
     }
 
-    private func restoreSelectedEventFromSession() {
+    @discardableResult
+    private func restoreSelectedEventFromSession() -> PuzzleEvent {
         let restoredEvent = selectedSessionEvent
-        guard selectedEvent != restoredEvent else { return }
-        selectedEvent = restoredEvent
+        if selectedEvent != restoredEvent {
+            selectedEvent = restoredEvent
+        }
+        return restoredEvent
+    }
+
+    @discardableResult
+    private func synchronizeSelectedSession(idRawValue: String) -> PuzzleEvent {
+        guard
+            let sessionID = UUID(uuidString: idRawValue),
+            let session = sessions.first(where: { $0.id == sessionID })
+                ?? (try? modelContext.fetchSession(with: sessionID))
+        else {
+            let fallbackEvent = restoreSelectedEventFromSession()
+            refreshSolveSnapshots(for: fallbackEvent)
+            return fallbackEvent
+        }
+
+        let sessionEvent = PuzzleEvent(rawValue: session.selectedEventRawValue) ?? .threeByThree
+        if selectedEvent != sessionEvent {
+            selectedEvent = sessionEvent
+        }
+        refreshSolveSnapshots(for: sessionEvent, session: session)
+        return sessionEvent
     }
 
     private func persistSelectedEventToSession() {
@@ -1982,16 +2358,29 @@ struct TimerTabView: View {
         try? modelContext.save()
     }
 
-    private func refreshSolveSnapshots() {
-        guard let selectedSession else {
-            filteredSolvesSnapshot = []
-            sessionSolvesSnapshot = []
+    private func refreshSolveSnapshots(
+        for _: PuzzleEvent? = nil,
+        session explicitSession: Session? = nil
+    ) {
+        guard let resolvedSession = explicitSession ?? selectedSession else {
+            sessionStatisticsSnapshot = .empty
             return
         }
 
-        let sessionSolves = solves.filter { $0.session?.id == selectedSession.id }
-        sessionSolvesSnapshot = sessionSolves
-        filteredSolvesSnapshot = sessionSolves.filter { $0.event == selectedEvent.rawValue }
+        let sessionSolves = (try? modelContext.fetchSolves(forSessionID: resolvedSession.id))
+            ?? solves.filter { $0.session?.id == resolvedSession.id }
+        let samples = sessionSolves.map { solve in
+            SessionSolveSample(
+                id: solve.id,
+                date: solve.date,
+                time: solve.time,
+                resultRaw: solve.resultRaw,
+                scramble: solve.scramble,
+                comment: solve.comment,
+                eventRawValue: solve.event
+            )
+        }
+        sessionStatisticsSnapshot = DataTabComputation.buildSessionStatisticsSnapshot(from: samples)
     }
 
     private func refreshStreakSnapshots() {
@@ -2416,13 +2805,6 @@ struct TimerTabView: View {
         DrawScramblePlacement(rawValue: drawScramblePlacement) ?? .inline
     }
 
-    private var floatingDrawScramblePlacement: DrawScramblePlacement? {
-        if resolvedDrawScramblePlacement.isFloating {
-            return resolvedDrawScramblePlacement
-        }
-        return nil
-    }
-
     private var canShowScrambleDiagram: Bool {
         guard scrambleDiagramPuzzleKey != nil else { return false }
         guard !currentScramble.isEmpty, currentScramble != "…" else { return false }
@@ -2443,17 +2825,20 @@ struct TimerTabView: View {
         .buttonStyle(.plain)
     }
 
-    private var floatingScrambleDiagram: some View {
-        Group {
+    private func floatingScrambleDiagram(width: CGFloat) -> some View {
+        let safeWidth = TimerArrangementLayout.nonnegativeFinite(width)
+        return Group {
             if let scrambleDiagramPuzzleKey {
-                let aspectRatio = ScrambleDiagramView.diagramAspectRatio(for: scrambleDiagramPuzzleKey)
-                let height = drawScrambleFloatingSize / aspectRatio
+                let aspectRatio = TimerArrangementLayout.positiveFinite(
+                    ScrambleDiagramView.diagramAspectRatio(for: scrambleDiagramPuzzleKey)
+                )
+                let height = TimerArrangementLayout.nonnegativeFinite(safeWidth / aspectRatio)
                 ScrambleDiagramView(
                     puzzleKey: scrambleDiagramPuzzleKey,
                     scramble: currentScramble,
                     exportAppearance: timerScrambleExportAppearance
                 )
-                    .frame(width: drawScrambleFloatingSize, height: height)
+                    .frame(width: safeWidth, height: height)
                     .background {
                         GeometryReader { proxy in
                             Color.clear.preference(

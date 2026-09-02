@@ -303,7 +303,7 @@
 "settings.app_icon_dark_gray" = "Xám đậm";
 "settings.app_icon_gray" = "Xám";
 "settings.app_icon_light_gray" = "Xám nhạt";
-"settings.section.timer" = "Bộ bấm giờ";
+"settings.section.timer" = "Đo thời gian";
 "settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Chưa đăng nhập";
 "settings.wca_connected" = "Đã kết nối";
@@ -1918,3 +1918,33 @@
 
 "competitions.no_more" = "Không còn cuộc thi nào";
 "competitions.reload" = "Tải lại";
+
+// Numeral presentation
+"settings.numeral_app" = "Chữ số ứng dụng";
+"settings.numeral_timer" = "Chữ số đồng hồ";
+"settings.numeral_statistics" = "Chữ số thống kê";
+"settings.numeral_financial" = "Tài chính";
+"settings.numeral_number_format" = "Định dạng số";
+"settings.numeral_digits" = "Chữ số";
+"settings.numeral_chinese_numerals" = "Số tiếng Trung";
+"settings.numeral_decimal_style" = "Kiểu thập phân";
+"settings.numeral_period" = "Dấu chấm";
+"settings.numeral_chinese_decimal" = "Dấu thập phân tiếng Trung";
+"settings.numeral_system.systemDefault" = "Mặc định hệ thống";
+"settings.numeral_system.westernArabic" = "Ả Rập phương Tây";
+"settings.numeral_system.easternArabic" = "Ả Rập phương Đông";
+"settings.numeral_system.bangla" = "Bangla";
+"settings.numeral_system.burmese" = "Miến Điện";
+"settings.numeral_system.devanagari" = "Devanagari";
+"settings.numeral_system.gujarati" = "Gujarati";
+"settings.numeral_system.gurmukhi" = "Gurmukhi";
+"settings.numeral_system.kannada" = "Kannada";
+"settings.numeral_system.khmer" = "Khmer";
+"settings.numeral_system.malayalam" = "Malayalam";
+"settings.numeral_system.meitei" = "Meitei";
+"settings.numeral_system.odia" = "Odia";
+"settings.numeral_system.olChiki" = "Ol Chiki";
+"settings.numeral_system.telugu" = "Telugu";
+"settings.numeral_system.urdu" = "Urdu";
+"settings.numeral_system.simplifiedChinese" = "Tiếng Trung giản thể";
+"settings.numeral_system.traditionalChinese" = "Tiếng Trung phồn thể";
