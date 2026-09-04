@@ -74,6 +74,18 @@ struct StoredColorData: Codable, Equatable {
             a: sanitizeUnit(a)
         )
     }
+
+    static func decode(from data: Data?, fallback: StoredColorData) -> StoredColorData {
+        guard let data,
+              let decoded = try? JSONDecoder().decode(StoredColorData.self, from: data) else {
+            return fallback
+        }
+        return decoded.sanitized()
+    }
+
+    var encodedData: Data? {
+        try? JSONEncoder().encode(sanitized())
+    }
 }
 
 struct StoredGradientData: Codable, Equatable {

@@ -1,7 +1,6 @@
 import SwiftUI
 import CoreData
 #if os(iOS)
-import AudioToolbox
 import UIKit
 #endif
 
@@ -129,6 +128,15 @@ struct TimerTabView: View {
     @AppStorage("statisticsNumeralChineseDecimalStyle") private var statisticsNumeralChineseDecimalStyle = ChineseNumeralDecimalStyle.period.rawValue
     @AppStorage("smartCubeFixedView") private var smartCubeFixedViewRawValue = SmartCubeFixedView.urf.rawValue
     @AppStorage("smartCubeReadySound") private var smartCubeReadySound = true
+    @AppStorage("smartCubeShowVirtualCube") private var smartCubeShowVirtualCube = true
+    @AppStorage("smartCubeTimerPosition") private var smartCubeTimerPositionRawValue = SmartCubeTimerPosition.right.rawValue
+    @AppStorage("smartCubeCurrentMovePresentation") private var smartCubeCurrentMovePresentationRawValue = SmartCubeCurrentMovePresentation.highlight.rawValue
+    @AppStorage("smartCubeHighlightColorMode") private var smartCubeHighlightColorModeRawValue = SmartCubeHighlightColorMode.automatic.rawValue
+    @AppStorage("smartCubeHighlightTextMode") private var smartCubeHighlightTextModeRawValue = SmartCubeHighlightColorMode.automatic.rawValue
+    @AppStorage("smartCubeHighlightColorData") private var smartCubeHighlightColorData: Data?
+    @AppStorage("smartCubeHighlightTextColorData") private var smartCubeHighlightTextColorData: Data?
+    @AppStorage("smartCubeCompletedMovesBehavior") private var smartCubeCompletedMovesBehaviorRawValue = SmartCubeCompletedMovesBehavior.collapse.rawValue
+    @AppStorage("smartCubeScrambleTransition") private var smartCubeScrambleTransitionRawValue = SmartCubeScrambleTransition.blur.rawValue
 
     @State private var selectedEvent: PuzzleEvent = .threeByThree
     @State private var elapsedSeconds: Double = 0
@@ -166,6 +174,7 @@ struct TimerTabView: View {
     @State private var showingMblindCountPicker = false
     @State private var showingScrambleDiagram = false
     @State private var mblindCountSelection: Int = 3
+    @State private var showingSmartCubeDevicePicker = false
     @State private var sessionStatisticsSnapshot = SessionStatisticsSnapshot.empty
     @State private var solvedDayCountsSnapshot: [Date: Int] = [:]
     @State private var streakCountSnapshot: Int = 0
@@ -199,9 +208,12 @@ struct TimerTabView: View {
     @State private var manualTimeEntryHeight: CGFloat = 0
     @State private var floatingScrambleFrame: CGRect?
     @State private var timerTopControlsHeight: CGFloat = 0
-    @State private var smartCubeTargetFacelets: String?
+    @State private var smartCubeScrambleProgress: SmartCubeScrambleProgress?
+    @State private var smartCubeScrambleEpoch = SmartCubeScrambleEpoch()
+    @State private var smartCubeSolveLifecycle = SmartCubeSolveLifecycle()
+    @State private var smartCubeSolveStartMove: SmartCubeMoveEvent?
     @State private var smartCubeIsReady = false
-    @State private var smartCubeSolveStartMoveIndex = 0
+    @State private var smartCubeTimingWasActive = false
 
     private let hiddenTimerVerticalOffset = TimerArrangementLayout.defaultTimerVerticalOffset
     private let manualTimeEntrySpacing: CGFloat = 12
@@ -262,6 +274,13 @@ struct TimerTabView: View {
             return .threeByThree
         }
         return event
+    }
+
+    private var effectiveTimerEvent: PuzzleEvent {
+        SmartCubeTimerEventPolicy.effectiveEvent(
+            normalEvent: selectedEvent,
+            isSmartCubeTiming: enteringTimesWith == "smartCube"
+        )
     }
 
     private var mblindScrambleSheet: some View {
@@ -326,19 +345,41 @@ struct TimerTabView: View {
     }
 
     private var scrambleDisplayLabel: some View {
-        configuredText(
-            Text(scrambleDisplayText),
-            size: resolvedScrambleTextFontSize,
-            design: resolvedScrambleTextFontDesign,
-            style: resolvedScrambleTextFontStyle
-        )
-        .id(scrambleDisplayText)
-        .foregroundStyle(scrambleTextStyle)
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity, alignment: .center)
-        .minimumScaleFactor(resolvedScrambleDisplayMode == .shrinkFont ? 0.45 : 1)
-        .allowsTightening(resolvedScrambleDisplayMode == .shrinkFont)
-        .transition(.opacity.combined(with: .move(edge: .top)))
+        Group {
+            if enteringTimesWith == "smartCube", let smartCubeScrambleProgress {
+                SmartCubeScrambleProgressView(
+                    scramble: currentScramble,
+                    tokens: smartCubeScrambleProgress.tokens,
+                    completedTokenIndices: smartCubeScrambleProgress.completedTokenIndices,
+                    highlightedTokenIndex: resolvedSmartCubeCurrentMovePresentation == .highlight
+                        ? smartCubeScrambleProgress.currentMoveTokenIndex
+                        : nil,
+                    isDeviated: smartCubeScrambleProgress.isDeviated,
+                    behavior: resolvedSmartCubeCompletedMovesBehavior,
+                    transition: resolvedSmartCubeScrambleTransition,
+                    fontDesign: resolvedScrambleTextFontDesign,
+                    fontStyle: resolvedScrambleTextFontStyle,
+                    fontSize: resolvedScrambleTextFontSize,
+                    foregroundStyle: scrambleTextStyle,
+                    highlightBackgroundStyle: smartCubeCurrentMoveHighlightBackgroundStyle,
+                    highlightForegroundStyle: smartCubeCurrentMoveHighlightForegroundStyle
+                )
+            } else {
+                configuredText(
+                    Text(scrambleDisplayText),
+                    size: resolvedScrambleTextFontSize,
+                    design: resolvedScrambleTextFontDesign,
+                    style: resolvedScrambleTextFontStyle
+                )
+                .id(scrambleDisplayText)
+                .foregroundStyle(scrambleTextStyle)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .minimumScaleFactor(resolvedScrambleDisplayMode == .shrinkFont ? 0.45 : 1)
+                .allowsTightening(resolvedScrambleDisplayMode == .shrinkFont)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
     }
 
     private var resolvedGANResultInputMode: GANResultInputMode {
@@ -438,6 +479,95 @@ struct TimerTabView: View {
 
     private var resolvedDrawScrambleFloatingSize: Double {
         TimerCustomizationDefaults.resolvedDrawScrambleSize(drawScrambleFloatingSize)
+    }
+
+    private var resolvedSmartCubeCompletedMovesBehavior: SmartCubeCompletedMovesBehavior {
+        SmartCubeCompletedMovesBehavior(rawValue: smartCubeCompletedMovesBehaviorRawValue) ?? .collapse
+    }
+
+    private var resolvedSmartCubeCurrentMovePresentation: SmartCubeCurrentMovePresentation {
+        SmartCubeCurrentMovePresentation(rawValue: smartCubeCurrentMovePresentationRawValue) ?? .highlight
+    }
+
+    private var resolvedSmartCubeHighlightColorMode: SmartCubeHighlightColorMode {
+        SmartCubeHighlightColorMode(rawValue: smartCubeHighlightColorModeRawValue) ?? .automatic
+    }
+
+    private var resolvedSmartCubeHighlightTextMode: SmartCubeHighlightColorMode {
+        SmartCubeHighlightColorMode(rawValue: smartCubeHighlightTextModeRawValue) ?? .automatic
+    }
+
+    private var smartCubeCurrentMoveHighlightBackgroundStyle: AnyShapeStyle {
+        if resolvedSmartCubeHighlightColorMode == .custom {
+            return AnyShapeStyle(smartCubeCustomHighlightBackground.color)
+        }
+        return scrambleTextStyle
+    }
+
+    private var smartCubeCurrentMoveHighlightForegroundStyle: AnyShapeStyle {
+        if resolvedSmartCubeHighlightTextMode == .custom {
+            return AnyShapeStyle(smartCubeCustomHighlightText.color)
+        }
+        return AnyShapeStyle(
+            SmartCubeHighlightToneResolver
+                .contrastingTone(for: smartCubeEffectiveHighlightRepresentativeColor)
+                .color
+        )
+    }
+
+    private var smartCubeCustomHighlightBackground: StoredColorData {
+        StoredColorData.decode(
+            from: smartCubeHighlightColorData,
+            fallback: SmartCubeHighlightColorDefaults.background
+        )
+    }
+
+    private var smartCubeCustomHighlightText: StoredColorData {
+        StoredColorData.decode(
+            from: smartCubeHighlightTextColorData,
+            fallback: SmartCubeHighlightColorDefaults.text
+        )
+    }
+
+    private var smartCubeEffectiveHighlightRepresentativeColor: StoredColorData {
+        if resolvedSmartCubeHighlightColorMode == .custom {
+            return smartCubeCustomHighlightBackground
+        }
+
+        switch scrambleTextAppearance.style {
+        case .system, .photo:
+            return colorScheme == .dark
+                ? StoredColorData(r: 1, g: 1, b: 1)
+                : StoredColorData(r: 0, g: 0, b: 0)
+        case .color:
+            return colorScheme == .dark
+                ? scrambleTextAppearance.darkColor.sanitized()
+                : scrambleTextAppearance.lightColor.sanitized()
+        case .gradient:
+            let stops = scrambleTextAppearance.gradient(for: colorScheme).sanitized().stops
+            guard !stops.isEmpty else {
+                return colorScheme == .dark
+                    ? StoredColorData(r: 1, g: 1, b: 1)
+                    : StoredColorData(r: 0, g: 0, b: 0)
+            }
+            let count = Double(stops.count)
+            return StoredColorData(
+                r: stops.reduce(0) { $0 + $1.r } / count,
+                g: stops.reduce(0) { $0 + $1.g } / count,
+                b: stops.reduce(0) { $0 + $1.b } / count
+            )
+        }
+    }
+
+    private var resolvedSmartCubeScrambleTransition: SmartCubeScrambleTransition {
+        SmartCubeScrambleTransition.resolved(
+            storedRawValue: smartCubeScrambleTransitionRawValue,
+            behavior: resolvedSmartCubeCompletedMovesBehavior
+        )
+    }
+
+    private var resolvedSmartCubeTimerPosition: SmartCubeTimerPosition {
+        SmartCubeTimerPosition(rawValue: smartCubeTimerPositionRawValue) ?? .right
     }
 
     private func migrateTimerArrangementPreferencesIfNeeded() {
@@ -551,7 +681,7 @@ struct TimerTabView: View {
     }
 
     private var scrambleDisplayText: String {
-        if selectedEvent == .threeByThreeMBLD {
+        if effectiveTimerEvent == .threeByThreeMBLD {
             if mblindScrambles.isEmpty {
                 return currentScramble
             }
@@ -570,7 +700,7 @@ struct TimerTabView: View {
     }
 
     private var scrambleToSave: String {
-        if selectedEvent == .threeByThreeMBLD, !mblindScrambles.isEmpty {
+        if effectiveTimerEvent == .threeByThreeMBLD, !mblindScrambles.isEmpty {
             return mblindScrambles
                 .enumerated()
                 .map { "\($0.offset + 1). \($0.element)" }
@@ -751,9 +881,6 @@ struct TimerTabView: View {
                     )
                     positionedScrambleArea(availableHeight: availableHeight)
 
-                    if enteringTimesWith == "smartCube" {
-                        smartCubeTimerPanel
-                    }
                 }
 
                 Spacer(minLength: 0)
@@ -822,7 +949,7 @@ struct TimerTabView: View {
                         }
                     }
 
-                    if selectedEvent == .threeByThreeMBLD {
+                    if effectiveTimerEvent == .threeByThreeMBLD {
                         circularGlassIconButton(systemName: "gearshape") {
                             mblindCountSelection = mblindScrambleCount
                             showingMblindCountPicker = true
@@ -835,26 +962,10 @@ struct TimerTabView: View {
         .frame(height: safeAvailableHeight, alignment: .top)
     }
 
-    private var smartCubeTimerPanel: some View {
-        VStack(spacing: 4) {
-            SmartCube3DView(
-                facelets: smartCube.facelets,
-                stateRevision: smartCube.cubeStateRevision,
-                fixedView: SmartCubeFixedView(rawValue: smartCubeFixedViewRawValue) ?? .urf
-            )
-            .frame(height: 180)
-            .frame(maxWidth: .infinity)
-
-            Label(smartCubeStatusText, systemImage: smartCubeStatusSymbol)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(smartCubeIsReady ? .green : .secondary)
-        }
-        .padding(.top, 2)
-    }
-
     private var smartCubeStatusText: LocalizedStringKey {
         if !smartCube.isConnected { return "smart_cube.timer.disconnected" }
         if isRunning { return "smart_cube.timer.solving" }
+        if isInspecting { return "timer.inspect" }
         if smartCubeIsReady { return "smart_cube.timer.ready" }
         return "smart_cube.timer.scramble"
     }
@@ -862,8 +973,45 @@ struct TimerTabView: View {
     private var smartCubeStatusSymbol: String {
         if !smartCube.isConnected { return "antenna.radiowaves.left.and.right.slash" }
         if isRunning { return "timer" }
+        if isInspecting { return "timer" }
         if smartCubeIsReady { return "checkmark.circle.fill" }
         return "arrow.triangle.2.circlepath"
+    }
+
+    private var smartCubeConnectURL: URL {
+        URL(string: "cubeflow://connect-smart-cube")!
+    }
+
+    private var smartCubeDisconnectedStatus: AttributedString {
+        var message = AttributedString(
+            appLocalizedString("smart_cube.timer.disconnected", languageCode: appLanguage)
+        )
+        message.append(AttributedString("   "))
+        var action = AttributedString(
+            appLocalizedString("smart_cube.timer.connect", languageCode: appLanguage)
+        )
+        action.link = smartCubeConnectURL
+        action.foregroundColor = .accentColor
+        message.append(action)
+        return message
+    }
+
+    @ViewBuilder
+    private var smartCubeStatusLabel: some View {
+        if smartCube.isConnected {
+            Label(smartCubeStatusText, systemImage: smartCubeStatusSymbol)
+        } else {
+            Label {
+                Text(smartCubeDisconnectedStatus)
+                    .environment(\.openURL, OpenURLAction { url in
+                        guard url == smartCubeConnectURL else { return .systemAction }
+                        showingSmartCubeDevicePicker = true
+                        return .handled
+                    })
+            } icon: {
+                Image(systemName: smartCubeStatusSymbol)
+            }
+        }
     }
 
     @ViewBuilder
@@ -892,7 +1040,7 @@ struct TimerTabView: View {
 
     @ViewBuilder
     private var scrambleDisplayButton: some View {
-        if selectedEvent == .threeByThreeMBLD, mblindScrambles.count > 3 {
+        if effectiveTimerEvent == .threeByThreeMBLD, mblindScrambles.count > 3 {
             Button {
                 showingMblindSheet = true
             } label: {
@@ -989,7 +1137,7 @@ struct TimerTabView: View {
                         .ignoresSafeArea(.keyboard, edges: .bottom)
                     } else {
                         timerArrangementCenterLayer
-                        .allowsHitTesting(false)
+                        .allowsHitTesting(enteringTimesWith == "smartCube" && !smartCube.isConnected)
                         .ignoresSafeArea()
                     }
                 }
@@ -1042,14 +1190,8 @@ struct TimerTabView: View {
         .compatibleTabBarVisibility(hidden: shouldHideTabBar)
     .task {
         ensureSessionExists()
-        var restoredEvent = synchronizeSelectedSession(idRawValue: selectedSessionID)
-        if enteringTimesWith == "smartCube" {
-            selectedEvent = .threeByThree
-            restoredEvent = .threeByThree
-        }
-        if enteringTimesWith == "smartCube" {
-            refreshSolveSnapshots(for: restoredEvent)
-        }
+        let restoredEvent = synchronizeSelectedSession(idRawValue: selectedSessionID)
+        refreshSolveSnapshots(for: restoredEvent)
         refreshStreakSnapshots()
         if currentScramble.isEmpty {
             generateNewScramble()
@@ -1057,6 +1199,7 @@ struct TimerTabView: View {
         if enteringTimesWith == "gan" {
             ganTimer.prepareIfNeeded()
         } else if enteringTimesWith == "smartCube" {
+            smartCubeTimingWasActive = true
             smartCube.prepareIfNeeded()
             prepareSmartCubeScrambleTarget()
         }
@@ -1084,14 +1227,19 @@ struct TimerTabView: View {
             nearbyBattleManager.stop()
         }
         .onChange(of: enteringTimesWith) { newValue in
+            let wasUsingSmartCube = smartCubeTimingWasActive
+            smartCubeTimingWasActive = newValue == "smartCube"
             if newValue == "gan" {
                 ganTimer.prepareIfNeeded()
+                resetSmartCubeTimerState()
+                if wasUsingSmartCube { generateNewScramble() }
             } else if newValue == "smartCube" {
-                selectedEvent = .threeByThree
                 smartCube.prepareIfNeeded()
-                prepareSmartCubeScrambleTarget()
+                resetSmartCubeTimerState()
+                generateNewScramble()
             } else {
                 resetSmartCubeTimerState()
+                if wasUsingSmartCube { generateNewScramble() }
             }
         }
         .onChange(of: currentScramble) { _ in
@@ -1123,10 +1271,6 @@ struct TimerTabView: View {
         }
         .onChange(of: selectedEvent) { newEvent in
             floatingScrambleFrame = nil
-            if enteringTimesWith == "smartCube", selectedEvent != .threeByThree {
-                selectedEvent = .threeByThree
-                return
-            }
             persistSelectedEventToSession()
             refreshSolveSnapshots(for: newEvent)
             generateNewScramble()
@@ -1194,6 +1338,10 @@ struct TimerTabView: View {
         .sheet(isPresented: $showingMblindCountPicker) {
             mblindCountPickerSheet
         }
+        .sheet(isPresented: $showingSmartCubeDevicePicker) {
+            SmartCubeDevicePickerView(manager: smartCube)
+                .compatibleMediumSheet()
+        }
         .fullScreenCover(isPresented: $showingScrambleDiagram) {
             if let scrambleDiagramPuzzleKey {
                 ScrambleDiagramSheet(
@@ -1248,7 +1396,10 @@ struct TimerTabView: View {
 // Event selection
     private var eventMenu: some View {
         TimerEventMenu(
-            selection: $selectedEvent,
+            selection: Binding(
+                get: { effectiveTimerEvent },
+                set: { selectedEvent = $0 }
+            ),
             isEnabled: enteringTimesWith != "smartCube" && !isMarketingPreviewTimer
         )
     }
@@ -1337,9 +1488,36 @@ struct TimerTabView: View {
     }
 
     private func prepareSmartCubeScrambleTarget() {
-        smartCubeTargetFacelets = SmartCubeBluetoothManager.facelets(afterApplying: currentScramble)
-        smartCubeIsReady = smartCube.facelets == smartCubeTargetFacelets
-        smartCubeSolveStartMoveIndex = smartCube.moveHistory.count
+        guard currentScramble != "…",
+              let progress = SmartCubeScrambleProgress(scramble: currentScramble)
+        else {
+            smartCubeScrambleProgress = nil
+            smartCubeScrambleEpoch.reset()
+            smartCubeSolveLifecycle.reset()
+            smartCubeIsReady = false
+            return
+        }
+
+        if isInspecting {
+            isInspecting = false
+            inspectionStartDate = nil
+            inspectionElapsed = 0
+            announcedInspectionCheckpoints = []
+            currentSolveInspectionPenalty = nil
+            invalidateTimer()
+        }
+
+        smartCubeScrambleProgress = progress
+        smartCubeScrambleEpoch.establish(
+            at: .now,
+            latestMoveID: smartCube.latestMove?.id
+        )
+        smartCubeSolveLifecycle.reset()
+        smartCubeSolveStartMove = nil
+        smartCubeIsReady = false
+        if let facelets = smartCube.facelets {
+            handleSmartCubeFacelets(facelets)
+        }
     }
 
     private func handleSmartCubeFacelets(_ facelets: String) {
@@ -1349,48 +1527,141 @@ struct TimerTabView: View {
             return
         }
 
-        guard let smartCubeTargetFacelets else {
+        guard var progress = smartCubeScrambleProgress else {
             smartCubeIsReady = false
             return
         }
-        let wasReady = smartCubeIsReady
-        smartCubeIsReady = facelets == smartCubeTargetFacelets
-        if smartCubeIsReady, !wasReady {
-            smartCubeSolveStartMoveIndex = smartCube.moveHistory.count
-            if smartCubeReadySound {
-                AudioServicesPlaySystemSound(1104)
-            }
+
+        _ = progress.update(with: facelets)
+        updateSmartCubeProgress(progress)
+
+        guard progress.isComplete else { return }
+        let action = smartCubeScrambleEpoch.completionAction(
+            inspectionEnabled: wcaInspectionEnabled,
+            completingMoveID: smartCube.latestMove?.id,
+            lifecycle: &smartCubeSolveLifecycle
+        )
+        guard action != .none else { return }
+        if smartCubeReadySound {
+            SmartCubeReadySoundPlayer.shared.play()
+        }
+
+        switch action {
+        case .beginInspection:
+            smartCubeIsReady = false
+            startInspection()
+        case .enteredReady:
+            smartCubeIsReady = true
+        case .none:
+            break
+        case .startTiming:
+            break
         }
     }
 
     private func handleSmartCubeMove(_ move: SmartCubeMoveEvent) {
-        guard smartCubeIsReady, !isRunning, !showingResultPopup else { return }
+        guard !isRunning, !showingResultPopup else { return }
+        guard smartCubeScrambleEpoch.observePhysicalMove(move) else { return }
+        if smartCubeSolveLifecycle.phase == .scrambling {
+            if let facelets = smartCube.facelets {
+                handleSmartCubeFacelets(facelets)
+            }
+            return
+        }
+        guard case .startTiming(let startMove) = smartCubeSolveLifecycle.physicalMoveDidOccur(move) else {
+            return
+        }
+
         smartCubeIsReady = false
-        smartCubeSolveStartMoveIndex = max(smartCube.moveHistory.count - 1, 0)
+        if isInspecting {
+            let elapsed = inspectionStartDate.map { max(0, startMove.localTimestamp.timeIntervalSince($0)) }
+                ?? inspectionElapsed
+            currentSolveInspectionPenalty = inspectionPenalty(for: elapsed)
+            isInspecting = false
+            inspectionStartDate = nil
+            inspectionElapsed = 0
+        }
         elapsedSeconds = 0
-        timerStartDate = move.localTimestamp
+        smartCubeSolveStartMove = startMove
+        timerStartDate = startMove.localTimestamp
         isRunning = true
         startDisplayTimer()
     }
 
+    private func updateSmartCubeProgress(_ progress: SmartCubeScrambleProgress) {
+        guard let animation = smartCubeProgressAnimation else {
+            smartCubeScrambleProgress = progress
+            return
+        }
+        withAnimation(animation) {
+            smartCubeScrambleProgress = progress
+        }
+    }
+
+    private var smartCubeProgressAnimation: Animation? {
+        switch resolvedSmartCubeScrambleTransition {
+        case .blur:
+            return .easeOut(duration: 0.26)
+        case .fade:
+            return .easeOut(duration: 0.2)
+        case .slide:
+            return .easeInOut(duration: 0.24)
+        case .bounce:
+            return .spring(duration: 0.32, bounce: 0.38)
+        case .instant:
+            return nil
+        }
+    }
+
     private func finishSmartCubeSolve() {
-        guard isRunning, let timerStartDate else { return }
-        let finishDate = smartCube.latestMove?.localTimestamp ?? .now
-        let duration = finishDate.timeIntervalSince(timerStartDate)
+        guard isRunning,
+              let startMove = smartCubeSolveStartMove,
+              let timing = SmartCubeSolveTiming.resolved(
+                  startMove: startMove,
+                  endMove: smartCube.latestMove,
+                  solvedObservedAt: .now
+              )
+        else { return }
         invalidateTimer()
         isRunning = false
-        guard duration > 0 else { return }
+        let duration = timing.duration
+        let finishDate = timing.endDate
         elapsedSeconds = duration
-        pendingSolveTime = duration
-        pendingInspectionPenalty = nil
+        let result = currentSolveInspectionPenalty ?? .solved
         currentSolveInspectionPenalty = nil
-        showingResultPopup = true
+        smartCubeSolveLifecycle.solveDidFinish()
+        smartCubeSolveStartMove = nil
+        timerStartDate = nil
+        showingResultPopup = false
+
+        guard let selectedSession else { return }
+        _ = Solve(
+            time: duration,
+            date: finishDate,
+            scramble: scrambleToSave,
+            event: effectiveTimerEvent.rawValue,
+            result: result,
+            session: selectedSession,
+            context: modelContext
+        )
+        persistSolveChangesAndRefresh()
+        generateNewScramble()
     }
 
     private func resetSmartCubeTimerState() {
-        smartCubeTargetFacelets = nil
+        smartCubeScrambleProgress = nil
+        smartCubeScrambleEpoch.reset()
+        smartCubeSolveLifecycle.reset()
+        smartCubeSolveStartMove = nil
         smartCubeIsReady = false
-        smartCubeSolveStartMoveIndex = 0
+        if isInspecting {
+            isInspecting = false
+            inspectionStartDate = nil
+            inspectionElapsed = 0
+            announcedInspectionCheckpoints = []
+            currentSolveInspectionPenalty = nil
+            invalidateTimer()
+        }
     }
 
     private func handleGANTimerStateChange(_ state: GANTimerConnectionState) {
@@ -2063,23 +2334,125 @@ struct TimerTabView: View {
         GeometryReader { proxy in
             let geometry = timerArrangementGeometry(for: proxy.size)
 
-            timerDisplayView
-                .position(geometry.timerCenter)
+            if enteringTimesWith == "smartCube", smartCubeShowVirtualCube {
+                smartCubeCenterComposition(geometry: geometry)
+            } else {
+                timerDisplayView
+                    .position(geometry.timerCenter)
+
+                if !shouldHideNonTimerContent,
+                   resolvedTimerArrangement == .classic,
+                   effectiveTimerPresentation.showsStatistics,
+                   !statisticsDisplayItems.isEmpty {
+                    statisticsDisplayView(layout: .verticalCentered, automaticSize: false)
+                        .frame(
+                            width: geometry.classicStatisticsFrame.width,
+                            height: geometry.classicStatisticsFrame.height
+                        )
+                        .position(
+                            x: geometry.classicStatisticsFrame.midX,
+                            y: geometry.classicStatisticsFrame.midY
+                        )
+                }
+            }
+        }
+    }
+
+    private func smartCubeCenterComposition(
+        geometry: TimerArrangementLayout.Geometry
+    ) -> some View {
+        let size = geometry.containerSize
+        let center = geometry.timerCenter
+        let lowerBoundary = smartCubeLowerContentBoundary(geometry: geometry)
+        let verticalRoom = max(0, lowerBoundary - center.y - 12) * 2
+        let preferredCubeSize = min(size.width * 0.43, size.height * 0.29, 196)
+        let cubeSize = max(96, min(preferredCubeSize, verticalRoom > 0 ? verticalRoom : preferredCubeSize))
+        let sideGap: CGFloat = 12
+        let outerInset = TimerArrangementLayout.outerInset
+        let cubeMinX = center.x - cubeSize / 2
+        let cubeMaxX = center.x + cubeSize / 2
+        let sideMinX = resolvedSmartCubeTimerPosition == .left ? outerInset : cubeMaxX + sideGap
+        let sideMaxX = resolvedSmartCubeTimerPosition == .left ? cubeMinX - sideGap : size.width - outerInset
+        let sideWidth = max(1, sideMaxX - sideMinX)
+        let sideCenter = CGPoint(x: sideMinX + sideWidth / 2, y: center.y)
+
+        return ZStack {
+            SmartCube3DView(
+                facelets: smartCube.facelets,
+                stateRevision: smartCube.cubeStateRevision,
+                fixedView: SmartCubeFixedView(rawValue: smartCubeFixedViewRawValue) ?? .urf
+            )
+            .frame(width: cubeSize, height: cubeSize)
+            .position(center)
+
+            smartCubeSideTimer(width: sideWidth)
+                .frame(width: sideWidth)
+                .position(sideCenter)
+
+            if !shouldHideNonTimerContent {
+                smartCubeStatusLabel
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(smartCubeIsReady ? .green : .secondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.72)
+                    .frame(width: min(size.width - outerInset * 2, cubeSize + 80))
+                    .position(x: center.x, y: center.y + cubeSize / 2 + 8)
+            }
+        }
+    }
+
+    private func smartCubeSideTimer(width: CGFloat) -> some View {
+        let timerSize = min(timerTextFontSize, max(24, width * 0.54))
+        let statisticsSize = min(resolvedAverageTextFontSize, max(11, width * 0.15))
+
+        return VStack(spacing: 8) {
+            configuredText(
+                Text(timerText),
+                size: timerSize,
+                design: resolvedTimerTextFontDesign,
+                style: resolvedTimerTextFontStyle
+            )
+            .monospacedDigit()
+            .foregroundStyle(timerTextStyle)
+            .lineLimit(1)
+            .minimumScaleFactor(0.42)
+            .frame(maxWidth: .infinity)
 
             if !shouldHideNonTimerContent,
                resolvedTimerArrangement == .classic,
                effectiveTimerPresentation.showsStatistics,
                !statisticsDisplayItems.isEmpty {
-                statisticsDisplayView(layout: .verticalCentered, automaticSize: false)
-                    .frame(
-                        width: geometry.classicStatisticsFrame.width,
-                        height: geometry.classicStatisticsFrame.height
-                    )
-                    .position(
-                        x: geometry.classicStatisticsFrame.midX,
-                        y: geometry.classicStatisticsFrame.midY
-                    )
+                TimerStatisticsView(
+                    items: statisticsDisplayItems,
+                    layout: .verticalCentered,
+                    appearance: averageTextAppearance,
+                    fontDesign: resolvedAverageTextFontDesign,
+                    fontStyle: resolvedAverageTextFontStyle,
+                    fontSize: statisticsSize,
+                    usesAutomaticSize: false
+                )
             }
+        }
+    }
+
+    private func smartCubeLowerContentBoundary(
+        geometry: TimerArrangementLayout.Geometry
+    ) -> CGFloat {
+        switch resolvedTimerArrangement {
+        case .classic:
+            if let placement = resolvedArrangementDiagramPlacement,
+               effectiveTimerPresentation.showsScrambleDiagram {
+                return geometry.independentDiagramFrame(
+                    placement: placement,
+                    aspectRatio: resolvedScrambleDiagramAspectRatio
+                ).minY
+            }
+            return geometry.containerSize.height
+        case .split:
+            return min(geometry.splitLeadingFrame.minY, geometry.splitTrailingFrame.minY)
+        case .cards:
+            return min(geometry.leadingCardFrame.minY, geometry.trailingCardFrame.minY)
         }
     }
 
@@ -2230,9 +2603,10 @@ struct TimerTabView: View {
             .disabled(parseTypedTime(typedTimeInput) == nil)
 
             if !shouldHideNonTimerContent,
+               resolvedTimerArrangement == .classic,
                effectiveTimerPresentation.showsStatistics,
                !statisticsDisplayItems.isEmpty {
-                averageDisplayView
+                statisticsDisplayView(layout: .verticalCentered, automaticSize: false)
                     .allowsHitTesting(false)
             }
         }
@@ -2433,7 +2807,9 @@ struct TimerTabView: View {
         }
         #endif
 
-        if selectedEvent == .twoByTwo {
+        let scrambleEvent = effectiveTimerEvent
+
+        if scrambleEvent == .twoByTwo {
             if isGenerating2x2 { return }
             isGenerating2x2 = true
             currentScramble = "…"
@@ -2452,12 +2828,12 @@ struct TimerTabView: View {
                     isGenerating2x2 = false
                 }
             }
-        } else if selectedEvent == .fourByFour || selectedEvent == .fourByFourFast || selectedEvent == .fourByFourBLD {
+        } else if scrambleEvent == .fourByFour || scrambleEvent == .fourByFourFast || scrambleEvent == .fourByFourBLD {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
             DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: selectedEvent)
+                let scramble = preferredScramble(for: scrambleEvent)
                 DispatchQueue.main.async {
                     guard scrambleRequestToken == requestToken else { return }
                     withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
@@ -2465,12 +2841,12 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .fiveByFive || selectedEvent == .fiveByFiveBLD {
+        } else if scrambleEvent == .fiveByFive || scrambleEvent == .fiveByFiveBLD {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
             DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: selectedEvent)
+                let scramble = preferredScramble(for: scrambleEvent)
                 DispatchQueue.main.async {
                     guard scrambleRequestToken == requestToken else { return }
                     withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
@@ -2478,7 +2854,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .sixBySix {
+        } else if scrambleEvent == .sixBySix {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -2491,7 +2867,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .sevenBySeven {
+        } else if scrambleEvent == .sevenBySeven {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -2504,7 +2880,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .megaminx {
+        } else if scrambleEvent == .megaminx {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -2517,7 +2893,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .pyraminx {
+        } else if scrambleEvent == .pyraminx {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -2530,7 +2906,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .clock {
+        } else if scrambleEvent == .clock {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -2543,7 +2919,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .skewb {
+        } else if scrambleEvent == .skewb {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -2556,7 +2932,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .square1 {
+        } else if scrambleEvent == .square1 {
             currentScramble = "…"
             let requestToken = UUID()
             scrambleRequestToken = requestToken
@@ -2569,7 +2945,7 @@ struct TimerTabView: View {
                     }
                 }
             }
-        } else if selectedEvent == .threeByThreeMBLD {
+        } else if scrambleEvent == .threeByThreeMBLD {
             currentScramble = "…"
             mblindScrambles = []
             let requestToken = UUID()
@@ -2594,7 +2970,7 @@ struct TimerTabView: View {
             let requestToken = UUID()
             scrambleRequestToken = requestToken
             DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: selectedEvent)
+                let scramble = preferredScramble(for: scrambleEvent)
                 DispatchQueue.main.async {
                     guard scrambleRequestToken == requestToken else { return }
                     withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
@@ -2798,7 +3174,7 @@ struct TimerTabView: View {
     }
 
     private var scrambleDiagramPuzzleKey: String? {
-        selectedEvent.scrambleDiagramPuzzleKey
+        effectiveTimerEvent.scrambleDiagramPuzzleKey
     }
 
     private var resolvedDrawScramblePlacement: DrawScramblePlacement {

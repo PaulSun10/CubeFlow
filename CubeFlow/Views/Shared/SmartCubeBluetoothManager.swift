@@ -15,13 +15,137 @@ struct SmartCubeDiscoveredDevice: Identifiable, Equatable {
     var hasEncryptionSalt: Bool { macAddress != nil }
 }
 
-enum SmartCubeProtocolKind: String, CaseIterable, Equatable {
+nonisolated enum SmartCubeProtocolKind: String, CaseIterable, Equatable {
     case ganGen2 = "GAN Gen2"
     case ganGen3 = "GAN Gen3"
     case ganGen4 = "GAN Gen4"
     case moyu = "MoYu/WCU"
     case giiker = "Giiker"
     case unknown = "Unknown"
+}
+
+nonisolated enum SmartCubeManufacturer: String, Equatable {
+    case gan = "GAN"
+    case moYu = "MoYu"
+    case unknown = "Unknown"
+}
+
+nonisolated enum SmartCubeIdentificationConfidence: String, Equatable {
+    case advertisementHint = "Advertisement hint"
+    case protocolFamily = "Protocol family"
+    case protocolReportedIdentity = "Protocol-reported identity"
+}
+
+nonisolated struct SmartCubeProtocolIdentityInfo: Equatable {
+    let modelIdentifier: String?
+    let hardwareVersion: String?
+    let firmwareVersion: String?
+    let productDate: String?
+
+    init?(hardwareSummary: String) {
+        guard let hardwareRange = hardwareSummary.range(of: " HW "),
+              let firmwareRange = hardwareSummary.range(of: " SW "),
+              hardwareRange.upperBound < firmwareRange.lowerBound
+        else { return nil }
+
+        let model = hardwareSummary[..<hardwareRange.lowerBound]
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let hardware = hardwareSummary[hardwareRange.upperBound..<firmwareRange.lowerBound]
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let firmwareAndExtra = hardwareSummary[firmwareRange.upperBound...]
+            .split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+
+        modelIdentifier = model.isEmpty || model == "GAN" || model == "MoYu" ? nil : model
+        hardwareVersion = hardware.isEmpty ? nil : hardware
+        firmwareVersion = firmwareAndExtra.first.map(String.init)
+        productDate = firmwareAndExtra.count > 1 ? String(firmwareAndExtra[1]) : nil
+    }
+}
+
+nonisolated struct SmartCubeIdentity: Equatable {
+    let manufacturer: SmartCubeManufacturer
+    let protocolFamily: SmartCubeProtocolKind
+    let advertisedName: String?
+    let protocolModelIdentifier: String?
+    let hardwareVersion: String?
+    let firmwareVersion: String?
+    let resolvedModel: String?
+    let identificationConfidence: SmartCubeIdentificationConfidence
+    let serviceIdentifiers: [String]
+    let productDate: String?
+
+    var displayName: String {
+        if let resolvedModel { return resolvedModel }
+        switch manufacturer {
+        case .gan: return "GAN Smart Cube"
+        case .moYu: return "MoYu Smart Cube"
+        case .unknown: return "Smart Cube"
+        }
+    }
+
+    static func resolve(
+        advertisedName: String?,
+        protocolFamily: SmartCubeProtocolKind,
+        protocolConfirmed: Bool,
+        protocolInfo: SmartCubeProtocolIdentityInfo?,
+        serviceIdentifiers: [String]
+    ) -> Self {
+        let manufacturer: SmartCubeManufacturer
+        switch protocolFamily {
+        case .ganGen2, .ganGen3, .ganGen4:
+            manufacturer = .gan
+        case .moyu:
+            manufacturer = .moYu
+        case .giiker, .unknown:
+            manufacturer = .unknown
+        }
+
+        let confidence: SmartCubeIdentificationConfidence
+        if protocolInfo != nil {
+            confidence = .protocolReportedIdentity
+        } else if protocolConfirmed {
+            confidence = .protocolFamily
+        } else {
+            confidence = .advertisementHint
+        }
+
+        let resolvedModel = resolvedConsumerModel(
+            protocolFamily: protocolFamily,
+            protocolModelIdentifier: protocolInfo?.modelIdentifier
+        )
+
+        return Self(
+            manufacturer: manufacturer,
+            protocolFamily: protocolFamily,
+            advertisedName: advertisedName,
+            protocolModelIdentifier: protocolInfo?.modelIdentifier,
+            hardwareVersion: protocolInfo?.hardwareVersion,
+            firmwareVersion: protocolInfo?.firmwareVersion,
+            resolvedModel: resolvedModel,
+            identificationConfidence: confidence,
+            serviceIdentifiers: serviceIdentifiers.sorted(),
+            productDate: protocolInfo?.productDate
+        )
+    }
+
+    private static func resolvedConsumerModel(
+        protocolFamily: SmartCubeProtocolKind,
+        protocolModelIdentifier: String?
+    ) -> String? {
+        guard protocolFamily == .ganGen4 else { return nil }
+        switch protocolModelIdentifier {
+        case "GAN16ui": return "GAN 16 ui"
+        case "GAN12uiM": return "GAN 12 ui MagLev"
+        case "GANi4": return "GAN i4 MagLev"
+        default: return nil
+        }
+    }
+}
+
+nonisolated enum SmartCubeMoveTimestampSource: Equatable {
+    case deviceClock
+    case reconstructed
+    case hostReceipt
 }
 
 enum SmartCubeConnectionState: Equatable {
@@ -46,14 +170,35 @@ enum SmartCubeConnectionState: Equatable {
     }
 }
 
-struct SmartCubeMoveEvent: Identifiable, Equatable {
-    let id = UUID()
+nonisolated struct SmartCubeMoveEvent: Identifiable, Equatable {
+    let id: UUID
     let move: String
     let serial: Int?
     let face: Int?
     let direction: Int?
     let localTimestamp: Date
     let cubeTimestampMilliseconds: Int?
+    let timestampSource: SmartCubeMoveTimestampSource
+
+    init(
+        id: UUID = UUID(),
+        move: String,
+        serial: Int?,
+        face: Int?,
+        direction: Int?,
+        localTimestamp: Date,
+        cubeTimestampMilliseconds: Int?,
+        timestampSource: SmartCubeMoveTimestampSource = .hostReceipt
+    ) {
+        self.id = id
+        self.move = move
+        self.serial = serial
+        self.face = face
+        self.direction = direction
+        self.localTimestamp = localTimestamp
+        self.cubeTimestampMilliseconds = cubeTimestampMilliseconds
+        self.timestampSource = timestampSource
+    }
 }
 
 struct SmartCubeLogEntry: Identifiable, Equatable {
@@ -131,6 +276,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     @Published private(set) var discoveredDevices: [SmartCubeDiscoveredDevice] = []
     @Published private(set) var connectedDeviceName: String?
     @Published private(set) var connectedProtocol: SmartCubeProtocolKind = .unknown
+    @Published private(set) var identity: SmartCubeIdentity?
     @Published private(set) var connectedMACAddress: String?
     @Published private(set) var discoveredServiceUUIDs: [String] = []
     @Published private(set) var discoveredCharacteristicUUIDs: [String] = []
@@ -173,6 +319,8 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private var discoveredSaltByID: [UUID: [UInt8]] = [:]
     private var connectedPeripheral: CBPeripheral?
     private var pendingProtocolHint: SmartCubeProtocolKind = .unknown
+    private var isConnectedProtocolConfirmed = false
+    private var protocolIdentityInfo: SmartCubeProtocolIdentityInfo?
     private var commandCharacteristic: CBCharacteristic?
     private var stateCharacteristic: CBCharacteristic?
     private var parser: GANCubeProtocolParser?
@@ -248,6 +396,13 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         connectedProtocol = pendingProtocolHint
         connectedDeviceName = selectedDevice?.name ?? peripheral.name
         connectedMACAddress = selectedDevice?.macAddress
+        identity = SmartCubeIdentity.resolve(
+            advertisedName: connectedDeviceName,
+            protocolFamily: connectedProtocol,
+            protocolConfirmed: false,
+            protocolInfo: nil,
+            serviceIdentifiers: selectedDevice?.advertisedServices ?? []
+        )
         if let salt = discoveredSaltByID[deviceID] {
             cipher = GANCubeCipher(salt: salt)
             appendLog("MAC", connectedMACAddress ?? "Salt found in manufacturer data")
@@ -305,14 +460,20 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     static func facelets(afterApplying algorithm: String) -> String? {
-        var state = solvedFacelets
         let moves = algorithm.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        return faceletStates(afterApplying: moves)?.last
+    }
+
+    static func faceletStates(afterApplying moves: [String]) -> [String]? {
         guard !moves.isEmpty else { return nil }
+        var states = [solvedFacelets]
+        var state = solvedFacelets
         for move in moves {
             guard let next = facelets(state, applying: move) else { return nil }
             state = next
+            states.append(state)
         }
-        return state
+        return states
     }
 
     private func disconnectConnectedPeripheralIfNeeded() {
@@ -331,6 +492,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private func resetSessionData(keepLogs: Bool) {
         connectedDeviceName = nil
         connectedProtocol = .unknown
+        identity = nil
+        isConnectedProtocolConfirmed = false
+        protocolIdentityInfo = nil
         connectedMACAddress = nil
         discoveredServiceUUIDs = []
         discoveredCharacteristicUUIDs = []
@@ -498,6 +662,8 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
                 return
             }
             hardwareSummary = summary
+            protocolIdentityInfo = SmartCubeProtocolIdentityInfo(hardwareSummary: summary)
+            refreshIdentity()
             appendLog("Hardware", summary)
         case .gyro(let state):
             flushPendingMove()
@@ -604,7 +770,8 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             face: nil,
             direction: nil,
             localTimestamp: move.localTimestamp,
-            cubeTimestampMilliseconds: move.cubeTimestampMilliseconds
+            cubeTimestampMilliseconds: move.cubeTimestampMilliseconds,
+            timestampSource: move.timestampSource
         )
     }
 
@@ -635,6 +802,34 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             protocolLogEntries.removeLast(protocolLogEntries.count - 200)
         }
     }
+
+    private func refreshIdentity() {
+        identity = SmartCubeIdentity.resolve(
+            advertisedName: connectedDeviceName,
+            protocolFamily: connectedProtocol,
+            protocolConfirmed: isConnectedProtocolConfirmed,
+            protocolInfo: protocolIdentityInfo,
+            serviceIdentifiers: discoveredServiceUUIDs
+        )
+    }
+
+    #if DEBUG
+    var debugIdentityDump: String {
+        guard let identity else { return "No connected identity" }
+        return [
+            "Advertised name: \(identity.advertisedName ?? "Unknown")",
+            "Manufacturer: \(identity.manufacturer.rawValue)",
+            "Protocol family: \(identity.protocolFamily.rawValue)",
+            "Protocol model ID: \(identity.protocolModelIdentifier ?? "Unavailable")",
+            "Hardware version: \(identity.hardwareVersion ?? "Unavailable")",
+            "Firmware/software version: \(identity.firmwareVersion ?? "Unavailable")",
+            "Resolved consumer model: \(identity.resolvedModel ?? "Unknown")",
+            "Confidence: \(identity.identificationConfidence.rawValue)",
+            "Services: \(identity.serviceIdentifiers.isEmpty ? "None" : identity.serviceIdentifiers.joined(separator: ", "))",
+            "Product date: \(identity.productDate ?? "Unavailable")"
+        ].joined(separator: "\n")
+    }
+    #endif
 
     private static func hexString(_ bytes: [UInt8]) -> String {
         bytes.map { String(format: "%02X", $0) }.joined(separator: " ")
@@ -742,7 +937,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         return move + "'"
     }
 
-    private static func facelets(_ value: String, applying move: String) -> String? {
+    static func facelets(_ value: String, applying move: String) -> String? {
         guard isPlausibleFacelets(value), let face = move.first else { return nil }
         let turns: Int
         if move.hasSuffix("2") {
@@ -1012,6 +1207,8 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
         if !foundKnownProtocol {
             connectedProtocol = pendingProtocolHint
         }
+        isConnectedProtocolConfirmed = foundKnownProtocol
+        refreshIdentity()
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {

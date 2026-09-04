@@ -16,6 +16,511 @@ import UIKit
 
 struct CubeFlowTests {
 
+    @Test func smartCubeScrambleProgressAdvancesByPhysicalState() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U D"))
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        let afterRU = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R U"))
+
+        #expect(progress.update(with: afterR) == .advanced)
+        #expect(progress.verifiedMoveCount == 1)
+        #expect(progress.update(with: afterRU) == .advanced)
+        #expect(progress.verifiedMoveCount == 2)
+    }
+
+    @Test func smartCubeScrambleProgressAcceptsCommutingLaterState() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U D"))
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        let afterRD = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R D"))
+        let afterRDU = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R D U"))
+
+        #expect(progress.update(with: afterR) == .advanced)
+        #expect(progress.update(with: afterRD) == .matchedLater)
+        #expect(progress.completedTokenIndices == [0, 2])
+        #expect(progress.update(with: afterRDU) == .completed)
+        #expect(progress.verifiedMoveCount == 3)
+    }
+
+    @Test func smartCubeScrambleProgressAttributesOppositeFaceMoveToItsToken() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "D2 U2"))
+        let afterU2 = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U2"))
+        let afterU2D2 = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U2 D2"))
+
+        #expect(progress.update(with: afterU2) == .matchedLater)
+        #expect(progress.completedTokenIndices == [1])
+        #expect(progress.update(with: afterU2D2) == .completed)
+        #expect(progress.completedTokenIndices == [0, 1])
+    }
+
+    @Test func smartCubeScrambleProgressRejectsNoncommutingLaterMove() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U"))
+        let afterU = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U"))
+
+        #expect(progress.update(with: afterU) == .deviated)
+        #expect(progress.isDeviated)
+        #expect(progress.completedTokenIndices.isEmpty)
+    }
+
+    @Test func smartCubeScrambleProgressReturnsToExpectedState() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U D"))
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        let deviation = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R F"))
+
+        #expect(progress.update(with: afterR) == .advanced)
+        #expect(progress.update(with: deviation) == .deviated)
+        #expect(progress.isDeviated)
+        #expect(progress.update(with: afterR) == .returned)
+        #expect(!progress.isDeviated)
+        #expect(progress.verifiedMoveCount == 1)
+    }
+
+    @Test(arguments: ["U2", "D2", "R2", "L2", "F2", "B2"])
+    func smartCubeHalfTurnAcceptsEitherQuarterTurnAsPartialProgress(token: String) throws {
+        for suffix in ["", "'"] {
+            var progress = try #require(SmartCubeScrambleProgress(scramble: token))
+            let quarterTurn = String(token.prefix(1)) + suffix
+            let intermediate = try #require(SmartCubeBluetoothManager.facelets(afterApplying: quarterTurn))
+            let completed = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "\(quarterTurn) \(quarterTurn)"))
+
+            #expect(progress.update(with: intermediate) == .partial)
+            #expect(progress.completedTokenIndices.isEmpty)
+            #expect(!progress.isDeviated)
+            #expect(progress.update(with: completed) == .completed)
+            #expect(progress.completedTokenIndices == [0])
+        }
+    }
+
+    @Test func smartCubeHalfTurnCanReturnFromPartialCheckpoint() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "L2 U"))
+        let afterL = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "L"))
+        let incompatible = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "L F"))
+
+        #expect(progress.update(with: afterL) == .partial)
+        #expect(progress.update(with: incompatible) == .deviated)
+        #expect(progress.update(with: afterL) == .returned)
+        #expect(!progress.isDeviated)
+        #expect(progress.update(with: SmartCubeBluetoothManager.solvedFacelets) == .returned)
+        #expect(progress.completedTokenIndices.isEmpty)
+        #expect(!progress.isDeviated)
+    }
+
+    @Test func smartCubeHalfTurnPartialProgressPreservesCommutingAttribution() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "D2 U2"))
+        let afterU = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U"))
+        let afterUU = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U U"))
+        let completed = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U U D2"))
+
+        #expect(progress.update(with: afterU) == .partial)
+        #expect(progress.update(with: afterUU) == .matchedLater)
+        #expect(progress.completedTokenIndices == [1])
+        #expect(progress.update(with: completed) == .completed)
+    }
+
+    @Test func smartCubeCompletionDoesNotStartTimerUntilNextMove() {
+        var lifecycle = SmartCubeSolveLifecycle()
+        let finalScrambleMoveID = UUID()
+        let completionAction = lifecycle.scrambleDidComplete(
+            inspectionEnabled: false,
+            completingMoveID: finalScrambleMoveID
+        )
+        let startDate = Date(timeIntervalSince1970: 123)
+
+        #expect(completionAction == .enteredReady)
+        #expect(lifecycle.phase == .ready)
+        let completingMove = smartCubeMove(id: finalScrambleMoveID, timestamp: startDate)
+        let solveMove = smartCubeMove(timestamp: startDate)
+        #expect(lifecycle.physicalMoveDidOccur(completingMove) == .none)
+        #expect(lifecycle.phase == .ready)
+        #expect(lifecycle.physicalMoveDidOccur(solveMove) == .startTiming(solveMove))
+        #expect(lifecycle.phase == .timing)
+    }
+
+    @Test func smartCubeInspectionBeginsAtCompletionAndHandsOffOnFirstMove() {
+        var lifecycle = SmartCubeSolveLifecycle()
+        let finalScrambleMoveID = UUID()
+        let startDate = Date(timeIntervalSince1970: 456)
+
+        #expect(lifecycle.scrambleDidComplete(
+            inspectionEnabled: true,
+            completingMoveID: finalScrambleMoveID
+        ) == .beginInspection)
+        #expect(lifecycle.phase == .inspecting)
+        let completingMove = smartCubeMove(id: finalScrambleMoveID, timestamp: startDate)
+        let solveMove = smartCubeMove(timestamp: startDate)
+        #expect(lifecycle.physicalMoveDidOccur(completingMove) == .none)
+        #expect(lifecycle.phase == .inspecting)
+        #expect(lifecycle.physicalMoveDidOccur(solveMove) == .startTiming(solveMove))
+        #expect(lifecycle.phase == .timing)
+    }
+
+    @Test func smartCubeTimingUsesDeviceClockInsteadOfDelayedSolvedObservation() throws {
+        let start = smartCubeMove(
+            timestamp: Date(timeIntervalSince1970: 100.050),
+            cubeMilliseconds: 10_000,
+            source: .deviceClock
+        )
+        let end = smartCubeMove(
+            timestamp: Date(timeIntervalSince1970: 108.421),
+            cubeMilliseconds: 18_371,
+            source: .deviceClock
+        )
+        let observed = Date(timeIntervalSince1970: 108.610)
+
+        let timing = try #require(SmartCubeSolveTiming.resolved(
+            startMove: start,
+            endMove: end,
+            solvedObservedAt: observed
+        ))
+        #expect(abs(timing.duration - 8.371) < 0.000_001)
+        #expect(timing.startDate == start.localTimestamp)
+        #expect(timing.endDate == end.localTimestamp)
+    }
+
+    @Test func smartCubeTimingUsesReconstructedHostTimeAsExplicitFallback() throws {
+        let start = smartCubeMove(
+            timestamp: Date(timeIntervalSince1970: 200),
+            source: .hostReceipt
+        )
+        let end = smartCubeMove(
+            timestamp: Date(timeIntervalSince1970: 207.25),
+            source: .reconstructed
+        )
+
+        let timing = try #require(SmartCubeSolveTiming.resolved(
+            startMove: start,
+            endMove: end,
+            solvedObservedAt: Date(timeIntervalSince1970: 208)
+        ))
+        #expect(timing.duration == 7.25)
+    }
+
+    @Test func smartCubeTimingFallsBackToObservationForNonmonotonicMoveTime() throws {
+        let start = smartCubeMove(timestamp: Date(timeIntervalSince1970: 300))
+        let staleEnd = smartCubeMove(timestamp: Date(timeIntervalSince1970: 299))
+
+        let timing = try #require(SmartCubeSolveTiming.resolved(
+            startMove: start,
+            endMove: staleEnd,
+            solvedObservedAt: Date(timeIntervalSince1970: 301)
+        ))
+        #expect(timing.duration == 1)
+        #expect(timing.endDate == Date(timeIntervalSince1970: 301))
+    }
+
+    @Test func smartCubeTransitionOptionsRespectCompletedMoveBehavior() {
+        #expect(SmartCubeScrambleTransition.allowed(for: .collapse) == SmartCubeScrambleTransition.allCases)
+        #expect(SmartCubeScrambleTransition.allowed(for: .trail) == [.blur, .instant])
+        #expect(SmartCubeScrambleTransition.resolved(storedRawValue: "slide", behavior: .trail) == .blur)
+        #expect(SmartCubeScrambleTransition.resolved(storedRawValue: "instant", behavior: .trail) == .instant)
+    }
+
+    @Test func smartCubeIdentityFallsBackWithoutInventingConsumerModel() {
+        let identity = SmartCubeIdentity.resolve(
+            advertisedName: "GAN16ui_C014",
+            protocolFamily: .ganGen4,
+            protocolConfirmed: true,
+            protocolInfo: nil,
+            serviceIdentifiers: ["00000001-0000-1000-8000-00805F9B34FB"]
+        )
+
+        #expect(identity.manufacturer == .gan)
+        #expect(identity.protocolFamily == .ganGen4)
+        #expect(identity.advertisedName == "GAN16ui_C014")
+        #expect(identity.resolvedModel == nil)
+        #expect(identity.displayName == "GAN Smart Cube")
+        #expect(identity.identificationConfidence == .protocolFamily)
+    }
+
+    @Test func smartCubeIdentityResolvesVerifiedGANGen4HardwareIdentifiers() throws {
+        let cases = [
+            (protocolIdentifier: "GAN16ui", consumerModel: "GAN 16 ui"),
+            (protocolIdentifier: "GAN12uiM", consumerModel: "GAN 12 ui MagLev"),
+            (protocolIdentifier: "GANi4", consumerModel: "GAN i4 MagLev")
+        ]
+
+        for model in cases {
+            let info = try #require(SmartCubeProtocolIdentityInfo(
+                hardwareSummary: "\(model.protocolIdentifier) HW 1.0 SW 2.3 2026-01-09"
+            ))
+            let identity = SmartCubeIdentity.resolve(
+                advertisedName: "Renamed Cube",
+                protocolFamily: .ganGen4,
+                protocolConfirmed: true,
+                protocolInfo: info,
+                serviceIdentifiers: []
+            )
+
+            #expect(identity.protocolModelIdentifier == model.protocolIdentifier)
+            #expect(identity.resolvedModel == model.consumerModel)
+            #expect(identity.displayName == model.consumerModel)
+            #expect(identity.advertisedName == "Renamed Cube")
+            #expect(identity.identificationConfidence == .protocolReportedIdentity)
+        }
+    }
+
+    @Test func smartCubeIdentityDoesNotResolveUnverifiedGANHardwareIdentifier() throws {
+        let info = try #require(SmartCubeProtocolIdentityInfo(
+            hardwareSummary: "GANFutureModel HW 1.0 SW 1.0 2026-01-01"
+        ))
+        let identity = SmartCubeIdentity.resolve(
+            advertisedName: "GANFutureModel_1234",
+            protocolFamily: .ganGen4,
+            protocolConfirmed: true,
+            protocolInfo: info,
+            serviceIdentifiers: []
+        )
+
+        #expect(identity.protocolModelIdentifier == "GANFutureModel")
+        #expect(identity.resolvedModel == nil)
+        #expect(identity.displayName == "GAN Smart Cube")
+    }
+
+    @Test func smartCubeIdentityUsesConfirmedProtocolAfterAdvertisementRename() {
+        let identity = SmartCubeIdentity.resolve(
+            advertisedName: "Paul's Cube",
+            protocolFamily: .moyu,
+            protocolConfirmed: true,
+            protocolInfo: nil,
+            serviceIdentifiers: ["0783B03E-7735-B5A0-1760-A305D2795CB0"]
+        )
+
+        #expect(identity.advertisedName == "Paul's Cube")
+        #expect(identity.manufacturer == .moYu)
+        #expect(identity.protocolFamily == .moyu)
+        #expect(identity.displayName == "MoYu Smart Cube")
+        #expect(identity.identificationConfidence == .protocolFamily)
+    }
+
+    @Test func smartCubeIdentityPreservesMoYuProtocolSignatureWithoutFalseMapping() throws {
+        let info = try #require(SmartCubeProtocolIdentityInfo(
+            hardwareSummary: "WCU_MY32 HW 1.2 SW 3.4"
+        ))
+        let identity = SmartCubeIdentity.resolve(
+            advertisedName: "WCU_MY32_A388",
+            protocolFamily: .moyu,
+            protocolConfirmed: true,
+            protocolInfo: info,
+            serviceIdentifiers: []
+        )
+
+        #expect(identity.protocolModelIdentifier == "WCU_MY32")
+        #expect(identity.hardwareVersion == "1.2")
+        #expect(identity.firmwareVersion == "3.4")
+        #expect(identity.resolvedModel == nil)
+        #expect(identity.identificationConfidence == .protocolReportedIdentity)
+    }
+
+    @Test(arguments: ["2.7", "2.11"])
+    func smartCubeIdentityKeepsObservedMoYuSignaturesGeneric(firmwareVersion: String) throws {
+        let info = try #require(SmartCubeProtocolIdentityInfo(
+            hardwareSummary: "WCU_MY32 HW 2.1 SW \(firmwareVersion)"
+        ))
+        let identity = SmartCubeIdentity.resolve(
+            advertisedName: "Custom BLE Name",
+            protocolFamily: .moyu,
+            protocolConfirmed: true,
+            protocolInfo: info,
+            serviceIdentifiers: []
+        )
+
+        #expect(identity.protocolModelIdentifier == "WCU_MY32")
+        #expect(identity.hardwareVersion == "2.1")
+        #expect(identity.firmwareVersion == firmwareVersion)
+        #expect(identity.resolvedModel == nil)
+        #expect(identity.displayName == "MoYu Smart Cube")
+    }
+
+    @Test func smartCubeHighlightToneLightensDarkColorsWithoutChangingColorFamily() {
+        let background = StoredColorData(r: 0.55, g: 0.02, b: 0.02)
+        let foreground = SmartCubeHighlightToneResolver.contrastingTone(for: background)
+
+        #expect(foreground.r > background.r)
+        #expect(foreground.g > background.g)
+        #expect(foreground.b > background.b)
+        #expect(foreground.r > foreground.g)
+        #expect(foreground.r > foreground.b)
+        #expect(SmartCubeHighlightToneResolver.contrastRatio(background, foreground) >= 3.49)
+    }
+
+    @Test func smartCubeHighlightToneDarkensLightColorsWithoutChangingColorFamily() {
+        let background = StoredColorData(r: 1.0, g: 0.72, b: 0.72)
+        let foreground = SmartCubeHighlightToneResolver.contrastingTone(for: background)
+
+        #expect(foreground.r < background.r)
+        #expect(foreground.g < background.g)
+        #expect(foreground.b < background.b)
+        #expect(foreground.r > foreground.g)
+        #expect(foreground.r > foreground.b)
+        #expect(SmartCubeHighlightToneResolver.contrastRatio(background, foreground) >= 3.49)
+    }
+
+    @Test func smartCubeHighlightToneKeepsNeutralColorsNeutral() {
+        let blackOnWhite = SmartCubeHighlightToneResolver.contrastingTone(
+            for: StoredColorData(r: 1, g: 1, b: 1)
+        )
+        let whiteOnBlack = SmartCubeHighlightToneResolver.contrastingTone(
+            for: StoredColorData(r: 0, g: 0, b: 0)
+        )
+
+        #expect(blackOnWhite == StoredColorData(r: 0, g: 0, b: 0))
+        #expect(whiteOnBlack == StoredColorData(r: 1, g: 1, b: 1))
+    }
+
+    @Test func smartCubeHighlightCapsuleStaysCenteredAtContainerEdges() {
+        let container = CGSize(width: 100, height: 30)
+        let leftToken = CGRect(x: 0, y: 5, width: 20, height: 18)
+        let rightToken = CGRect(x: 80, y: 5, width: 20, height: 18)
+
+        let leftCapsule = SmartCubeHighlightCapsuleGeometry.frame(
+            around: leftToken,
+            containerSize: container
+        )
+        let rightCapsule = SmartCubeHighlightCapsuleGeometry.frame(
+            around: rightToken,
+            containerSize: container
+        )
+
+        #expect(leftCapsule.minX == 0)
+        #expect(rightCapsule.maxX == container.width)
+        #expect(leftCapsule.midX == leftToken.midX)
+        #expect(rightCapsule.midX == rightToken.midX)
+        #expect(leftCapsule.width == leftToken.width)
+        #expect(rightCapsule.width == rightToken.width)
+        #expect(leftToken == CGRect(x: 0, y: 5, width: 20, height: 18))
+        #expect(rightToken == CGRect(x: 80, y: 5, width: 20, height: 18))
+    }
+
+    @Test func smartCubeEffectiveEventDoesNotMutateNormalSelection() {
+        let normalEvent = PuzzleEvent.fourByFour
+
+        #expect(SmartCubeTimerEventPolicy.effectiveEvent(
+            normalEvent: normalEvent,
+            isSmartCubeTiming: true
+        ) == .threeByThree)
+        #expect(SmartCubeTimerEventPolicy.effectiveEvent(
+            normalEvent: normalEvent,
+            isSmartCubeTiming: false
+        ) == normalEvent)
+    }
+
+    @Test func smartCubeScrambleReplacementRequiresANewPhysicalMove() {
+        let previousMoveID = UUID()
+        let establishedAt = Date(timeIntervalSince1970: 500)
+        var epoch = SmartCubeScrambleEpoch()
+        var lifecycle = SmartCubeSolveLifecycle()
+
+        epoch.establish(at: establishedAt, latestMoveID: previousMoveID)
+        #expect(epoch.completionAction(
+            inspectionEnabled: true,
+            completingMoveID: previousMoveID,
+            lifecycle: &lifecycle
+        ) == .none)
+        #expect(lifecycle.phase == .scrambling)
+
+        let staleMove = smartCubeMove(
+            timestamp: establishedAt.addingTimeInterval(-0.01)
+        )
+        let acceptedStaleMove = epoch.observePhysicalMove(staleMove)
+        let acceptedBaselineMove = epoch.observePhysicalMove(smartCubeMove(
+            id: previousMoveID,
+            timestamp: establishedAt.addingTimeInterval(0.01)
+        ))
+        #expect(!acceptedStaleMove)
+        #expect(!acceptedBaselineMove)
+        #expect(lifecycle.phase == .scrambling)
+
+        let finalPhysicalScrambleMove = smartCubeMove(
+            timestamp: establishedAt.addingTimeInterval(0.02)
+        )
+        let acceptedFinalScrambleMove = epoch.observePhysicalMove(finalPhysicalScrambleMove)
+        #expect(acceptedFinalScrambleMove)
+        #expect(epoch.completionAction(
+            inspectionEnabled: true,
+            completingMoveID: finalPhysicalScrambleMove.id,
+            lifecycle: &lifecycle
+        ) == .beginInspection)
+        #expect(lifecycle.phase == .inspecting)
+    }
+
+    @Test func smartCubeNewScrambleEpochRejectsPreviousEpochPublications() {
+        let firstEstablishedAt = Date(timeIntervalSince1970: 700)
+        let oldMove = smartCubeMove(timestamp: firstEstablishedAt.addingTimeInterval(1))
+        var epoch = SmartCubeScrambleEpoch()
+
+        epoch.establish(at: firstEstablishedAt, latestMoveID: nil)
+        let acceptedFirstEpochMove = epoch.observePhysicalMove(oldMove)
+        #expect(acceptedFirstEpochMove)
+        #expect(epoch.hasAcceptedPhysicalMove)
+
+        epoch.establish(
+            at: firstEstablishedAt.addingTimeInterval(2),
+            latestMoveID: oldMove.id
+        )
+        #expect(!epoch.hasAcceptedPhysicalMove)
+        let acceptedPreviousEpochMove = epoch.observePhysicalMove(oldMove)
+        #expect(!acceptedPreviousEpochMove)
+    }
+
+    @Test func smartCubeCurrentMoveHighlightTracksNormalProgress() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U D"))
+        #expect(progress.currentMoveTokenIndex == 0)
+
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        #expect(progress.update(with: afterR) == .advanced)
+        #expect(progress.currentMoveTokenIndex == 1)
+    }
+
+    @Test func smartCubeCurrentMoveHighlightUsesAuthoritativeCommutingState() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "D2 U2"))
+        let afterU2 = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U2"))
+
+        #expect(progress.update(with: afterU2) == .matchedLater)
+        #expect(progress.completedTokenIndices == [1])
+        #expect(progress.currentMoveTokenIndex == 0)
+    }
+
+    @Test func smartCubeCurrentMoveHighlightStaysOnPartialHalfTurn() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "L2 U"))
+        let afterL = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "L"))
+
+        #expect(progress.update(with: afterL) == .partial)
+        #expect(progress.completedTokenIndices.isEmpty)
+        #expect(progress.currentMoveTokenIndex == 0)
+    }
+
+    @Test func smartCubeCurrentMoveHighlightClearsAfterCompletion() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R"))
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+
+        #expect(progress.update(with: afterR) == .completed)
+        #expect(progress.currentMoveTokenIndex == nil)
+    }
+
+    @Test func smartCubeCurrentMoveHighlightIsSuppressedDuringDeviation() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U"))
+        let afterF = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "F"))
+
+        #expect(progress.update(with: afterF) == .deviated)
+        #expect(progress.currentMoveTokenIndex == nil)
+    }
+
+    private func smartCubeMove(
+        id: UUID = UUID(),
+        timestamp: Date,
+        cubeMilliseconds: Int? = nil,
+        source: SmartCubeMoveTimestampSource = .hostReceipt
+    ) -> SmartCubeMoveEvent {
+        SmartCubeMoveEvent(
+            id: id,
+            move: "R",
+            serial: nil,
+            face: nil,
+            direction: nil,
+            localTimestamp: timestamp,
+            cubeTimestampMilliseconds: cubeMilliseconds,
+            timestampSource: source
+        )
+    }
+
     @Test func solveTimeAccuracyChangesPresentationWithoutChangingStoredPrecision() {
         let storedTime = 9.517
 

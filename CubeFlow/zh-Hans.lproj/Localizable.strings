@@ -1805,7 +1805,8 @@
 "settings.smart_cube.reset_never" = "保留魔方状态";
 "settings.smart_cube.ready_sound" = "就绪提示音";
 "settings.smart_cube.debug_mode" = "调试模式";
-"smart_cube.timer.disconnected" = "请在设置中连接智能魔方";
+"smart_cube.timer.disconnected" = "请连接智能魔方";
+"smart_cube.timer.connect" = "连接魔方";
 "smart_cube.timer.solving" = "正在复原";
 "smart_cube.timer.ready" = "已就绪，转动开始";
 "smart_cube.timer.scramble" = "请完成打乱";
@@ -1992,3 +1993,32 @@
 "settings.numeral_system.urdu" = "乌尔都文";
 "settings.numeral_system.simplifiedChinese" = "简体中文";
 "settings.numeral_system.traditionalChinese" = "繁体中文";
+
+"settings.smart_cube.display" = "显示";
+"settings.smart_cube.show_virtual_cube" = "显示虚拟魔方";
+"settings.smart_cube.timer_position" = "计时器位置";
+"settings.smart_cube.timer_position.left" = "左侧";
+"settings.smart_cube.timer_position.right" = "右侧";
+"settings.smart_cube.scramble_progress" = "打乱进度";
+"settings.smart_cube.completed_moves" = "已完成步骤";
+"settings.smart_cube.completed_moves.collapse" = "收起";
+"settings.smart_cube.completed_moves.trail" = "保留";
+"settings.smart_cube.transition" = "过渡效果";
+"settings.smart_cube.transition.blur" = "模糊";
+"settings.smart_cube.transition.fade" = "淡出";
+"settings.smart_cube.transition.slide" = "滑动";
+"settings.smart_cube.transition.bounce" = "弹跳";
+"settings.smart_cube.transition.instant" = "立即";
+
+"smart_cube.timer.deviated" = "打乱状态不匹配";
+
+"settings.smart_cube.current_move" = "当前步骤";
+"settings.smart_cube.current_move.none" = "无";
+"settings.smart_cube.current_move.highlight" = "高亮";
+
+"settings.smart_cube.highlight_color" = "高亮颜色";
+"settings.smart_cube.highlight_text" = "高亮文字";
+"settings.smart_cube.highlight_mode.automatic" = "自动";
+"settings.smart_cube.highlight_mode.custom" = "自定义";
+"settings.smart_cube.highlight_color.custom" = "自定义高亮颜色";
+"settings.smart_cube.highlight_text.custom" = "自定义高亮文字";

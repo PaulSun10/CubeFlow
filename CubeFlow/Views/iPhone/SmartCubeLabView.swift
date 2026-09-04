@@ -7,6 +7,15 @@ struct SmartCubeLabView: View {
     @AppStorage("smartCubeResetPolicy") private var resetPolicyRawValue = SmartCubeResetPolicy.prompt.rawValue
     @AppStorage("smartCubeReadySound") private var readySound = true
     @AppStorage("smartCubeDebugMode") private var debugMode = false
+    @AppStorage("smartCubeShowVirtualCube") private var showVirtualCube = true
+    @AppStorage("smartCubeTimerPosition") private var timerPositionRawValue = SmartCubeTimerPosition.right.rawValue
+    @AppStorage("smartCubeCurrentMovePresentation") private var currentMovePresentationRawValue = SmartCubeCurrentMovePresentation.highlight.rawValue
+    @AppStorage("smartCubeHighlightColorMode") private var highlightColorModeRawValue = SmartCubeHighlightColorMode.automatic.rawValue
+    @AppStorage("smartCubeHighlightTextMode") private var highlightTextModeRawValue = SmartCubeHighlightColorMode.automatic.rawValue
+    @AppStorage("smartCubeHighlightColorData") private var highlightColorData: Data?
+    @AppStorage("smartCubeHighlightTextColorData") private var highlightTextColorData: Data?
+    @AppStorage("smartCubeCompletedMovesBehavior") private var completedMovesBehaviorRawValue = SmartCubeCompletedMovesBehavior.collapse.rawValue
+    @AppStorage("smartCubeScrambleTransition") private var scrambleTransitionRawValue = SmartCubeScrambleTransition.blur.rawValue
     @State private var showingResetPrompt = false
 
     private var fixedView: SmartCubeFixedView {
@@ -17,12 +26,66 @@ struct SmartCubeLabView: View {
         SmartCubeResetPolicy(rawValue: resetPolicyRawValue) ?? .prompt
     }
 
+    private var completedMovesBehavior: SmartCubeCompletedMovesBehavior {
+        SmartCubeCompletedMovesBehavior(rawValue: completedMovesBehaviorRawValue) ?? .collapse
+    }
+
+    private var currentMovePresentation: SmartCubeCurrentMovePresentation {
+        SmartCubeCurrentMovePresentation(rawValue: currentMovePresentationRawValue) ?? .highlight
+    }
+
+    private var highlightColorMode: SmartCubeHighlightColorMode {
+        SmartCubeHighlightColorMode(rawValue: highlightColorModeRawValue) ?? .automatic
+    }
+
+    private var highlightTextMode: SmartCubeHighlightColorMode {
+        SmartCubeHighlightColorMode(rawValue: highlightTextModeRawValue) ?? .automatic
+    }
+
+    private var customHighlightColor: Binding<Color> {
+        Binding(
+            get: {
+                StoredColorData.decode(
+                    from: highlightColorData,
+                    fallback: SmartCubeHighlightColorDefaults.background
+                ).color
+            },
+            set: { highlightColorData = StoredColorData(color: $0).encodedData }
+        )
+    }
+
+    private var customHighlightTextColor: Binding<Color> {
+        Binding(
+            get: {
+                StoredColorData.decode(
+                    from: highlightTextColorData,
+                    fallback: SmartCubeHighlightColorDefaults.text
+                ).color
+            },
+            set: { highlightTextColorData = StoredColorData(color: $0).encodedData }
+        )
+    }
+
+    private var transitionSelection: Binding<String> {
+        Binding(
+            get: {
+                SmartCubeScrambleTransition.resolved(
+                    storedRawValue: scrambleTransitionRawValue,
+                    behavior: completedMovesBehavior
+                ).rawValue
+            },
+            set: { scrambleTransitionRawValue = $0 }
+        )
+    }
+
     var body: some View {
         List {
             statusSection
             discoveredDevicesSection
             liveStateSection
             cube3DSection
+            displaySettingsSection
+            scrambleProgressSettingsSection
             settingsSection
             if debugMode {
                 faceletsSection
@@ -79,8 +142,8 @@ struct SmartCubeLabView: View {
                         .foregroundStyle(manager.isConnected ? .green : .secondary)
                     VStack(alignment: .leading, spacing: 3) {
                         Group {
-                            if let deviceName = manager.connectedDeviceName {
-                                Text(deviceName)
+                            if let identity = manager.identity {
+                                Text(identity.displayName)
                             } else {
                                 Text("smart_cube.no_connected")
                             }
@@ -151,41 +214,7 @@ struct SmartCubeLabView: View {
                     Button {
                         manager.connect(to: device.id)
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Text(device.name)
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                Text(device.protocolHint.rawValue)
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundStyle(.secondary)
-                            }
-                            HStack(spacing: 8) {
-                                Label("\(device.rssi) dBm", systemImage: "dot.radiowaves.left.and.right")
-                                if let mac = device.macAddress {
-                                    Label(mac, systemImage: "key.horizontal")
-                                } else {
-                                    Label("No MAC salt", systemImage: "exclamationmark.triangle")
-                                }
-                            }
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.secondary)
-
-                            if !device.advertisedServices.isEmpty {
-                                Text("ADV services: \(device.advertisedServices.joined(separator: ", "))")
-                                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(.secondary)
-                            }
-
-                            if let manufacturerDataHex = device.manufacturerDataHex {
-                                Text("Manufacturer: \(manufacturerDataHex)")
-                                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(2)
-                            }
-                        }
-                        .padding(.vertical, 3)
+                        SmartCubeDiscoveredDeviceRow(device: device, showsDiagnostics: true)
                     }
                 }
             }
@@ -215,6 +244,9 @@ struct SmartCubeLabView: View {
                 labeledValue("MAC", manager.connectedMACAddress ?? "Unknown")
                 labeledValue("Hardware", manager.hardwareSummary ?? "Unknown")
                 labeledValue("Gyro", manager.gyroState?.summary ?? "No gyro data")
+                #if DEBUG
+                labeledValue("Identity", manager.debugIdentityDump)
+                #endif
             }
 
             if !manager.moveHistory.isEmpty {
@@ -268,6 +300,72 @@ struct SmartCubeLabView: View {
 
             Toggle("settings.smart_cube.ready_sound", isOn: $readySound)
             Toggle("settings.smart_cube.debug_mode", isOn: $debugMode)
+        }
+    }
+
+    private var displaySettingsSection: some View {
+        Section("settings.smart_cube.display") {
+            Toggle("settings.smart_cube.show_virtual_cube", isOn: $showVirtualCube)
+
+            if showVirtualCube {
+                Picker("settings.smart_cube.timer_position", selection: $timerPositionRawValue) {
+                    ForEach(SmartCubeTimerPosition.allCases) { position in
+                        Text(position.localizedKey).tag(position.rawValue)
+                    }
+                }
+            }
+        }
+    }
+
+    private var scrambleProgressSettingsSection: some View {
+        Section("settings.smart_cube.scramble_progress") {
+            Picker("settings.smart_cube.current_move", selection: $currentMovePresentationRawValue) {
+                ForEach(SmartCubeCurrentMovePresentation.allCases) { presentation in
+                    Text(presentation.localizedKey).tag(presentation.rawValue)
+                }
+            }
+
+            if currentMovePresentation == .highlight {
+                Picker("settings.smart_cube.highlight_color", selection: $highlightColorModeRawValue) {
+                    ForEach(SmartCubeHighlightColorMode.allCases) { mode in
+                        Text(mode.localizedKey).tag(mode.rawValue)
+                    }
+                }
+
+                if highlightColorMode == .custom {
+                    ColorPicker(
+                        "settings.smart_cube.highlight_color.custom",
+                        selection: customHighlightColor,
+                        supportsOpacity: false
+                    )
+                }
+
+                Picker("settings.smart_cube.highlight_text", selection: $highlightTextModeRawValue) {
+                    ForEach(SmartCubeHighlightColorMode.allCases) { mode in
+                        Text(mode.localizedKey).tag(mode.rawValue)
+                    }
+                }
+
+                if highlightTextMode == .custom {
+                    ColorPicker(
+                        "settings.smart_cube.highlight_text.custom",
+                        selection: customHighlightTextColor,
+                        supportsOpacity: false
+                    )
+                }
+            }
+
+            Picker("settings.smart_cube.completed_moves", selection: $completedMovesBehaviorRawValue) {
+                ForEach(SmartCubeCompletedMovesBehavior.allCases) { behavior in
+                    Text(behavior.localizedKey).tag(behavior.rawValue)
+                }
+            }
+
+            Picker("settings.smart_cube.transition", selection: transitionSelection) {
+                ForEach(SmartCubeScrambleTransition.allowed(for: completedMovesBehavior)) { transition in
+                    Text(transition.localizedKey).tag(transition.rawValue)
+                }
+            }
         }
     }
 
@@ -410,6 +508,114 @@ private struct CubeFaceletsNet: View {
         case "B": return Color(red: 0, green: 0, blue: 1)
         default: return Color(white: 0.5)
         }
+    }
+}
+
+struct SmartCubeDevicePickerView: View {
+    @ObservedObject var manager: SmartCubeBluetoothManager
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        CompatibleNavigationContainer {
+            List {
+                Section {
+                    if manager.discoveredDevices.isEmpty {
+                        Text("smart_cube.no_devices")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(manager.discoveredDevices) { device in
+                            Button {
+                                manager.connect(to: device.id)
+                            } label: {
+                                SmartCubeDiscoveredDeviceRow(
+                                    device: device,
+                                    showsDiagnostics: false
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle("smart_cube.devices")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("common.cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(manager.connectionState == .scanning
+                           ? "smart_cube.stop_scanning"
+                           : "smart_cube.scan") {
+                        if manager.connectionState == .scanning {
+                            manager.stopScanning()
+                        } else {
+                            manager.startScanning()
+                        }
+                    }
+                }
+            }
+        }
+        .onAppear {
+            manager.prepareIfNeeded()
+            if !manager.isConnected, manager.connectionState != .scanning {
+                manager.startScanning()
+            }
+        }
+        .onChange(of: manager.connectionState) { state in
+            if state == .connected {
+                dismiss()
+            }
+        }
+        .onDisappear {
+            if manager.connectionState == .scanning {
+                manager.stopScanning()
+            }
+        }
+    }
+}
+
+private struct SmartCubeDiscoveredDeviceRow: View {
+    let device: SmartCubeDiscoveredDevice
+    let showsDiagnostics: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(device.name)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Spacer()
+                Text(device.protocolHint.rawValue)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            HStack(spacing: 8) {
+                Label("\(device.rssi) dBm", systemImage: "dot.radiowaves.left.and.right")
+                if let mac = device.macAddress {
+                    Label(mac, systemImage: "key.horizontal")
+                } else if showsDiagnostics {
+                    Label("No MAC salt", systemImage: "exclamationmark.triangle")
+                }
+            }
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(.secondary)
+
+            if showsDiagnostics, !device.advertisedServices.isEmpty {
+                Text("ADV services: \(device.advertisedServices.joined(separator: ", "))")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            }
+
+            if showsDiagnostics, let manufacturerDataHex = device.manufacturerDataHex {
+                Text("Manufacturer: \(manufacturerDataHex)")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .padding(.vertical, 3)
     }
 }
 #endif

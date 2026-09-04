@@ -1805,7 +1805,8 @@
 "settings.smart_cube.reset_never" = "Keep Cube State";
 "settings.smart_cube.ready_sound" = "Ready Sound";
 "settings.smart_cube.debug_mode" = "Debug Mode";
-"smart_cube.timer.disconnected" = "Connect a smart cube in Settings";
+"smart_cube.timer.disconnected" = "Bitte verbinde einen Smart Cube";
+"smart_cube.timer.connect" = "Würfel verbinden";
 "smart_cube.timer.solving" = "Solving";
 "smart_cube.timer.ready" = "Ready — turn to start";
 "smart_cube.timer.scramble" = "Complete the scramble";
@@ -1948,3 +1949,32 @@
 "settings.numeral_system.urdu" = "Urdu";
 "settings.numeral_system.simplifiedChinese" = "Vereinfachtes Chinesisch";
 "settings.numeral_system.traditionalChinese" = "Traditionelles Chinesisch";
+
+"settings.smart_cube.display" = "Display";
+"settings.smart_cube.show_virtual_cube" = "Show Virtual Cube";
+"settings.smart_cube.timer_position" = "Timer Position";
+"settings.smart_cube.timer_position.left" = "Left";
+"settings.smart_cube.timer_position.right" = "Right";
+"settings.smart_cube.scramble_progress" = "Scramble Progress";
+"settings.smart_cube.completed_moves" = "Completed Moves";
+"settings.smart_cube.completed_moves.collapse" = "Collapse";
+"settings.smart_cube.completed_moves.trail" = "Trail";
+"settings.smart_cube.transition" = "Transition";
+"settings.smart_cube.transition.blur" = "Blur";
+"settings.smart_cube.transition.fade" = "Fade";
+"settings.smart_cube.transition.slide" = "Slide";
+"settings.smart_cube.transition.bounce" = "Bounce";
+"settings.smart_cube.transition.instant" = "Instant";
+
+"smart_cube.timer.deviated" = "Scramble does not match";
+
+"settings.smart_cube.current_move" = "Aktueller Zug";
+"settings.smart_cube.current_move.none" = "Keine";
+"settings.smart_cube.current_move.highlight" = "Hervorheben";
+
+"settings.smart_cube.highlight_color" = "Hervorhebungsfarbe";
+"settings.smart_cube.highlight_text" = "Hervorhebungstext";
+"settings.smart_cube.highlight_mode.automatic" = "Automatisch";
+"settings.smart_cube.highlight_mode.custom" = "Benutzerdefiniert";
+"settings.smart_cube.highlight_color.custom" = "Eigene Hervorhebungsfarbe";
+"settings.smart_cube.highlight_text.custom" = "Eigene Textfarbe";

@@ -40,6 +40,14 @@ private struct GANBufferedMove: Equatable {
     let move: SmartCubeMoveEvent
 }
 
+private struct IntervalMove {
+    let move: String
+    let serial: Int?
+    let face: Int?
+    let direction: Int?
+    let intervalMilliseconds: Int
+}
+
 final class GANCubeCipher {
     private let key: [UInt8]
     private let iv: [UInt8]
@@ -126,7 +134,10 @@ final class GANCubeProtocolParser {
     private var ganLatestMoveCount: Int?
     private var ganMoveBuffer: [GANBufferedMove] = []
     private var ganHistoryRequestDates: [String: Date] = [:]
+    private var ganLastEmittedMove: SmartCubeMoveEvent?
     private var moYuPreviousMoveCount: Int?
+    private var intervalDeviceTimeMilliseconds = 0
+    private var absoluteDeviceClockAnchor: (milliseconds: Int, date: Date)?
     private var hardwareInfo: [Int: String] = [:]
 
     init(kind: SmartCubeProtocolKind) {
@@ -140,6 +151,9 @@ final class GANCubeProtocolParser {
         ganLatestMoveCount = nil
         ganMoveBuffer.removeAll()
         ganHistoryRequestDates.removeAll()
+        ganLastEmittedMove = nil
+        intervalDeviceTimeMilliseconds = 0
+        absoluteDeviceClockAnchor = nil
     }
 
     func commandMessage(for command: GANCubeCommand) -> [UInt8]? {
@@ -230,7 +244,7 @@ final class GANCubeProtocolParser {
         switch eventType {
         case 0xA1:
             let modelBytes = Array(message.dropFirst().prefix(8)).filter { $0 != 0 }
-            let model = String(bytes: modelBytes, encoding: .ascii) ?? "WCU_MY32"
+            let model = String(bytes: modelBytes, encoding: .ascii) ?? "MoYu"
             let hardware = "\(model) HW \(byte(message, 9)).\(byte(message, 10)) SW \(byte(message, 11)).\(byte(message, 12))"
             return [.hardware(hardware)]
         case 0xA3:
@@ -272,23 +286,25 @@ final class GANCubeProtocolParser {
         guard moveDiff > 0 else { return [] }
 
         var moves: [String] = []
+        var intervals: [Int] = []
         for index in 0..<5 {
             let moveValue = readBitWord(bytes: message, startBit: 96 + index * 5, bitLength: 5)
             guard let moveName = Self.moYuMoveName(moveValue) else { return [] }
             moves.append(moveName)
+            intervals.append(readBitWord(bytes: message, startBit: 8 + index * 16, bitLength: 16))
         }
 
         let now = Date()
-        return stride(from: moveDiff - 1, through: 0, by: -1).map { index in
-            .move(SmartCubeMoveEvent(
+        let entries = stride(from: moveDiff - 1, through: 0, by: -1).map { index in
+            IntervalMove(
                 move: moves[index],
-                serial: moveCount,
+                serial: (moveCount - index) & 0xFF,
                 face: nil,
                 direction: nil,
-                localTimestamp: now,
-                cubeTimestampMilliseconds: nil
-            ))
+                intervalMilliseconds: intervals[index]
+            )
         }
+        return intervalTimedEvents(entries, receivedAt: now).map(SmartCubeParsedEvent.move)
     }
 
     private func handleGen4(_ message: [UInt8]) -> [SmartCubeParsedEvent] {
@@ -304,13 +320,13 @@ final class GANCubeProtocolParser {
             let face = [2, 32, 8, 1, 16, 4].firstIndex(of: view.word(66, 6))
             guard let face else { return [] }
             let move = moveString(face: face, direction: direction)
-            let event = SmartCubeMoveEvent(
+            let event = absoluteTimedMoveEvent(
                 move: move,
                 serial: serial,
                 face: face,
                 direction: direction,
-                localTimestamp: Date(),
-                cubeTimestampMilliseconds: cubeTimestamp
+                cubeTimestampMilliseconds: cubeTimestamp,
+                receivedAt: Date()
             )
             return [.debug("GAN Gen4 0x01", "count \(serial & 0xFF), move \(move), ts \(cubeTimestamp)")]
                 + enqueueGANMove(event, count: serial, requestLostMoves: true)
@@ -357,22 +373,30 @@ final class GANCubeProtocolParser {
 
         switch eventType {
         case 0x02:
-            guard lastSerial != nil else { return [] }
+            guard let previousSerial = lastSerial else { return [] }
             let serial = view.word(4, 8)
-            let face = view.word(12, 4)
-            let direction = view.word(16, 1)
-            guard face >= 0, face < 6 else { return [] }
-            let elapsed = view.word(47, 16)
-            let event = SmartCubeMoveEvent(
-                move: moveString(face: face, direction: direction),
-                serial: serial,
-                face: face,
-                direction: direction,
-                localTimestamp: Date(),
-                cubeTimestampMilliseconds: elapsed
-            )
+            let moveDiff = min((serial - previousSerial) & 0xFF, 7)
+            guard moveDiff > 0 else { return [] }
+
+            var recentMoves: [IntervalMove] = []
+            for index in 0..<7 {
+                let moveValue = view.word(12 + index * 5, 5)
+                let face = moveValue >> 1
+                let direction = moveValue & 1
+                guard face >= 0, face < 6 else { return [] }
+                recentMoves.append(IntervalMove(
+                    move: moveString(face: face, direction: direction),
+                    serial: (serial - index) & 0xFF,
+                    face: face,
+                    direction: direction,
+                    intervalMilliseconds: view.word(47 + index * 16, 16)
+                ))
+            }
+
+            let entries = stride(from: moveDiff - 1, through: 0, by: -1).map { recentMoves[$0] }
+            let events = intervalTimedEvents(entries, receivedAt: Date()).map(SmartCubeParsedEvent.move)
             lastSerial = serial
-            return [.move(event)]
+            return events
         case 0x04:
             return faceletsEvent(view: view, serialBit: 4, cornerStart: 12, cornerOrientationStart: 33, edgeStart: 47, edgeOrientationStart: 91)
         case 0x05:
@@ -403,7 +427,14 @@ final class GANCubeProtocolParser {
             let direction = view.word(72, 2)
             let face = [2, 32, 8, 1, 16, 4].firstIndex(of: view.word(74, 6))
             guard let face else { return [] }
-            let event = SmartCubeMoveEvent(move: moveString(face: face, direction: direction), serial: serial, face: face, direction: direction, localTimestamp: Date(), cubeTimestampMilliseconds: cubeTimestamp)
+            let event = absoluteTimedMoveEvent(
+                move: moveString(face: face, direction: direction),
+                serial: serial,
+                face: face,
+                direction: direction,
+                cubeTimestampMilliseconds: cubeTimestamp,
+                receivedAt: Date()
+            )
             return [.debug("GAN Gen3 0x01", "count \(serial & 0xFF), move \(event.move), ts \(cubeTimestamp)")]
                 + enqueueGANMove(event, count: serial, requestLostMoves: true)
         case 0x02:
@@ -495,7 +526,11 @@ final class GANCubeProtocolParser {
             let count = (startMoveCount - index) & 0xFF
             historyMoves.append("\(count):\(moveName)")
             injectGANHistoryMove(
-                SmartCubeMoveEvent(move: moveName, serial: count, face: nil, direction: direction, localTimestamp: Date(), cubeTimestampMilliseconds: nil),
+                reconstructedGANHistoryMove(
+                    move: moveName,
+                    serial: count,
+                    direction: direction
+                ),
                 count: count,
                 events: &events
             )
@@ -521,7 +556,11 @@ final class GANCubeProtocolParser {
             let count = (startMoveCount - index) & 0xFF
             historyMoves.append("\(count):\(moveName)")
             injectGANHistoryMove(
-                SmartCubeMoveEvent(move: moveName, serial: count, face: nil, direction: direction, localTimestamp: Date(), cubeTimestampMilliseconds: nil),
+                reconstructedGANHistoryMove(
+                    move: moveName,
+                    serial: count,
+                    direction: direction
+                ),
                 count: count,
                 events: &events
             )
@@ -620,6 +659,7 @@ final class GANCubeProtocolParser {
             let buffered = ganMoveBuffer.removeFirst()
             ganPreviousMoveCount = buffered.count
             lastSerial = buffered.move.serial
+            ganLastEmittedMove = buffered.move
             events.append(.debug("GAN emit", "count \(buffered.count), move \(buffered.move.move)"))
             events.append(.move(buffered.move))
         }
@@ -640,6 +680,109 @@ final class GANCubeProtocolParser {
         if ganMoveBuffer.count > 16 {
             ganMoveBuffer.removeFirst(ganMoveBuffer.count - 16)
         }
+    }
+
+    private func reconstructedGANHistoryMove(
+        move: String,
+        serial: Int,
+        direction: Int
+    ) -> SmartCubeMoveEvent {
+        let nextDate = ganMoveBuffer.first?.move.localTimestamp
+        let previousDate = ganLastEmittedMove?.localTimestamp
+        let timestamp: Date
+        if let nextDate {
+            timestamp = nextDate.addingTimeInterval(-0.001)
+        } else if let previousDate {
+            timestamp = previousDate.addingTimeInterval(0.001)
+        } else {
+            timestamp = Date()
+        }
+        return SmartCubeMoveEvent(
+            move: move,
+            serial: serial,
+            face: nil,
+            direction: direction,
+            localTimestamp: timestamp,
+            cubeTimestampMilliseconds: nil,
+            timestampSource: .reconstructed
+        )
+    }
+
+    private func intervalTimedEvents(
+        _ entries: [IntervalMove],
+        receivedAt: Date
+    ) -> [SmartCubeMoveEvent] {
+        var timedEntries: [(entry: IntervalMove, milliseconds: Int)] = []
+        for entry in entries {
+            intervalDeviceTimeMilliseconds += max(entry.intervalMilliseconds, 0)
+            timedEntries.append((entry, intervalDeviceTimeMilliseconds))
+        }
+        guard let latestMilliseconds = timedEntries.last?.milliseconds else { return [] }
+
+        return timedEntries.map { timed in
+            let delay = TimeInterval(latestMilliseconds - timed.milliseconds) / 1_000
+            return SmartCubeMoveEvent(
+                move: timed.entry.move,
+                serial: timed.entry.serial,
+                face: timed.entry.face,
+                direction: timed.entry.direction,
+                localTimestamp: receivedAt.addingTimeInterval(-delay),
+                cubeTimestampMilliseconds: timed.milliseconds,
+                timestampSource: .deviceClock
+            )
+        }
+    }
+
+    private func absoluteTimedMoveEvent(
+        move: String,
+        serial: Int?,
+        face: Int?,
+        direction: Int?,
+        cubeTimestampMilliseconds: Int,
+        receivedAt: Date
+    ) -> SmartCubeMoveEvent {
+        if absoluteDeviceClockAnchor == nil {
+            absoluteDeviceClockAnchor = (cubeTimestampMilliseconds, receivedAt)
+        }
+
+        var localTimestamp = receivedAt
+        if let anchor = absoluteDeviceClockAnchor,
+           let delta = Self.deviceClockDelta(
+               from: anchor.milliseconds,
+               to: cubeTimestampMilliseconds,
+               allowsZero: true
+           ) {
+            let projected = anchor.date.addingTimeInterval(TimeInterval(delta) / 1_000)
+            if abs(projected.timeIntervalSince(receivedAt)) <= 2 {
+                localTimestamp = projected
+            } else {
+                absoluteDeviceClockAnchor = (cubeTimestampMilliseconds, receivedAt)
+            }
+        }
+
+        return SmartCubeMoveEvent(
+            move: move,
+            serial: serial,
+            face: face,
+            direction: direction,
+            localTimestamp: localTimestamp,
+            cubeTimestampMilliseconds: cubeTimestampMilliseconds,
+            timestampSource: .deviceClock
+        )
+    }
+
+    private static func deviceClockDelta(
+        from start: Int,
+        to end: Int,
+        allowsZero: Bool
+    ) -> Int? {
+        let direct = end - start
+        if direct > 0 || (allowsZero && direct == 0) { return direct }
+        guard start >= 0, end >= 0 else { return nil }
+        let modulus = Int(UInt32.max) + 1
+        let wrapped = end + modulus - start
+        guard wrapped > 0, wrapped < modulus / 2 else { return nil }
+        return wrapped
     }
 
 
