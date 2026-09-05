@@ -2011,6 +2011,7 @@
 "settings.smart_cube.transition.instant" = "立即";
 
 "smart_cube.timer.deviated" = "打乱状态不匹配";
+"smart_cube.timer.recovery" = "恢复";
 
 "settings.smart_cube.current_move" = "当前步骤";
 "settings.smart_cube.current_move.none" = "无";
@@ -2022,3 +2023,9 @@
 "settings.smart_cube.highlight_mode.custom" = "自定义";
 "settings.smart_cube.highlight_color.custom" = "自定义高亮颜色";
 "settings.smart_cube.highlight_text.custom" = "自定义高亮文字";
+"settings.smart_cube.recovery_display" = "恢复显示";
+"settings.smart_cube.recovery_display.separate" = "独立";
+"settings.smart_cube.recovery_display.inline" = "行内";
+"settings.smart_cube.highlight_animation" = "高亮动画";
+"settings.smart_cube.highlight_animation.instant" = "立即";
+"settings.smart_cube.highlight_animation.animated" = "动画";

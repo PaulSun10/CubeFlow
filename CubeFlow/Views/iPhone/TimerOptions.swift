@@ -970,7 +970,7 @@ enum SmartCubeFixedView: String, CaseIterable, Identifiable {
     var yaw: Float {
         switch self {
         case .uf: 0
-        case .urf: 0.68
+        case .urf: -0.68
         }
     }
 }

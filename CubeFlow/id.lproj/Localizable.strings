@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "Koreksi";
 
 "settings.smart_cube.current_move" = "Gerakan Saat Ini";
 "settings.smart_cube.current_move.none" = "Tidak Ada";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "Kustom";
 "settings.smart_cube.highlight_color.custom" = "Warna Sorotan Kustom";
 "settings.smart_cube.highlight_text.custom" = "Teks Sorotan Kustom";
+"settings.smart_cube.recovery_display" = "Tampilan Pemulihan";
+"settings.smart_cube.recovery_display.separate" = "Terpisah";
+"settings.smart_cube.recovery_display.inline" = "Sebaris";
+"settings.smart_cube.highlight_animation" = "Animasi Sorotan";
+"settings.smart_cube.highlight_animation.instant" = "Instan";
+"settings.smart_cube.highlight_animation.animated" = "Beranimasi";

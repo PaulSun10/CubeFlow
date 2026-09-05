@@ -137,6 +137,8 @@ struct TimerTabView: View {
     @AppStorage("smartCubeHighlightTextColorData") private var smartCubeHighlightTextColorData: Data?
     @AppStorage("smartCubeCompletedMovesBehavior") private var smartCubeCompletedMovesBehaviorRawValue = SmartCubeCompletedMovesBehavior.collapse.rawValue
     @AppStorage("smartCubeScrambleTransition") private var smartCubeScrambleTransitionRawValue = SmartCubeScrambleTransition.blur.rawValue
+    @AppStorage("smartCubeRecoveryDisplay") private var smartCubeRecoveryDisplayRawValue = SmartCubeRecoveryDisplay.separate.rawValue
+    @AppStorage("smartCubeHighlightAnimation") private var smartCubeHighlightAnimationRawValue = SmartCubeHighlightAnimation.animated.rawValue
 
     @State private var selectedEvent: PuzzleEvent = .threeByThree
     @State private var elapsedSeconds: Double = 0
@@ -210,6 +212,9 @@ struct TimerTabView: View {
     @State private var timerTopControlsHeight: CGFloat = 0
     @State private var smartCubeScrambleProgress: SmartCubeScrambleProgress?
     @State private var smartCubeScrambleEpoch = SmartCubeScrambleEpoch()
+    @State private var smartCubeRecoveryState = SmartCubeRecoveryPresentationState.inactive
+    @State private var smartCubeRecoveryTask: Task<Void, Never>?
+    @State private var smartCubeHighlightedTokenIndex: Int?
     @State private var smartCubeSolveLifecycle = SmartCubeSolveLifecycle()
     @State private var smartCubeSolveStartMove: SmartCubeMoveEvent?
     @State private var smartCubeIsReady = false
@@ -352,9 +357,11 @@ struct TimerTabView: View {
                     tokens: smartCubeScrambleProgress.tokens,
                     completedTokenIndices: smartCubeScrambleProgress.completedTokenIndices,
                     highlightedTokenIndex: resolvedSmartCubeCurrentMovePresentation == .highlight
-                        ? smartCubeScrambleProgress.currentMoveTokenIndex
+                        ? smartCubeHighlightedTokenIndex
                         : nil,
-                    isDeviated: smartCubeScrambleProgress.isDeviated,
+                    recoveryPlan: smartCubeRecoveryState.plan,
+                    recoveryDisplay: resolvedSmartCubeRecoveryDisplay,
+                    highlightAnimation: resolvedSmartCubeHighlightAnimation,
                     behavior: resolvedSmartCubeCompletedMovesBehavior,
                     transition: resolvedSmartCubeScrambleTransition,
                     fontDesign: resolvedScrambleTextFontDesign,
@@ -564,6 +571,14 @@ struct TimerTabView: View {
             storedRawValue: smartCubeScrambleTransitionRawValue,
             behavior: resolvedSmartCubeCompletedMovesBehavior
         )
+    }
+
+    private var resolvedSmartCubeRecoveryDisplay: SmartCubeRecoveryDisplay {
+        SmartCubeRecoveryDisplay.resolved(smartCubeRecoveryDisplayRawValue)
+    }
+
+    private var resolvedSmartCubeHighlightAnimation: SmartCubeHighlightAnimation {
+        SmartCubeHighlightAnimation(rawValue: smartCubeHighlightAnimationRawValue) ?? .animated
     }
 
     private var resolvedSmartCubeTimerPosition: SmartCubeTimerPosition {
@@ -967,6 +982,7 @@ struct TimerTabView: View {
         if isRunning { return "smart_cube.timer.solving" }
         if isInspecting { return "timer.inspect" }
         if smartCubeIsReady { return "smart_cube.timer.ready" }
+        if smartCubeRecoveryState.plan != nil { return "smart_cube.timer.recovery" }
         return "smart_cube.timer.scramble"
     }
 
@@ -975,6 +991,7 @@ struct TimerTabView: View {
         if isRunning { return "timer" }
         if isInspecting { return "timer" }
         if smartCubeIsReady { return "checkmark.circle.fill" }
+        if smartCubeRecoveryState.plan != nil { return "arrow.uturn.backward.circle.fill" }
         return "arrow.triangle.2.circlepath"
     }
 
@@ -1184,6 +1201,9 @@ struct TimerTabView: View {
                 normalizeUnavailableFontSelections()
                 updateTimerAppearances()
                 updateTimerBackgroundImage()
+                if enteringTimesWith == "smartCube" {
+                    rehydrateSmartCubePresentation()
+                }
             }
             .compatibleNavigationBarHidden()
         }
@@ -1193,7 +1213,8 @@ struct TimerTabView: View {
         let restoredEvent = synchronizeSelectedSession(idRawValue: selectedSessionID)
         refreshSolveSnapshots(for: restoredEvent)
         refreshStreakSnapshots()
-        if currentScramble.isEmpty {
+        if currentScramble.isEmpty,
+           !(enteringTimesWith == "smartCube" && restoreStoredSmartCubePresentation()) {
             generateNewScramble()
         }
         if enteringTimesWith == "gan" {
@@ -1201,7 +1222,11 @@ struct TimerTabView: View {
         } else if enteringTimesWith == "smartCube" {
             smartCubeTimingWasActive = true
             smartCube.prepareIfNeeded()
-            prepareSmartCubeScrambleTarget()
+            if smartCubeScrambleProgress == nil {
+                prepareSmartCubeScrambleTarget()
+            } else {
+                rehydrateSmartCubePresentation()
+            }
         }
     }
 
@@ -1224,6 +1249,8 @@ struct TimerTabView: View {
         .onDisappear {
             invalidateTimer()
             invalidateLocalBattleTimer()
+            cacheSmartCubePresentation()
+            cancelSmartCubeRecoveryTask()
             nearbyBattleManager.stop()
         }
         .onChange(of: enteringTimesWith) { newValue in
@@ -1242,17 +1269,21 @@ struct TimerTabView: View {
                 if wasUsingSmartCube { generateNewScramble() }
             }
         }
-        .onChange(of: currentScramble) { _ in
+        .onChange(of: currentScramble) { newScramble in
             guard enteringTimesWith == "smartCube" else { return }
+            if let snapshot = SmartCubeTimerPresentationStore.shared.snapshot(matching: newScramble),
+               snapshot.progress == smartCubeScrambleProgress {
+                rehydrateSmartCubePresentation()
+                return
+            }
             prepareSmartCubeScrambleTarget()
         }
         .onChange(of: smartCube.facelets) { facelets in
-            guard enteringTimesWith == "smartCube", let facelets else { return }
-            handleSmartCubeFacelets(facelets)
+            guard enteringTimesWith == "smartCube" else { return }
+            consumePendingSmartCubeUpdates()
         }
-        .onChange(of: smartCube.latestMove) { move in
-            guard enteringTimesWith == "smartCube", let move else { return }
-            handleSmartCubeMove(move)
+        .onReceive(smartCube.canonicalEvents) { event in
+            consumeSmartCubeEvent(event)
         }
         .onChange(of: ganTimer.connectionState) { newValue in
             handleGANTimerStateChange(newValue)
@@ -1488,6 +1519,10 @@ struct TimerTabView: View {
     }
 
     private func prepareSmartCubeScrambleTarget() {
+        smartCubeRecoveryDisplayRawValue = resolvedSmartCubeRecoveryDisplay.rawValue
+        if smartCubeReadySound { SmartCubeReadySoundPlayer.shared.prepare() }
+        cancelSmartCubeRecovery()
+        SmartCubeTimerPresentationStore.shared.clear()
         guard currentScramble != "…",
               let progress = SmartCubeScrambleProgress(scramble: currentScramble)
         else {
@@ -1510,35 +1545,108 @@ struct TimerTabView: View {
         smartCubeScrambleProgress = progress
         smartCubeScrambleEpoch.establish(
             at: .now,
-            latestMoveID: smartCube.latestMove?.id
+            latestMoveID: smartCube.latestMove?.id,
+            canonicalSequence: smartCube.canonicalSequence
         )
         smartCubeSolveLifecycle.reset()
         smartCubeSolveStartMove = nil
         smartCubeIsReady = false
-        if let facelets = smartCube.facelets {
+        if let facelets = smartCube.facelets, smartCube.hasTrustedCanonicalState {
             handleSmartCubeFacelets(facelets)
+        } else {
+            cacheSmartCubePresentation()
         }
     }
 
-    private func handleSmartCubeFacelets(_ facelets: String) {
+    private func handleSmartCubeFacelets(
+        _ facelets: String,
+        canonicalMove: String? = nil,
+        completingMoveID: UUID? = nil
+    ) {
         if isRunning {
-            guard facelets == SmartCubeBluetoothManager.solvedFacelets else { return }
-            finishSmartCubeSolve()
+            // Snapshots are not physical completion evidence. Only the ordered
+            // continuous move path below may finish an active solve.
             return
         }
 
         guard var progress = smartCubeScrambleProgress else {
+            cancelSmartCubeRecovery()
             smartCubeIsReady = false
             return
         }
 
-        _ = progress.update(with: facelets)
-        updateSmartCubeProgress(progress)
+        if progress.isDeviated,
+           smartCubeRecoveryState.sourceFacelets == facelets,
+           canonicalMove == nil {
+            return
+        }
+
+        let previousRecoveryPlan = smartCubeRecoveryState.plan
+        let recoveryIdentity: SmartCubeRecoveryPlanIdentity
+        if smartCubeRecoveryState.sourceFacelets != facelets {
+            recoveryIdentity = smartCubeScrambleEpoch.advanceRecoveryStateVersion()
+        } else if let currentIdentity = smartCubeRecoveryState.identity {
+            recoveryIdentity = currentIdentity
+        } else {
+            recoveryIdentity = smartCubeScrambleEpoch.advanceRecoveryStateVersion()
+        }
+        cancelSmartCubeRecoveryTask()
+        _ = progress.update(with: facelets, canonicalMove: canonicalMove)
+
+        if progress.isDeviated {
+            let trailPlan = progress.guaranteedRecoveryPlan(
+                identity: recoveryIdentity,
+                sourceFacelets: facelets
+            )
+            let continuedPlan = canonicalMove.flatMap { canonicalMove in
+                previousRecoveryPlan.flatMap {
+                    SmartCubeRecoveryEngine.advancedPlan(
+                        from: $0,
+                        by: canonicalMove,
+                        identity: recoveryIdentity,
+                        sourceFacelets: facelets
+                    )
+                }
+            }
+            let guaranteedPlan: SmartCubeRecoveryPlan?
+            if let continuedPlan,
+               continuedPlan.totalCost <= (trailPlan?.totalCost ?? .max) {
+                guaranteedPlan = continuedPlan
+            } else {
+                guaranteedPlan = trailPlan
+            }
+            let recoveryState: SmartCubeRecoveryPresentationState
+            if let guaranteedPlan {
+                recoveryState = .recovery(guaranteedPlan)
+            } else if canonicalMove == nil {
+                recoveryState = .searching(
+                    identity: recoveryIdentity,
+                    sourceFacelets: facelets
+                )
+            } else {
+                recoveryState = .unavailable(
+                    identity: recoveryIdentity,
+                    sourceFacelets: facelets
+                )
+            }
+            publishSmartCubePresentation(progress: progress, recoveryState: recoveryState)
+            if let guaranteedPlan,
+               SmartCubeRecoveryEngine.shouldSearchForShortcut(to: guaranteedPlan) {
+                beginSmartCubeRecoverySearch(
+                    from: facelets,
+                    checkpoints: progress.recoveryCheckpoints,
+                    identity: recoveryIdentity
+                )
+            }
+            return
+        }
+
+        publishSmartCubePresentation(progress: progress, recoveryState: .inactive)
 
         guard progress.isComplete else { return }
         let action = smartCubeScrambleEpoch.completionAction(
             inspectionEnabled: wcaInspectionEnabled,
-            completingMoveID: smartCube.latestMove?.id,
+            completingMoveID: completingMoveID ?? smartCube.latestMove?.id,
             lifecycle: &smartCubeSolveLifecycle
         )
         guard action != .none else { return }
@@ -1559,18 +1667,76 @@ struct TimerTabView: View {
         }
     }
 
-    private func handleSmartCubeMove(_ move: SmartCubeMoveEvent) {
+    private func consumePendingSmartCubeUpdates() {
+        for event in smartCube.canonicalHistory {
+            consumeSmartCubeEvent(event)
+        }
+    }
+
+    private func consumeSmartCubeEvent(_ event: SmartCubeCanonicalEvent) {
+        guard enteringTimesWith == "smartCube" else { return }
+        switch smartCubeScrambleEpoch.consumeEvent(event) {
+        case .ignored:
+            return
+        case .boundary(let reason, let facelets):
+            handleSmartCubeContinuityBreak(reason, facelets: facelets)
+        case .move(let update):
+            consumeSmartCubeUpdate(update)
+        }
+    }
+
+    private func handleSmartCubeContinuityBreak(_ reason: SmartCubeContinuityReason, facelets: String?) {
+        #if DEBUG
+        SmartCubeDiagnostics.shared.interrupted(reason)
+        #endif
+        cancelSmartCubeRecovery()
+        // An incomplete interval cannot be saved as a measured solve.
+        if isRunning || isInspecting {
+            invalidateTimer()
+            isRunning = false
+            isInspecting = false
+            timerStartDate = nil
+            inspectionStartDate = nil
+            inspectionElapsed = 0
+            announcedInspectionCheckpoints = []
+            currentSolveInspectionPenalty = nil
+            elapsedSeconds = 0
+        }
+        smartCubeSolveLifecycle.reset()
+        smartCubeSolveStartMove = nil
+        smartCubeIsReady = false
+        if var progress = smartCubeScrambleProgress {
+            progress.breakContinuity(at: facelets)
+            publishSmartCubePresentation(progress: progress, recoveryState: .inactive)
+        }
+    }
+
+    private func consumeSmartCubeUpdate(_ update: SmartCubeCanonicalUpdate) {
+        #if DEBUG
+        SmartCubeDiagnostics.shared.mark("timer.consume", id: update.move.id)
+        #endif
+        if isRunning {
+            if let endMove = SmartCubeCanonicalEvent.move(update).solveCompletingMove {
+                finishSmartCubeSolve(endMove: endMove)
+            }
+        } else {
+            handleSmartCubeMove(update.move, facelets: update.facelets)
+        }
+    }
+
+    private func handleSmartCubeMove(_ move: SmartCubeMoveEvent, facelets: String) {
         guard !isRunning, !showingResultPopup else { return }
         guard smartCubeScrambleEpoch.observePhysicalMove(move) else { return }
         if smartCubeSolveLifecycle.phase == .scrambling {
-            if let facelets = smartCube.facelets {
-                handleSmartCubeFacelets(facelets)
-            }
+            handleSmartCubeFacelets(facelets, canonicalMove: move.move, completingMoveID: move.id)
             return
         }
         guard case .startTiming(let startMove) = smartCubeSolveLifecycle.physicalMoveDidOccur(move) else {
             return
         }
+        #if DEBUG
+        SmartCubeDiagnostics.shared.begin(startMove)
+        #endif
 
         smartCubeIsReady = false
         if isInspecting {
@@ -1588,13 +1754,172 @@ struct TimerTabView: View {
         startDisplayTimer()
     }
 
+    private func publishSmartCubePresentation(
+        progress: SmartCubeScrambleProgress,
+        recoveryState: SmartCubeRecoveryPresentationState
+    ) {
+        let highlightedTokenIndex = recoveryState.plan == nil
+            ? progress.currentMoveTokenIndex
+            : nil
+
+        if resolvedSmartCubeHighlightAnimation.updatesImmediately {
+            var transaction = Transaction()
+            transaction.animation = nil
+            withTransaction(transaction) {
+                smartCubeRecoveryState = recoveryState
+                smartCubeHighlightedTokenIndex = highlightedTokenIndex
+            }
+            updateSmartCubeProgress(progress)
+        } else if let animation = smartCubeProgressAnimation {
+            withAnimation(animation) {
+                smartCubeRecoveryState = recoveryState
+                smartCubeHighlightedTokenIndex = highlightedTokenIndex
+                smartCubeScrambleProgress = progress
+            }
+        } else {
+            smartCubeRecoveryState = recoveryState
+            smartCubeHighlightedTokenIndex = highlightedTokenIndex
+            smartCubeScrambleProgress = progress
+        }
+        cacheSmartCubePresentation()
+    }
+
     private func updateSmartCubeProgress(_ progress: SmartCubeScrambleProgress) {
         guard let animation = smartCubeProgressAnimation else {
             smartCubeScrambleProgress = progress
             return
         }
-        withAnimation(animation) {
-            smartCubeScrambleProgress = progress
+        withAnimation(animation) { smartCubeScrambleProgress = progress }
+    }
+
+    private func beginSmartCubeRecoverySearch(
+        from facelets: String,
+        checkpoints: [SmartCubeRecoveryCheckpoint],
+        identity: SmartCubeRecoveryPlanIdentity
+    ) {
+        let request = SmartCubeRecoveryRequest(
+            identity: identity,
+            sourceFacelets: facelets,
+            checkpoints: checkpoints,
+            maximumCost: SmartCubeRecoveryEngine.defaultMaximumCost
+        )
+        smartCubeRecoveryTask = Task(priority: .userInitiated) {
+            let plan = await SmartCubeRecoveryEngine.plan(for: request)
+            guard !Task.isCancelled,
+                  smartCubeScrambleEpoch.currentRecoveryIdentity == identity
+            else { return }
+            smartCubeRecoveryTask = nil
+            guard let progress = smartCubeScrambleProgress,
+                  progress.isDeviated,
+                  smartCubeRecoveryState.identity == identity,
+                  smartCubeRecoveryState.sourceFacelets == facelets,
+                  smartCube.facelets == facelets
+            else { return }
+
+            guard let plan else { return }
+            guard SmartCubeRecoveryEngine.resultIsCurrent(
+                    plan,
+                    identity: identity,
+                    facelets: facelets,
+                    isDeviated: true
+                  )
+            else { return }
+            guard let currentPlan = smartCubeRecoveryState.plan,
+                  SmartCubeRecoveryEngine.prefers(plan, over: currentPlan)
+            else {
+                return
+            }
+            publishSmartCubeRecoveryPlan(plan)
+        }
+    }
+
+    private func publishSmartCubeRecoveryPlan(_ plan: SmartCubeRecoveryPlan) {
+        if resolvedSmartCubeHighlightAnimation == .animated {
+            withAnimation(.easeOut(duration: 0.18)) {
+                smartCubeRecoveryState = .recovery(plan)
+            }
+        } else {
+            var transaction = Transaction()
+            transaction.animation = nil
+            withTransaction(transaction) {
+                smartCubeRecoveryState = .recovery(plan)
+            }
+        }
+        cacheSmartCubePresentation()
+    }
+
+    private func cancelSmartCubeRecoveryTask() {
+        smartCubeRecoveryTask?.cancel()
+        smartCubeRecoveryTask = nil
+    }
+
+    private func cancelSmartCubeRecovery() {
+        cancelSmartCubeRecoveryTask()
+        smartCubeRecoveryState = .inactive
+        smartCubeHighlightedTokenIndex = smartCubeScrambleProgress?.currentMoveTokenIndex
+    }
+
+    private func cacheSmartCubePresentation() {
+        guard enteringTimesWith == "smartCube",
+              !currentScramble.isEmpty,
+              let progress = smartCubeScrambleProgress
+        else { return }
+        SmartCubeTimerPresentationStore.shared.save(
+            scramble: currentScramble,
+            progress: progress,
+            epoch: smartCubeScrambleEpoch,
+            recoveryState: smartCubeRecoveryState
+        )
+    }
+
+    @discardableResult
+    private func restoreStoredSmartCubePresentation() -> Bool {
+        guard let snapshot = SmartCubeTimerPresentationStore.shared.snapshot else { return false }
+        currentScramble = snapshot.scramble
+        smartCubeScrambleProgress = snapshot.progress
+        smartCubeScrambleEpoch = snapshot.epoch
+        smartCubeRecoveryState = snapshot.recoveryState
+        smartCubeHighlightedTokenIndex = snapshot.recoveryState.plan == nil
+            ? snapshot.progress.currentMoveTokenIndex
+            : nil
+        return true
+    }
+
+    private func rehydrateSmartCubePresentation() {
+        guard enteringTimesWith == "smartCube", !isRunning else { return }
+        if smartCubeScrambleProgress == nil {
+            _ = restoreStoredSmartCubePresentation()
+        }
+        consumePendingSmartCubeUpdates()
+        guard var progress = smartCubeScrambleProgress else { return }
+
+        cancelSmartCubeRecoveryTask()
+        guard let facelets = smartCube.facelets, smartCube.hasTrustedCanonicalState else {
+            smartCubeHighlightedTokenIndex = progress.currentMoveTokenIndex
+            cacheSmartCubePresentation()
+            return
+        }
+
+        _ = progress.update(with: facelets)
+        let identity = smartCubeScrambleEpoch.advanceRecoveryStateVersion()
+        if progress.isDeviated {
+            let guaranteedPlan = progress.guaranteedRecoveryPlan(
+                identity: identity,
+                sourceFacelets: facelets
+            )
+            let state = guaranteedPlan.map(SmartCubeRecoveryPresentationState.recovery)
+                ?? .unavailable(identity: identity, sourceFacelets: facelets)
+            publishSmartCubePresentation(progress: progress, recoveryState: state)
+            if let guaranteedPlan,
+               SmartCubeRecoveryEngine.shouldSearchForShortcut(to: guaranteedPlan) {
+                beginSmartCubeRecoverySearch(
+                    from: facelets,
+                    checkpoints: progress.recoveryCheckpoints,
+                    identity: identity
+                )
+            }
+        } else {
+            publishSmartCubePresentation(progress: progress, recoveryState: .inactive)
         }
     }
 
@@ -1613,13 +1938,17 @@ struct TimerTabView: View {
         }
     }
 
-    private func finishSmartCubeSolve() {
+    private func finishSmartCubeSolve(endMove: SmartCubeMoveEvent? = nil) {
+        let recognizedAt = Date.now
+        #if DEBUG
+        SmartCubeDiagnostics.shared.mark("solve.recognized", id: endMove?.id)
+        #endif
         guard isRunning,
               let startMove = smartCubeSolveStartMove,
               let timing = SmartCubeSolveTiming.resolved(
                   startMove: startMove,
-                  endMove: smartCube.latestMove,
-                  solvedObservedAt: .now
+                  endMove: endMove ?? smartCube.latestMove,
+                  solvedObservedAt: recognizedAt
               )
         else { return }
         invalidateTimer()
@@ -1635,7 +1964,7 @@ struct TimerTabView: View {
         showingResultPopup = false
 
         guard let selectedSession else { return }
-        _ = Solve(
+        let solve = Solve(
             time: duration,
             date: finishDate,
             scramble: scrambleToSave,
@@ -1644,11 +1973,19 @@ struct TimerTabView: View {
             session: selectedSession,
             context: modelContext
         )
+        #if DEBUG
+        SmartCubeDiagnostics.shared.finish(
+            start: startMove, end: endMove ?? smartCube.latestMove,
+            recognizedAt: recognizedAt, storedSeconds: solve.time, displayedSeconds: elapsedSeconds
+        )
+        #endif
         persistSolveChangesAndRefresh()
         generateNewScramble()
     }
 
     private func resetSmartCubeTimerState() {
+        cancelSmartCubeRecovery()
+        SmartCubeTimerPresentationStore.shared.clear()
         smartCubeScrambleProgress = nil
         smartCubeScrambleEpoch.reset()
         smartCubeSolveLifecycle.reset()
@@ -2361,9 +2698,15 @@ struct TimerTabView: View {
     private func smartCubeCenterComposition(
         geometry: TimerArrangementLayout.Geometry
     ) -> some View {
-        let size = geometry.containerSize
-        let center = geometry.timerCenter
-        let lowerBoundary = smartCubeLowerContentBoundary(geometry: geometry)
+        let size = CGSize(
+            width: SmartCubeLayoutDimensions.length(geometry.containerSize.width),
+            height: SmartCubeLayoutDimensions.length(geometry.containerSize.height)
+        )
+        let center = CGPoint(
+            x: geometry.timerCenter.x.isFinite ? geometry.timerCenter.x : size.width / 2,
+            y: geometry.timerCenter.y.isFinite ? geometry.timerCenter.y : size.height / 2
+        )
+        let lowerBoundary = SmartCubeLayoutDimensions.length(smartCubeLowerContentBoundary(geometry: geometry))
         let verticalRoom = max(0, lowerBoundary - center.y - 12) * 2
         let preferredCubeSize = min(size.width * 0.43, size.height * 0.29, 196)
         let cubeSize = max(96, min(preferredCubeSize, verticalRoom > 0 ? verticalRoom : preferredCubeSize))
@@ -2396,7 +2739,9 @@ struct TimerTabView: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.72)
-                    .frame(width: min(size.width - outerInset * 2, cubeSize + 80))
+                    .frame(width: SmartCubeLayoutDimensions.statusWidth(
+                        containerWidth: size.width, inset: outerInset, cubeSize: cubeSize
+                    ))
                     .position(x: center.x, y: center.y + cubeSize / 2 + 8)
             }
         }

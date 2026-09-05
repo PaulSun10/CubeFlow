@@ -25,6 +25,7 @@ enum GANCubeCommand {
 }
 
 enum SmartCubeParsedEvent {
+    case continuityLost
     case move(SmartCubeMoveEvent)
     case facelets(String, serial: Int)
     case battery(Int)
@@ -134,7 +135,11 @@ final class GANCubeProtocolParser {
     private var ganLatestMoveCount: Int?
     private var ganMoveBuffer: [GANBufferedMove] = []
     private var ganHistoryRequestDates: [String: Date] = [:]
+    private var ganHistoryRequestAttempts: [String: Int] = [:]
+    private var ganActiveHistoryRequestKey: String?
+    private var ganRequestedHistoryCounts: Set<Int> = []
     private var ganLastEmittedMove: SmartCubeMoveEvent?
+    private var canonicalContinuityWasLost = false
     private var moYuPreviousMoveCount: Int?
     private var intervalDeviceTimeMilliseconds = 0
     private var absoluteDeviceClockAnchor: (milliseconds: Int, date: Date)?
@@ -145,12 +150,16 @@ final class GANCubeProtocolParser {
     }
 
     func resetMoveTracking() {
+        canonicalContinuityWasLost = false
         // Mark the local state as trusted so the next live move is accepted immediately after a manual reset.
         lastSerial = 0
         ganPreviousMoveCount = nil
         ganLatestMoveCount = nil
         ganMoveBuffer.removeAll()
         ganHistoryRequestDates.removeAll()
+        ganHistoryRequestAttempts.removeAll()
+        ganActiveHistoryRequestKey = nil
+        ganRequestedHistoryCounts.removeAll()
         ganLastEmittedMove = nil
         intervalDeviceTimeMilliseconds = 0
         absoluteDeviceClockAnchor = nil
@@ -281,7 +290,8 @@ final class GANCubeProtocolParser {
         }
         guard moveCount != previousMoveCount else { return [] }
 
-        let moveDiff = min((moveCount - previousMoveCount) & 0xFF, 5)
+        let reportedMoveDiff = (moveCount - previousMoveCount) & 0xFF
+        let moveDiff = min(reportedMoveDiff, 5)
         moYuPreviousMoveCount = moveCount
         guard moveDiff > 0 else { return [] }
 
@@ -289,7 +299,7 @@ final class GANCubeProtocolParser {
         var intervals: [Int] = []
         for index in 0..<5 {
             let moveValue = readBitWord(bytes: message, startBit: 96 + index * 5, bitLength: 5)
-            guard let moveName = Self.moYuMoveName(moveValue) else { return [] }
+            guard let moveName = Self.moYuMoveName(moveValue) else { return [.continuityLost] }
             moves.append(moveName)
             intervals.append(readBitWord(bytes: message, startBit: 8 + index * 16, bitLength: 16))
         }
@@ -304,7 +314,8 @@ final class GANCubeProtocolParser {
                 intervalMilliseconds: intervals[index]
             )
         }
-        return intervalTimedEvents(entries, receivedAt: now).map(SmartCubeParsedEvent.move)
+        let events = intervalTimedEvents(entries, receivedAt: now).map(SmartCubeParsedEvent.move)
+        return (reportedMoveDiff > 5 ? [.continuityLost] : []) + events
     }
 
     private func handleGen4(_ message: [UInt8]) -> [SmartCubeParsedEvent] {
@@ -375,7 +386,8 @@ final class GANCubeProtocolParser {
         case 0x02:
             guard let previousSerial = lastSerial else { return [] }
             let serial = view.word(4, 8)
-            let moveDiff = min((serial - previousSerial) & 0xFF, 7)
+            let reportedMoveDiff = (serial - previousSerial) & 0xFF
+            let moveDiff = min(reportedMoveDiff, 7)
             guard moveDiff > 0 else { return [] }
 
             var recentMoves: [IntervalMove] = []
@@ -396,7 +408,7 @@ final class GANCubeProtocolParser {
             let entries = stride(from: moveDiff - 1, through: 0, by: -1).map { recentMoves[$0] }
             let events = intervalTimedEvents(entries, receivedAt: Date()).map(SmartCubeParsedEvent.move)
             lastSerial = serial
-            return events
+            return (reportedMoveDiff > 7 ? [.continuityLost] : []) + events
         case 0x04:
             return faceletsEvent(view: view, serialBit: 4, cornerStart: 12, cornerOrientationStart: 33, edgeStart: 47, edgeOrientationStart: 91)
         case 0x05:
@@ -536,9 +548,12 @@ final class GANCubeProtocolParser {
             )
         }
         if !historyMoves.isEmpty {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("history.received", detail: "moves=\(historyMoves.count)")
+            #endif
             events.append(.debug("GAN history received", historyMoves.joined(separator: ", ")))
         }
-        events.append(contentsOf: evictGANMoveBuffer(requestLostMoves: false))
+        events.append(contentsOf: retryPendingGANHistory())
         return events
     }
 
@@ -566,15 +581,25 @@ final class GANCubeProtocolParser {
             )
         }
         if !historyMoves.isEmpty {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("history.received", detail: "moves=\(historyMoves.count)")
+            #endif
             events.append(.debug("GAN history received", historyMoves.joined(separator: ", ")))
         }
-        events.append(contentsOf: evictGANMoveBuffer(requestLostMoves: false))
+        events.append(contentsOf: retryPendingGANHistory())
         return events
     }
 
     private func enqueueGANMove(_ move: SmartCubeMoveEvent, count: Int, requestLostMoves: Bool) -> [SmartCubeParsedEvent] {
         let normalizedCount = count & 0xFF
-        ganLatestMoveCount = normalizedCount
+        if let previous = ganPreviousMoveCount {
+            let distance = (normalizedCount - previous) & 0xFF
+            // Half-range ordering: old/duplicate live packets cannot turn into a 255-move gap.
+            guard distance > 0, distance < 128 else { return [] }
+        }
+        if ganLatestMoveCount == nil || ((normalizedCount - ganLatestMoveCount!) & 0xFF) < 128 {
+            ganLatestMoveCount = normalizedCount
+        }
         if ganPreviousMoveCount == nil {
             ganPreviousMoveCount = (normalizedCount - 1) & 0xFF
         }
@@ -582,23 +607,24 @@ final class GANCubeProtocolParser {
         return evictGANMoveBuffer(requestLostMoves: requestLostMoves)
     }
 
-    private func handleGANStateCounter(_ count: Int, label: String) -> [SmartCubeParsedEvent] {
+    private func handleGANStateCounter(_ count: Int, label: String, holdCoalescer: Bool = true) -> [SmartCubeParsedEvent] {
         guard let previousMoveCount = ganPreviousMoveCount else { return [] }
         let normalizedCount = count & 0xFF
         let diff = (normalizedCount - previousMoveCount) & 0xFF
-        guard diff > 0 else {
+        guard diff > 0, diff < 128 else {
             return [.debug(label, "count \(normalizedCount), prev \(previousMoveCount), no gap")]
         }
         guard normalizedCount != 0 else {
             return [.debug(label, "count 0 ignored around counter rollover")]
         }
 
-        ganLatestMoveCount = normalizedCount
+        if ganLatestMoveCount == nil || ((normalizedCount - ganLatestMoveCount!) & 0xFF) < 128 {
+            ganLatestMoveCount = normalizedCount
+        }
         let startMoveCount = ganMoveBuffer.first?.count ?? ((normalizedCount + 1) & 0xFF)
-        return [
-            .debug(label, "state ahead prev \(previousMoveCount), state \(normalizedCount), diff \(diff); requesting history"),
-            .holdPendingMove(seconds: 0.65)
-        ] + requestGANHistoryIfNeeded(startMoveCount: startMoveCount, numberOfMoves: diff + 1)
+        return [.debug(label, "state ahead prev \(previousMoveCount), state \(normalizedCount), diff \(diff); requesting history")]
+            + (holdCoalescer ? [.holdPendingMove(seconds: 0.65)] : [])
+            + requestGANHistoryIfNeeded(startMoveCount: startMoveCount, numberOfMoves: diff + 1)
     }
 
     private func injectGANMove(_ move: SmartCubeMoveEvent, count: Int) {
@@ -611,32 +637,60 @@ final class GANCubeProtocolParser {
     private func injectGANHistoryMove(_ move: SmartCubeMoveEvent, count: Int, events: inout [SmartCubeParsedEvent]) {
         guard let previousMoveCount = ganPreviousMoveCount else { return }
         let normalizedCount = count & 0xFF
+        guard ganRequestedHistoryCounts.contains(normalizedCount) else { return }
         guard !ganMoveBuffer.contains(where: { ($0.count & 0xFF) == normalizedCount }) else { return }
-
-        if let head = ganMoveBuffer.first {
-            guard Self.isMoveCount(normalizedCount, inRangeAfter: previousMoveCount, before: head.count) else { return }
-            guard normalizedCount == ((head.count - 1) & 0xFF) else { return }
-            ganMoveBuffer.insert(GANBufferedMove(count: normalizedCount, move: move), at: 0)
-            events.append(.debug("GAN lost move recovered", "\(normalizedCount):\(move.move)"))
-        } else if let latestMoveCount = ganLatestMoveCount,
-                  Self.isMoveCount(normalizedCount, inRangeAfter: previousMoveCount, through: latestMoveCount) {
-            ganMoveBuffer.insert(GANBufferedMove(count: normalizedCount, move: move), at: 0)
-            events.append(.debug("GAN lost move recovered", "\(normalizedCount):\(move.move)"))
-        }
+        guard let latest = ganLatestMoveCount,
+              Self.isMoveCount(normalizedCount, inRangeAfter: previousMoveCount, through: latest) else { return }
+        injectGANMove(move, count: normalizedCount)
+        #if DEBUG
+        SmartCubeDiagnostics.shared.mark("history.backfill", detail: "count=\(normalizedCount)")
+        #endif
+        events.append(.debug("GAN lost move recovered", "\(normalizedCount):\(move.move)"))
     }
 
     private func requestGANHistoryIfNeeded(startMoveCount: Int, numberOfMoves: Int) -> [SmartCubeParsedEvent] {
-        let key = "\(startMoveCount & 0xFF)-\(numberOfMoves)"
+        let window = Self.adjustedGANHistoryWindow(startMoveCount: startMoveCount, numberOfMoves: numberOfMoves)
+        guard window.count > 0 else { return [] }
+        let key = "\(window.start)-\(window.count)"
+        ganActiveHistoryRequestKey = key
         let now = Date()
         if let lastRequest = ganHistoryRequestDates[key],
            now.timeIntervalSince(lastRequest) < 0.22 {
             return [.debug("GAN request throttled", "start \(startMoveCount), moves \(numberOfMoves)")]
         }
+        let attempts = ganHistoryRequestAttempts[key, default: 0]
+        guard attempts < 6 else {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("history.retryExhausted", detail: "window=\(key)")
+            #endif
+            return []
+        }
         ganHistoryRequestDates[key] = now
+        ganHistoryRequestAttempts[key] = attempts + 1
+        for index in 0..<window.count { ganRequestedHistoryCounts.insert((window.start - index) & 0xFF) }
+        #if DEBUG
+        SmartCubeDiagnostics.shared.mark(attempts == 0 ? "history.gapRequest" : "history.retry", detail: "window=\(key) attempt=\(attempts + 1)")
+        #endif
         return [.requestMoveHistory(startMoveCount: startMoveCount, numberOfMoves: numberOfMoves)]
     }
 
-    private func evictGANMoveBuffer(requestLostMoves: Bool) -> [SmartCubeParsedEvent] {
+    // Called on the parser queue, including when the user stops turning at a gap.
+    var hasRetryableGANHistory: Bool {
+        guard ganPreviousMoveCount != ganLatestMoveCount, let key = ganActiveHistoryRequestKey else { return false }
+        return ganHistoryRequestAttempts[key, default: 6] < 6
+    }
+
+    func retryPendingGANHistory() -> [SmartCubeParsedEvent] {
+        guard kind == .ganGen3 || kind == .ganGen4 else { return [] }
+        let events = evictGANMoveBuffer(requestLostMoves: true, holdCoalescer: false)
+        if ganMoveBuffer.isEmpty, let latest = ganLatestMoveCount, let previous = ganPreviousMoveCount,
+           latest != previous {
+            return events + handleGANStateCounter(latest, label: "GAN idle recovery", holdCoalescer: false)
+        }
+        return events
+    }
+
+    private func evictGANMoveBuffer(requestLostMoves: Bool, holdCoalescer: Bool = true) -> [SmartCubeParsedEvent] {
         guard let previousMoveCount = ganPreviousMoveCount else { return [] }
         var events: [SmartCubeParsedEvent] = []
 
@@ -649,8 +703,11 @@ final class GANCubeProtocolParser {
             if diff > 1 {
                 let previous = ganPreviousMoveCount ?? previousMoveCount
                 events.append(.debug("GAN move gap waiting", "prev \(previous), next \(first.count), diff \(diff)"))
+                #if DEBUG
+                SmartCubeDiagnostics.shared.mark("history.gap", detail: "prev=\(previous) next=\(first.count) buffered=\(ganMoveBuffer.count)")
+                #endif
                 if requestLostMoves {
-                    events.append(.holdPendingMove(seconds: 0.65))
+                    if holdCoalescer { events.append(.holdPendingMove(seconds: 0.65)) }
                     events.append(contentsOf: requestGANHistoryIfNeeded(startMoveCount: first.count, numberOfMoves: diff))
                 }
                 break
@@ -660,6 +717,14 @@ final class GANCubeProtocolParser {
             ganPreviousMoveCount = buffered.count
             lastSerial = buffered.move.serial
             ganLastEmittedMove = buffered.move
+            ganRequestedHistoryCounts.remove(buffered.count)
+            // Progress opens a new recovery window; old retries must not poison a later counter cycle.
+            ganHistoryRequestDates.removeAll()
+            ganHistoryRequestAttempts.removeAll()
+            ganActiveHistoryRequestKey = nil
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("history.drain", id: buffered.move.id, detail: "count=\(buffered.count) remaining=\(ganMoveBuffer.count)")
+            #endif
             events.append(.debug("GAN emit", "count \(buffered.count), move \(buffered.move.move)"))
             events.append(.move(buffered.move))
         }
@@ -667,8 +732,17 @@ final class GANCubeProtocolParser {
         if ganMoveBuffer.count > 16 {
             events.append(.debug("GAN buffer overflow", ganMoveBuffer.map { "\($0.count):\($0.move.move)" }.joined(separator: ", ")))
             ganMoveBuffer.removeAll()
+            canonicalContinuityWasLost = true
         }
 
+        if canonicalContinuityWasLost {
+            ganRequestedHistoryCounts.removeAll()
+            events.insert(.continuityLost, at: 0)
+            canonicalContinuityWasLost = false
+        }
+        if ganMoveBuffer.isEmpty, ganPreviousMoveCount == ganLatestMoveCount {
+            ganRequestedHistoryCounts.removeAll()
+        }
         return events
     }
 
@@ -678,6 +752,7 @@ final class GANCubeProtocolParser {
             (($0.count - previousMoveCount) & 0xFF) < (($1.count - previousMoveCount) & 0xFF)
         }
         if ganMoveBuffer.count > 16 {
+            canonicalContinuityWasLost = true
             ganMoveBuffer.removeFirst(ganMoveBuffer.count - 16)
         }
     }

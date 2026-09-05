@@ -2011,6 +2011,7 @@
 "settings.smart_cube.transition.instant" = "立即";
 
 "smart_cube.timer.deviated" = "打亂狀態不符";
+"smart_cube.timer.recovery" = "復原";
 
 "settings.smart_cube.current_move" = "當前步驟";
 "settings.smart_cube.current_move.none" = "無";
@@ -2022,3 +2023,9 @@
 "settings.smart_cube.highlight_mode.custom" = "自訂";
 "settings.smart_cube.highlight_color.custom" = "自訂醒目提示顏色";
 "settings.smart_cube.highlight_text.custom" = "自訂醒目提示文字";
+"settings.smart_cube.recovery_display" = "恢復顯示";
+"settings.smart_cube.recovery_display.separate" = "獨立";
+"settings.smart_cube.recovery_display.inline" = "行內";
+"settings.smart_cube.highlight_animation" = "高亮動畫";
+"settings.smart_cube.highlight_animation.instant" = "立即";
+"settings.smart_cube.highlight_animation.animated" = "動畫";

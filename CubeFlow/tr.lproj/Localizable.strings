@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "Düzeltme";
 
 "settings.smart_cube.current_move" = "Geçerli Hamle";
 "settings.smart_cube.current_move.none" = "Yok";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "Özel";
 "settings.smart_cube.highlight_color.custom" = "Özel Vurgu Rengi";
 "settings.smart_cube.highlight_text.custom" = "Özel Vurgu Metni";
+"settings.smart_cube.recovery_display" = "Kurtarma Görünümü";
+"settings.smart_cube.recovery_display.separate" = "Ayrı";
+"settings.smart_cube.recovery_display.inline" = "Satır içi";
+"settings.smart_cube.highlight_animation" = "Vurgu Animasyonu";
+"settings.smart_cube.highlight_animation.instant" = "Anında";
+"settings.smart_cube.highlight_animation.animated" = "Animasyonlu";

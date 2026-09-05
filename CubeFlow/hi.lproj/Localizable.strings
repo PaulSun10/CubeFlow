@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "सुधार";
 
 "settings.smart_cube.current_move" = "वर्तमान चाल";
 "settings.smart_cube.current_move.none" = "कोई नहीं";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "कस्टम";
 "settings.smart_cube.highlight_color.custom" = "कस्टम हाइलाइट रंग";
 "settings.smart_cube.highlight_text.custom" = "कस्टम हाइलाइट टेक्स्ट";
+"settings.smart_cube.recovery_display" = "रिकवरी डिस्प्ले";
+"settings.smart_cube.recovery_display.separate" = "अलग";
+"settings.smart_cube.recovery_display.inline" = "इनलाइन";
+"settings.smart_cube.highlight_animation" = "हाइलाइट एनिमेशन";
+"settings.smart_cube.highlight_animation.instant" = "तुरंत";
+"settings.smart_cube.highlight_animation.animated" = "एनिमेटेड";

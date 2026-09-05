@@ -29,6 +29,7 @@ struct SmartCube3DView: UIViewRepresentable {
         private let scene = SCNScene()
         private let interactionNode = SCNNode()
         private let cubeNode = SCNNode()
+        private let cameraNode = SCNNode()
         private var stickerNodes: [SCNNode] = []
         private var lastExternalFacelets: String?
         private var lastStateRevision = -1
@@ -69,6 +70,7 @@ struct SmartCube3DView: UIViewRepresentable {
                 SCNTransaction.animationDuration = 0.2
                 SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 interactionNode.eulerAngles = SCNVector3(0, dragYaw, 0)
+                positionCamera()
                 SCNTransaction.commit()
             }
             if stateRevision != lastStateRevision {
@@ -110,12 +112,15 @@ struct SmartCube3DView: UIViewRepresentable {
         }
 
         private func installCamera() {
-            let cameraNode = SCNNode()
             cameraNode.camera = SCNCamera()
             cameraNode.camera?.fieldOfView = 34
-            cameraNode.position = SCNVector3(0, 2.8, 7.2)
-            cameraNode.look(at: SCNVector3(0, 0, 0))
+            positionCamera()
             scene.rootNode.addChildNode(cameraNode)
+        }
+
+        private func positionCamera() {
+            cameraNode.position = SCNVector3(0, selectedFixedView == .uf ? 3.9 : 3.5, 7.2)
+            cameraNode.look(at: SCNVector3(0, 0, 0))
         }
 
         private func installLights() {

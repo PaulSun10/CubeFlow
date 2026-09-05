@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import Combine
 import SwiftUI
 import Testing
 #if canImport(UIKit)
@@ -501,6 +502,693 @@ struct CubeFlowTests {
 
         #expect(progress.update(with: afterF) == .deviated)
         #expect(progress.currentMoveTokenIndex == nil)
+    }
+
+    @MainActor @Test func smartCubeRecoveryIsAbsentOnTheNormalScramblePath() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U"))
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        let match = progress.update(with: afterR)
+        let request = smartCubeRecoveryRequest(progress: progress, sourceFacelets: afterR)
+        let plan = await SmartCubeRecoveryEngine.plan(for: request)
+
+        #expect(match == .advanced)
+        #expect(!progress.isDeviated)
+        #expect(plan == nil)
+    }
+
+    @Test func smartCubeCommutingProgressDoesNotTriggerRecovery() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "D2 U2"))
+        let afterU2 = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U2"))
+        let match = progress.update(with: afterU2)
+
+        #expect(match == .matchedLater)
+        #expect(!progress.isDeviated)
+        #expect(progress.recoveryCheckpoints.contains { $0.facelets == afterU2 })
+    }
+
+    @MainActor @Test func smartCubeSingleMoveDeviationProducesAOneMoveRecovery() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U"))
+        let deviation = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "F"))
+        let match = progress.update(with: deviation)
+        let request = smartCubeRecoveryRequest(progress: progress, sourceFacelets: deviation)
+        let plan = try #require(await SmartCubeRecoveryEngine.plan(for: request))
+
+        #expect(match == .deviated)
+        #expect(plan.correctionMoves == ["F'"])
+        #expect(plan.totalCost == 1)
+        #expect(SmartCubeBluetoothManager.facelets(
+            deviation,
+            applying: plan.correctionMoves[0]
+        ) == plan.checkpoint.facelets)
+    }
+
+    @Test(arguments: [
+        (["R"], ["R'"]),
+        (["R", "U"], ["U'", "R'"]),
+        (["R", "U", "F"], ["F'", "U'", "R'"])
+    ])
+    func smartCubeShortDeviationImmediatelyPublishesGuaranteedTrail(
+        wrongMoves: [String],
+        expectedCorrection: [String]
+    ) throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U F"))
+        let sourceFacelets = try applyCanonicalMoves(wrongMoves, to: &progress)
+        let identity = SmartCubeRecoveryPlanIdentity(
+            scrambleEpochID: UUID(),
+            stateVersion: 1
+        )
+
+        let plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        ))
+
+        #expect(plan.correctionMoves == expectedCorrection)
+        #expect(plan.totalCost == wrongMoves.count)
+        #expect(plan.checkpoint.facelets == SmartCubeBluetoothManager.solvedFacelets)
+        #expect(!SmartCubeRecoveryEngine.shouldSearchForShortcut(to: plan))
+    }
+
+    @MainActor @Test func smartCubeRecoveryPresentationDoesNotExposePendingSearchAsMismatch() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U"))
+        let sourceFacelets = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        let identity = SmartCubeRecoveryPlanIdentity(
+            scrambleEpochID: UUID(),
+            stateVersion: 1
+        )
+        _ = progress.update(with: sourceFacelets, canonicalMove: "R")
+        let plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        ))
+
+        #expect(!SmartCubeRecoveryPresentationState.searching(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        ).showsMismatch)
+        #expect(!SmartCubeRecoveryPresentationState.recovery(plan).showsMismatch)
+        #expect(!SmartCubeRecoveryPresentationState.unavailable(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        ).showsMismatch)
+    }
+
+    @Test func smartCubeSearchPlanCanImproveOnlyTheCurrentImmediatePlan() {
+        let identity = SmartCubeRecoveryPlanIdentity(
+            scrambleEpochID: UUID(),
+            stateVersion: 3
+        )
+        let sourceFacelets = "source"
+        let earlierCheckpoint = SmartCubeRecoveryCheckpoint(
+            facelets: "earlier",
+            completedTokenIndices: [0],
+            partialCompletionMoves: [:],
+            totalTokenCount: 4
+        )
+        let laterCheckpoint = SmartCubeRecoveryCheckpoint(
+            facelets: "later",
+            completedTokenIndices: [0, 1],
+            partialCompletionMoves: [:],
+            totalTokenCount: 4
+        )
+        let immediate = SmartCubeRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets,
+            checkpoint: earlierCheckpoint,
+            correctionMoves: ["R'"],
+            totalCost: 1
+        )
+        let equalCostAlternative = SmartCubeRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets,
+            checkpoint: laterCheckpoint,
+            correctionMoves: ["U"],
+            totalCost: 1
+        )
+        let longerGuaranteed = SmartCubeRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets,
+            checkpoint: earlierCheckpoint,
+            correctionMoves: ["R", "U"],
+            totalCost: 2
+        )
+        let stale = SmartCubeRecoveryPlan(
+            identity: SmartCubeRecoveryPlanIdentity(
+                scrambleEpochID: identity.scrambleEpochID,
+                stateVersion: 2
+            ),
+            sourceFacelets: sourceFacelets,
+            checkpoint: laterCheckpoint,
+            correctionMoves: ["U"],
+            totalCost: 1
+        )
+
+        #expect(!SmartCubeRecoveryEngine.prefers(equalCostAlternative, over: immediate))
+        #expect(!SmartCubeRecoveryEngine.prefers(stale, over: immediate))
+        #expect(SmartCubeRecoveryEngine.prefers(equalCostAlternative, over: longerGuaranteed))
+    }
+
+    @MainActor @Test func smartCubeMultiMoveDeviationProducesABoundedRecovery() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U D"))
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        let deviation = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R F U"))
+        let initialMatch = progress.update(with: afterR)
+        let deviationMatch = progress.update(with: deviation)
+        let request = smartCubeRecoveryRequest(progress: progress, sourceFacelets: deviation)
+        let plan = try #require(await SmartCubeRecoveryEngine.plan(for: request))
+        let recovered = try #require(applying(plan.correctionMoves, to: deviation))
+        let returnedMatch = progress.update(with: recovered)
+
+        #expect(initialMatch == .advanced)
+        #expect(deviationMatch == .deviated)
+        #expect(plan.totalCost <= SmartCubeRecoveryEngine.defaultMaximumCost)
+        #expect(recovered == plan.checkpoint.facelets)
+        #expect(returnedMatch == .returned || returnedMatch == .completed)
+        #expect(!progress.isDeviated)
+    }
+
+    @Test func smartCubeRecoverySimplifiesAdjacentSameFaceTurns() {
+        #expect(SmartCubeRecoveryEngine.simplified(["R", "R"]) == ["R2"])
+        #expect(SmartCubeRecoveryEngine.simplified(["R", "R", "R"]) == ["R'"])
+        #expect(SmartCubeRecoveryEngine.simplified(["R", "R'"]).isEmpty)
+        #expect(SmartCubeRecoveryEngine.simplified(["R2", "R"]) == ["R'"])
+    }
+
+    @Test func smartCubeLongDeviationAlwaysHasImmediateGuaranteedRecovery() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U2 F2"))
+        let moves = ["R", "U", "F", "L", "D", "B"]
+        let sourceFacelets = try applyCanonicalMoves(moves, to: &progress)
+        let plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(),
+            sourceFacelets: sourceFacelets
+        ))
+
+        #expect(plan.correctionMoves == ["B'", "D'", "L'", "F'", "U'", "R'"])
+        #expect(plan.totalCost == 6)
+        #expect(SmartCubeRecoveryEngine.shouldSearchForShortcut(to: plan))
+    }
+
+    @Test func smartCubeRapidContinuedDeviationNeverLosesGuaranteedRecovery() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U2 F2"))
+        var facelets = SmartCubeBluetoothManager.solvedFacelets
+        for (offset, move) in ["R", "U", "F", "L", "D", "B", "R"].enumerated() {
+            facelets = try applyCanonicalMove(move, from: facelets, to: &progress)
+            let plan = try #require(progress.guaranteedRecoveryPlan(
+                identity: recoveryIdentity(version: UInt64(offset + 1)),
+                sourceFacelets: facelets
+            ))
+            #expect(!plan.correctionMoves.isEmpty)
+        }
+    }
+
+    @Test func smartCubeFaceletFirstPublicationGainsRecoveryWhenMoveArrives() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U F"))
+        let sourceFacelets = try #require(
+            SmartCubeBluetoothManager.facelets(afterApplying: "R")
+        )
+        let identity = recoveryIdentity()
+
+        #expect(progress.update(with: sourceFacelets) == .deviated)
+        #expect(progress.guaranteedRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        ) == nil)
+        _ = progress.update(with: sourceFacelets, canonicalMove: "R")
+        #expect(progress.guaranteedRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        )?.correctionMoves == ["R'"])
+    }
+
+    @MainActor @Test func smartCubeCommutingTrailNoLongerNeedsShortcutSearch() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "F2 L2"))
+        let sourceFacelets = try applyCanonicalMoves(
+            ["R", "U", "D", "U'"],
+            to: &progress
+        )
+        let identity = recoveryIdentity()
+        let guaranteed = try #require(progress.guaranteedRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        ))
+        #expect(guaranteed.totalCost == 2)
+        #expect(!SmartCubeRecoveryEngine.shouldSearchForShortcut(to: guaranteed))
+        #expect(applying(guaranteed.correctionMoves, to: sourceFacelets) == guaranteed.checkpoint.facelets)
+    }
+
+    @Test func smartCubeRecoveryConsolidatesOnlyCommutingAxes() throws {
+        let cases: [([String], [String])] = [
+            (["U", "D", "U"], ["U2", "D"]),
+            (["U", "D", "U'"], ["D"]),
+            (["R", "L", "R"], ["R2", "L"]),
+            (["F", "B", "F'"], ["B"]),
+            (["D2", "U'", "D'", "U2"], ["U", "D"]),
+            (["L'", "R2", "L2", "R2"], ["L"]),
+            (["B2", "F'", "B2", "F"], []),
+            (["U", "R", "U'"], ["U", "R", "U'"]),
+            (["U", "R", "L", "R'", "L'", "U"], ["U2"])
+        ]
+        for (moves, expected) in cases {
+            let simplified = SmartCubeRecoveryEngine.simplified(moves)
+            #expect(simplified == expected)
+            #expect(applying(moves, to: SmartCubeBluetoothManager.solvedFacelets)
+                == applying(simplified, to: SmartCubeBluetoothManager.solvedFacelets))
+        }
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "F2 R2"))
+        let facelets = try applyCanonicalMoves(["U", "D", "U"], to: &progress)
+        let recovery = try #require(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(), sourceFacelets: facelets
+        ))
+        #expect(recovery.correctionMoves == ["U2", "D'"])
+        #expect(!SmartCubeRecoveryEngine.shouldSearchForShortcut(to: recovery))
+        #expect(applying(recovery.correctionMoves, to: facelets) == recovery.checkpoint.facelets)
+    }
+
+    @MainActor @Test(arguments: [6, 7, 8, 9, 10, 240])
+    func smartCubeCanonicalBurstPublishesEveryGuaranteedPlan(count: Int) throws {
+        let feed = SmartCubeCanonicalFeed()
+        var epoch = SmartCubeScrambleEpoch()
+        epoch.establish(at: .distantPast, latestMoveID: nil)
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U2 F2"))
+        var received = 0
+        var missingPlans = 0
+        let subscription = feed.updates.sink { update in
+            guard epoch.consume(update) else { return }
+            _ = progress.update(with: update.facelets, canonicalMove: update.move.move)
+            received += 1
+            if progress.isDeviated,
+               progress.guaranteedRecoveryPlan(
+                identity: epoch.advanceRecoveryStateVersion(), sourceFacelets: update.facelets
+               ) == nil { missingPlans += 1 }
+        }
+        defer { subscription.cancel() }
+        var facelets = SmartCubeBluetoothManager.solvedFacelets
+        let turns = ["R", "U", "F", "L", "D", "B", "R'", "F2", "U'", "L2"]
+        // No run-loop turns or UI rendering between sends, as with recovered packets.
+        for index in 0..<count {
+            let move = turns[index % turns.count]
+            facelets = try #require(SmartCubeBluetoothManager.facelets(facelets, applying: move))
+            feed.send(move: SmartCubeMoveEvent(
+                move: move, serial: index, face: nil, direction: nil,
+                localTimestamp: .now, cubeTimestampMilliseconds: index * 10
+            ), facelets: facelets)
+            #expect(received == index + 1)
+            #expect(missingPlans == 0)
+        }
+        #expect(progress.isDeviated)
+        #expect(feed.history.count == min(count, 120))
+        // A subsequent coalesced facelet observation cannot erase the paired trail.
+        _ = progress.update(with: facelets)
+        let plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: epoch.currentRecoveryIdentity, sourceFacelets: facelets
+        ))
+        #expect(applying(plan.correctionMoves, to: facelets) == plan.checkpoint.facelets)
+        for update in feed.history {
+            let consumedAgain = epoch.consume(update)
+            #expect(!consumedAgain)
+        }
+    }
+
+    @MainActor @Test(arguments: [6, 7, 10])
+    func smartCubeCanonicalHistoryReplayBeforeCoalescedFacelets(count: Int) throws {
+        let feed = SmartCubeCanonicalFeed()
+        var epoch = SmartCubeScrambleEpoch()
+        epoch.establish(at: .distantPast, latestMoveID: nil)
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U2 F2"))
+        let turns = ["R", "U", "F", "L", "D", "B", "R'", "F2", "U'", "L2"]
+        var finalFacelets = SmartCubeBluetoothManager.solvedFacelets
+        for index in 0..<count {
+            finalFacelets = try #require(SmartCubeBluetoothManager.facelets(finalFacelets, applying: turns[index]))
+            feed.send(move: SmartCubeMoveEvent(
+                move: turns[index], serial: index, face: nil, direction: nil,
+                localTimestamp: .now, cubeTimestampMilliseconds: index * 10
+            ), facelets: finalFacelets)
+        }
+        // The consumer sees only the final Published value; drain ordered pairs first.
+        for update in feed.history where epoch.consume(update) {
+            _ = progress.update(with: update.facelets, canonicalMove: update.move.move)
+            #expect(progress.guaranteedRecoveryPlan(
+                identity: epoch.advanceRecoveryStateVersion(), sourceFacelets: update.facelets
+            ) != nil)
+        }
+        _ = progress.update(with: finalFacelets)
+        #expect(progress.guaranteedRecoveryPlan(
+            identity: epoch.currentRecoveryIdentity, sourceFacelets: finalFacelets
+        ) != nil)
+        let priorSequence = feed.sequence
+        feed.clearHistory()
+        #expect(feed.sequence == priorSequence)
+    }
+
+    @MainActor @Test func smartCubeNoShortcutRetainsGuaranteedRecovery() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U"))
+        let sourceFacelets = try applyCanonicalMoves(
+            ["R", "F", "D", "L"],
+            to: &progress
+        )
+        let identity = recoveryIdentity()
+        let guaranteed = try #require(progress.guaranteedRecoveryPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets
+        ))
+        let shortcut = await SmartCubeRecoveryEngine.plan(for: smartCubeRecoveryRequest(
+            progress: progress,
+            sourceFacelets: sourceFacelets,
+            identity: identity
+        ))
+
+        #expect(guaranteed.totalCost == 4)
+        #expect(shortcut == nil)
+        #expect(!SmartCubeRecoveryPresentationState.recovery(guaranteed).showsMismatch)
+    }
+
+    @MainActor @Test func smartCubeCancelledAndStaleShortcutCannotReplaceBurstRecovery() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U2 F2"))
+        var epoch = SmartCubeScrambleEpoch()
+        epoch.establish(at: .distantPast, latestMoveID: nil)
+        var facelets = try applyCanonicalMoves(["R", "U", "F", "L"], to: &progress)
+        let oldIdentity = epoch.advanceRecoveryStateVersion()
+        let oldPlan = try #require(progress.guaranteedRecoveryPlan(
+            identity: oldIdentity, sourceFacelets: facelets
+        ))
+        let request = smartCubeRecoveryRequest(
+            progress: progress, sourceFacelets: facelets, identity: oldIdentity
+        )
+        let search = Task { await SmartCubeRecoveryEngine.plan(for: request) }
+        search.cancel()
+        for move in ["D", "B", "R"] {
+            facelets = try applyCanonicalMove(move, from: facelets, to: &progress)
+            let identity = epoch.advanceRecoveryStateVersion()
+            let current = try #require(progress.guaranteedRecoveryPlan(
+                identity: identity, sourceFacelets: facelets
+            ))
+            #expect(!SmartCubeRecoveryEngine.prefers(oldPlan, over: current))
+            #expect(!SmartCubeRecoveryEngine.resultIsCurrent(
+                oldPlan, identity: identity, facelets: facelets, isDeviated: true
+            ))
+        }
+        #expect(await search.value == nil)
+        #expect(progress.guaranteedRecoveryPlan(
+            identity: epoch.currentRecoveryIdentity, sourceFacelets: facelets
+        ) != nil)
+    }
+
+    @Test func smartCubeURFViewExposesRightRatherThanLeftFace() {
+        // R's +X normal rotates toward the camera at +Z only for negative yaw.
+        #expect(-sin(SmartCubeFixedView.urf.yaw) > 0)
+        #expect(cos(SmartCubeFixedView.urf.yaw) > 0)
+        #expect(SmartCubeFixedView.uf.yaw == 0)
+    }
+
+    @Test func smartCubeFollowingGuaranteedRecoveryTruncatesTheDeviationTrail() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U2 D2"))
+        var facelets = try applyCanonicalMoves(["R", "U", "F"], to: &progress)
+        var plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(version: 1),
+            sourceFacelets: facelets
+        ))
+        #expect(plan.correctionMoves == ["F'", "U'", "R'"])
+
+        facelets = try applyCanonicalMove("F'", from: facelets, to: &progress)
+        plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(version: 2),
+            sourceFacelets: facelets
+        ))
+        #expect(plan.correctionMoves == ["U'", "R'"])
+
+        facelets = try applyCanonicalMove("U'", from: facelets, to: &progress)
+        plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(version: 3),
+            sourceFacelets: facelets
+        ))
+        #expect(plan.correctionMoves == ["R'"])
+
+        facelets = try applyCanonicalMove("R'", from: facelets, to: &progress)
+        #expect(facelets == SmartCubeBluetoothManager.solvedFacelets)
+        #expect(!progress.isDeviated)
+        #expect(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(version: 4),
+            sourceFacelets: facelets
+        ) == nil)
+    }
+
+    @Test func smartCubeDeviationFromHalfTurnPartialUsesThatDynamicCheckpoint() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "L2 U"))
+        var facelets = SmartCubeBluetoothManager.solvedFacelets
+        facelets = try applyCanonicalMove("L", from: facelets, to: &progress)
+        #expect(progress.partialHalfTurnPresentation?.tokenIndex == 0)
+
+        facelets = try applyCanonicalMove("F", from: facelets, to: &progress)
+        let plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(),
+            sourceFacelets: facelets
+        ))
+
+        #expect(plan.correctionMoves == ["F'"])
+        #expect(plan.checkpoint.partialCompletionMoves[0] == "L")
+    }
+
+    @MainActor @Test func smartCubePresentationSnapshotRehydratesWithoutANewMove() throws {
+        let store = SmartCubeTimerPresentationStore.shared
+        store.clear()
+        defer { store.clear() }
+
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "U F"))
+        let facelets = try applyCanonicalMoves(["R", "D"], to: &progress)
+        var epoch = SmartCubeScrambleEpoch()
+        epoch.establish(at: Date(timeIntervalSince1970: 4_000), latestMoveID: nil)
+        let plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: epoch.advanceRecoveryStateVersion(),
+            sourceFacelets: facelets
+        ))
+        store.save(
+            scramble: "U F",
+            progress: progress,
+            epoch: epoch,
+            recoveryState: .recovery(plan)
+        )
+
+        let restored = try #require(store.snapshot(matching: "U F"))
+        #expect(restored.progress.isDeviated)
+        #expect(restored.recoveryState.plan?.correctionMoves == ["D'", "R'"])
+        #expect(restored.epoch.currentRecoveryIdentity == epoch.currentRecoveryIdentity)
+    }
+
+    @MainActor @Test func smartCubeValidProgressSnapshotRestoresCurrentHighlightWithoutANewMove() throws {
+        let store = SmartCubeTimerPresentationStore.shared
+        store.clear()
+        defer { store.clear() }
+
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U F"))
+        let afterR = try applyCanonicalMoves(["R"], to: &progress)
+        var epoch = SmartCubeScrambleEpoch()
+        epoch.establish(at: Date(timeIntervalSince1970: 4_100), latestMoveID: nil)
+        store.save(
+            scramble: "R U F",
+            progress: progress,
+            epoch: epoch,
+            recoveryState: .inactive
+        )
+
+        let restored = try #require(store.snapshot(matching: "R U F"))
+        #expect(afterR == restored.progress.expectedFacelets[1])
+        #expect(restored.progress.currentMoveTokenIndex == 1)
+        #expect(restored.recoveryState == .inactive)
+    }
+
+    @Test func smartCubeOptimizedRecoveryAdvancesSynchronouslyWhenFollowed() throws {
+        let identity = recoveryIdentity(version: 1)
+        let source = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R U"))
+        let next = try #require(SmartCubeBluetoothManager.facelets(source, applying: "U'"))
+        let checkpoint = SmartCubeRecoveryCheckpoint(
+            facelets: SmartCubeBluetoothManager.solvedFacelets,
+            completedTokenIndices: [],
+            partialCompletionMoves: [:],
+            totalTokenCount: 2
+        )
+        let plan = SmartCubeRecoveryPlan(
+            identity: identity,
+            sourceFacelets: source,
+            checkpoint: checkpoint,
+            correctionMoves: ["U'", "R'"],
+            totalCost: 2
+        )
+        let advanced = try #require(SmartCubeRecoveryEngine.advancedPlan(
+            from: plan,
+            by: "U'",
+            identity: recoveryIdentity(version: 2),
+            sourceFacelets: next
+        ))
+
+        #expect(advanced.correctionMoves == ["R'"])
+        #expect(advanced.sourceFacelets == next)
+    }
+
+    @Test func smartCubeRecoveryDisplayModesShareTheSameImmutablePlan() throws {
+        let originalTokens = ["U", "F", "R2"]
+        var progress = try #require(SmartCubeScrambleProgress(scramble: originalTokens.joined(separator: " ")))
+        let facelets = try applyCanonicalMoves(["L", "D"], to: &progress)
+        let plan = try #require(progress.guaranteedRecoveryPlan(
+            identity: recoveryIdentity(),
+            sourceFacelets: facelets
+        ))
+
+        for display in SmartCubeRecoveryDisplay.allCases {
+            #expect(display.id == display.rawValue)
+            #expect(plan.correctionMoves.first == "D'")
+            #expect(progress.tokens == originalTokens)
+        }
+    }
+
+    @MainActor @Test func smartCubeRecoveryCanResumeAtAnUnvisitedOriginalCheckpoint() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U F"))
+        let deviation = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R U L"))
+        let deviationMatch = progress.update(with: deviation)
+        let request = smartCubeRecoveryRequest(progress: progress, sourceFacelets: deviation)
+        let plan = try #require(await SmartCubeRecoveryEngine.plan(for: request))
+        let recovered = try #require(applying(plan.correctionMoves, to: deviation))
+        let returnedMatch = progress.update(with: recovered)
+
+        #expect(deviationMatch == .deviated)
+        #expect(plan.checkpoint.completedTokenIndices == Set([0, 1]))
+        #expect(returnedMatch == .returned)
+        #expect(progress.verifiedMoveCount == 2)
+        #expect(progress.currentMoveTokenIndex == 2)
+        #expect(!progress.isDeviated)
+    }
+
+    @Test func smartCubeManualUndoCancelsDeviationWithoutFollowingAPlan() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U"))
+        let afterR = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R"))
+        let deviation = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "R F"))
+
+        let advancedMatch = progress.update(with: afterR)
+        let deviationMatch = progress.update(with: deviation)
+        let returnedMatch = progress.update(with: afterR)
+
+        #expect(advancedMatch == .advanced)
+        #expect(deviationMatch == .deviated)
+        #expect(returnedMatch == .returned)
+        #expect(!progress.isDeviated)
+    }
+
+    @Test func smartCubeHalfTurnPartialStateDoesNotTriggerRecovery() throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "L2 U"))
+        let afterLPrime = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "L'"))
+        let match = progress.update(with: afterLPrime)
+        let presentation = try #require(progress.partialHalfTurnPresentation)
+
+        #expect(match == .partial)
+        #expect(!progress.isDeviated)
+        #expect(presentation.targetMove == "L2")
+        #expect(presentation.completedQuarterTurn == "L'")
+        #expect(presentation.remainingMove == "L'")
+    }
+
+    @MainActor @Test func smartCubeRecoveryRejectsRapidStaleStateResults() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U"))
+        let deviation = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "F"))
+        let deviationMatch = progress.update(with: deviation)
+        var epoch = SmartCubeScrambleEpoch()
+        epoch.establish(at: Date(timeIntervalSince1970: 1_000), latestMoveID: nil)
+        let firstIdentity = epoch.advanceRecoveryStateVersion()
+        let request = smartCubeRecoveryRequest(
+            progress: progress,
+            sourceFacelets: deviation,
+            identity: firstIdentity
+        )
+        let plan = try #require(await SmartCubeRecoveryEngine.plan(for: request))
+        let newerIdentity = epoch.advanceRecoveryStateVersion()
+
+        #expect(deviationMatch == .deviated)
+        #expect(!SmartCubeRecoveryEngine.resultIsCurrent(
+            plan,
+            identity: newerIdentity,
+            facelets: deviation,
+            isDeviated: true
+        ))
+    }
+
+    @MainActor @Test func smartCubeRecoveryPlanBelongsToTheCurrentScrambleEpoch() async throws {
+        var progress = try #require(SmartCubeScrambleProgress(scramble: "R U"))
+        let deviation = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "F"))
+        _ = progress.update(with: deviation)
+        var epoch = SmartCubeScrambleEpoch()
+        epoch.establish(at: Date(timeIntervalSince1970: 2_000), latestMoveID: nil)
+        let identity = epoch.advanceRecoveryStateVersion()
+        let request = smartCubeRecoveryRequest(
+            progress: progress,
+            sourceFacelets: deviation,
+            identity: identity
+        )
+        let plan = try #require(await SmartCubeRecoveryEngine.plan(for: request))
+
+        epoch.establish(at: Date(timeIntervalSince1970: 2_001), latestMoveID: nil)
+        #expect(plan.identity == identity)
+        #expect(plan.identity.scrambleEpochID != epoch.currentRecoveryIdentity.scrambleEpochID)
+        #expect(!SmartCubeRecoveryEngine.resultIsCurrent(
+            plan,
+            identity: epoch.currentRecoveryIdentity,
+            facelets: deviation,
+            isDeviated: true
+        ))
+    }
+
+    @Test func smartCubeHighlightAnimationDoesNotChangeScrambleTransitionAvailability() {
+        #expect(SmartCubeHighlightAnimation.instant.updatesImmediately)
+        #expect(!SmartCubeHighlightAnimation.animated.updatesImmediately)
+        #expect(SmartCubeScrambleTransition.allowed(for: .collapse).contains(.blur))
+        #expect(SmartCubeScrambleTransition.allowed(for: .trail).contains(.blur))
+    }
+
+    private func recoveryIdentity(version: UInt64 = 1) -> SmartCubeRecoveryPlanIdentity {
+        SmartCubeRecoveryPlanIdentity(
+            scrambleEpochID: UUID(),
+            stateVersion: version
+        )
+    }
+
+    private func applyCanonicalMoves(
+        _ moves: [String],
+        to progress: inout SmartCubeScrambleProgress
+    ) throws -> String {
+        var facelets = SmartCubeBluetoothManager.solvedFacelets
+        for move in moves {
+            facelets = try applyCanonicalMove(move, from: facelets, to: &progress)
+        }
+        return facelets
+    }
+
+    private func applyCanonicalMove(
+        _ move: String,
+        from facelets: String,
+        to progress: inout SmartCubeScrambleProgress
+    ) throws -> String {
+        let next = try #require(SmartCubeBluetoothManager.facelets(facelets, applying: move))
+        _ = progress.update(with: next, canonicalMove: move)
+        return next
+    }
+
+    private func smartCubeRecoveryRequest(
+        progress: SmartCubeScrambleProgress,
+        sourceFacelets: String,
+        identity: SmartCubeRecoveryPlanIdentity = SmartCubeRecoveryPlanIdentity(
+            scrambleEpochID: UUID(),
+            stateVersion: 1
+        )
+    ) -> SmartCubeRecoveryRequest {
+        SmartCubeRecoveryRequest(
+            identity: identity,
+            sourceFacelets: sourceFacelets,
+            checkpoints: progress.recoveryCheckpoints,
+            maximumCost: SmartCubeRecoveryEngine.defaultMaximumCost
+        )
+    }
+
+    private func applying(_ moves: [String], to facelets: String) -> String? {
+        moves.reduce(Optional(facelets)) { state, move in
+            state.flatMap { SmartCubeBluetoothManager.facelets($0, applying: move) }
+        }
     }
 
     private func smartCubeMove(

@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "修正";
 
 "settings.smart_cube.current_move" = "現在の手順";
 "settings.smart_cube.current_move.none" = "なし";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "カスタム";
 "settings.smart_cube.highlight_color.custom" = "カスタムハイライトカラー";
 "settings.smart_cube.highlight_text.custom" = "カスタムハイライト文字";
+"settings.smart_cube.recovery_display" = "リカバリー表示";
+"settings.smart_cube.recovery_display.separate" = "分離";
+"settings.smart_cube.recovery_display.inline" = "インライン";
+"settings.smart_cube.highlight_animation" = "ハイライトアニメーション";
+"settings.smart_cube.highlight_animation.instant" = "即時";
+"settings.smart_cube.highlight_animation.animated" = "アニメーション";

@@ -1,12 +1,26 @@
 #if os(iOS)
 import SwiftUI
 
+private enum SmartCubeRecoveryDisplayItem: Identifiable {
+    case original(Int)
+    case recoveryMove(Int)
+
+    var id: String {
+        switch self {
+        case .original(let index): "original-\(index)"
+        case .recoveryMove(let index): "recovery-move-\(index)"
+        }
+    }
+}
+
 struct SmartCubeScrambleProgressView: View {
     let scramble: String
     let tokens: [String]
     let completedTokenIndices: Set<Int>
     let highlightedTokenIndex: Int?
-    let isDeviated: Bool
+    let recoveryPlan: SmartCubeRecoveryPlan?
+    let recoveryDisplay: SmartCubeRecoveryDisplay
+    let highlightAnimation: SmartCubeHighlightAnimation
     let behavior: SmartCubeCompletedMovesBehavior
     let transition: SmartCubeScrambleTransition
     let fontDesign: TimerFontDesignOption
@@ -39,6 +53,7 @@ struct SmartCubeScrambleProgressView: View {
                                     .fill(highlightBackgroundStyle)
                                     .frame(width: capsuleFrame.width, height: capsuleFrame.height)
                                     .position(x: capsuleFrame.midX, y: capsuleFrame.midY)
+                                    .transaction(disableHighlightAnimationIfNeeded)
                             }
                         }
                     }
@@ -52,11 +67,8 @@ struct SmartCubeScrambleProgressView: View {
             .foregroundStyle(foregroundStyle)
             .frame(maxWidth: .infinity, alignment: .center)
 
-            if isDeviated {
-                Label("smart_cube.timer.deviated", systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.orange)
-                    .transition(.opacity)
+            if let recoveryPlan, recoveryDisplay == .separate {
+                recoveryLane(recoveryPlan)
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
@@ -66,40 +78,156 @@ struct SmartCubeScrambleProgressView: View {
     @ViewBuilder
     @available(iOS 16.0, *)
     private var moveTokens: some View {
-        ForEach(tokens.indices, id: \.self) { index in
-            Text(tokens[index])
-                .lineLimit(1)
-                .fixedSize()
-                .foregroundStyle(tokenForegroundStyle(at: index))
-                .anchorPreference(
-                    key: SmartCubeHighlightedTokenBoundsKey.self,
-                    value: .bounds
-                ) { anchor in
-                    highlightedTokenIndex == index ? anchor : nil
+        ForEach(displayItems) { item in
+            switch item {
+            case .original(let index):
+                originalToken(at: index, allowsHighlight: recoveryPlan == nil)
+            case .recoveryMove(let index):
+                if let recoveryPlan {
+                    recoveryToken(recoveryPlan.correctionMoves[index], index: index)
                 }
-                .opacity(tokenOpacity(at: index))
-                .blur(radius: tokenBlur(at: index))
-                .offset(
-                    x: tokenHorizontalOffset(at: index),
-                    y: tokenVerticalOffset(at: index)
-                )
-                .scaleEffect(tokenScale(at: index))
-                .layoutValue(
-                    key: SmartCubeMoveCompletedLayoutKey.self,
-                    value: completedTokenIndices.contains(index)
-                )
+            }
         }
     }
 
-    private func tokenForegroundStyle(at index: Int) -> AnyShapeStyle {
-        highlightedTokenIndex == index ? highlightForegroundStyle : foregroundStyle
+    @available(iOS 16.0, *)
+    private func originalToken(at index: Int, allowsHighlight: Bool) -> some View {
+        let isHighlighted = allowsHighlight && highlightedTokenIndex == index
+        return Text(tokens[index])
+            .lineLimit(1)
+            .fixedSize()
+            .foregroundStyle(isHighlighted ? highlightForegroundStyle : foregroundStyle)
+            .anchorPreference(
+                key: SmartCubeHighlightedTokenBoundsKey.self,
+                value: .bounds
+            ) { anchor in isHighlighted ? anchor : nil }
+            .opacity(tokenOpacity(at: index))
+            .blur(radius: tokenBlur(at: index))
+            .offset(
+                x: tokenHorizontalOffset(at: index),
+                y: tokenVerticalOffset(at: index)
+            )
+            .scaleEffect(tokenScale(at: index))
+            .layoutValue(
+                key: SmartCubeMoveCompletedLayoutKey.self,
+                value: completedTokenIndices.contains(index)
+            )
+    }
+
+    @available(iOS 16.0, *)
+    private func recoveryToken(_ move: String, index: Int) -> some View {
+        let isHighlighted = index == 0
+        return Text(move)
+            .lineLimit(1)
+            .fixedSize()
+            .fontWeight(.semibold)
+            .foregroundStyle(isHighlighted ? highlightForegroundStyle : AnyShapeStyle(Color.orange))
+            .anchorPreference(
+                key: SmartCubeHighlightedTokenBoundsKey.self,
+                value: .bounds
+            ) { anchor in isHighlighted ? anchor : nil }
+            .transaction(disableHighlightAnimationIfNeeded)
+            .layoutValue(key: SmartCubeMoveCompletedLayoutKey.self, value: false)
+    }
+
+    private func recoveryLane(_ plan: SmartCubeRecoveryPlan) -> some View {
+        Group {
+            if #available(iOS 16.0, *) {
+                SmartCubeMoveFlowLayout(horizontalSpacing: 6, verticalSpacing: 4, collapsesCompletedMoves: false) {
+                    Image(systemName: "arrow.uturn.backward.circle.fill")
+                        .accessibilityHidden(true)
+                    ForEach(plan.correctionMoves.indices, id: \.self) { index in
+                        Text(plan.correctionMoves[index])
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .foregroundStyle(index == 0 ? highlightForegroundStyle : AnyShapeStyle(Color.orange))
+                            .padding(.horizontal, index == 0 ? 4 : 0)
+                            .padding(.vertical, index == 0 ? 1 : 0)
+                            .background {
+                                if index == 0 {
+                                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                        .fill(highlightBackgroundStyle)
+                                        .transaction(disableHighlightAnimationIfNeeded)
+                                }
+                            }
+                    }
+                }
+            } else {
+                Text(plan.correctionMoves.joined(separator: " "))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(.orange)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 5)
+        .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12).stroke(
+                .orange.opacity(0.55),
+                style: StrokeStyle(lineWidth: 1, dash: [3, 2])
+            )
+        }
+        .accessibilityLabel(Text("smart_cube.timer.recovery"))
+        .accessibilityValue(Text(plan.correctionMoves.joined(separator: " ")))
+        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+    }
+
+    private func inlineItems(for plan: SmartCubeRecoveryPlan) -> [SmartCubeRecoveryDisplayItem] {
+        let insertionIndex = recoveryInsertionIndex(for: plan)
+        var result: [SmartCubeRecoveryDisplayItem] = []
+        for index in tokens.indices {
+            if index == insertionIndex {
+                result += plan.correctionMoves.indices.map(SmartCubeRecoveryDisplayItem.recoveryMove)
+            }
+            result.append(.original(index))
+        }
+        if insertionIndex == tokens.count {
+            result += plan.correctionMoves.indices.map(SmartCubeRecoveryDisplayItem.recoveryMove)
+        }
+        return result
+    }
+
+    private var displayItems: [SmartCubeRecoveryDisplayItem] {
+        guard let recoveryPlan else {
+            return tokens.indices.map(SmartCubeRecoveryDisplayItem.original)
+        }
+        switch recoveryDisplay {
+        case .separate:
+            return tokens.indices.map(SmartCubeRecoveryDisplayItem.original)
+        case .inline:
+            return inlineItems(for: recoveryPlan)
+        }
+    }
+
+    private func recoveryInsertionIndex(for plan: SmartCubeRecoveryPlan) -> Int {
+        tokens.indices.first { !plan.checkpoint.completedTokenIndices.contains($0) } ?? tokens.count
+    }
+
+    private func disableHighlightAnimationIfNeeded(_ transaction: inout Transaction) {
+        if highlightAnimation == .instant {
+            transaction.animation = nil
+        }
     }
 
     private var fallbackText: String {
         let indices = behavior == .collapse
             ? tokens.indices.filter { !completedTokenIndices.contains($0) }
             : Array(tokens.indices)
-        return indices.map { tokens[$0] }.joined(separator: " ")
+        var visibleTokens = indices.map { tokens[$0] }
+        guard let recoveryPlan else { return visibleTokens.joined(separator: " ") }
+        let insertionIndex = min(
+            indices.firstIndex(of: recoveryInsertionIndex(for: recoveryPlan)) ?? visibleTokens.count,
+            visibleTokens.count
+        )
+        switch recoveryDisplay {
+        case .separate:
+            break
+        case .inline:
+            visibleTokens.insert(contentsOf: recoveryPlan.correctionMoves, at: insertionIndex)
+        }
+        return visibleTokens.joined(separator: " ")
     }
 
     private func tokenOpacity(at index: Int) -> Double {

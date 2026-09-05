@@ -3,57 +3,93 @@ import Foundation
 import SwiftUI
 import AVFoundation
 
-@MainActor
-final class SmartCubeReadySoundPlayer {
+nonisolated final class SmartCubeReadySoundPlayer: @unchecked Sendable {
     static let shared = SmartCubeReadySoundPlayer()
 
-    private let engine = AVAudioEngine()
-    private let player = AVAudioPlayerNode()
-    private let buffer: AVAudioPCMBuffer?
+    // All AVFoundation objects, including construction, belong to this queue.
+    private let queue = DispatchQueue(label: "CubeFlow.ready-sound", qos: .userInitiated)
+    private var audio: Audio?
 
-    private init() {
-        let sampleRate = 44_100.0
-        let frameCount = AVAudioFrameCount(sampleRate * 0.12)
-        guard let format = AVAudioFormat(
-            standardFormatWithSampleRate: sampleRate,
-            channels: 1
-        ), let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
-            self.buffer = nil
-            return
-        }
-
-        buffer.frameLength = frameCount
-        if let samples = buffer.floatChannelData?[0] {
-            for frame in 0..<Int(frameCount) {
-                let progress = Double(frame) / Double(frameCount)
-                let frequency = progress < 0.48 ? 880.0 : 1_174.66
-                let attack = min(progress / 0.08, 1)
-                let release = min((1 - progress) / 0.18, 1)
-                let envelope = min(attack, release) * 0.2
-                samples[frame] = Float(sin(2 * .pi * frequency * Double(frame) / sampleRate) * envelope)
-            }
-        }
-
-        self.buffer = buffer
-        engine.attach(player)
-        engine.connect(player, to: engine.mainMixerNode, format: format)
+    func prepare() {
+        queue.async { self.prepareAudio() }
     }
 
     func play() {
-        guard let buffer else { return }
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
-            try session.setActive(true)
-            if !engine.isRunning {
-                try engine.start()
+        queue.async {
+            self.prepareAudio()
+            self.audio?.play()
+        }
+    }
+
+    private func prepareAudio() {
+        dispatchPrecondition(condition: .onQueue(queue))
+        if audio == nil { audio = Audio() }
+        audio?.prepare()
+    }
+
+    private final class Audio {
+        private let engine = AVAudioEngine()
+        private let player = AVAudioPlayerNode()
+        private let buffer: AVAudioPCMBuffer?
+
+        init() {
+            let sampleRate = 44_100.0
+            let frameCount = AVAudioFrameCount(sampleRate * 0.12)
+            guard let format = AVAudioFormat(
+                standardFormatWithSampleRate: sampleRate,
+                channels: 1
+            ), let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+                self.buffer = nil
+                return
             }
+
+            buffer.frameLength = frameCount
+            if let samples = buffer.floatChannelData?[0] {
+                for frame in 0..<Int(frameCount) {
+                    let progress = Double(frame) / Double(frameCount)
+                    let frequency = progress < 0.48 ? 880.0 : 1_174.66
+                    let attack = min(progress / 0.08, 1)
+                    let release = min((1 - progress) / 0.18, 1)
+                    let envelope = min(attack, release) * 0.2
+                    samples[frame] = Float(sin(2 * .pi * frequency * Double(frame) / sampleRate) * envelope)
+                }
+            }
+
+            self.buffer = buffer
+            engine.attach(player)
+            engine.connect(player, to: engine.mainMixerNode, format: format)
+        }
+
+        func prepare() {
+            guard buffer != nil, !engine.isRunning else { return }
+            do {
+                let session = AVAudioSession.sharedInstance()
+                try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+                try session.setActive(true)
+                if !engine.isRunning {
+                    try engine.start()
+                }
+            } catch {
+                // A ready cue is optional; timer state never depends on audio availability.
+            }
+        }
+
+        func play() {
+            guard let buffer, engine.isRunning else { return }
             player.stop()
             player.scheduleBuffer(buffer, at: nil, options: .interrupts)
             player.play()
-        } catch {
-            // A ready cue is optional; timer state must never depend on audio availability.
         }
+    }
+}
+
+nonisolated enum SmartCubeLayoutDimensions {
+    static func length(_ value: CGFloat) -> CGFloat {
+        value.isFinite ? max(0, value) : 0
+    }
+
+    static func statusWidth(containerWidth: CGFloat, inset: CGFloat, cubeSize: CGFloat) -> CGFloat {
+        min(length(containerWidth - inset * 2), length(cubeSize + 80))
     }
 }
 
@@ -116,6 +152,40 @@ enum SmartCubeCurrentMovePresentation: String, CaseIterable, Identifiable {
         switch self {
         case .none: "settings.smart_cube.current_move.none"
         case .highlight: "settings.smart_cube.current_move.highlight"
+        }
+    }
+}
+
+enum SmartCubeRecoveryDisplay: String, CaseIterable, Identifiable {
+    case separate
+    case inline
+
+    static func resolved(_ rawValue: String) -> Self {
+        rawValue == "focus" ? .inline : (Self(rawValue: rawValue) ?? .separate)
+    }
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .separate: "settings.smart_cube.recovery_display.separate"
+        case .inline: "settings.smart_cube.recovery_display.inline"
+        }
+    }
+}
+
+enum SmartCubeHighlightAnimation: String, CaseIterable, Identifiable {
+    case instant
+    case animated
+
+    var id: String { rawValue }
+
+    var updatesImmediately: Bool { self == .instant }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .instant: "settings.smart_cube.highlight_animation.instant"
+        case .animated: "settings.smart_cube.highlight_animation.animated"
         }
     }
 }
@@ -220,6 +290,16 @@ enum SmartCubeTimerPosition: String, CaseIterable, Identifiable {
     }
 }
 
+nonisolated struct SmartCubePartialHalfTurnPresentation: Equatable, Sendable {
+    let tokenIndex: Int
+    let targetMove: String
+    let completedQuarterTurn: String
+
+    var remainingMove: String {
+        completedQuarterTurn
+    }
+}
+
 nonisolated enum SmartCubeScrambleMatch: Equatable {
     case unchanged
     case partial
@@ -236,6 +316,13 @@ struct SmartCubeScrambleProgress: Equatable {
         var partialCompletionMoves: [Int: String] = [:]
     }
 
+    private struct DeviationTrail: Equatable {
+        let checkpointFacelets: String
+        let checkpointState: VerificationState
+        var moves: [String]
+        var faceletStates: [String]
+    }
+
     let tokens: [String]
     let expectedFacelets: [String]
     private(set) var completedTokenIndices: Set<Int> = []
@@ -243,6 +330,7 @@ struct SmartCubeScrambleProgress: Equatable {
     private(set) var isDeviated = false
     private var lastValidFacelets = SmartCubeBluetoothManager.solvedFacelets
     private var partialCompletionMoves: [Int: String] = [:]
+    private var deviationTrail: DeviationTrail?
     private var validCheckpoints: [String: VerificationState] = [
         SmartCubeBluetoothManager.solvedFacelets: VerificationState()
     ]
@@ -275,7 +363,150 @@ struct SmartCubeScrambleProgress: Equatable {
         return tokens.indices.first { !completedTokenIndices.contains($0) }
     }
 
-    mutating func update(with facelets: String) -> SmartCubeScrambleMatch {
+    var partialHalfTurnPresentation: SmartCubePartialHalfTurnPresentation? {
+        guard let index = partialCompletionMoves.keys.min(),
+              let completedQuarterTurn = partialCompletionMoves[index]
+        else { return nil }
+        return SmartCubePartialHalfTurnPresentation(
+            tokenIndex: index,
+            targetMove: tokens[index],
+            completedQuarterTurn: completedQuarterTurn
+        )
+    }
+
+    var recoveryCheckpoints: [SmartCubeRecoveryCheckpoint] {
+        var checkpoints = validCheckpoints.reduce(into: [String: SmartCubeRecoveryCheckpoint]()) {
+            result, entry in
+            result[entry.key] = SmartCubeRecoveryCheckpoint(
+                facelets: entry.key,
+                completedTokenIndices: entry.value.completedTokenIndices,
+                partialCompletionMoves: entry.value.partialCompletionMoves,
+                totalTokenCount: tokens.count
+            )
+        }
+
+        for (facelets, state) in originalCheckpoints {
+            let checkpoint = SmartCubeRecoveryCheckpoint(
+                facelets: facelets,
+                completedTokenIndices: state.completedTokenIndices,
+                partialCompletionMoves: state.partialCompletionMoves,
+                totalTokenCount: tokens.count
+            )
+            if let existing = checkpoints[checkpoint.facelets],
+               existing.progressScore >= checkpoint.progressScore {
+                continue
+            }
+            checkpoints[checkpoint.facelets] = checkpoint
+        }
+
+        return checkpoints.values.sorted {
+            if $0.progressScore != $1.progressScore {
+                return $0.progressScore > $1.progressScore
+            }
+            return $0.facelets < $1.facelets
+        }
+    }
+
+    func guaranteedRecoveryPlan(
+        identity: SmartCubeRecoveryPlanIdentity,
+        sourceFacelets: String
+    ) -> SmartCubeRecoveryPlan? {
+        guard isDeviated,
+              let deviationTrail,
+              deviationTrail.faceletStates.last == sourceFacelets
+        else { return nil }
+
+        let checkpoint = SmartCubeRecoveryCheckpoint(
+            facelets: deviationTrail.checkpointFacelets,
+            completedTokenIndices: deviationTrail.checkpointState.completedTokenIndices,
+            partialCompletionMoves: deviationTrail.checkpointState.partialCompletionMoves,
+            totalTokenCount: tokens.count
+        )
+        return SmartCubeRecoveryEngine.guaranteedTrailPlan(
+            identity: identity,
+            sourceFacelets: sourceFacelets,
+            deviationMoves: deviationTrail.moves,
+            checkpoint: checkpoint
+        )
+    }
+
+    var deviationMoves: [String] {
+        deviationTrail?.moves ?? []
+    }
+
+    mutating func breakContinuity(at facelets: String?) {
+        deviationTrail = nil
+        isDeviated = true
+        if let facelets {
+            // A known checkpoint may establish a new starting state, never a
+            // fictitious path through the missing moves.
+            _ = updateState(with: facelets)
+        }
+    }
+
+    mutating func update(
+        with facelets: String,
+        canonicalMove: String? = nil
+    ) -> SmartCubeScrambleMatch {
+        let previousFacelets = deviationTrail?.faceletStates.last ?? lastValidFacelets
+        let previousWasDeviated = isDeviated
+        let match = updateState(with: facelets)
+
+        guard isDeviated else {
+            deviationTrail = nil
+            return match
+        }
+
+        if !previousWasDeviated {
+            deviationTrail = DeviationTrail(
+                checkpointFacelets: lastValidFacelets,
+                checkpointState: verificationState,
+                moves: [],
+                faceletStates: [lastValidFacelets]
+            )
+        }
+
+        if let canonicalMove {
+            recordDeviationMove(
+                canonicalMove,
+                from: previousFacelets,
+                to: facelets
+            )
+        }
+        return match
+    }
+
+    private mutating func recordDeviationMove(
+        _ canonicalMove: String,
+        from previousFacelets: String,
+        to sourceFacelets: String
+    ) {
+        guard var trail = deviationTrail else { return }
+
+        let trailSource = trail.faceletStates.last ?? trail.checkpointFacelets
+        if trailSource == sourceFacelets {
+            return
+        }
+
+        let actualPrevious = previousFacelets == sourceFacelets ? trailSource : previousFacelets
+        guard actualPrevious == trailSource,
+              SmartCubeBluetoothManager.facelets(
+                trailSource,
+                applying: canonicalMove
+              ) == sourceFacelets
+        else { return }
+
+        if let earlierStateIndex = trail.faceletStates.lastIndex(of: sourceFacelets) {
+            trail.moves.removeSubrange(earlierStateIndex...)
+            trail.faceletStates.removeSubrange((earlierStateIndex + 1)...)
+        } else {
+            trail.moves.append(canonicalMove)
+            trail.faceletStates.append(sourceFacelets)
+        }
+        deviationTrail = trail
+    }
+
+    private mutating func updateState(with facelets: String) -> SmartCubeScrambleMatch {
         if let checkpoint = validCheckpoints[facelets] {
             let previous = verificationState
             let wasDeviated = isDeviated
@@ -283,6 +514,7 @@ struct SmartCubeScrambleProgress: Equatable {
             partialCompletionMoves = checkpoint.partialCompletionMoves
             lastValidFacelets = facelets
             isDeviated = false
+            highestVerifiedMoveCount = max(highestVerifiedMoveCount, completedTokenIndices.count)
             if isComplete { return .completed }
             if wasDeviated || checkpoint != previous { return .returned }
             return .unchanged
@@ -332,6 +564,13 @@ struct SmartCubeScrambleProgress: Equatable {
         }
 
         guard let partialCandidate = partialCandidates.first else {
+            if isDeviated, let checkpoint = originalCheckpoints[facelets] {
+                completedTokenIndices = checkpoint.completedTokenIndices
+                partialCompletionMoves = checkpoint.partialCompletionMoves
+                highestVerifiedMoveCount = max(highestVerifiedMoveCount, completedTokenIndices.count)
+                recordCheckpoint(facelets)
+                return isComplete ? .completed : .returned
+            }
             isDeviated = true
             return .deviated
         }
@@ -346,6 +585,23 @@ struct SmartCubeScrambleProgress: Equatable {
             completedTokenIndices: completedTokenIndices,
             partialCompletionMoves: partialCompletionMoves
         )
+    }
+
+    private var originalCheckpoints: [String: VerificationState] {
+        var checkpoints: [String: VerificationState] = [:]
+        for moveCount in 0...tokens.count {
+            let state = VerificationState(
+                completedTokenIndices: Set(tokens.indices.prefix(moveCount)),
+                partialCompletionMoves: [:]
+            )
+            let facelets = expectedFacelets[moveCount]
+            if let existing = checkpoints[facelets],
+               existing.completedTokenIndices.count >= state.completedTokenIndices.count {
+                continue
+            }
+            checkpoints[facelets] = state
+        }
+        return checkpoints
     }
 
     private func canReachTarget(
@@ -368,6 +624,7 @@ struct SmartCubeScrambleProgress: Equatable {
         lastValidFacelets = facelets
         validCheckpoints[facelets] = verificationState
         isDeviated = false
+        deviationTrail = nil
     }
 
     private func halfTurnQuarterTurns(for token: String) -> [String]? {
@@ -407,21 +664,78 @@ nonisolated enum SmartCubeTimerEventPolicy {
     }
 }
 
+enum SmartCubeCanonicalConsumption {
+    case ignored
+    case move(SmartCubeCanonicalUpdate)
+    case boundary(SmartCubeContinuityReason, String?)
+}
+
 struct SmartCubeScrambleEpoch: Equatable {
     private(set) var establishedAt: Date?
     private(set) var baselineMoveID: UUID?
     private(set) var hasAcceptedPhysicalMove = false
+    private(set) var recoveryScrambleID = UUID()
+    private(set) var recoveryStateVersion: UInt64 = 0
+    private(set) var consumedCanonicalSequence: UInt64 = 0
 
-    mutating func establish(at date: Date, latestMoveID: UUID?) {
+    var currentRecoveryIdentity: SmartCubeRecoveryPlanIdentity {
+        SmartCubeRecoveryPlanIdentity(
+            scrambleEpochID: recoveryScrambleID,
+            stateVersion: recoveryStateVersion
+        )
+    }
+
+    mutating func establish(at date: Date, latestMoveID: UUID?, canonicalSequence: UInt64 = 0) {
         establishedAt = date
         baselineMoveID = latestMoveID
         hasAcceptedPhysicalMove = false
+        recoveryScrambleID = UUID()
+        recoveryStateVersion = 0
+        consumedCanonicalSequence = canonicalSequence
     }
 
     mutating func reset() {
+        consumedCanonicalSequence = 0
         establishedAt = nil
         baselineMoveID = nil
         hasAcceptedPhysicalMove = false
+        recoveryScrambleID = UUID()
+        recoveryStateVersion = 0
+    }
+
+    mutating func advanceRecoveryStateVersion() -> SmartCubeRecoveryPlanIdentity {
+        recoveryStateVersion &+= 1
+        return currentRecoveryIdentity
+    }
+
+    @discardableResult
+    mutating func consume(_ update: SmartCubeCanonicalUpdate) -> Bool {
+        guard update.sequence > consumedCanonicalSequence else { return false }
+        consumedCanonicalSequence = update.sequence
+        return observePhysicalMove(update.move)
+    }
+
+    mutating func consumeEvent(_ event: SmartCubeCanonicalEvent) -> SmartCubeCanonicalConsumption {
+        guard event.sequence > consumedCanonicalSequence else { return .ignored }
+        let isTruncated = event.sequence - consumedCanonicalSequence > 1
+        switch event {
+        case .boundary(let boundary):
+            consumedCanonicalSequence = boundary.sequence
+            hasAcceptedPhysicalMove = false
+            _ = advanceRecoveryStateVersion()
+            return .boundary(boundary.reason, boundary.facelets)
+        case .move(let update):
+            if isTruncated || !update.isStateTrusted {
+                consumedCanonicalSequence = update.sequence
+                hasAcceptedPhysicalMove = false
+                _ = advanceRecoveryStateVersion()
+                return .boundary(
+                    isTruncated ? .truncatedHistory : .historyGap,
+                    update.isStateTrusted ? update.facelets : nil
+                )
+            }
+            return consume(update) ? .move(update) : .ignored
+        }
     }
 
     @discardableResult
@@ -444,6 +758,43 @@ struct SmartCubeScrambleEpoch: Equatable {
             inspectionEnabled: inspectionEnabled,
             completingMoveID: completingMoveID
         )
+    }
+}
+
+@MainActor
+final class SmartCubeTimerPresentationStore {
+    struct Snapshot: Equatable {
+        let scramble: String
+        let progress: SmartCubeScrambleProgress
+        let epoch: SmartCubeScrambleEpoch
+        let recoveryState: SmartCubeRecoveryPresentationState
+    }
+
+    static let shared = SmartCubeTimerPresentationStore()
+
+    private(set) var snapshot: Snapshot?
+
+    func save(
+        scramble: String,
+        progress: SmartCubeScrambleProgress,
+        epoch: SmartCubeScrambleEpoch,
+        recoveryState: SmartCubeRecoveryPresentationState
+    ) {
+        snapshot = Snapshot(
+            scramble: scramble,
+            progress: progress,
+            epoch: epoch,
+            recoveryState: recoveryState
+        )
+    }
+
+    func snapshot(matching scramble: String) -> Snapshot? {
+        guard snapshot?.scramble == scramble else { return nil }
+        return snapshot
+    }
+
+    func clear() {
+        snapshot = nil
     }
 }
 
@@ -529,7 +880,7 @@ nonisolated struct SmartCubeSolveTiming: Equatable {
         )
     }
 
-    private static func positiveDeviceDelta(from start: Int, to end: Int) -> Int? {
+    static func positiveDeviceDelta(from start: Int, to end: Int) -> Int? {
         let direct = end - start
         if direct > 0 { return direct }
 

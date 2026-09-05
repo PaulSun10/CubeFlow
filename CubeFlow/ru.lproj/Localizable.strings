@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "Исправление";
 
 "settings.smart_cube.current_move" = "Текущий ход";
 "settings.smart_cube.current_move.none" = "Нет";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "Вручную";
 "settings.smart_cube.highlight_color.custom" = "Свой цвет выделения";
 "settings.smart_cube.highlight_text.custom" = "Свой цвет текста";
+"settings.smart_cube.recovery_display" = "Отображение восстановления";
+"settings.smart_cube.recovery_display.separate" = "Отдельно";
+"settings.smart_cube.recovery_display.inline" = "В строке";
+"settings.smart_cube.highlight_animation" = "Анимация выделения";
+"settings.smart_cube.highlight_animation.instant" = "Мгновенно";
+"settings.smart_cube.highlight_animation.animated" = "С анимацией";

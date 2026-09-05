@@ -170,6 +170,82 @@ enum SmartCubeConnectionState: Equatable {
     }
 }
 
+nonisolated struct SmartCubeCanonicalUpdate: Equatable {
+    let sequence: UInt64
+    let move: SmartCubeMoveEvent
+    let facelets: String
+    var isStateTrusted = true
+}
+
+nonisolated enum SmartCubeContinuityReason: String, Equatable {
+    case reset, resync, disconnected, historyGap, truncatedHistory
+}
+
+nonisolated struct SmartCubeContinuityBoundary: Equatable {
+    let sequence: UInt64
+    let reason: SmartCubeContinuityReason
+    let facelets: String?
+}
+
+nonisolated enum SmartCubeCanonicalEvent: Equatable {
+    case move(SmartCubeCanonicalUpdate)
+    case boundary(SmartCubeContinuityBoundary)
+
+    var sequence: UInt64 {
+        switch self {
+        case .move(let update): update.sequence
+        case .boundary(let boundary): boundary.sequence
+        }
+    }
+
+    var solveCompletingMove: SmartCubeMoveEvent? {
+        guard case .move(let update) = self,
+              update.isStateTrusted,
+              update.facelets == SmartCubeBluetoothManager.solvedFacelets else { return nil }
+        return update.move
+    }
+}
+
+@MainActor
+final class SmartCubeCanonicalFeed {
+    private let subject = PassthroughSubject<SmartCubeCanonicalEvent, Never>()
+    private(set) var eventHistory: [SmartCubeCanonicalEvent] = []
+    var history: [SmartCubeCanonicalUpdate] {
+        eventHistory.compactMap { if case .move(let update) = $0 { update } else { nil } }
+    }
+    private(set) var sequence: UInt64 = 0
+    private(set) var isStateTrusted = true
+    var events: AnyPublisher<SmartCubeCanonicalEvent, Never> { subject.eraseToAnyPublisher() }
+    var updates: AnyPublisher<SmartCubeCanonicalUpdate, Never> {
+        events.compactMap { if case .move(let update) = $0 { update } else { nil } }.eraseToAnyPublisher()
+    }
+
+    func send(move: SmartCubeMoveEvent, facelets: String) {
+        sequence &+= 1
+        let update = SmartCubeCanonicalUpdate(
+            sequence: sequence, move: move, facelets: facelets, isStateTrusted: isStateTrusted
+        )
+        publish(.move(update))
+    }
+
+    func breakContinuity(_ reason: SmartCubeContinuityReason, facelets: String?) {
+        isStateTrusted = facelets != nil
+        sequence &+= 1
+        publish(.boundary(SmartCubeContinuityBoundary(sequence: sequence, reason: reason, facelets: facelets)))
+    }
+
+    private func publish(_ event: SmartCubeCanonicalEvent) {
+        eventHistory.append(event)
+        if eventHistory.count > 120 { eventHistory.removeFirst(eventHistory.count - 120) }
+        subject.send(event)
+    }
+
+    func clearHistory() {
+        eventHistory.removeAll()
+        // Keep sequence monotonic across connections and local state resets.
+    }
+}
+
 nonisolated struct SmartCubeMoveEvent: Identifiable, Equatable {
     let id: UUID
     let move: String
@@ -282,6 +358,13 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     @Published private(set) var discoveredCharacteristicUUIDs: [String] = []
     @Published private(set) var latestMove: SmartCubeMoveEvent?
     @Published private(set) var moveHistory: [SmartCubeMoveEvent] = []
+    private let canonicalFeed = SmartCubeCanonicalFeed()
+    var canonicalEvents: AnyPublisher<SmartCubeCanonicalEvent, Never> {
+        canonicalFeed.events
+    }
+    var canonicalHistory: [SmartCubeCanonicalEvent] { canonicalFeed.eventHistory }
+    var canonicalSequence: UInt64 { canonicalFeed.sequence }
+    var hasTrustedCanonicalState: Bool { canonicalFeed.isStateTrusted }
     @Published private(set) var facelets: String?
     @Published private(set) var cubeStateRevision = 0
     private(set) var gyroState: SmartCubeGyroState?
@@ -294,7 +377,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     @Published var coalesceSliceMoves = false
     @Published var verbosePacketLogging = false
 
-    static let solvedFacelets = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+    nonisolated static let solvedFacelets = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 
     private let ganGen2ServiceUUID = CBUUID(string: "6E400001-B5A3-F393-E0A9-E50E24DC4179")
     private let ganGen2CommandCharacteristicUUID = CBUUID(string: "28BE4A4A-CD67-11E9-A32F-2A2AE2DBCCE4")
@@ -325,6 +408,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private var stateCharacteristic: CBCharacteristic?
     private var parser: GANCubeProtocolParser?
     private var parserGeneration = 0
+    private var historyRetryWorkItem: DispatchWorkItem?
     private var cipher: GANCubeCipher?
     private var isLocalFaceletStateLocked = false
     private var shouldAcceptNextFaceletsSnapshot = false
@@ -443,10 +527,15 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     func resetCubeStateToSolved() {
+        parserGeneration += 1
+        historyRetryWorkItem?.cancel()
+        historyRetryWorkItem = nil
         cancelPendingMove()
         latestMove = nil
         moveHistory = []
+        canonicalFeed.clearHistory()
         facelets = Self.solvedFacelets
+        canonicalFeed.breakContinuity(.reset, facelets: facelets)
         cubeStateRevision += 1
         isLocalFaceletStateLocked = true
         shouldAcceptNextFaceletsSnapshot = false
@@ -459,12 +548,12 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         appendLog("Reset", "No hardware reset command was sent; this only resets CubeFlow's local state.")
     }
 
-    static func facelets(afterApplying algorithm: String) -> String? {
+    nonisolated static func facelets(afterApplying algorithm: String) -> String? {
         let moves = algorithm.split(whereSeparator: { $0.isWhitespace }).map(String.init)
         return faceletStates(afterApplying: moves)?.last
     }
 
-    static func faceletStates(afterApplying moves: [String]) -> [String]? {
+    nonisolated static func faceletStates(afterApplying moves: [String]) -> [String]? {
         guard !moves.isEmpty else { return nil }
         var states = [solvedFacelets]
         var state = solvedFacelets
@@ -500,7 +589,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         discoveredCharacteristicUUIDs = []
         latestMove = nil
         moveHistory = []
+        canonicalFeed.clearHistory()
         facelets = nil
+        canonicalFeed.breakContinuity(.disconnected, facelets: nil)
         cubeStateRevision += 1
         gyroState = nil
         gyroFeed.send(nil)
@@ -522,6 +613,8 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     private func setParser(_ newParser: GANCubeProtocolParser?) {
+        historyRetryWorkItem?.cancel()
+        historyRetryWorkItem = nil
         parser = newParser
         parserGeneration += 1
     }
@@ -597,6 +690,10 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     private func handleStateData(_ data: Data, characteristic: CBCharacteristic) {
+        #if DEBUG
+        let packetID = UUID()
+        SmartCubeDiagnostics.shared.mark("ble.rx", id: packetID)
+        #endif
         let raw = [UInt8](data)
         if verbosePacketLogging {
             appendLog("Raw \(characteristic.uuid.uuidString)", Self.hexString(raw))
@@ -611,6 +708,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         let shouldLogPackets = verbosePacketLogging
 
         parserQueue.async { [weak self, parser, cipher] in
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("parser.begin", id: packetID)
+            #endif
             guard let decrypted = cipher.decrypt(raw) else {
                 DispatchQueue.main.async {
                     guard self?.parserGeneration == generation else { return }
@@ -620,8 +720,19 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             }
 
             let parsedEvents = parser.handleStateEvent(decrypted)
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("parser.end", id: packetID)
+            for event in parsedEvents {
+                if case .move(let move) = event {
+                    SmartCubeDiagnostics.shared.mark("protocol.move", id: move.id, detail: "\(move.move) source=\(move.timestampSource)")
+                }
+            }
+            #endif
             DispatchQueue.main.async {
                 guard let self, self.parserGeneration == generation else { return }
+                #if DEBUG
+                SmartCubeDiagnostics.shared.mark("main.apply", id: packetID)
+                #endif
                 if shouldLogPackets {
                     self.appendLog("Decrypted", Self.hexString(decrypted))
                 }
@@ -646,7 +757,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
                 appendLog("Ignored facelets", "local reset state is locked; tap Facelets to resync from cube")
                 return
             }
+            let breaksContinuity = facelets != value || shouldAcceptNextFaceletsSnapshot
             facelets = value
+            if breaksContinuity { canonicalFeed.breakContinuity(.resync, facelets: value) }
             cubeStateRevision += 1
             isLocalFaceletStateLocked = false
             shouldAcceptNextFaceletsSnapshot = false
@@ -677,15 +790,46 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
                 appendProtocolLog(title, detail)
             }
         case .holdPendingMove(let seconds):
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("history.coalescingHold", detail: "requested=\(seconds)s applied=\(coalesceSliceMoves)")
+            #endif
             if coalesceSliceMoves {
                 holdPendingMoveFlush(seconds: seconds)
             }
         case .requestMoveHistory(let startMoveCount, let numberOfMoves):
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("history.request", detail: "start=\(startMoveCount) count=\(numberOfMoves)")
+            #endif
             if protocolDebugLogging {
                 appendProtocolLog("GAN request history", "start \(startMoveCount), moves \(numberOfMoves)")
             }
             sendCommand(.requestMoveHistory(startMoveCount: startMoveCount, numberOfMoves: numberOfMoves))
+            scheduleHistoryRetry()
+        case .continuityLost:
+            canonicalFeed.breakContinuity(.historyGap, facelets: nil)
         }
+    }
+
+    private func scheduleHistoryRetry() {
+        guard historyRetryWorkItem == nil, let parser else { return }
+        let generation = parserGeneration
+        let work = DispatchWorkItem { [weak self, parser] in
+            guard let self, self.parserGeneration == generation else { return }
+            self.historyRetryWorkItem = nil
+            self.parserQueue.async { [weak self, parser] in
+                let events = parser.retryPendingGANHistory()
+                let needsRetry = parser.hasRetryableGANHistory
+                DispatchQueue.main.async {
+                    guard let self, self.parserGeneration == generation else { return }
+                    for event in events { self.apply(event) }
+                    if needsRetry { self.scheduleHistoryRetry() }
+                }
+            }
+        }
+        historyRetryWorkItem = work
+        // A lost-response retry, never a delay before the initial gap request.
+        // The parser caps attempts per unresolved window and throttles duplicate events.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
     }
 
     private func enqueueMove(_ move: SmartCubeMoveEvent) {
@@ -703,6 +847,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         }
 
         if let sliceMove = coalescedSliceMove(first: previousMove, second: move) {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("coalesce.merge", id: sliceMove.id, detail: "\(previousMove.move)+\(move.move)->\(sliceMove.move) parents=\(previousMove.id),\(move.id)")
+            #endif
             pendingMoveEvent = nil
             emitMove(sliceMove, logTitle: "Slice", logDetail: "\(sliceMove.move) from paired outer moves")
             return
@@ -727,6 +874,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     private func schedulePendingMoveFlush(after delay: TimeInterval) {
+        #if DEBUG
+        SmartCubeDiagnostics.shared.mark("coalesce.pending", id: pendingMoveEvent?.id, detail: "scheduled=\(delay)s")
+        #endif
         let workItem = DispatchWorkItem { [weak self] in
             self?.flushPendingMove()
         }
@@ -738,6 +888,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         pendingMoveFlushWorkItem?.cancel()
         pendingMoveFlushWorkItem = nil
         guard let pendingMove = pendingMoveEvent else { return }
+        #if DEBUG
+        SmartCubeDiagnostics.shared.mark("coalesce.flush", id: pendingMove.id)
+        #endif
         pendingMoveEvent = nil
         emitMove(pendingMove)
     }
@@ -753,6 +906,12 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         moveHistory.append(move)
         if let currentFacelets = facelets, let updatedFacelets = Self.facelets(currentFacelets, applying: move.move) {
             facelets = updatedFacelets
+            #if DEBUG
+            SmartCubeDiagnostics.shared.mark("canonical.publish", id: move.id, detail: "\(move.move) source=\(move.timestampSource) trusted=\(canonicalFeed.isStateTrusted)")
+            #endif
+            // Synchronous, ordered delivery after the paired state is committed.
+            // Unlike SwiftUI onChange, this does not collapse packet/history bursts.
+            canonicalFeed.send(move: move, facelets: updatedFacelets)
         }
         trimMoveHistoryIfNeeded()
         if protocolDebugLogging {
@@ -877,7 +1036,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         packetCountsByCharacteristic = [:]
     }
 
-    private static func isPlausibleFacelets(_ value: String) -> Bool {
+    nonisolated private static func isPlausibleFacelets(_ value: String) -> Bool {
         let characters = Array(value)
         guard characters.count == 54 else { return false }
         let allowed = Set("URFDLB")
@@ -903,7 +1062,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         return (0...30).contains(major) && (0...255).contains(minor)
     }
 
-    private struct Sticker: Hashable {
+    nonisolated private struct Sticker: Hashable {
         var x: Int
         var y: Int
         var z: Int
@@ -937,7 +1096,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         return move + "'"
     }
 
-    static func facelets(_ value: String, applying move: String) -> String? {
+    nonisolated static func facelets(_ value: String, applying move: String) -> String? {
         guard isPlausibleFacelets(value), let face = move.first else { return nil }
         let turns: Int
         if move.hasSuffix("2") {
@@ -955,7 +1114,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         return result
     }
 
-    private static func faceletsAfterClockwiseTurn(_ value: String, move: Character) -> String? {
+    nonisolated private static func faceletsAfterClockwiseTurn(_ value: String, move: Character) -> String? {
         var output = Array(value)
         let input = output
         for stickerIndex in 0..<54 {
@@ -968,7 +1127,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         return String(output)
     }
 
-    private static func stickerIsOnLayer(_ sticker: Sticker, move: Character) -> Bool {
+    nonisolated private static func stickerIsOnLayer(_ sticker: Sticker, move: Character) -> Bool {
         switch move {
         case "U": return sticker.y == 1
         case "R": return sticker.x == 1
@@ -983,7 +1142,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         }
     }
 
-    private static func rotate(_ sticker: Sticker, move: Character) -> Sticker {
+    nonisolated private static func rotate(_ sticker: Sticker, move: Character) -> Sticker {
         var sticker = sticker
         switch move {
         case "U":
@@ -1010,7 +1169,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         return sticker
     }
 
-    private static func sticker(for index: Int) -> Sticker {
+    nonisolated private static func sticker(for index: Int) -> Sticker {
         let face = index / 9
         let offset = index % 9
         let row = offset / 3
@@ -1031,7 +1190,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         }
     }
 
-    private static func index(for sticker: Sticker) -> Int? {
+    nonisolated private static func index(for sticker: Sticker) -> Int? {
         switch (sticker.nx, sticker.ny, sticker.nz) {
         case (0, 1, 0):
             return (sticker.z + 1) * 3 + (sticker.x + 1)

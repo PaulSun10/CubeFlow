@@ -2050,6 +2050,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "Recovery";
 
 "settings.smart_cube.current_move" = "Current Move";
 "settings.smart_cube.current_move.none" = "None";
@@ -2061,3 +2062,9 @@
 "settings.smart_cube.highlight_mode.custom" = "Custom";
 "settings.smart_cube.highlight_color.custom" = "Custom Highlight Color";
 "settings.smart_cube.highlight_text.custom" = "Custom Highlight Text";
+"settings.smart_cube.recovery_display" = "Recovery Display";
+"settings.smart_cube.recovery_display.separate" = "Separate";
+"settings.smart_cube.recovery_display.inline" = "Inline";
+"settings.smart_cube.highlight_animation" = "Highlight Animation";
+"settings.smart_cube.highlight_animation.instant" = "Instant";
+"settings.smart_cube.highlight_animation.animated" = "Animated";

@@ -16,6 +16,8 @@ struct SmartCubeLabView: View {
     @AppStorage("smartCubeHighlightTextColorData") private var highlightTextColorData: Data?
     @AppStorage("smartCubeCompletedMovesBehavior") private var completedMovesBehaviorRawValue = SmartCubeCompletedMovesBehavior.collapse.rawValue
     @AppStorage("smartCubeScrambleTransition") private var scrambleTransitionRawValue = SmartCubeScrambleTransition.blur.rawValue
+    @AppStorage("smartCubeRecoveryDisplay") private var recoveryDisplayRawValue = SmartCubeRecoveryDisplay.separate.rawValue
+    @AppStorage("smartCubeHighlightAnimation") private var highlightAnimationRawValue = SmartCubeHighlightAnimation.animated.rawValue
     @State private var showingResetPrompt = false
 
     private var fixedView: SmartCubeFixedView {
@@ -110,6 +112,7 @@ struct SmartCubeLabView: View {
             }
         }
         .onAppear {
+            recoveryDisplayRawValue = SmartCubeRecoveryDisplay.resolved(recoveryDisplayRawValue).rawValue
             manager.prepareIfNeeded()
         }
         .onChange(of: manager.connectionState) { state in
@@ -326,6 +329,12 @@ struct SmartCubeLabView: View {
             }
 
             if currentMovePresentation == .highlight {
+                Picker("settings.smart_cube.highlight_animation", selection: $highlightAnimationRawValue) {
+                    ForEach(SmartCubeHighlightAnimation.allCases) { animation in
+                        Text(animation.localizedKey).tag(animation.rawValue)
+                    }
+                }
+
                 Picker("settings.smart_cube.highlight_color", selection: $highlightColorModeRawValue) {
                     ForEach(SmartCubeHighlightColorMode.allCases) { mode in
                         Text(mode.localizedKey).tag(mode.rawValue)
@@ -358,6 +367,12 @@ struct SmartCubeLabView: View {
             Picker("settings.smart_cube.completed_moves", selection: $completedMovesBehaviorRawValue) {
                 ForEach(SmartCubeCompletedMovesBehavior.allCases) { behavior in
                     Text(behavior.localizedKey).tag(behavior.rawValue)
+                }
+            }
+
+            Picker("settings.smart_cube.recovery_display", selection: $recoveryDisplayRawValue) {
+                ForEach(SmartCubeRecoveryDisplay.allCases) { display in
+                    Text(display.localizedKey).tag(display.rawValue)
                 }
             }
 

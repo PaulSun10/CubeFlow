@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "แก้ไข";
 
 "settings.smart_cube.current_move" = "การหมุนปัจจุบัน";
 "settings.smart_cube.current_move.none" = "ไม่มี";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "กำหนดเอง";
 "settings.smart_cube.highlight_color.custom" = "สีไฮไลต์แบบกำหนดเอง";
 "settings.smart_cube.highlight_text.custom" = "สีข้อความไฮไลต์แบบกำหนดเอง";
+"settings.smart_cube.recovery_display" = "การแสดงการกู้คืน";
+"settings.smart_cube.recovery_display.separate" = "แยก";
+"settings.smart_cube.recovery_display.inline" = "ในบรรทัด";
+"settings.smart_cube.highlight_animation" = "แอนิเมชันไฮไลต์";
+"settings.smart_cube.highlight_animation.instant" = "ทันที";
+"settings.smart_cube.highlight_animation.animated" = "เคลื่อนไหว";

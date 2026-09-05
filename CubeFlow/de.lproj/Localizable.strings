@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "Korrektur";
 
 "settings.smart_cube.current_move" = "Aktueller Zug";
 "settings.smart_cube.current_move.none" = "Keine";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "Benutzerdefiniert";
 "settings.smart_cube.highlight_color.custom" = "Eigene Hervorhebungsfarbe";
 "settings.smart_cube.highlight_text.custom" = "Eigene Textfarbe";
+"settings.smart_cube.recovery_display" = "Wiederherstellungsanzeige";
+"settings.smart_cube.recovery_display.separate" = "Separat";
+"settings.smart_cube.recovery_display.inline" = "Inline";
+"settings.smart_cube.highlight_animation" = "Hervorhebungsanimation";
+"settings.smart_cube.highlight_animation.instant" = "Sofort";
+"settings.smart_cube.highlight_animation.animated" = "Animiert";

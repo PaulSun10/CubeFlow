@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "Khắc phục";
 
 "settings.smart_cube.current_move" = "Nước hiện tại";
 "settings.smart_cube.current_move.none" = "Không";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "Tùy chỉnh";
 "settings.smart_cube.highlight_color.custom" = "Màu tô sáng tùy chỉnh";
 "settings.smart_cube.highlight_text.custom" = "Chữ tô sáng tùy chỉnh";
+"settings.smart_cube.recovery_display" = "Hiển thị khôi phục";
+"settings.smart_cube.recovery_display.separate" = "Tách biệt";
+"settings.smart_cube.recovery_display.inline" = "Trong dòng";
+"settings.smart_cube.highlight_animation" = "Hoạt ảnh tô sáng";
+"settings.smart_cube.highlight_animation.instant" = "Tức thì";
+"settings.smart_cube.highlight_animation.animated" = "Có hoạt ảnh";

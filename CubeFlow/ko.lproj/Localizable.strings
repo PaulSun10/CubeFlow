@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "복구";
 
 "settings.smart_cube.current_move" = "현재 수";
 "settings.smart_cube.current_move.none" = "없음";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "사용자화";
 "settings.smart_cube.highlight_color.custom" = "사용자화 강조 색상";
 "settings.smart_cube.highlight_text.custom" = "사용자화 강조 텍스트";
+"settings.smart_cube.recovery_display" = "복구 표시";
+"settings.smart_cube.recovery_display.separate" = "분리";
+"settings.smart_cube.recovery_display.inline" = "인라인";
+"settings.smart_cube.highlight_animation" = "강조 애니메이션";
+"settings.smart_cube.highlight_animation.instant" = "즉시";
+"settings.smart_cube.highlight_animation.animated" = "애니메이션";

@@ -1967,6 +1967,7 @@
 "settings.smart_cube.transition.instant" = "Instant";
 
 "smart_cube.timer.deviated" = "Scramble does not match";
+"smart_cube.timer.recovery" = "تصحيح";
 
 "settings.smart_cube.current_move" = "الحركة الحالية";
 "settings.smart_cube.current_move.none" = "بلا";
@@ -1978,3 +1979,9 @@
 "settings.smart_cube.highlight_mode.custom" = "مخصص";
 "settings.smart_cube.highlight_color.custom" = "لون تمييز مخصص";
 "settings.smart_cube.highlight_text.custom" = "لون نص تمييز مخصص";
+"settings.smart_cube.recovery_display" = "عرض الاسترداد";
+"settings.smart_cube.recovery_display.separate" = "منفصل";
+"settings.smart_cube.recovery_display.inline" = "مضمن";
+"settings.smart_cube.highlight_animation" = "حركة التمييز";
+"settings.smart_cube.highlight_animation.instant" = "فوري";
+"settings.smart_cube.highlight_animation.animated" = "متحرك";
