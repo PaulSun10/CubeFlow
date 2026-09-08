@@ -1806,6 +1806,7 @@
 "settings.smart_cube.ready_sound" = "Ready Sound";
 "settings.smart_cube.debug_mode" = "Debug Mode";
 "smart_cube.timer.disconnected" = "스마트 큐브를 연결해 주세요";
+"smart_cube.timer.loading" = "로드 중…";
 "smart_cube.timer.connect" = "큐브 연결";
 "smart_cube.timer.solving" = "Solving";
 "smart_cube.timer.ready" = "Ready — turn to start";

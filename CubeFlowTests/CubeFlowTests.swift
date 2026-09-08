@@ -584,7 +584,8 @@ struct CubeFlowTests {
 
         #expect(!SmartCubeRecoveryPresentationState.searching(
             identity: identity,
-            sourceFacelets: sourceFacelets
+            sourceFacelets: sourceFacelets,
+            fallbackPlan: plan
         ).showsMismatch)
         #expect(!SmartCubeRecoveryPresentationState.recovery(plan).showsMismatch)
         #expect(!SmartCubeRecoveryPresentationState.unavailable(
@@ -1748,7 +1749,19 @@ struct CubeFlowTests {
         #expect(abs((SolveMetrics.trimmedAverage(from: heroSolves, count: 5) ?? 0) - 10.24) < 0.000_001)
         #expect(abs((SolveMetrics.trimmedAverage(from: heroSolves, count: 12) ?? 0) - 10.71) < 0.000_001)
         #expect(Set(solves.map { Calendar.current.startOfDay(for: $0.date) }).count == 17)
-        #expect(MarketingPreviewPreset.timerThreeByThreeHero.timerConfiguration.scramble == "R U2 F' L2 D B2 R2 U' F2 D2 L' B U R' F D' L2 U2 B' R2")
+        var configuration = MarketingPreviewPreset.timerThreeByThreeHero.timerConfiguration
+        #expect(configuration.scramble == "R U2 F' L2 D B2 R2 U' F2 D2 L' B U R' F D' L2 U2 B' R2")
+        #expect(configuration.mean == 10.9275)
+        #expect(configuration.ao5 == 10.24)
+        #expect(configuration.ao12 == 10.71)
+        #expect(configuration.ao100 == 10.84)
+
+        configuration.event = .square1
+        configuration.elapsedSeconds = 7.32
+        #expect(configuration.event == .square1)
+        #expect(configuration.elapsedSeconds == 7.32)
+        #expect(try context.fetchSessionsSortedByCreationDate().first?.selectedEventRawValue == PuzzleEvent.threeByThree.rawValue)
+        #expect(try context.fetchSolvesSortedByDateDescending().count == 28)
     }
     #endif
 

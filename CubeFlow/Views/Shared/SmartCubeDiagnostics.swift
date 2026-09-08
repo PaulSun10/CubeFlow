@@ -18,6 +18,80 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
     private var entries: [Entry] = []
     private var activeStart: TimeInterval?
     private var liveWaitPrintedAt: TimeInterval = 0
+    private var lastReplacementLog: TimeInterval = 0
+    private var lastGuidanceLog: TimeInterval = 0
+    private var lastTraceSignatures: [String: String] = [:]
+    private var successfulMoveCounts: [String: Int] = [:]
+
+    func trace(
+        _ event: String,
+        attemptID: UUID? = nil,
+        deviceID: UUID? = nil,
+        detail: String = "",
+        deduplicationKey: String? = nil
+    ) {
+        let attempt = Self.shortID(attemptID)
+        let device = Self.shortID(deviceID)
+        let signature = "\(attempt)|\(device)|\(event)|\(detail)"
+        if let deduplicationKey {
+            lock.lock()
+            let unchanged = lastTraceSignatures[deduplicationKey] == signature
+            if !unchanged { lastTraceSignatures[deduplicationKey] = signature }
+            lock.unlock()
+            if unchanged { return }
+        }
+        let suffix = detail.isEmpty ? "" : " \(detail)"
+        output.async {
+            print("[SmartCubeTrace][\(attempt)] device=\(device) event=\(event)\(suffix)")
+        }
+    }
+
+    func traceMove(
+        _ event: String,
+        move: SmartCubeMoveEvent,
+        attemptID: UUID?,
+        deviceID: UUID?,
+        accepted: Bool,
+        detail: String
+    ) {
+        let key = "\(event)|\(Self.shortID(attemptID))"
+        lock.lock()
+        let nextCount = (successfulMoveCounts[key] ?? 0) + 1
+        if accepted { successfulMoveCounts[key] = nextCount }
+        lock.unlock()
+        // Rejections are always useful. Successful traffic is sampled so a long
+        // solve cannot bury the connection-establishment trace.
+        guard !accepted || nextCount <= 3 || nextCount.isMultiple(of: 25) else { return }
+        trace(
+            event,
+            attemptID: attemptID,
+            deviceID: deviceID,
+            detail: "move=\(move.move) serial=\(move.serial.map(String.init) ?? "nil") accepted=\(accepted) \(detail)"
+        )
+    }
+
+    private static func shortID(_ id: UUID?) -> String {
+        guard let id else { return "none" }
+        return String(id.uuidString.prefix(8))
+    }
+
+    func replacementDecision(_ detail: String, force: Bool = false) {
+        let now = ProcessInfo.processInfo.systemUptime
+        lock.lock()
+        let shouldPrint = force || now - lastReplacementLog >= 0.5
+        if shouldPrint { lastReplacementLog = now }
+        lock.unlock()
+        if shouldPrint { output.async { print("[SCDEBUG] REPLAN \(detail)") } }
+    }
+
+    func guidance(_ detail: String, force: Bool = false) {
+        let now = ProcessInfo.processInfo.systemUptime
+        lock.lock()
+        let shouldPrint = force || now - lastGuidanceLog >= 0.5
+        if shouldPrint { lastGuidanceLog = now }
+        lock.unlock()
+        if shouldPrint { output.async { print("[SCDEBUG] GUIDANCE \(detail)") } }
+    }
 
     func mark(_ stage: String, id: UUID? = nil, detail: String = "") {
         let now = ProcessInfo.processInfo.systemUptime

@@ -116,6 +116,7 @@ struct SettingsTabView: View {
     private var solves: FetchedResults<Solve>
 
     @AppStorage("appLanguage") private var appLanguage: String = "en"
+    @AppStorage("selectedSessionID") private var selectedSessionID: String = ""
     @AppStorage("timerBackgroundAppearanceData") private var timerBackgroundAppearanceData: Data?
     @AppStorage("competitionsBackgroundAppearanceData") private var competitionsBackgroundAppearanceData: Data?
     @AppStorage("timerTextAppearanceData") private var timerTextAppearanceData: Data?
@@ -129,7 +130,7 @@ struct SettingsTabView: View {
     @AppStorage("averageDisplayOption") private var averageDisplayOption: String = AverageDisplayOption.ao5AndAo12.rawValue
     @AppStorage("timerUpdatingMode") private var timerUpdatingMode: String = TimerUpdatingMode.on.rawValue
     @AppStorage("timerAccuracy") private var timerAccuracy: String = SolveTimeAccuracy.thousandths.rawValue
-    @AppStorage("enteringTimesWith") private var enteringTimesWith: String = TimeEntryMode.timer.rawValue
+    @AppStorage("enteringTimesWith") private var enteringTimesWith: String = SessionTimingMethod.timer.rawValue
     @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = false
     @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
@@ -214,6 +215,31 @@ struct SettingsTabView: View {
         appLanguageOptions().first(where: { $0.id == appLanguage }) ?? appLanguageOptions()[0]
     }
 
+    private var selectedSession: Session? {
+        sessions.first(where: { $0.id.uuidString == selectedSessionID }) ?? sessions.first
+    }
+
+    private func restoreTimingMethodFromSelectedSession() {
+        guard let selectedSession else { return }
+        let configuration = selectedSession.restoreTimerConfiguration(
+            legacyTimingMethodRawValue: enteringTimesWith
+        )
+        if modelContext.hasChanges {
+            try? modelContext.save()
+        }
+        if enteringTimesWith != configuration.timingMethod.rawValue {
+            enteringTimesWith = configuration.timingMethod.rawValue
+        }
+    }
+
+    private func persistTimingMethodToSelectedSession(_ rawValue: String) {
+        guard let selectedSession,
+              SessionTimingMethod(rawValue: rawValue) != nil,
+              selectedSession.selectedTimingMethodRawValue != rawValue else { return }
+        selectedSession.persistTimerConfiguration(timingMethodRawValue: rawValue)
+        try? modelContext.save()
+    }
+
     private var settingsCardBackgroundFillColor: Color {
         currentColorScheme == .dark
             ? Color(.secondarySystemGroupedBackground)
@@ -262,9 +288,10 @@ struct SettingsTabView: View {
                 CompetitionCalculatorSheet(appLanguage: appLanguage)
             }
             .onAppear {
+                restoreTimingMethodFromSelectedSession()
                 migrateTimerArrangementPreferencesIfNeeded()
                 normalizeUnavailableFontSelections()
-                if enteringTimesWith == TimeEntryMode.gan.rawValue {
+                if enteringTimesWith == SessionTimingMethod.gan.rawValue {
                     ganTimer.prepareIfNeeded()
                 }
                 timerBackgroundAppearance = AppearanceConfiguration.decode(
@@ -289,6 +316,15 @@ struct SettingsTabView: View {
                 )
                 scrambleDiagramColorScheme = ScrambleColorConfiguration.decode(from: scrambleDiagramColorSchemeData)
                 selectedAppIcon = AppIconOption.fromCurrentSystemIcon()?.rawValue ?? AppIconOption.red.rawValue
+            }
+            .onChange(of: selectedSessionID) { _ in
+                restoreTimingMethodFromSelectedSession()
+            }
+            .onChange(of: sessions.count) { _ in
+                restoreTimingMethodFromSelectedSession()
+            }
+            .onChange(of: enteringTimesWith) { newValue in
+                persistTimingMethodToSelectedSession(newValue)
             }
             .onChange(of: timerBackgroundAppearance) { newValue in
                 timerBackgroundAppearanceData = try? JSONEncoder().encode(newValue)
@@ -492,7 +528,7 @@ private extension SettingsTabView {
                 } label: {
                     settingsNavigationLabel(
                         titleKey: "settings.entering_times_with",
-                        valueKey: TimeEntryMode(rawValue: enteringTimesWith)?.localizedKey ?? "settings.entering_times_timer"
+                        valueKey: SessionTimingMethod(rawValue: enteringTimesWith)?.localizedKey ?? "settings.entering_times_timer"
                     )
                 }
 
@@ -2039,9 +2075,9 @@ private extension SettingsTabView {
             Section {
                 listSettingsMenuRow(
                     titleKey: "settings.entering_times_with",
-                    selectedKey: TimeEntryMode(rawValue: enteringTimesWith)?.localizedKey ?? "settings.entering_times_timer"
+                    selectedKey: SessionTimingMethod(rawValue: enteringTimesWith)?.localizedKey ?? "settings.entering_times_timer"
                 ) {
-                    ForEach(TimeEntryMode.allCases) { mode in
+                    ForEach(SessionTimingMethod.allCases) { mode in
                         Button(mode.localizedKey) {
                             enteringTimesWith = mode.rawValue
                             if mode == .gan {
@@ -2062,7 +2098,7 @@ private extension SettingsTabView {
                 }
             }
 
-            if enteringTimesWith == TimeEntryMode.gan.rawValue {
+            if enteringTimesWith == SessionTimingMethod.gan.rawValue {
                 Section {
                     ganTimerConnectionRow
 
@@ -2104,7 +2140,7 @@ private extension SettingsTabView {
                 }
             }
 
-            if enteringTimesWith == TimeEntryMode.smartCube.rawValue {
+            if enteringTimesWith == SessionTimingMethod.smartCube.rawValue {
                 Section {
                     NavigationLink {
                         SmartCubeLabView()
@@ -3790,14 +3826,7 @@ private extension SolveTimeAccuracy {
 
 }
 
-private enum TimeEntryMode: String, CaseIterable, Identifiable {
-    case timer
-    case typing
-    case gan
-    case smartCube
-
-    var id: String { rawValue }
-
+private extension SessionTimingMethod {
     var localizedKey: LocalizedStringKey {
         switch self {
         case .timer: "settings.entering_times_timer"

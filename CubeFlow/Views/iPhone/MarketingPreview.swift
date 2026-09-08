@@ -20,16 +20,24 @@ enum MarketingPreviewPreset: String, CaseIterable, Identifiable {
             MarketingTimerPreviewConfiguration(
                 event: .threeByThree,
                 elapsedSeconds: 9.51,
-                scramble: "R U2 F' L2 D B2 R2 U' F2 D2 L' B U R' F D' L2 U2 B' R2"
+                scramble: "R U2 F' L2 D B2 R2 U' F2 D2 L' B U R' F D' L2 U2 B' R2",
+                mean: 10.9275,
+                ao5: 10.24,
+                ao12: 10.71,
+                ao100: 10.84
             )
         }
     }
 }
 
 struct MarketingTimerPreviewConfiguration {
-    let event: PuzzleEvent
-    let elapsedSeconds: Double
+    var event: PuzzleEvent
+    var elapsedSeconds: Double
     let scramble: String
+    var mean: Double
+    var ao5: Double
+    var ao12: Double
+    var ao100: Double
 }
 
 private struct IsMarketingPreviewEnvironmentKey: EnvironmentKey {
@@ -187,30 +195,45 @@ struct MarketingPreviewCatalogView: View {
 private struct MarketingPreviewHost: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var previewEnvironment: MarketingPreviewEnvironment
+    @State private var configuration: MarketingTimerPreviewConfiguration
     @State private var showsExitButton = true
+    @State private var showsConfiguration = false
+    @State private var controlsWereManuallyToggled = false
 
     private let preset: MarketingPreviewPreset
 
     init(preset: MarketingPreviewPreset) {
         self.preset = preset
         _previewEnvironment = StateObject(wrappedValue: MarketingPreviewEnvironment(preset: preset))
+        _configuration = State(initialValue: preset.timerConfiguration)
     }
 
     var body: some View {
-        IPhoneContentView(marketingPreviewConfiguration: preset.timerConfiguration)
+        IPhoneContentView(marketingPreviewConfiguration: $configuration)
             .environment(\.managedObjectContext, previewEnvironment.persistenceController.container.viewContext)
             .environment(\.solveTimeAccuracy, .hundredths)
             .environment(\.isMarketingPreview, true)
             .defaultAppStorage(previewEnvironment.defaults)
             .overlay(alignment: .topTrailing) {
                 if showsExitButton {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
-                            .frame(width: 44, height: 44)
-                            .compatibleGlassFromIOS16(in: Circle())
+                    HStack(spacing: 8) {
+                        Button {
+                            showsConfiguration = true
+                        } label: {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 15, weight: .semibold))
+                                .frame(width: 44, height: 44)
+                                .compatibleGlassFromIOS16(in: Circle())
+                        }
+
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 15, weight: .semibold))
+                                .frame(width: 44, height: 44)
+                                .compatibleGlassFromIOS16(in: Circle())
+                        }
                     }
                     .buttonStyle(.plain)
                     .padding(.top, 6)
@@ -218,19 +241,62 @@ private struct MarketingPreviewHost: View {
                     .transition(.opacity)
                 }
             }
+            .sheet(isPresented: $showsConfiguration) {
+                marketingPreviewConfigurationSheet
+                    .compatibleMediumSheet()
+            }
             .simultaneousGesture(
                 TapGesture(count: 3).onEnded {
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        showsExitButton = true
+                        controlsWereManuallyToggled = true
+                        showsExitButton.toggle()
                     }
                 }
             )
             .task {
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
+                guard !controlsWereManuallyToggled else { return }
                 withAnimation(.easeInOut(duration: 0.2)) {
                     showsExitButton = false
                 }
             }
+    }
+
+    private var marketingPreviewConfigurationSheet: some View {
+        CompatibleNavigationContainer {
+            Form {
+                Section("Preview Values") {
+                    previewValueField("Time", value: $configuration.elapsedSeconds)
+                    previewValueField("Mean", value: $configuration.mean)
+                    previewValueField("Ao5", value: $configuration.ao5)
+                    previewValueField("Ao12", value: $configuration.ao12)
+                    previewValueField("Ao100", value: $configuration.ao100)
+                }
+            }
+            .navigationTitle("Marketing Preview")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        showsConfiguration = false
+                    }
+                }
+            }
+        }
+    }
+
+    private func previewValueField(_ title: String, value: Binding<Double>) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            TextField(
+                title,
+                value: value,
+                format: .number.precision(.fractionLength(0...3))
+            )
+            .keyboardType(.decimalPad)
+            .multilineTextAlignment(.trailing)
+        }
     }
 }
 #endif

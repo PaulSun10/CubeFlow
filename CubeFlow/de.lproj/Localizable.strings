@@ -1806,6 +1806,7 @@
 "settings.smart_cube.ready_sound" = "Ready Sound";
 "settings.smart_cube.debug_mode" = "Debug Mode";
 "smart_cube.timer.disconnected" = "Bitte verbinde einen Smart Cube";
+"smart_cube.timer.loading" = "Wird geladen…";
 "smart_cube.timer.connect" = "Würfel verbinden";
 "smart_cube.timer.solving" = "Solving";
 "smart_cube.timer.ready" = "Ready — turn to start";

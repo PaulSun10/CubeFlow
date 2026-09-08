@@ -989,6 +989,20 @@ enum SmartCubeResetPolicy: String, CaseIterable, Identifiable {
         case .never: "settings.smart_cube.reset_never"
         }
     }
+
+    var connectionAction: SmartCubeConnectionResetAction {
+        switch self {
+        case .always: .reset
+        case .prompt: .prompt
+        case .never: .continueWithoutReset
+        }
+    }
+}
+
+enum SmartCubeConnectionResetAction: Equatable {
+    case reset
+    case prompt
+    case continueWithoutReset
 }
 
 enum PuzzleEvent: String, CaseIterable {

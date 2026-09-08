@@ -243,7 +243,13 @@ enum DataTransferManager {
             version: 2,
             exportedAt: .now,
             sessions: sessions.map {
-                SessionBackupItem(id: $0.id, name: $0.name, createdAt: $0.createdAt)
+                SessionBackupItem(
+                    id: $0.id,
+                    name: $0.name,
+                    createdAt: $0.createdAt,
+                    selectedEventRawValue: $0.selectedEventRawValue,
+                    selectedTimingMethodRawValue: $0.selectedTimingMethodRawValue
+                )
             },
             solves: solves.map {
                 SolveBackupItem(
@@ -437,6 +443,14 @@ enum DataTransferManager {
                 createdAt: sessionItem.createdAt,
                 modelContext: modelContext
             )
+            if let selectedEventRawValue = sessionItem.selectedEventRawValue {
+                targetSession.persistTimerConfiguration(eventRawValue: selectedEventRawValue)
+            }
+            if let selectedTimingMethodRawValue = sessionItem.selectedTimingMethodRawValue {
+                targetSession.persistTimerConfiguration(
+                    timingMethodRawValue: selectedTimingMethodRawValue
+                )
+            }
             importedSessionTargets[sessionItem.id] = targetSession
             unsavedChanges += 1
 
@@ -1127,17 +1141,29 @@ struct SessionBackupItem: Sendable, Codable {
     let id: UUID
     let name: String
     let createdAt: Date
+    let selectedEventRawValue: String?
+    let selectedTimingMethodRawValue: String?
 
     enum CodingKeys: String, CodingKey {
         case id
         case name
         case createdAt
+        case selectedEventRawValue
+        case selectedTimingMethodRawValue
     }
 
-    nonisolated init(id: UUID, name: String, createdAt: Date) {
+    nonisolated init(
+        id: UUID,
+        name: String,
+        createdAt: Date,
+        selectedEventRawValue: String? = nil,
+        selectedTimingMethodRawValue: String? = nil
+    ) {
         self.id = id
         self.name = name
         self.createdAt = createdAt
+        self.selectedEventRawValue = selectedEventRawValue
+        self.selectedTimingMethodRawValue = selectedTimingMethodRawValue
     }
 
     nonisolated init(from decoder: Decoder) throws {
@@ -1145,6 +1171,14 @@ struct SessionBackupItem: Sendable, Codable {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
+        selectedEventRawValue = try container.decodeIfPresent(
+            String.self,
+            forKey: .selectedEventRawValue
+        )
+        selectedTimingMethodRawValue = try container.decodeIfPresent(
+            String.self,
+            forKey: .selectedTimingMethodRawValue
+        )
     }
 
     nonisolated func encode(to encoder: Encoder) throws {
@@ -1152,6 +1186,11 @@ struct SessionBackupItem: Sendable, Codable {
         try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)
         try container.encode(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(selectedEventRawValue, forKey: .selectedEventRawValue)
+        try container.encodeIfPresent(
+            selectedTimingMethodRawValue,
+            forKey: .selectedTimingMethodRawValue
+        )
     }
 }
 

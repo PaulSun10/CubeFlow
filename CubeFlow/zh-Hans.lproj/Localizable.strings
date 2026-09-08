@@ -1806,6 +1806,7 @@
 "settings.smart_cube.ready_sound" = "就绪提示音";
 "settings.smart_cube.debug_mode" = "调试模式";
 "smart_cube.timer.disconnected" = "请连接智能魔方";
+"smart_cube.timer.loading" = "加载中…";
 "smart_cube.timer.connect" = "连接魔方";
 "smart_cube.timer.solving" = "正在复原";
 "smart_cube.timer.ready" = "已就绪，转动开始";

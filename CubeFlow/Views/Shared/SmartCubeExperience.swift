@@ -1,5 +1,107 @@
 #if os(iOS)
 import Foundation
+
+nonisolated struct SmartCubeObservationReadiness: Equatable, Sendable {
+    let attemptID: UUID?
+    let isBLEConnected: Bool
+    let hasResolvedConnectionPolicy: Bool
+    let hasAuthoritativeState: Bool
+    let hasTrustedCanonicalState: Bool
+
+    init(
+        attemptID: UUID?,
+        isBLEConnected: Bool,
+        hasResolvedConnectionPolicy: Bool = true,
+        hasAuthoritativeState: Bool,
+        hasTrustedCanonicalState: Bool
+    ) {
+        self.attemptID = attemptID
+        self.isBLEConnected = isBLEConnected
+        self.hasResolvedConnectionPolicy = hasResolvedConnectionPolicy
+        self.hasAuthoritativeState = hasAuthoritativeState
+        self.hasTrustedCanonicalState = hasTrustedCanonicalState
+    }
+
+    var isReady: Bool {
+        attemptID != nil
+            && isBLEConnected
+            && hasResolvedConnectionPolicy
+            && hasAuthoritativeState
+            && hasTrustedCanonicalState
+    }
+}
+
+nonisolated enum SmartCubeTimerConnectionPresentation: Equatable, Sendable {
+    case inactive
+    case loading
+    case ready
+
+    static func resolve(
+        readiness: SmartCubeObservationReadiness,
+        isAttemptApproved: Bool,
+        connectionState: SmartCubeConnectionState
+    ) -> Self {
+        if readiness.isReady, isAttemptApproved { return .ready }
+        guard readiness.attemptID != nil else { return .inactive }
+        switch connectionState {
+        case .connecting, .connected:
+            return .loading
+        case .disconnected, .bluetoothUnavailable, .unauthorized, .scanning, .failed:
+            return .inactive
+        }
+    }
+}
+
+nonisolated struct SmartCubeReadinessAnnouncementTracker: Equatable, Sendable {
+    private(set) var activeAttemptID: UUID?
+    private(set) var approvedAttemptID: UUID?
+    private(set) var announcedAttemptID: UUID?
+
+    mutating func begin(_ attemptID: UUID) {
+        activeAttemptID = attemptID
+        approvedAttemptID = nil
+    }
+
+    mutating func approve(_ attemptID: UUID) {
+        guard activeAttemptID == attemptID else { return }
+        approvedAttemptID = attemptID
+    }
+
+    mutating func synchronize(attemptID: UUID?, isApproved: Bool) {
+        guard let attemptID else {
+            end(nil)
+            return
+        }
+        if activeAttemptID != attemptID {
+            begin(attemptID)
+        }
+        if isApproved {
+            approve(attemptID)
+        }
+    }
+
+    mutating func end(_ attemptID: UUID?) {
+        guard attemptID == nil || activeAttemptID == attemptID else { return }
+        activeAttemptID = nil
+        approvedAttemptID = nil
+    }
+
+    func permitsReadiness(_ readiness: SmartCubeObservationReadiness) -> Bool {
+        guard let activeAttemptID else { return true }
+        return readiness.attemptID == activeAttemptID
+            && approvedAttemptID == activeAttemptID
+    }
+
+    mutating func shouldAnnounce(_ readiness: SmartCubeObservationReadiness) -> Bool {
+        guard readiness.isReady,
+              let attemptID = readiness.attemptID,
+              activeAttemptID == attemptID,
+              approvedAttemptID == attemptID,
+              announcedAttemptID != attemptID else { return false }
+        announcedAttemptID = attemptID
+        return true
+    }
+}
 import SwiftUI
 import AVFoundation
 
@@ -325,6 +427,8 @@ struct SmartCubeScrambleProgress: Equatable {
 
     let tokens: [String]
     let expectedFacelets: [String]
+    let targetFacelets: String
+    private(set) var replanGeneration = 0
     private(set) var completedTokenIndices: Set<Int> = []
     private(set) var highestVerifiedMoveCount = 0
     private(set) var isDeviated = false
@@ -342,6 +446,16 @@ struct SmartCubeScrambleProgress: Equatable {
         else { return nil }
         self.tokens = tokens
         self.expectedFacelets = expectedFacelets
+        self.targetFacelets = expectedFacelets[expectedFacelets.index(before: expectedFacelets.endIndex)]
+    }
+
+    init(replacement: SmartCubeReplacement) {
+        tokens = replacement.tokens
+        expectedFacelets = replacement.expectedFacelets
+        targetFacelets = replacement.targetFacelets
+        replanGeneration = replacement.generation
+        lastValidFacelets = replacement.sourceFacelets
+        validCheckpoints = [replacement.sourceFacelets: VerificationState()]
     }
 
     var isComplete: Bool {
@@ -428,6 +542,80 @@ struct SmartCubeScrambleProgress: Equatable {
             deviationMoves: deviationTrail.moves,
             checkpoint: checkpoint
         )
+    }
+
+    mutating func normalizeRecoveryBoundary(
+        _ plan: SmartCubeRecoveryPlan
+    ) -> SmartCubeRecoveryPlan? {
+        guard plan.sourceFacelets == deviationTrail?.faceletStates.last,
+              plan.checkpoint.totalTokenCount == tokens.count else { return plan }
+
+        var correctionMoves = SmartCubeRecoveryEngine.normalizedAdjacent(plan.correctionMoves)
+        var checkpoint = plan.checkpoint
+        var supersededOriginalTokenIndices = plan.supersededOriginalTokenIndices
+
+        while let finalCorrection = correctionMoves.last,
+              let nextIndex = tokens.indices.first(where: {
+                  !checkpoint.completedTokenIndices.contains($0)
+              }) {
+            let nextMove = checkpoint.partialCompletionMoves[nextIndex] ?? tokens[nextIndex]
+            guard SmartCubeRecoveryEngine.movesShareFace(finalCorrection, nextMove),
+                  let advancedFacelets = SmartCubeBluetoothManager.facelets(
+                      checkpoint.facelets,
+                      applying: nextMove
+                  ) else { break }
+
+            correctionMoves = SmartCubeRecoveryEngine.normalizedAdjacent(
+                correctionMoves + [nextMove]
+            )
+            var completed = checkpoint.completedTokenIndices
+            var partial = checkpoint.partialCompletionMoves
+            completed.insert(nextIndex)
+            partial[nextIndex] = nil
+            supersededOriginalTokenIndices.insert(nextIndex)
+            checkpoint = SmartCubeRecoveryCheckpoint(
+                facelets: advancedFacelets,
+                completedTokenIndices: completed,
+                partialCompletionMoves: partial,
+                totalTokenCount: tokens.count
+            )
+            validCheckpoints[advancedFacelets] = VerificationState(
+                completedTokenIndices: completed,
+                partialCompletionMoves: partial
+            )
+        }
+
+        guard applying(correctionMoves, to: plan.sourceFacelets) == checkpoint.facelets else {
+            return plan
+        }
+
+        if correctionMoves.isEmpty, plan.sourceFacelets == checkpoint.facelets {
+            completedTokenIndices = checkpoint.completedTokenIndices
+            partialCompletionMoves = checkpoint.partialCompletionMoves
+            highestVerifiedMoveCount = max(highestVerifiedMoveCount, completedTokenIndices.count)
+            recordCheckpoint(checkpoint.facelets)
+            return nil
+        }
+
+        return SmartCubeRecoveryPlan(
+            identity: plan.identity,
+            sourceFacelets: plan.sourceFacelets,
+            checkpoint: checkpoint,
+            correctionMoves: correctionMoves,
+            totalCost: correctionMoves.count,
+            supersededOriginalTokenIndices: supersededOriginalTokenIndices
+        )
+    }
+
+    private func applying(_ moves: [String], to sourceFacelets: String) -> String? {
+        var facelets = sourceFacelets
+        for move in moves {
+            guard let next = SmartCubeBluetoothManager.facelets(facelets, applying: move) else {
+                return nil
+            }
+            facelets = next
+        }
+        return facelets
     }
 
     var deviationMoves: [String] {
@@ -636,9 +824,6 @@ struct SmartCubeScrambleProgress: Equatable {
         return [String(face), String(face) + "'"]
     }
 
-    private var targetFacelets: String {
-        expectedFacelets[expectedFacelets.index(before: expectedFacelets.endIndex)]
-    }
 }
 
 nonisolated enum SmartCubeSolvePhase: Equatable {

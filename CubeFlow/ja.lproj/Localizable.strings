@@ -1806,6 +1806,7 @@
 "settings.smart_cube.ready_sound" = "Ready Sound";
 "settings.smart_cube.debug_mode" = "Debug Mode";
 "smart_cube.timer.disconnected" = "スマートキューブを接続してください";
+"smart_cube.timer.loading" = "読み込み中…";
 "smart_cube.timer.connect" = "キューブを接続";
 "smart_cube.timer.solving" = "Solving";
 "smart_cube.timer.ready" = "Ready — turn to start";

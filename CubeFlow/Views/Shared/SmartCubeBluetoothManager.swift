@@ -22,6 +22,77 @@ nonisolated enum SmartCubeProtocolKind: String, CaseIterable, Equatable {
     case moyu = "MoYu/WCU"
     case giiker = "Giiker"
     case unknown = "Unknown"
+
+    var stateResetCapability: SmartCubeStateResetCapability {
+        switch self {
+        case .ganGen2, .ganGen3, .ganGen4:
+            return .deviceResetWithAuthoritativeReadback
+        case .moyu, .giiker, .unknown:
+            return .softwareReference
+        }
+    }
+}
+
+nonisolated enum SmartCubeStateResetCapability: Equatable {
+    case deviceResetWithAuthoritativeReadback
+    case softwareReference
+}
+
+nonisolated struct SmartCubeResetRequestIdentity: Equatable {
+    let id: UUID
+    let connectionAttemptID: UUID
+    let deviceID: UUID
+
+    func matches(connectionAttemptID: UUID?, deviceID: UUID?) -> Bool {
+        self.connectionAttemptID == connectionAttemptID && self.deviceID == deviceID
+    }
+}
+
+nonisolated enum SmartCubeSoftwareSnapshotResolution: Equatable {
+    case preserveLocal(String)
+    case useAuthoritative(String)
+}
+
+nonisolated enum SmartCubeResetFailureDisposition: Equatable {
+    case restorePreviousState
+    case requireAuthoritativeState
+
+    func resolvedFacelets(previousFacelets: String?) -> String? {
+        self == .restorePreviousState ? previousFacelets : nil
+    }
+}
+
+nonisolated enum SmartCubeResetReadbackPolicy {
+    static let maximumAttempts = 3
+
+    static func shouldRetry(afterAttempt attempt: Int) -> Bool {
+        attempt < maximumAttempts
+    }
+}
+
+nonisolated struct SmartCubeSoftwareResetReference: Equatable {
+    let deviceID: UUID
+    private(set) var expectedDeviceFacelets: String
+    private(set) var localFacelets: String
+
+    mutating func apply(_ move: String) -> Bool {
+        guard let nextDevice = SmartCubeBluetoothManager.facelets(expectedDeviceFacelets, applying: move),
+              let nextLocal = SmartCubeBluetoothManager.facelets(localFacelets, applying: move) else {
+            return false
+        }
+        expectedDeviceFacelets = nextDevice
+        localFacelets = nextLocal
+        return true
+    }
+
+    func resolve(deviceID: UUID, snapshot: String, forceAuthoritative: Bool) -> SmartCubeSoftwareSnapshotResolution {
+        guard !forceAuthoritative,
+              self.deviceID == deviceID,
+              snapshot == expectedDeviceFacelets else {
+            return .useAuthoritative(snapshot)
+        }
+        return .preserveLocal(localFacelets)
+    }
 }
 
 nonisolated enum SmartCubeManufacturer: String, Equatable {
@@ -234,6 +305,11 @@ final class SmartCubeCanonicalFeed {
         publish(.boundary(SmartCubeContinuityBoundary(sequence: sequence, reason: reason, facelets: facelets)))
     }
 
+    func acceptAuthoritativeSnapshot(_ facelets: String, stateChanged: Bool) {
+        guard stateChanged || !isStateTrusted else { return }
+        breakContinuity(.resync, facelets: facelets)
+    }
+
     private func publish(_ event: SmartCubeCanonicalEvent) {
         eventHistory.append(event)
         if eventHistory.count > 120 { eventHistory.removeFirst(eventHistory.count - 120) }
@@ -349,6 +425,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     static let shared = SmartCubeBluetoothManager()
 
     @Published private(set) var connectionState: SmartCubeConnectionState = .disconnected
+    @Published private(set) var connectionAttemptID: UUID?
+    @Published private(set) var connectionDeviceID: UUID?
+    @Published private(set) var connectionPolicyResolvedAttemptID: UUID?
     @Published private(set) var discoveredDevices: [SmartCubeDiscoveredDevice] = []
     @Published private(set) var connectedDeviceName: String?
     @Published private(set) var connectedProtocol: SmartCubeProtocolKind = .unknown
@@ -412,6 +491,21 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private var cipher: GANCubeCipher?
     private var isLocalFaceletStateLocked = false
     private var shouldAcceptNextFaceletsSnapshot = false
+    private enum PendingCubeResetPhase {
+        case awaitingTransport
+        case awaitingHardwareWrite
+        case awaitingHardwareSnapshot
+        case awaitingSoftwareSnapshot
+    }
+    private struct PendingCubeReset {
+        let identity: SmartCubeResetRequestIdentity
+        let previousFacelets: String?
+        var phase: PendingCubeResetPhase
+        var readbackAttempts = 0
+    }
+    private var pendingCubeReset: PendingCubeReset?
+    private var cubeResetReadbackWorkItem: DispatchWorkItem?
+    private var softwareResetReferences: [UUID: SmartCubeSoftwareResetReference] = [:]
     private var pendingMoveEvent: SmartCubeMoveEvent?
     private var pendingMoveFlushWorkItem: DispatchWorkItem?
     private var packetRateWindowStart = Date()
@@ -426,6 +520,18 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         if case .connected = connectionState { return true }
         return false
     }
+
+    var observationReadiness: SmartCubeObservationReadiness {
+        SmartCubeObservationReadiness(
+            attemptID: connectionAttemptID,
+            isBLEConnected: isConnected,
+            hasResolvedConnectionPolicy: connectionPolicyResolvedAttemptID == connectionAttemptID,
+            hasAuthoritativeState: facelets != nil,
+            hasTrustedCanonicalState: hasTrustedCanonicalState
+        )
+    }
+
+    var isReadyForMoveObservation: Bool { observationReadiness.isReady }
 
     func prepareIfNeeded() {
         guard !isPrepared else { return }
@@ -461,19 +567,36 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         appendLog("Scan", "Stopped")
     }
 
-    func connect(to deviceID: UUID) {
+    @discardableResult
+    func connect(to deviceID: UUID) -> UUID? {
         prepareIfNeeded()
         guard centralManager.state == .poweredOn else {
             connectionState = .bluetoothUnavailable
-            return
+            return nil
         }
         guard let peripheral = discoveredPeripheralsByID[deviceID] else {
             connectionState = .failed("Device is no longer available")
-            return
+            return nil
         }
 
+        #if DEBUG
+        let previousAttemptID = connectionAttemptID
+        let previousDeviceID = connectionDeviceID
+        if previousAttemptID != nil {
+            SmartCubeDiagnostics.shared.trace(
+                "attempt.superseded",
+                attemptID: previousAttemptID,
+                deviceID: previousDeviceID,
+                detail: "replacementDevice=\(String(deviceID.uuidString.prefix(8)))"
+            )
+        }
+        #endif
         stopScanning()
+        disconnectConnectedPeripheralIfNeeded()
         resetSessionData(keepLogs: true)
+        let attemptID = UUID()
+        connectionAttemptID = attemptID
+        connectionDeviceID = deviceID
         connectedPeripheral = peripheral
         let selectedDevice = discoveredDevices.first(where: { $0.id == deviceID })
         pendingProtocolHint = selectedDevice?.protocolHint ?? .unknown
@@ -496,11 +619,49 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         }
 
         connectionState = .connecting
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace(
+            "attempt.created",
+            attemptID: attemptID,
+            deviceID: deviceID,
+            detail: "name=\(connectedDeviceName ?? "unknown") protocolHint=\(pendingProtocolHint.rawValue)"
+        )
+        SmartCubeDiagnostics.shared.trace("ble.connecting", attemptID: attemptID, deviceID: deviceID)
+        #endif
         peripheral.delegate = self
         centralManager.connect(peripheral, options: nil)
+        return attemptID
+    }
+
+    @discardableResult
+    func resolveConnectionPolicy(for attemptID: UUID) -> Bool {
+        guard connectionAttemptID == attemptID else {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace(
+                "policy.resolve.rejected",
+                attemptID: attemptID,
+                deviceID: connectionDeviceID,
+                detail: "reason=stale-attempt current=\(connectionAttemptID.map { String($0.uuidString.prefix(8)) } ?? "none")"
+            )
+            #endif
+            return false
+        }
+        connectionPolicyResolvedAttemptID = attemptID
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("policy.resolved", attemptID: attemptID, deviceID: connectionDeviceID)
+        #endif
+        return true
     }
 
     func disconnect() {
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace(
+            "attempt.cancelled",
+            attemptID: connectionAttemptID,
+            deviceID: connectionDeviceID,
+            detail: "reason=user-disconnect"
+        )
+        #endif
         stopScanning()
         disconnectConnectedPeripheralIfNeeded()
         resetSessionData(keepLogs: true)
@@ -514,7 +675,19 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     func requestFacelets() {
+        if let connectionDeviceID {
+            softwareResetReferences[connectionDeviceID] = nil
+        }
+        isLocalFaceletStateLocked = false
         shouldAcceptNextFaceletsSnapshot = true
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace(
+            "snapshot.requested",
+            attemptID: connectionAttemptID,
+            deviceID: connectionDeviceID,
+            detail: "source=manual-authoritative"
+        )
+        #endif
         sendCommand(.requestFacelets)
     }
 
@@ -527,25 +700,55 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     func resetCubeStateToSolved() {
+        guard let connectionAttemptID, let connectionDeviceID, isConnected else {
+            appendLog("Reset", "No active Smart Cube connection")
+            return
+        }
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace(
+            "reset.requested",
+            attemptID: connectionAttemptID,
+            deviceID: connectionDeviceID,
+            detail: "capability=\(connectedProtocol.stateResetCapability)"
+        )
+        #endif
+        cubeResetReadbackWorkItem?.cancel()
+        cubeResetReadbackWorkItem = nil
         parserGeneration += 1
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("parser.generation", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "generation=\(parserGeneration) reason=reset")
+        #endif
         historyRetryWorkItem?.cancel()
         historyRetryWorkItem = nil
         cancelPendingMove()
         latestMove = nil
         moveHistory = []
         canonicalFeed.clearHistory()
-        facelets = Self.solvedFacelets
-        canonicalFeed.breakContinuity(.reset, facelets: facelets)
+        let previousFacelets = facelets
+        facelets = nil
+        canonicalFeed.breakContinuity(.reset, facelets: nil)
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("canonical.trust.changed", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "trusted=false reason=reset")
+        #endif
         cubeStateRevision += 1
-        isLocalFaceletStateLocked = true
+        isLocalFaceletStateLocked = false
         shouldAcceptNextFaceletsSnapshot = false
+        pendingCubeReset = PendingCubeReset(
+            identity: SmartCubeResetRequestIdentity(
+                id: UUID(),
+                connectionAttemptID: connectionAttemptID,
+                deviceID: connectionDeviceID
+            ),
+            previousFacelets: previousFacelets,
+            phase: .awaitingTransport
+        )
         if let parser {
             parserQueue.async {
                 parser.resetMoveTracking()
             }
         }
-        appendLog("Reset", "Local cube state set to solved. Put the physical cube in solved state before using this.")
-        appendLog("Reset", "No hardware reset command was sent; this only resets CubeFlow's local state.")
+        appendLog("Reset", "Reset requested; waiting for authoritative cube state")
+        continuePendingCubeResetIfPossible()
     }
 
     nonisolated static func facelets(afterApplying algorithm: String) -> String? {
@@ -579,6 +782,16 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     }
 
     private func resetSessionData(keepLogs: Bool) {
+        #if DEBUG
+        let invalidatedAttemptID = connectionAttemptID
+        let invalidatedDeviceID = connectionDeviceID
+        #endif
+        cubeResetReadbackWorkItem?.cancel()
+        cubeResetReadbackWorkItem = nil
+        pendingCubeReset = nil
+        connectionAttemptID = nil
+        connectionDeviceID = nil
+        connectionPolicyResolvedAttemptID = nil
         connectedDeviceName = nil
         connectedProtocol = .unknown
         identity = nil
@@ -606,6 +819,16 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         packetCountsByCharacteristic = [:]
         sampledCharacteristicUUIDs = []
         cancelPendingMove()
+        #if DEBUG
+        if invalidatedAttemptID != nil {
+            SmartCubeDiagnostics.shared.trace(
+                "attempt.invalidated",
+                attemptID: invalidatedAttemptID,
+                deviceID: invalidatedDeviceID,
+                detail: "parserGeneration=\(parserGeneration)"
+            )
+        }
+        #endif
         if !keepLogs {
             logEntries = []
             protocolLogEntries = []
@@ -617,6 +840,14 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         historyRetryWorkItem = nil
         parser = newParser
         parserGeneration += 1
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace(
+            "parser.generation",
+            attemptID: connectionAttemptID,
+            deviceID: connectionDeviceID,
+            detail: "generation=\(parserGeneration) parser=\(newParser == nil ? "none" : connectedProtocol.rawValue)"
+        )
+        #endif
     }
 
     private func updateDiscoveredDevice(_ device: SmartCubeDiscoveredDevice, peripheral: CBPeripheral, salt: [UInt8]?) {
@@ -636,42 +867,212 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         }
     }
 
-    private func sendInitialRequests() {
+    private func sendInitialRequests(for attemptID: UUID) {
+        guard connectionAttemptID == attemptID, isConnected else {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("snapshot.request.rejected", attemptID: attemptID, deviceID: connectionDeviceID, detail: "reason=stale-attempt-or-disconnected")
+            #endif
+            return
+        }
         if connectedProtocol == .moyu {
             sendCommand(.requestHardware)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                self?.sendCommand(.requestFacelets)
+                guard let self, self.connectionAttemptID == attemptID, self.isConnected else { return }
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("snapshot.requested", attemptID: attemptID, deviceID: self.connectionDeviceID, detail: "source=initial protocol=moyu")
+                #endif
+                self.sendCommand(.requestFacelets)
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) { [weak self] in
-                self?.sendCommand(.requestBattery)
+                guard let self, self.connectionAttemptID == attemptID, self.isConnected else { return }
+                self.sendCommand(.requestBattery)
             }
             return
         }
 
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("snapshot.requested", attemptID: attemptID, deviceID: connectionDeviceID, detail: "source=initial protocol=\(connectedProtocol.rawValue)")
+        #endif
         sendCommand(.requestFacelets)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            self?.sendCommand(.requestBattery)
+            guard let self, self.connectionAttemptID == attemptID, self.isConnected else { return }
+            self.sendCommand(.requestBattery)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) { [weak self] in
-            self?.sendCommand(.requestHardware)
+            guard let self, self.connectionAttemptID == attemptID, self.isConnected else { return }
+            self.sendCommand(.requestHardware)
         }
     }
 
-    private func sendCommand(_ command: GANCubeCommand) {
+    @discardableResult
+    private func continuePendingCubeResetIfPossible() -> Bool {
+        guard var pending = pendingCubeReset,
+              pending.phase == .awaitingTransport,
+              pending.identity.matches(
+                connectionAttemptID: connectionAttemptID,
+                deviceID: connectionDeviceID
+              ),
+              parser != nil,
+              commandCharacteristic != nil else { return false }
+
+        switch connectedProtocol.stateResetCapability {
+        case .deviceResetWithAuthoritativeReadback:
+            pending.phase = .awaitingHardwareWrite
+            pendingCubeReset = pending
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("gan.reset.command.requested", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "reset=\(String(pending.identity.id.uuidString.prefix(8)))")
+            #endif
+            guard sendCommand(.requestReset) else {
+                failPendingCubeReset(
+                    resetID: pending.identity.id,
+                    disposition: .restorePreviousState,
+                    message: "Device reset command could not be sent"
+                )
+                return true
+            }
+            appendLog("Reset", "Device-side state reset sent; awaiting verified read-back")
+        case .softwareReference:
+            pending.phase = .awaitingSoftwareSnapshot
+            pendingCubeReset = pending
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("moyu.reference.snapshot.requested", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "reset=\(String(pending.identity.id.uuidString.prefix(8)))")
+            #endif
+            guard sendCommand(.requestFacelets) else {
+                failPendingCubeReset(
+                    resetID: pending.identity.id,
+                    disposition: .restorePreviousState,
+                    message: "Software reset reference could not request device state"
+                )
+                return true
+            }
+            scheduleSoftwareResetSnapshotTimeout(for: pending.identity.id)
+            appendLog("Reset", "Hardware reset unsupported; awaiting a device snapshot for software reference")
+        }
+        return true
+    }
+
+    private func requestHardwareResetReadback(for resetID: UUID) {
+        guard var pending = pendingCubeReset,
+              pending.identity.id == resetID,
+              pending.phase == .awaitingHardwareSnapshot,
+              pending.identity.matches(
+                connectionAttemptID: connectionAttemptID,
+                deviceID: connectionDeviceID
+              ) else { return }
+        pending.readbackAttempts += 1
+        pendingCubeReset = pending
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace(
+            "gan.reset.readback.requested",
+            attemptID: pending.identity.connectionAttemptID,
+            deviceID: pending.identity.deviceID,
+            detail: "reset=\(String(resetID.uuidString.prefix(8))) retry=\(pending.readbackAttempts)"
+        )
+        #endif
+        guard sendCommand(.requestFacelets) else {
+            failPendingCubeReset(
+                resetID: resetID,
+                disposition: .requireAuthoritativeState,
+                message: "Authoritative reset read-back could not be requested"
+            )
+            return
+        }
+
+        cubeResetReadbackWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self,
+                  let current = self.pendingCubeReset,
+                  current.identity.id == resetID,
+                  current.phase == .awaitingHardwareSnapshot else { return }
+            if SmartCubeResetReadbackPolicy.shouldRetry(afterAttempt: current.readbackAttempts) {
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("gan.reset.readback.timeout", attemptID: current.identity.connectionAttemptID, deviceID: current.identity.deviceID, detail: "retry=\(current.readbackAttempts) action=retry")
+                #endif
+                self.requestHardwareResetReadback(for: resetID)
+            } else {
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("gan.reset.readback.timeout", attemptID: current.identity.connectionAttemptID, deviceID: current.identity.deviceID, detail: "retry=\(current.readbackAttempts) action=fail")
+                #endif
+                self.failPendingCubeReset(
+                    resetID: resetID,
+                    disposition: .requireAuthoritativeState,
+                    message: "Device reset was not confirmed by authoritative read-back"
+                )
+            }
+        }
+        cubeResetReadbackWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: workItem)
+    }
+
+    private func scheduleSoftwareResetSnapshotTimeout(for resetID: UUID) {
+        cubeResetReadbackWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self,
+                  let current = self.pendingCubeReset,
+                  current.identity.id == resetID,
+                  current.phase == .awaitingSoftwareSnapshot else { return }
+            self.failPendingCubeReset(
+                resetID: resetID,
+                disposition: .restorePreviousState,
+                message: "Software reset reference was not confirmed by a device snapshot"
+            )
+        }
+        cubeResetReadbackWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: workItem)
+    }
+
+    private func failPendingCubeReset(
+        resetID: UUID,
+        disposition: SmartCubeResetFailureDisposition,
+        message: String
+    ) {
+        guard let pending = pendingCubeReset,
+              pending.identity.id == resetID,
+              pending.identity.matches(
+                connectionAttemptID: connectionAttemptID,
+                deviceID: connectionDeviceID
+              ) else { return }
+        cubeResetReadbackWorkItem?.cancel()
+        cubeResetReadbackWorkItem = nil
+        pendingCubeReset = nil
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("reset.failed", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "disposition=\(disposition) reason=\(message)")
+        #endif
+        if let resolvedFacelets = disposition.resolvedFacelets(previousFacelets: pending.previousFacelets) {
+            facelets = resolvedFacelets
+            canonicalFeed.breakContinuity(.resync, facelets: resolvedFacelets)
+            cubeStateRevision += 1
+        }
+        appendLog("Reset", message)
+    }
+
+    private func sendPostResetMetadataRequests(for attemptID: UUID) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            guard let self, self.connectionAttemptID == attemptID, self.isConnected else { return }
+            _ = self.sendCommand(.requestBattery)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) { [weak self] in
+            guard let self, self.connectionAttemptID == attemptID, self.isConnected else { return }
+            _ = self.sendCommand(.requestHardware)
+        }
+    }
+
+    @discardableResult
+    private func sendCommand(_ command: GANCubeCommand) -> Bool {
         guard let commandCharacteristic, let connectedPeripheral else {
             appendLog("Command", "No writable command characteristic")
-            return
+            return false
         }
         guard let parser else {
             appendLog("Command", "Protocol not ready")
-            return
+            return false
         }
         let message = parserQueue.sync {
             parser.commandMessage(for: command)
         }
         guard let message else {
             appendLog("Command", "Unsupported command for \(connectedProtocol.rawValue)")
-            return
+            return false
         }
         let encrypted = cipher?.encrypt(message) ?? message
         let writeType = Self.writeType(for: command, characteristic: commandCharacteristic)
@@ -679,6 +1080,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         if protocolDebugLogging || !command.isHighFrequency {
             appendLog("Command", "\(command.label) [\(writeType == .withoutResponse ? "noRsp" : "rsp")]: \(Self.hexString(encrypted))")
         }
+        return true
     }
 
     private static func writeType(for command: GANCubeCommand, characteristic: CBCharacteristic) -> CBCharacteristicWriteType {
@@ -699,12 +1101,22 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             appendLog("Raw \(characteristic.uuid.uuidString)", Self.hexString(raw))
         }
 
-        guard let parser else { return }
+        guard let parser else {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("packet.rejected", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "reason=parser-unavailable characteristic=\(characteristic.uuid.uuidString)")
+            #endif
+            return
+        }
         guard let cipher else {
             appendLog("Decode", "Missing cube MAC salt; cannot decrypt this packet")
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("packet.rejected", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "reason=cipher-unavailable characteristic=\(characteristic.uuid.uuidString)")
+            #endif
             return
         }
         let generation = parserGeneration
+        let attemptID = connectionAttemptID
+        let deviceID = connectionDeviceID
         let shouldLogPackets = verbosePacketLogging
 
         parserQueue.async { [weak self, parser, cipher] in
@@ -713,8 +1125,16 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             #endif
             guard let decrypted = cipher.decrypt(raw) else {
                 DispatchQueue.main.async {
-                    guard self?.parserGeneration == generation else { return }
+                    guard self?.parserGeneration == generation else {
+                        #if DEBUG
+                        SmartCubeDiagnostics.shared.trace("packet.rejected", attemptID: attemptID, deviceID: deviceID, detail: "reason=stale-parser-generation stage=decrypt")
+                        #endif
+                        return
+                    }
                     self?.appendLog("Decode", "AES decrypt failed")
+                    #if DEBUG
+                    SmartCubeDiagnostics.shared.trace("packet.rejected", attemptID: attemptID, deviceID: deviceID, detail: "reason=decrypt-failed")
+                    #endif
                 }
                 return
             }
@@ -725,11 +1145,18 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             for event in parsedEvents {
                 if case .move(let move) = event {
                     SmartCubeDiagnostics.shared.mark("protocol.move", id: move.id, detail: "\(move.move) source=\(move.timestampSource)")
+                    SmartCubeDiagnostics.shared.traceMove("move.protocol.received", move: move, attemptID: attemptID, deviceID: deviceID, accepted: true, detail: "generation=\(generation)")
                 }
             }
             #endif
             DispatchQueue.main.async {
-                guard let self, self.parserGeneration == generation else { return }
+                guard let self else { return }
+                guard self.parserGeneration == generation else {
+                    #if DEBUG
+                    SmartCubeDiagnostics.shared.trace("packet.rejected", attemptID: attemptID, deviceID: deviceID, detail: "reason=stale-parser-generation stage=main-apply generation=\(generation)")
+                    #endif
+                    return
+                }
                 #if DEBUG
                 SmartCubeDiagnostics.shared.mark("main.apply", id: packetID)
                 #endif
@@ -749,21 +1176,63 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             enqueueMove(move)
         case .facelets(let value, let serial):
             flushPendingMove()
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("snapshot.received", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "serial=\(serial) phase=\(pendingCubeReset.map { String(describing: $0.phase) } ?? "normal")")
+            #endif
             guard Self.isPlausibleFacelets(value) else {
                 appendLog("Ignored facelets", "serial \(serial): \(value)")
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("snapshot.rejected", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "serial=\(serial) reason=implausible-facelets")
+                #endif
                 return
             }
-            if isLocalFaceletStateLocked, !shouldAcceptNextFaceletsSnapshot {
-                appendLog("Ignored facelets", "local reset state is locked; tap Facelets to resync from cube")
+            if reconcileResetSnapshotIfNeeded(value, serial: serial) {
                 return
             }
-            let breaksContinuity = facelets != value || shouldAcceptNextFaceletsSnapshot
-            facelets = value
-            if breaksContinuity { canonicalFeed.breakContinuity(.resync, facelets: value) }
+            guard let connectionDeviceID else {
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("snapshot.rejected", attemptID: connectionAttemptID, detail: "serial=\(serial) reason=device-identity-unavailable")
+                #endif
+                return
+            }
+            let resolvedFacelets: String
+            if let reference = softwareResetReferences[connectionDeviceID] {
+                switch reference.resolve(
+                    deviceID: connectionDeviceID,
+                    snapshot: value,
+                    forceAuthoritative: shouldAcceptNextFaceletsSnapshot
+                ) {
+                case .preserveLocal(let localFacelets):
+                    resolvedFacelets = localFacelets
+                    isLocalFaceletStateLocked = true
+                    appendLog("Facelets", "serial \(serial): software reset reference reconciled")
+                    #if DEBUG
+                    SmartCubeDiagnostics.shared.trace("moyu.reference.accepted", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "serial=\(serial) relationship=raw-baseline-matched")
+                    #endif
+                case .useAuthoritative(let authoritativeFacelets):
+                    softwareResetReferences[connectionDeviceID] = nil
+                    resolvedFacelets = authoritativeFacelets
+                    isLocalFaceletStateLocked = false
+                    appendLog("Facelets", "serial \(serial): software reference discarded; device state changed")
+                    #if DEBUG
+                    SmartCubeDiagnostics.shared.trace("moyu.reference.discarded", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "serial=\(serial) reason=raw-baseline-diverged")
+                    #endif
+                }
+            } else {
+                resolvedFacelets = value
+                isLocalFaceletStateLocked = false
+            }
+            let stateChanged = facelets != resolvedFacelets || shouldAcceptNextFaceletsSnapshot
+            facelets = resolvedFacelets
+            // Equal snapshots still restore trust after a lost-history segment.
+            canonicalFeed.acceptAuthoritativeSnapshot(resolvedFacelets, stateChanged: stateChanged)
             cubeStateRevision += 1
-            isLocalFaceletStateLocked = false
             shouldAcceptNextFaceletsSnapshot = false
-            appendLog("Facelets", "serial \(serial): \(value)")
+            appendLog("Facelets", "serial \(serial): \(resolvedFacelets)")
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("snapshot.accepted", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "serial=\(serial) source=\(isLocalFaceletStateLocked ? "software-reference" : "authoritative") revision=\(cubeStateRevision) canonicalTrusted=\(canonicalFeed.isStateTrusted)")
+            SmartCubeDiagnostics.shared.trace("ui.facelets.published", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "revision=\(cubeStateRevision) source=snapshot")
+            #endif
         case .battery(let level):
             flushPendingMove()
             batteryLevel = level
@@ -807,6 +1276,71 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
             scheduleHistoryRetry()
         case .continuityLost:
             canonicalFeed.breakContinuity(.historyGap, facelets: nil)
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("canonical.trust.changed", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "trusted=false reason=history-gap")
+            #endif
+        }
+    }
+
+    private func reconcileResetSnapshotIfNeeded(_ value: String, serial: Int) -> Bool {
+        guard let pending = pendingCubeReset,
+              pending.identity.matches(
+                connectionAttemptID: connectionAttemptID,
+                deviceID: connectionDeviceID
+              ) else { return false }
+
+        switch pending.phase {
+        case .awaitingTransport, .awaitingHardwareWrite:
+            appendLog("Ignored facelets", "serial \(serial): reset command has not reached read-back phase")
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("snapshot.rejected", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "serial=\(serial) reason=reset-not-in-readback-phase phase=\(pending.phase)")
+            #endif
+            return true
+        case .awaitingHardwareSnapshot:
+            cubeResetReadbackWorkItem?.cancel()
+            cubeResetReadbackWorkItem = nil
+            pendingCubeReset = nil
+            softwareResetReferences[pending.identity.deviceID] = nil
+            facelets = value
+            canonicalFeed.acceptAuthoritativeSnapshot(value, stateChanged: true)
+            cubeStateRevision += 1
+            shouldAcceptNextFaceletsSnapshot = false
+            isLocalFaceletStateLocked = false
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("gan.reset.readback.received", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "serial=\(serial) solved=\(value == Self.solvedFacelets) retry=\(pending.readbackAttempts)")
+            SmartCubeDiagnostics.shared.trace("canonical.trust.changed", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "trusted=\(canonicalFeed.isStateTrusted) source=gan-authoritative-readback")
+            SmartCubeDiagnostics.shared.trace("ui.facelets.published", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "revision=\(cubeStateRevision) source=gan-authoritative-readback")
+            #endif
+            if value == Self.solvedFacelets {
+                appendLog("Reset", "Device reset verified by solved authoritative facelets")
+            } else {
+                appendLog("Reset", "Device reset read-back was not solved; using authoritative device state")
+            }
+            sendPostResetMetadataRequests(for: pending.identity.connectionAttemptID)
+            return true
+        case .awaitingSoftwareSnapshot:
+            cubeResetReadbackWorkItem?.cancel()
+            cubeResetReadbackWorkItem = nil
+            let reference = SmartCubeSoftwareResetReference(
+                deviceID: pending.identity.deviceID,
+                expectedDeviceFacelets: value,
+                localFacelets: Self.solvedFacelets
+            )
+            softwareResetReferences[pending.identity.deviceID] = reference
+            pendingCubeReset = nil
+            facelets = Self.solvedFacelets
+            canonicalFeed.acceptAuthoritativeSnapshot(Self.solvedFacelets, stateChanged: true)
+            cubeStateRevision += 1
+            shouldAcceptNextFaceletsSnapshot = false
+            isLocalFaceletStateLocked = true
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("moyu.reference.created", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "serial=\(serial) relationship=authoritative-baseline-to-local-solved")
+            SmartCubeDiagnostics.shared.trace("canonical.trust.changed", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "trusted=\(canonicalFeed.isStateTrusted) source=moyu-software-reference")
+            SmartCubeDiagnostics.shared.trace("ui.facelets.published", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "revision=\(cubeStateRevision) source=moyu-software-reference")
+            #endif
+            appendLog("Reset", "Software reset reference established from authoritative device snapshot")
+            sendPostResetMetadataRequests(for: pending.identity.connectionAttemptID)
+            return true
         }
     }
 
@@ -906,12 +1440,33 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         moveHistory.append(move)
         if let currentFacelets = facelets, let updatedFacelets = Self.facelets(currentFacelets, applying: move.move) {
             facelets = updatedFacelets
+            if let connectionDeviceID, var reference = softwareResetReferences[connectionDeviceID] {
+                if reference.apply(move.move) {
+                    softwareResetReferences[connectionDeviceID] = reference
+                } else {
+                    softwareResetReferences[connectionDeviceID] = nil
+                    isLocalFaceletStateLocked = false
+                    canonicalFeed.breakContinuity(.resync, facelets: updatedFacelets)
+                    #if DEBUG
+                    SmartCubeDiagnostics.shared.trace("moyu.reference.discarded", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "reason=move-application-failed canonicalTrusted=\(canonicalFeed.isStateTrusted)")
+                    #endif
+                }
+            }
             #if DEBUG
             SmartCubeDiagnostics.shared.mark("canonical.publish", id: move.id, detail: "\(move.move) source=\(move.timestampSource) trusted=\(canonicalFeed.isStateTrusted)")
             #endif
             // Synchronous, ordered delivery after the paired state is committed.
             // Unlike SwiftUI onChange, this does not collapse packet/history bursts.
             canonicalFeed.send(move: move, facelets: updatedFacelets)
+            #if DEBUG
+            SmartCubeDiagnostics.shared.traceMove("move.canonical.published", move: move, attemptID: connectionAttemptID, deviceID: connectionDeviceID, accepted: true, detail: "revision=\(cubeStateRevision) trusted=\(canonicalFeed.isStateTrusted)")
+            SmartCubeDiagnostics.shared.traceMove("ui.facelets.published", move: move, attemptID: connectionAttemptID, deviceID: connectionDeviceID, accepted: true, detail: "source=move canonicalSequence=\(canonicalFeed.sequence)")
+            #endif
+        } else {
+            #if DEBUG
+            let reason = facelets == nil ? "facelets-unavailable" : "move-application-failed"
+            SmartCubeDiagnostics.shared.traceMove("move.withheld", move: move, attemptID: connectionAttemptID, deviceID: connectionDeviceID, accepted: false, detail: "reason=\(reason) canonicalTrusted=\(canonicalFeed.isStateTrusted)")
+            #endif
         }
         trimMoveHistoryIfNeeded()
         if protocolDebugLogging {
@@ -1290,17 +1845,33 @@ extension SmartCubeBluetoothManager: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        guard connectedPeripheral?.identifier == peripheral.identifier,
+              connectionDeviceID == peripheral.identifier,
+              connectionAttemptID != nil else {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("ble.callback.rejected", attemptID: connectionAttemptID, deviceID: peripheral.identifier, detail: "callback=didConnect reason=stale-attempt-or-device")
+            #endif
+            return
+        }
         connectionState = .connected
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("ble.transport.connected", attemptID: connectionAttemptID, deviceID: peripheral.identifier, detail: "name=\(peripheral.name ?? "unknown")")
+        #endif
         appendLog("Connect", "\(peripheral.name ?? peripheral.identifier.uuidString) as \(pendingProtocolHint.rawValue)")
         // Discover every service in the lab. GAN is parsed specially below; MoYu/Giiker need full UUID evidence first.
         peripheral.discoverServices(nil)
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        guard connectedPeripheral?.identifier == peripheral.identifier,
+              connectionDeviceID == peripheral.identifier else { return }
         connectionState = .failed(
             error.map { appUserFacingErrorMessage($0, languageCode: currentAppLanguageCode()) }
                 ?? "Failed to connect"
         )
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("ble.connect.failed", attemptID: connectionAttemptID, deviceID: peripheral.identifier, detail: "reason=\(error?.localizedDescription ?? "unknown")")
+        #endif
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
@@ -1308,7 +1879,11 @@ extension SmartCubeBluetoothManager: CBCentralManagerDelegate {
             appendLog("Disconnect", error.localizedDescription)
         }
         if connectedPeripheral?.identifier == peripheral.identifier {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("ble.disconnected", attemptID: connectionAttemptID, deviceID: peripheral.identifier, detail: "reason=\(error?.localizedDescription ?? "none")")
+            #endif
             disconnectConnectedPeripheralIfNeeded()
+            resetSessionData(keepLogs: true)
             connectionState = .disconnected
         }
     }
@@ -1316,6 +1891,10 @@ extension SmartCubeBluetoothManager: CBCentralManagerDelegate {
 
 extension SmartCubeBluetoothManager: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        guard connectedPeripheral?.identifier == peripheral.identifier,
+              connectionDeviceID == peripheral.identifier,
+              connectionAttemptID != nil,
+              isConnected else { return }
         if let error {
             connectionState = .failed(appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode()))
             return
@@ -1331,6 +1910,9 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
                 foundKnownProtocol = true
                 connectedProtocol = .ganGen4
                 setParser(GANCubeProtocolParser(kind: .ganGen4))
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("protocol.confirmed", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "protocol=ganGen4")
+                #endif
                 // GAN16UI is newer than the public Gen4 references. Enumerate the
                 // complete service so any additional notify stream remains visible.
                 peripheral.discoverCharacteristics(nil, for: service)
@@ -1338,16 +1920,25 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
                 foundKnownProtocol = true
                 connectedProtocol = .ganGen3
                 setParser(GANCubeProtocolParser(kind: .ganGen3))
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("protocol.confirmed", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "protocol=ganGen3")
+                #endif
                 peripheral.discoverCharacteristics([ganGen3CommandCharacteristicUUID, ganGen3StateCharacteristicUUID], for: service)
             case ganGen2ServiceUUID:
                 foundKnownProtocol = true
                 connectedProtocol = .ganGen2
                 setParser(GANCubeProtocolParser(kind: .ganGen2))
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("protocol.confirmed", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "protocol=ganGen2")
+                #endif
                 peripheral.discoverCharacteristics([ganGen2CommandCharacteristicUUID, ganGen2StateCharacteristicUUID], for: service)
             case moyuMainServiceUUID:
                 foundKnownProtocol = true
                 connectedProtocol = .moyu
                 setParser(GANCubeProtocolParser(kind: .moyu))
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("protocol.confirmed", attemptID: connectionAttemptID, deviceID: connectionDeviceID, detail: "protocol=moyu")
+                #endif
                 if let salt = discoveredSaltByID[peripheral.identifier] {
                     cipher = GANCubeCipher(
                         rootKey: [0x15, 0x77, 0x3A, 0x5C, 0x67, 0x0E, 0x2D, 0x1F, 0x17, 0x67, 0x2A, 0x13, 0x9B, 0x67, 0x52, 0x57],
@@ -1371,6 +1962,10 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        guard connectedPeripheral?.identifier == peripheral.identifier,
+              connectionDeviceID == peripheral.identifier,
+              let attemptID = connectionAttemptID,
+              isConnected else { return }
         if let error {
             appendLog("Characteristics", error.localizedDescription)
             return
@@ -1401,17 +1996,32 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
         }
 
         if commandCharacteristic != nil, stateCharacteristic != nil {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("transport.ready", attemptID: attemptID, deviceID: connectionDeviceID, detail: "command=true state=true protocol=\(connectedProtocol.rawValue)")
+            #endif
+            if continuePendingCubeResetIfPossible() {
+                return
+            }
             if connectedProtocol == .moyu {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-                    self?.sendInitialRequests()
+                    self?.sendInitialRequests(for: attemptID)
                 }
             } else {
-                sendInitialRequests()
+                sendInitialRequests(for: attemptID)
             }
         }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        guard connectedPeripheral?.identifier == peripheral.identifier,
+              connectionDeviceID == peripheral.identifier,
+              connectionAttemptID != nil,
+              isConnected else {
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("ble.callback.rejected", attemptID: connectionAttemptID, deviceID: peripheral.identifier, detail: "callback=didUpdateValue reason=stale-attempt-device-or-disconnected")
+            #endif
+            return
+        }
         if let error {
             appendLog("Notify error", error.localizedDescription)
             return
@@ -1422,6 +2032,10 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        guard connectedPeripheral?.identifier == peripheral.identifier,
+              connectionDeviceID == peripheral.identifier,
+              connectionAttemptID != nil,
+              isConnected else { return }
         if let error {
             appendLog("Notify state", "\(characteristic.uuid.uuidString): \(error.localizedDescription)")
             return
@@ -1430,9 +2044,35 @@ extension SmartCubeBluetoothManager: CBPeripheralDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        guard connectedPeripheral?.identifier == peripheral.identifier,
+              connectionDeviceID == peripheral.identifier,
+              connectionAttemptID != nil,
+              isConnected else { return }
+        guard characteristic.uuid == commandCharacteristic?.uuid,
+              var pending = pendingCubeReset,
+              pending.phase == .awaitingHardwareWrite,
+              pending.identity.matches(
+                connectionAttemptID: connectionAttemptID,
+                deviceID: connectionDeviceID
+              ) else { return }
         if let error {
             appendLog("Write error", error.localizedDescription)
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("gan.reset.write.failed", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID, detail: "reason=\(error.localizedDescription)")
+            #endif
+            failPendingCubeReset(
+                resetID: pending.identity.id,
+                disposition: .restorePreviousState,
+                message: "Device reset command failed before state changed"
+            )
+            return
         }
+        pending.phase = .awaitingHardwareSnapshot
+        pendingCubeReset = pending
+        #if DEBUG
+        SmartCubeDiagnostics.shared.trace("gan.reset.write.succeeded", attemptID: pending.identity.connectionAttemptID, deviceID: pending.identity.deviceID)
+        #endif
+        requestHardwareResetReadback(for: pending.identity.id)
     }
 }
 

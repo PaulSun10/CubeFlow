@@ -34,15 +34,45 @@ nonisolated struct SmartCubeRecoveryPlan: Equatable, Sendable {
     let checkpoint: SmartCubeRecoveryCheckpoint
     let correctionMoves: [String]
     let totalCost: Int
+    let supersededOriginalTokenIndices: Set<Int>
+
+    init(
+        identity: SmartCubeRecoveryPlanIdentity,
+        sourceFacelets: String,
+        checkpoint: SmartCubeRecoveryCheckpoint,
+        correctionMoves: [String],
+        totalCost: Int,
+        supersededOriginalTokenIndices: Set<Int> = []
+    ) {
+        self.identity = identity
+        self.sourceFacelets = sourceFacelets
+        self.checkpoint = checkpoint
+        self.correctionMoves = correctionMoves
+        self.totalCost = totalCost
+        self.supersededOriginalTokenIndices = supersededOriginalTokenIndices
+    }
 
     var remainingOriginalWorkload: Int {
         checkpoint.remainingOriginalWorkload
+    }
+
+    func executableMoves(originalTokens: [String]) -> [String]? {
+        guard checkpoint.totalTokenCount == originalTokens.count else { return nil }
+        let remaining: [String] = originalTokens.indices.compactMap { index -> String? in
+            guard !checkpoint.completedTokenIndices.contains(index) else { return nil }
+            return checkpoint.partialCompletionMoves[index] ?? originalTokens[index]
+        }
+        return correctionMoves + remaining
     }
 }
 
 nonisolated enum SmartCubeRecoveryPresentationState: Equatable, Sendable {
     case inactive
-    case searching(identity: SmartCubeRecoveryPlanIdentity, sourceFacelets: String)
+    case searching(
+        identity: SmartCubeRecoveryPlanIdentity,
+        sourceFacelets: String,
+        fallbackPlan: SmartCubeRecoveryPlan?
+    )
     case recovery(SmartCubeRecoveryPlan)
     case unavailable(identity: SmartCubeRecoveryPlanIdentity, sourceFacelets: String)
 
@@ -51,11 +81,16 @@ nonisolated enum SmartCubeRecoveryPresentationState: Equatable, Sendable {
         return plan
     }
 
+    var fallbackPlan: SmartCubeRecoveryPlan? {
+        guard case .searching(_, _, let fallbackPlan) = self else { return nil }
+        return fallbackPlan
+    }
+
     var identity: SmartCubeRecoveryPlanIdentity? {
         switch self {
         case .inactive:
             return nil
-        case .searching(let identity, _), .unavailable(let identity, _):
+        case .searching(let identity, _, _), .unavailable(let identity, _):
             return identity
         case .recovery(let plan):
             return plan.identity
@@ -66,7 +101,7 @@ nonisolated enum SmartCubeRecoveryPresentationState: Equatable, Sendable {
         switch self {
         case .inactive:
             return nil
-        case .searching(_, let sourceFacelets), .unavailable(_, let sourceFacelets):
+        case .searching(_, let sourceFacelets, _), .unavailable(_, let sourceFacelets):
             return sourceFacelets
         case .recovery(let plan):
             return plan.sourceFacelets
@@ -149,6 +184,29 @@ nonisolated enum SmartCubeRecoveryEngine {
         }
     }
 
+    static func normalizedAdjacent<S: Sequence>(_ moves: S) -> [String] where S.Element == String {
+        let moves = Array(moves)
+        var result: [(face: Character, turns: Int)] = []
+        for move in moves {
+            guard let parsed = parsedMove(move) else { return moves }
+            if let last = result.last, last.face == parsed.face {
+                result.removeLast()
+                let combinedTurns = (last.turns + parsed.turns) % 4
+                if combinedTurns != 0 {
+                    result.append((parsed.face, combinedTurns))
+                }
+            } else {
+                result.append(parsed)
+            }
+        }
+        return result.map { formattedMove(face: $0.face, turns: $0.turns) }
+    }
+
+    static func movesShareFace(_ lhs: String, _ rhs: String) -> Bool {
+        guard let lhs = parsedMove(lhs), let rhs = parsedMove(rhs) else { return false }
+        return lhs.face == rhs.face
+    }
+
     static func shouldSearchForShortcut(to plan: SmartCubeRecoveryPlan) -> Bool {
         plan.totalCost > defaultMaximumCost
     }
@@ -175,7 +233,8 @@ nonisolated enum SmartCubeRecoveryEngine {
             sourceFacelets: sourceFacelets,
             checkpoint: plan.checkpoint,
             correctionMoves: remainingMoves,
-            totalCost: remainingMoves.count
+            totalCost: remainingMoves.count,
+            supersededOriginalTokenIndices: plan.supersededOriginalTokenIndices
         )
     }
 

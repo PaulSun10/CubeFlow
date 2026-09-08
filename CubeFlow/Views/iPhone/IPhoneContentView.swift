@@ -4,7 +4,7 @@ import SwiftUI
 #if os(iOS)
 struct IPhoneContentView: View {
     #if DEBUG
-    private let marketingPreviewConfiguration: MarketingTimerPreviewConfiguration?
+    private let marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>?
     #endif
     @State private var selectedTab: IPhoneTab = .timer
     @State private var algsSearchRequestID = 0
@@ -18,7 +18,7 @@ struct IPhoneContentView: View {
     @AppStorage("algBrowseViewModeStore") private var algBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
 
     #if DEBUG
-    init(marketingPreviewConfiguration: MarketingTimerPreviewConfiguration? = nil) {
+    init(marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>? = nil) {
         self.marketingPreviewConfiguration = marketingPreviewConfiguration
     }
     #endif

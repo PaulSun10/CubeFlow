@@ -1806,6 +1806,7 @@
 "settings.smart_cube.ready_sound" = "Ready Sound";
 "settings.smart_cube.debug_mode" = "Debug Mode";
 "smart_cube.timer.disconnected" = "Lütfen bir Akıllı Küp bağlayın";
+"smart_cube.timer.loading" = "Yükleniyor…";
 "smart_cube.timer.connect" = "Küpü Bağla";
 "smart_cube.timer.solving" = "Solving";
 "smart_cube.timer.ready" = "Ready — turn to start";

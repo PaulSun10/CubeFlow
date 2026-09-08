@@ -116,24 +116,48 @@ struct SmartCubeLabView: View {
             manager.prepareIfNeeded()
         }
         .onChange(of: manager.connectionState) { state in
-            guard state == .connected else { return }
-            switch resetPolicy {
-            case .always:
+            guard state == .connected,
+                  let attemptID = manager.connectionAttemptID else { return }
+            #if DEBUG
+            SmartCubeDiagnostics.shared.trace("policy.pending", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings policy=\(resetPolicy.rawValue)")
+            #endif
+            switch resetPolicy.connectionAction {
+            case .reset:
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings action=reset")
+                #endif
                 manager.resetCubeStateToSolved()
+                manager.resolveConnectionPolicy(for: attemptID)
             case .prompt:
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.prompt.presented", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings")
+                #endif
                 showingResetPrompt = true
-            case .never:
-                break
+            case .continueWithoutReset:
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings action=continue")
+                #endif
+                manager.resolveConnectionPolicy(for: attemptID)
             }
         }
-        .alert("smart_cube.reset_prompt_title", isPresented: $showingResetPrompt) {
-            Button("smart_cube.reset_action") {
+        .smartCubeResetConfirmation(
+            isPresented: $showingResetPrompt,
+            onReset: {
+                guard let attemptID = manager.connectionAttemptID else { return }
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings prompt=mark-as-solved")
+                #endif
                 manager.resetCubeStateToSolved()
+                manager.resolveConnectionPolicy(for: attemptID)
+            },
+            onContinue: {
+                guard let attemptID = manager.connectionAttemptID else { return }
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings prompt=continue")
+                #endif
+                manager.resolveConnectionPolicy(for: attemptID)
             }
-            Button("common.cancel", role: .cancel) {}
-        } message: {
-            Text("smart_cube.reset_prompt_message")
-        }
+        )
     }
 
     private var statusSection: some View {
@@ -215,7 +239,12 @@ struct SmartCubeLabView: View {
             } else {
                 ForEach(manager.discoveredDevices) { device in
                     Button {
-                        manager.connect(to: device.id)
+                        let attemptID = manager.connect(to: device.id)
+                        #if DEBUG
+                        if let attemptID {
+                            SmartCubeDiagnostics.shared.trace("attempt.source", attemptID: attemptID, deviceID: device.id, detail: "source=settings")
+                        }
+                        #endif
                     } label: {
                         SmartCubeDiscoveredDeviceRow(device: device, showsDiagnostics: true)
                     }
@@ -528,7 +557,26 @@ private struct CubeFaceletsNet: View {
 
 struct SmartCubeDevicePickerView: View {
     @ObservedObject var manager: SmartCubeBluetoothManager
+    let onConnectionStarted: ((UUID) -> Void)?
+    let onConnectionApproved: ((UUID) -> Void)?
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("smartCubeResetPolicy") private var resetPolicyRawValue = SmartCubeResetPolicy.prompt.rawValue
+    @State private var selectedAttemptID: UUID?
+    @State private var showingResetPrompt = false
+
+    init(
+        manager: SmartCubeBluetoothManager,
+        onConnectionStarted: ((UUID) -> Void)? = nil,
+        onConnectionApproved: ((UUID) -> Void)? = nil
+    ) {
+        self.manager = manager
+        self.onConnectionStarted = onConnectionStarted
+        self.onConnectionApproved = onConnectionApproved
+    }
+
+    private var resetPolicy: SmartCubeResetPolicy {
+        SmartCubeResetPolicy(rawValue: resetPolicyRawValue) ?? .prompt
+    }
 
     var body: some View {
         CompatibleNavigationContainer {
@@ -540,7 +588,17 @@ struct SmartCubeDevicePickerView: View {
                     } else {
                         ForEach(manager.discoveredDevices) { device in
                             Button {
-                                manager.connect(to: device.id)
+                                guard let attemptID = manager.connect(to: device.id) else { return }
+                                selectedAttemptID = attemptID
+                                #if DEBUG
+                                SmartCubeDiagnostics.shared.trace(
+                                    "attempt.source",
+                                    attemptID: attemptID,
+                                    deviceID: device.id,
+                                    detail: "source=\(onConnectionStarted == nil ? "settings-picker" : "timer")"
+                                )
+                                #endif
+                                onConnectionStarted?(attemptID)
                             } label: {
                                 SmartCubeDiscoveredDeviceRow(
                                     device: device,
@@ -557,7 +615,13 @@ struct SmartCubeDevicePickerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("common.cancel") { dismiss() }
+                    Button("common.cancel") {
+                        if selectedAttemptID == manager.connectionAttemptID,
+                           !manager.isReadyForMoveObservation {
+                            manager.disconnect()
+                        }
+                        dismiss()
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(manager.connectionState == .scanning
@@ -579,15 +643,94 @@ struct SmartCubeDevicePickerView: View {
             }
         }
         .onChange(of: manager.connectionState) { state in
-            if state == .connected {
+            guard state == .connected,
+                  let selectedAttemptID,
+                  selectedAttemptID == manager.connectionAttemptID else { return }
+            #if DEBUG
+            let source = onConnectionStarted == nil ? "settings-picker" : "timer"
+            SmartCubeDiagnostics.shared.trace("policy.pending", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(source) policy=\(resetPolicy.rawValue)")
+            #endif
+            switch resetPolicy.connectionAction {
+            case .reset:
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(source) action=reset")
+                #endif
+                manager.resetCubeStateToSolved()
+                manager.resolveConnectionPolicy(for: selectedAttemptID)
+                onConnectionApproved?(selectedAttemptID)
+                dismiss()
+            case .prompt:
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.prompt.presented", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(source)")
+                #endif
+                showingResetPrompt = true
+            case .continueWithoutReset:
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(source) action=continue")
+                #endif
+                manager.resolveConnectionPolicy(for: selectedAttemptID)
+                onConnectionApproved?(selectedAttemptID)
                 dismiss()
             }
         }
+        .smartCubeResetConfirmation(
+            isPresented: $showingResetPrompt,
+            onReset: {
+                guard let selectedAttemptID,
+                      selectedAttemptID == manager.connectionAttemptID else { return }
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(onConnectionStarted == nil ? "settings-picker" : "timer") prompt=mark-as-solved")
+                #endif
+                manager.resetCubeStateToSolved()
+                manager.resolveConnectionPolicy(for: selectedAttemptID)
+                onConnectionApproved?(selectedAttemptID)
+                dismiss()
+            },
+            onContinue: {
+                guard let selectedAttemptID,
+                      selectedAttemptID == manager.connectionAttemptID else { return }
+                #if DEBUG
+                SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(onConnectionStarted == nil ? "settings-picker" : "timer") prompt=continue")
+                #endif
+                manager.resolveConnectionPolicy(for: selectedAttemptID)
+                onConnectionApproved?(selectedAttemptID)
+                dismiss()
+            }
+        )
         .onDisappear {
             if manager.connectionState == .scanning {
                 manager.stopScanning()
             }
         }
+    }
+}
+
+private struct SmartCubeResetConfirmationModifier: ViewModifier {
+    @Binding var isPresented: Bool
+    let onReset: () -> Void
+    let onContinue: () -> Void
+
+    func body(content: Content) -> some View {
+        content.alert("smart_cube.reset_prompt_title", isPresented: $isPresented) {
+            Button("smart_cube.reset_action", action: onReset)
+            Button("common.cancel", role: .cancel, action: onContinue)
+        } message: {
+            Text("smart_cube.reset_prompt_message")
+        }
+    }
+}
+
+private extension View {
+    func smartCubeResetConfirmation(
+        isPresented: Binding<Bool>,
+        onReset: @escaping () -> Void,
+        onContinue: @escaping () -> Void = {}
+    ) -> some View {
+        modifier(SmartCubeResetConfirmationModifier(
+            isPresented: isPresented,
+            onReset: onReset,
+            onContinue: onContinue
+        ))
     }
 }
 

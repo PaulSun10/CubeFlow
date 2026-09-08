@@ -44,6 +44,11 @@ final class PersistenceController: @unchecked Sendable {
         let sessionName = attribute("name", type: .stringAttributeType)
         let sessionCreatedAt = attribute("createdAt", type: .dateAttributeType)
         let sessionSelectedEvent = attribute("selectedEventRawValue", type: .stringAttributeType)
+        let sessionSelectedTimingMethod = attribute(
+            "selectedTimingMethodRawValue",
+            type: .stringAttributeType,
+            isOptional: true
+        )
 
         let solveID = attribute("id", type: .UUIDAttributeType)
         let solveTime = attribute("time", type: .doubleAttributeType)
@@ -76,6 +81,7 @@ final class PersistenceController: @unchecked Sendable {
             sessionName,
             sessionCreatedAt,
             sessionSelectedEvent,
+            sessionSelectedTimingMethod,
             sessionSolves
         ]
         solveEntity.properties = [
@@ -92,11 +98,15 @@ final class PersistenceController: @unchecked Sendable {
         return model
     }()
 
-    nonisolated private static func attribute(_ name: String, type: NSAttributeType) -> NSAttributeDescription {
+    nonisolated private static func attribute(
+        _ name: String,
+        type: NSAttributeType,
+        isOptional: Bool = false
+    ) -> NSAttributeDescription {
         let attribute = NSAttributeDescription()
         attribute.name = name
         attribute.attributeType = type
-        attribute.isOptional = false
+        attribute.isOptional = isOptional
         return attribute
     }
 }

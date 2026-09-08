@@ -181,7 +181,9 @@ struct SmartCubeScrambleProgressView: View {
             if index == insertionIndex {
                 result += plan.correctionMoves.indices.map(SmartCubeRecoveryDisplayItem.recoveryMove)
             }
-            result.append(.original(index))
+            if !plan.supersededOriginalTokenIndices.contains(index) {
+                result.append(.original(index))
+            }
         }
         if insertionIndex == tokens.count {
             result += plan.correctionMoves.indices.map(SmartCubeRecoveryDisplayItem.recoveryMove)
@@ -195,7 +197,9 @@ struct SmartCubeScrambleProgressView: View {
         }
         switch recoveryDisplay {
         case .separate:
-            return tokens.indices.map(SmartCubeRecoveryDisplayItem.original)
+            return tokens.indices.compactMap {
+                recoveryPlan.supersededOriginalTokenIndices.contains($0) ? nil : .original($0)
+            }
         case .inline:
             return inlineItems(for: recoveryPlan)
         }
@@ -213,8 +217,13 @@ struct SmartCubeScrambleProgressView: View {
 
     private var fallbackText: String {
         let indices = behavior == .collapse
-            ? tokens.indices.filter { !completedTokenIndices.contains($0) }
-            : Array(tokens.indices)
+            ? tokens.indices.filter {
+                !completedTokenIndices.contains($0)
+                    && !(recoveryPlan?.supersededOriginalTokenIndices.contains($0) ?? false)
+            }
+            : tokens.indices.filter {
+                !(recoveryPlan?.supersededOriginalTokenIndices.contains($0) ?? false)
+            }
         var visibleTokens = indices.map { tokens[$0] }
         guard let recoveryPlan else { return visibleTokens.joined(separator: " ") }
         let insertionIndex = min(
