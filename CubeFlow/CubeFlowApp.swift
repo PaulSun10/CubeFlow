@@ -92,6 +92,12 @@ struct CubeFlowApp: App {
     private let persistenceController = PersistenceController.shared
     @AppStorage("timerAccuracy") private var timerAccuracy = SolveTimeAccuracy.thousandths.rawValue
 
+    init() {
+        #if os(iOS)
+        TimerScrambleGenerator.prewarm()
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             #if os(iOS)

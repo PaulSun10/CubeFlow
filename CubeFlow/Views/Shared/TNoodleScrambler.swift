@@ -1,6 +1,6 @@
 import Foundation
 
-enum TNoodlePuzzleRegistry: Int, CaseIterable {
+nonisolated enum TNoodlePuzzleRegistry: Int, CaseIterable {
     // This bundled TNoodleLibNative build omits upstream FOUR_FAST.
     // Keep this order aligned to the embedded dylib, not the latest upstream source.
     case two = 0
@@ -20,11 +20,15 @@ enum TNoodlePuzzleRegistry: Int, CaseIterable {
     case skewb = 14
 }
 
-enum TNoodleScrambler {
+nonisolated enum TNoodleScrambler {
+    private static let stateLock = NSLock()
     private static var discoveredIndices: [TNoodlePuzzleRegistry: Int] = [:]
     private static var lastDiagnostics: [TNoodlePuzzleRegistry: String] = [:]
 
     static func scramble(for registry: TNoodlePuzzleRegistry) -> String? {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
         guard let validator = validator(for: registry) else {
             return TNoodleNativeBridge.scramble(forEventIndex: registry.rawValue)
         }
@@ -33,7 +37,9 @@ enum TNoodleScrambler {
     }
 
     static func diagnostic(for registry: TNoodlePuzzleRegistry) -> String? {
-        lastDiagnostics[registry]
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return lastDiagnostics[registry]
     }
 
     private static func discoveredScramble(
@@ -146,7 +152,7 @@ enum TNoodleScrambler {
 }
 
 private extension TNoodlePuzzleRegistry {
-    var debugName: String {
+    nonisolated var debugName: String {
         switch self {
         case .pyra: return "Pyraminx"
         case .sq1: return "Sq1"
@@ -157,7 +163,7 @@ private extension TNoodlePuzzleRegistry {
         }
     }
 
-    var preferredProbeIndices: [Int] {
+    nonisolated var preferredProbeIndices: [Int] {
         [rawValue]
     }
 }

@@ -47,6 +47,14 @@ private struct TimerTopControlsHeightPreferenceKey: PreferenceKey {
     }
 }
 
+private struct TimerScrambleAreaBottomPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 private enum TimerLayoutCoordinateSpace {
     static let name = "TimerTabView.Layout"
 }
@@ -168,8 +176,10 @@ struct TimerTabView: View {
     @State private var ganResultCommitProgress: Double = 0
     @State private var currentScramble: String = ""
     @State private var typedTimeInput: String = ""
-    @State private var isGenerating2x2 = false
     @State private var scrambleRequestToken = UUID()
+    @State private var scramblePrefetchSlot = TimerScramblePrefetchSlot()
+    @State private var scramblePrefetchConsumptionToken: UUID?
+    @State private var scramblePrefetchConsumptionRequestedAt: TimeInterval?
     @State private var mblindScrambles: [String] = []
     @State private var mblindScrambleCount: Int = 3
     @State private var showingMblindSheet = false
@@ -211,6 +221,7 @@ struct TimerTabView: View {
     @State private var manualTimeEntryHeight: CGFloat = 0
     @State private var floatingScrambleFrame: CGRect?
     @State private var timerTopControlsHeight: CGFloat = 0
+    @State private var timerScrambleAreaBottom: CGFloat = 0
     @State private var smartCubeScrambleProgress: SmartCubeScrambleProgress?
     @State private var smartCubeScrambleEpoch = SmartCubeScrambleEpoch()
     @State private var smartCubeRecoveryState = SmartCubeRecoveryPresentationState.inactive
@@ -265,8 +276,13 @@ struct TimerTabView: View {
 
     private var timerGestureTopReserveHeight: CGFloat {
         let headerHeight: CGFloat = 146
-        guard resolvedScrambleDisplayMode == .scroll else { return headerHeight }
-        return headerHeight + scrambleDisplayMeasuredHeight + 12
+        let estimatedHeight = resolvedScrambleDisplayMode == .scroll
+            ? headerHeight + scrambleDisplayMeasuredHeight + 12
+            : headerHeight
+        return max(
+            estimatedHeight,
+            TimerArrangementLayout.nonnegativeFinite(timerScrambleAreaBottom)
+        )
     }
 
     private var selectedSession: Session? {
@@ -986,6 +1002,14 @@ struct TimerTabView: View {
                 }
             }
             .padding(.top, top)
+            .background {
+                GeometryReader { areaProxy in
+                    Color.clear.preference(
+                        key: TimerScrambleAreaBottomPreferenceKey.self,
+                        value: areaProxy.frame(in: .named(TimerLayoutCoordinateSpace.name)).maxY
+                    )
+                }
+            }
         }
         .frame(height: safeAvailableHeight, alignment: .top)
     }
@@ -1218,6 +1242,9 @@ struct TimerTabView: View {
             .onPreferenceChange(FloatingScrambleFramePreferenceKey.self) { frame in
                 floatingScrambleFrame = frame
             }
+            .onPreferenceChange(TimerScrambleAreaBottomPreferenceKey.self) { bottom in
+                timerScrambleAreaBottom = bottom
+            }
             .animation(.easeInOut(duration: 0.18), value: showsGANResultPopup)
             .onAppear {
                 migrateTimerArrangementPreferencesIfNeeded()
@@ -1239,6 +1266,8 @@ struct TimerTabView: View {
         if currentScramble.isEmpty,
            !(enteringTimesWith == "smartCube" && restoreStoredSmartCubePresentation()) {
             generateNewScramble()
+        } else {
+            scheduleScramblePrefetch(for: scrambleGenerationContext)
         }
         if enteringTimesWith == "gan" {
             ganTimer.prepareIfNeeded()
@@ -1271,6 +1300,8 @@ struct TimerTabView: View {
             updateTimerBackgroundImage()
         }
         .onDisappear {
+            invalidateScramblePrefetch()
+            scrambleRequestToken = UUID()
             invalidateTimer()
             invalidateLocalBattleTimer()
             cacheSmartCubePresentation()
@@ -1364,10 +1395,16 @@ struct TimerTabView: View {
             floatingScrambleFrame = nil
         }
         .onChange(of: selectedSessionID) { newSessionID in
+            invalidateScramblePrefetch()
+            scrambleRequestToken = UUID()
             _ = synchronizeSelectedSession(idRawValue: newSessionID)
+            scheduleScramblePrefetch(for: scrambleGenerationContext)
         }
         .onChange(of: sessions.count) { _ in
+            invalidateScramblePrefetch()
+            scrambleRequestToken = UUID()
             _ = synchronizeSelectedSession(idRawValue: selectedSessionID)
+            scheduleScramblePrefetch(for: scrambleGenerationContext)
         }
         .onChange(of: solves.count) { _ in
             refreshSolveSnapshots()
@@ -3484,179 +3521,174 @@ struct TimerTabView: View {
         longestStreakSnapshot = longest
     }
 
-    private func generateNewScramble() {
-        let scrambleEvent = effectiveTimerEvent
+    private var scrambleGenerationContext: TimerScrambleGenerationContext {
+        TimerScrambleGenerationContext(
+            sessionID: selectedSession?.id,
+            event: effectiveTimerEvent,
+            multiBlindCount: mblindScrambleCount,
+            unavailableMessage: appLocalizedString(
+                "timer.scramble_unavailable",
+                languageCode: appLanguage
+            )
+        )
+    }
 
-        if scrambleEvent == .twoByTwo {
-            if isGenerating2x2 { return }
-            isGenerating2x2 = true
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .twoByTwo)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else {
-                        isGenerating2x2 = false
-                        return
-                    }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                    isGenerating2x2 = false
-                }
-            }
-        } else if scrambleEvent == .fourByFour || scrambleEvent == .fourByFourFast || scrambleEvent == .fourByFourBLD {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: scrambleEvent)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .fiveByFive || scrambleEvent == .fiveByFiveBLD {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: scrambleEvent)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .sixBySix {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .sixBySix)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .sevenBySeven {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .sevenBySeven)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .megaminx {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .megaminx)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .pyraminx {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .pyraminx)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .clock {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .clock)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .skewb {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .skewb)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .square1 {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: .square1)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
-        } else if scrambleEvent == .threeByThreeMBLD {
-            currentScramble = "…"
-            mblindScrambles = []
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            let count = max(1, mblindScrambleCount)
-            DispatchQueue.global(qos: .userInitiated).async {
-                var scrambles: [String] = []
-                scrambles.reserveCapacity(count)
-                for _ in 0..<count {
-                    scrambles.append(preferredScramble(for: .threeByThreeMBLD))
-                }
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        mblindScrambles = scrambles
-                        currentScramble = scrambles.first ?? ""
-                    }
-                }
-            }
-        } else {
-            currentScramble = "…"
-            let requestToken = UUID()
-            scrambleRequestToken = requestToken
-            DispatchQueue.global(qos: .userInitiated).async {
-                let scramble = preferredScramble(for: scrambleEvent)
-                DispatchQueue.main.async {
-                    guard scrambleRequestToken == requestToken else { return }
-                    withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
-                        currentScramble = scramble
-                    }
-                }
-            }
+    private func generateNewScramble() {
+        #if DEBUG
+        if advanceMarketingPreviewScramble() {
+            return
         }
+        #endif
+
+        let context = scrambleGenerationContext
+        let requestToken = UUID()
+        let requestedAt = ProcessInfo.processInfo.systemUptime
+        scrambleRequestToken = requestToken
+
+        if !isMarketingPreviewTimer,
+           let prefetched = scramblePrefetchSlot.consume(for: context) {
+            activateGeneratedScramble(
+                prefetched,
+                requestToken: requestToken,
+                requestedAt: requestedAt,
+                source: "prefetch"
+            )
+            return
+        }
+
+        if !isMarketingPreviewTimer,
+           scramblePrefetchSlot.hasPendingRequest(for: context) {
+            presentScrambleLoading(for: context)
+            scramblePrefetchConsumptionToken = requestToken
+            scramblePrefetchConsumptionRequestedAt = requestedAt
+            #if DEBUG
+            print("[ScramblePerf] next waiting_for_prefetch event=\(context.event.rawValue)")
+            #endif
+            return
+        }
+
+        invalidateScramblePrefetch()
+        presentScrambleLoading(for: context)
+        requestScrambleGeneration(
+            for: context,
+            requestToken: requestToken,
+            requestedAt: requestedAt,
+            reason: "foreground"
+        )
+    }
+
+    #if DEBUG
+    private func advanceMarketingPreviewScramble() -> Bool {
+        guard var configuration = marketingPreviewConfiguration?.wrappedValue,
+              let scramble = configuration.advanceFixedScramble() else { return false }
+        marketingPreviewConfiguration?.wrappedValue = configuration
+        withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
+            currentScramble = scramble
+        }
+        return true
+    }
+    #endif
+
+    private func presentScrambleLoading(for context: TimerScrambleGenerationContext) {
+        currentScramble = "…"
+        if context.event == .threeByThreeMBLD {
+            mblindScrambles = []
+        }
+    }
+
+    private func requestScrambleGeneration(
+        for context: TimerScrambleGenerationContext,
+        requestToken: UUID,
+        requestedAt: TimeInterval,
+        reason: String
+    ) {
+        TimerScrambleGenerator.generate(for: context, reason: reason) { payload in
+            guard scrambleRequestToken == requestToken,
+                  scrambleGenerationContext == context else {
+                #if DEBUG
+                print("[ScramblePerf] discarded stale foreground event=\(context.event.rawValue)")
+                #endif
+                return
+            }
+            activateGeneratedScramble(
+                payload,
+                requestToken: requestToken,
+                requestedAt: requestedAt,
+                source: reason
+            )
+        }
+    }
+
+    private func activateGeneratedScramble(
+        _ payload: TimerScrambleGenerationPayload,
+        requestToken: UUID,
+        requestedAt: TimeInterval,
+        source: String
+    ) {
+        guard scrambleRequestToken == requestToken,
+              payload.context == scrambleGenerationContext else { return }
+
+        withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
+            if payload.context.event == .threeByThreeMBLD {
+                mblindScrambles = payload.scrambles
+            }
+            currentScramble = payload.primaryScramble
+        }
+
+        #if DEBUG
+        let elapsed = (ProcessInfo.processInfo.systemUptime - requestedAt) * 1_000
+        print(
+            String(
+                format: "[ScramblePerf] activation source=%@ event=%@ wait_ms=%.1f",
+                source,
+                payload.context.event.rawValue,
+                elapsed
+            )
+        )
+        #endif
+
+        scheduleScramblePrefetch(for: payload.context)
+    }
+
+    private func scheduleScramblePrefetch(for context: TimerScrambleGenerationContext) {
+        guard !isMarketingPreviewTimer,
+              scrambleGenerationContext == context,
+              scramblePrefetchSlot.payload?.context != context,
+              !scramblePrefetchSlot.hasPendingRequest(for: context) else { return }
+
+        let request = scramblePrefetchSlot.begin(for: context)
+        TimerScrambleGenerator.generate(for: context, reason: "prefetch") { payload in
+            guard scramblePrefetchSlot.complete(payload, for: request) else {
+                #if DEBUG
+                print("[ScramblePerf] discarded stale prefetch event=\(context.event.rawValue)")
+                #endif
+                return
+            }
+
+            guard let waitingToken = scramblePrefetchConsumptionToken else { return }
+            let waitingRequestedAt = scramblePrefetchConsumptionRequestedAt
+                ?? ProcessInfo.processInfo.systemUptime
+            scramblePrefetchConsumptionToken = nil
+            scramblePrefetchConsumptionRequestedAt = nil
+            guard scrambleRequestToken == waitingToken,
+                  scrambleGenerationContext == context,
+                  let consumed = scramblePrefetchSlot.consume(for: context) else {
+                scramblePrefetchSlot.invalidate()
+                return
+            }
+            activateGeneratedScramble(
+                consumed,
+                requestToken: waitingToken,
+                requestedAt: waitingRequestedAt,
+                source: "prefetch-wait"
+            )
+        }
+    }
+
+    private func invalidateScramblePrefetch() {
+        scramblePrefetchSlot.invalidate()
+        scramblePrefetchConsumptionToken = nil
+        scramblePrefetchConsumptionRequestedAt = nil
     }
 
     private var isMarketingPreviewTimer: Bool {
@@ -3686,78 +3718,13 @@ struct TimerTabView: View {
     #endif
 
     private func preferredScramble(for event: PuzzleEvent) -> String {
-        if event == .fourByFourFast {
-            return fastFourByFourScramble()
-        }
-
-        let registry = tnoodleRegistry(for: event)
-        if let scramble = TNoodleScrambler.scramble(for: registry),
-           !scramble.isEmpty {
-            return scramble
-        }
-
-        if let diagnostic = TNoodleScrambler.diagnostic(for: registry) {
-            return "\(appLocalizedString("timer.scramble_unavailable", languageCode: appLanguage))\n\(diagnostic)"
-        }
-
-        return appLocalizedString("timer.scramble_unavailable", languageCode: appLanguage)
-    }
-
-    private func fastFourByFourScramble() -> String {
-        let moves: [(notation: String, axis: Int)] = [
-            ("R", 0), ("L", 0), ("Rw", 0), ("Lw", 0),
-            ("U", 1), ("D", 1), ("Uw", 1), ("Dw", 1),
-            ("F", 2), ("B", 2), ("Fw", 2), ("Bw", 2)
-        ]
-        let suffixes = ["", "'", "2"]
-        var generator = SystemRandomNumberGenerator()
-        var scramble: [String] = []
-        var previousAxis: Int?
-
-        while scramble.count < 40 {
-            guard let move = moves.randomElement(using: &generator) else { break }
-            guard move.axis != previousAxis else { continue }
-            let suffix = suffixes.randomElement(using: &generator) ?? ""
-            scramble.append(move.notation + suffix)
-            previousAxis = move.axis
-        }
-
-        return scramble.joined(separator: " ")
-    }
-
-    private func tnoodleRegistry(for event: PuzzleEvent) -> TNoodlePuzzleRegistry {
-        switch event {
-        case .twoByTwo:
-            return .two
-        case .threeByThree, .threeByThreeOH, .threeByThreeMBLD:
-            return .three
-        case .fourByFour, .fourByFourFast:
-            return .four
-        case .fiveByFive:
-            return .five
-        case .sixBySix:
-            return .six
-        case .sevenBySeven:
-            return .seven
-        case .megaminx:
-            return .mega
-        case .pyraminx:
-            return .pyra
-        case .square1:
-            return .sq1
-        case .clock:
-            return .clock
-        case .skewb:
-            return .skewb
-        case .threeByThreeFM:
-            return .threeFM
-        case .threeByThreeBLD:
-            return .threeNI
-        case .fourByFourBLD:
-            return .fourNI
-        case .fiveByFiveBLD:
-            return .fiveNI
-        }
+        TimerScrambleGenerator.preferredScramble(
+            for: event,
+            unavailableMessage: appLocalizedString(
+                "timer.scramble_unavailable",
+                languageCode: appLanguage
+            )
+        )
     }
 
     private var timerBackgroundView: some View {

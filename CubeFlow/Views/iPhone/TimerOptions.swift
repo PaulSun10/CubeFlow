@@ -1005,7 +1005,7 @@ enum SmartCubeConnectionResetAction: Equatable {
     case continueWithoutReset
 }
 
-enum PuzzleEvent: String, CaseIterable {
+enum PuzzleEvent: String, CaseIterable, Sendable {
     case twoByTwo = "2x2"
     case threeByThree = "3x3"
     case fourByFour = "4x4"

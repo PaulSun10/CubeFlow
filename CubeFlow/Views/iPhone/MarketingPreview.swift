@@ -3,6 +3,16 @@ import CoreData
 import Combine
 import SwiftUI
 
+enum MarketingPreviewScrambles {
+    static let threeByThree = [
+        "F' D2 B' R2 F2 L2 F' D2 F' U2 F R D2 R' F2 D L2 F' R",
+        "U D' L' F L2 U' L2 B D2 R2 D' F2 D' F2 R2 B2 U F2 L",
+        "F2 L2 D2 L F2 L2 D2 B R' D' L2 R B' U2 B L' D2 F",
+        "B' U' L2 B' U2 B D2 F2 L2 F' L2 D' L' F D U' B R F' U2",
+        "U' B R2 D2 F2 D2 R' F D2 L' B2 L U2 R F U'"
+    ]
+}
+
 enum MarketingPreviewPreset: String, CaseIterable, Identifiable {
     case timerThreeByThreeHero
 
@@ -20,7 +30,8 @@ enum MarketingPreviewPreset: String, CaseIterable, Identifiable {
             MarketingTimerPreviewConfiguration(
                 event: .threeByThree,
                 elapsedSeconds: 9.51,
-                scramble: "R U2 F' L2 D B2 R2 U' F2 D2 L' B U R' F D' L2 U2 B' R2",
+                scramble: MarketingPreviewScrambles.threeByThree[0],
+                fixedScrambleIndex: 0,
                 mean: 10.9275,
                 ao5: 10.24,
                 ao12: 10.71,
@@ -33,11 +44,20 @@ enum MarketingPreviewPreset: String, CaseIterable, Identifiable {
 struct MarketingTimerPreviewConfiguration {
     var event: PuzzleEvent
     var elapsedSeconds: Double
-    let scramble: String
+    var scramble: String
+    var fixedScrambleIndex: Int
     var mean: Double
     var ao5: Double
     var ao12: Double
     var ao100: Double
+
+    mutating func advanceFixedScramble() -> String? {
+        guard event == .threeByThree,
+              !MarketingPreviewScrambles.threeByThree.isEmpty else { return nil }
+        fixedScrambleIndex = (fixedScrambleIndex + 1) % MarketingPreviewScrambles.threeByThree.count
+        scramble = MarketingPreviewScrambles.threeByThree[fixedScrambleIndex]
+        return scramble
+    }
 }
 
 private struct IsMarketingPreviewEnvironmentKey: EnvironmentKey {
