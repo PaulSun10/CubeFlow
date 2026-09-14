@@ -1986,3 +1986,21 @@
 "settings.smart_cube.highlight_animation" = "Animacja wyróżnienia";
 "settings.smart_cube.highlight_animation.instant" = "Natychmiast";
 "settings.smart_cube.highlight_animation.animated" = "Animowane";
+
+/* Virtual Cube presentation */
+"smart_cube.animation_speed" = "Prędkość animacji";
+"smart_cube.animation_unlimited" = "Bez ograniczeń";
+"smart_cube.appearance" = "Wygląd wirtualnej kostki";
+"smart_cube.appearance.classic" = "Klasyczny";
+"smart_cube.appearance.stickerless" = "Bez naklejek";
+"smart_cube.appearance.minimal" = "Minimalistyczny";
+
+/* Virtual Cube materials */
+"smart_cube.plastic" = "Wewnętrzny plastik";
+"smart_cube.plastic.black" = "Czarny";
+"smart_cube.plastic.white" = "Biały";
+"smart_cube.plastic.natural" = "Naturalny";
+"smart_cube.plastic.clear" = "Przezroczysty";
+"smart_cube.plastic.custom" = "Własny";
+"smart_cube.plastic.custom_color" = "Własny kolor plastiku";
+"smart_cube.reflections" = "Odbicia";

@@ -767,13 +767,12 @@ enum ScreenTransientFeedback {
         controller.view.isUserInteractionEnabled = false
         controller.view.translatesAutoresizingMaskIntoConstraints = false
         window.addSubview(controller.view)
-        let maximumSize = CGSize(
-            width: min(max(window.bounds.width - 48, 120), 300),
-            height: 180
-        )
-        let fittingSize = controller.sizeThatFits(in: maximumSize)
-        let hudWidth = min(max(ceil(fittingSize.width), 120), maximumSize.width)
-        let hudHeight = min(max(ceil(fittingSize.height), 104), maximumSize.height)
+        let maximumWidth = min(window.bounds.width - 48, 176)
+        let minimumWidth = min(maximumWidth, 132)
+        let fittingWidth = controller.sizeThatFits(in: CGSize(width: maximumWidth, height: 180)).width
+        let hudWidth = min(max(ceil(fittingWidth), minimumWidth), maximumWidth)
+        let fittingHeight = controller.sizeThatFits(in: CGSize(width: hudWidth, height: 180)).height
+        let hudHeight = min(max(ceil(fittingHeight), 116), 180)
         NSLayoutConstraint.activate([
             controller.view.centerXAnchor.constraint(equalTo: window.centerXAnchor),
             controller.view.centerYAnchor.constraint(equalTo: window.centerYAnchor),
@@ -851,13 +850,13 @@ private struct ScreenCompletionHUD: View {
     }
 
     private var hudContent: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             AnimatedCheckmark(progress: checkmarkProgress)
                 .stroke(
                     Color.primary,
                     style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round)
                 )
-                .frame(width: 38, height: 30)
+                .frame(width: 52, height: 52)
 
             Text(message)
                 .font(.system(size: 15, weight: .semibold))
@@ -866,8 +865,8 @@ private struct ScreenCompletionHUD: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 16)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
     }
 }
 

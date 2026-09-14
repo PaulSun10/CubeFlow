@@ -4,6 +4,11 @@ import SwiftUI
 struct SmartCubeLabView: View {
     @StateObject private var manager = SmartCubeBluetoothManager.shared
     @AppStorage("smartCubeFixedView") private var fixedViewRawValue = SmartCubeFixedView.urf.rawValue
+    @AppStorage("smartCubeAnimationTPS") private var animationTPS = 10
+    @AppStorage("smartCubeAppearance") private var appearanceRawValue = VirtualCubeAppearance.classic.rawValue
+    @AppStorage("smartCubeInternalPlastic") private var plasticRawValue = VirtualCubePlastic.black.rawValue
+    @AppStorage("smartCubeReflections") private var reflections = false
+    @AppStorage("smartCubePlasticColorData") private var plasticColorData: Data?
     @AppStorage("smartCubeResetPolicy") private var resetPolicyRawValue = SmartCubeResetPolicy.prompt.rawValue
     @AppStorage("smartCubeReadySound") private var readySound = true
     @AppStorage("smartCubeDebugMode") private var debugMode = false
@@ -53,6 +58,13 @@ struct SmartCubeLabView: View {
                 ).color
             },
             set: { highlightColorData = StoredColorData(color: $0).encodedData }
+        )
+    }
+
+    private var customPlasticColor: Binding<Color> {
+        Binding(
+            get: { StoredColorData.decode(from: plasticColorData, fallback: StoredColorData(r: 0.5, g: 0, b: 0.5)).color },
+            set: { plasticColorData = StoredColorData(color: $0).encodedData }
         )
     }
 
@@ -303,7 +315,11 @@ struct SmartCubeLabView: View {
             SmartCube3DView(
                 facelets: manager.facelets,
                 stateRevision: manager.cubeStateRevision,
-                fixedView: fixedView
+                fixedView: fixedView,
+                events: manager.canonicalEvents,
+                connectionAttemptID: manager.connectionAttemptID,
+                isStateTrusted: manager.hasTrustedCanonicalState,
+                diagnosticOwner: "lab"
             )
                 .frame(height: 280)
                 .frame(maxWidth: .infinity)
@@ -318,6 +334,27 @@ struct SmartCubeLabView: View {
 
     private var settingsSection: some View {
         Section("smart_cube.settings") {
+            Picker("smart_cube.animation_speed", selection: $animationTPS) {
+                ForEach(1...20, id: \.self) { speed in
+                    Text("\(speed) TPS").tag(speed)
+                }
+                Text("smart_cube.animation_unlimited").tag(0)
+            }
+            Picker("smart_cube.appearance", selection: $appearanceRawValue) {
+                ForEach(VirtualCubeAppearance.allCases) { appearance in
+                    Text(LocalizedStringKey(appearance.localizedKey)).tag(appearance.rawValue)
+                }
+            }
+            Picker("smart_cube.plastic", selection: $plasticRawValue) {
+                ForEach(VirtualCubePlastic.allCases) { plastic in
+                    Text(LocalizedStringKey(plastic.localizedKey)).tag(plastic.rawValue)
+                }
+            }
+            if plasticRawValue == VirtualCubePlastic.custom.rawValue {
+                ColorPicker("smart_cube.plastic.custom_color", selection: customPlasticColor, supportsOpacity: false)
+            }
+            Toggle("smart_cube.reflections", isOn: $reflections)
+
             Picker("settings.smart_cube.fixed_view", selection: $fixedViewRawValue) {
                 ForEach(SmartCubeFixedView.allCases) { view in
                     Text(view.localizedKey).tag(view.rawValue)

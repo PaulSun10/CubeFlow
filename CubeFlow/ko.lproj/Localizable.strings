@@ -1986,3 +1986,21 @@
 "settings.smart_cube.highlight_animation" = "강조 애니메이션";
 "settings.smart_cube.highlight_animation.instant" = "즉시";
 "settings.smart_cube.highlight_animation.animated" = "애니메이션";
+
+/* Virtual Cube presentation */
+"smart_cube.animation_speed" = "애니메이션 속도";
+"smart_cube.animation_unlimited" = "무제한";
+"smart_cube.appearance" = "가상 큐브 모양";
+"smart_cube.appearance.classic" = "클래식";
+"smart_cube.appearance.stickerless" = "스티커리스";
+"smart_cube.appearance.minimal" = "미니멀";
+
+/* Virtual Cube materials */
+"smart_cube.plastic" = "내부 플라스틱";
+"smart_cube.plastic.black" = "검정";
+"smart_cube.plastic.white" = "흰색";
+"smart_cube.plastic.natural" = "내추럴";
+"smart_cube.plastic.clear" = "투명";
+"smart_cube.plastic.custom" = "사용자 지정";
+"smart_cube.plastic.custom_color" = "사용자 지정 플라스틱 색상";
+"smart_cube.reflections" = "반사";

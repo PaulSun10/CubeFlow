@@ -1986,3 +1986,21 @@
 "settings.smart_cube.highlight_animation" = "Анимация выделения";
 "settings.smart_cube.highlight_animation.instant" = "Мгновенно";
 "settings.smart_cube.highlight_animation.animated" = "С анимацией";
+
+/* Virtual Cube presentation */
+"smart_cube.animation_speed" = "Скорость анимации";
+"smart_cube.animation_unlimited" = "Без ограничений";
+"smart_cube.appearance" = "Внешний вид виртуального куба";
+"smart_cube.appearance.classic" = "Классический";
+"smart_cube.appearance.stickerless" = "Без наклеек";
+"smart_cube.appearance.minimal" = "Минималистичный";
+
+/* Virtual Cube materials */
+"smart_cube.plastic" = "Внутренний пластик";
+"smart_cube.plastic.black" = "Чёрный";
+"smart_cube.plastic.white" = "Белый";
+"smart_cube.plastic.natural" = "Натуральный";
+"smart_cube.plastic.clear" = "Прозрачный";
+"smart_cube.plastic.custom" = "Свой цвет";
+"smart_cube.plastic.custom_color" = "Свой цвет пластика";
+"smart_cube.reflections" = "Отражения";

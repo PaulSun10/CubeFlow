@@ -119,9 +119,9 @@ struct IPhoneContentView: View {
     @ViewBuilder
     private var timerTabContent: some View {
         #if DEBUG
-        TimerTabView(marketingPreviewConfiguration: marketingPreviewConfiguration)
+        TimerTabView(isActive: selectedTab == .timer, marketingPreviewConfiguration: marketingPreviewConfiguration)
         #else
-        TimerTabView()
+        TimerTabView(isActive: selectedTab == .timer)
         #endif
     }
 

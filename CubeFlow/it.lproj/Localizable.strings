@@ -1986,3 +1986,21 @@
 "settings.smart_cube.highlight_animation" = "Animazione evidenziazione";
 "settings.smart_cube.highlight_animation.instant" = "Istantanea";
 "settings.smart_cube.highlight_animation.animated" = "Animata";
+
+/* Virtual Cube presentation */
+"smart_cube.animation_speed" = "Velocità animazione";
+"smart_cube.animation_unlimited" = "Illimitata";
+"smart_cube.appearance" = "Aspetto del cubo virtuale";
+"smart_cube.appearance.classic" = "Classico";
+"smart_cube.appearance.stickerless" = "Senza adesivi";
+"smart_cube.appearance.minimal" = "Minimalista";
+
+/* Virtual Cube materials */
+"smart_cube.plastic" = "Plastica interna";
+"smart_cube.plastic.black" = "Nera";
+"smart_cube.plastic.white" = "Bianca";
+"smart_cube.plastic.natural" = "Naturale";
+"smart_cube.plastic.clear" = "Trasparente";
+"smart_cube.plastic.custom" = "Personalizzata";
+"smart_cube.plastic.custom_color" = "Colore plastica personalizzato";
+"smart_cube.reflections" = "Riflessi";

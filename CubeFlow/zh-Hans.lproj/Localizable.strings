@@ -2030,3 +2030,21 @@
 "settings.smart_cube.highlight_animation" = "高亮动画";
 "settings.smart_cube.highlight_animation.instant" = "立即";
 "settings.smart_cube.highlight_animation.animated" = "动画";
+
+/* Virtual Cube presentation */
+"smart_cube.animation_speed" = "动画速度";
+"smart_cube.animation_unlimited" = "无限制";
+"smart_cube.appearance" = "虚拟魔方外观";
+"smart_cube.appearance.classic" = "经典贴纸";
+"smart_cube.appearance.stickerless" = "无贴纸";
+"smart_cube.appearance.minimal" = "极简";
+
+/* Virtual Cube materials */
+"smart_cube.plastic" = "内部塑料";
+"smart_cube.plastic.black" = "黑色";
+"smart_cube.plastic.white" = "白色";
+"smart_cube.plastic.natural" = "原色";
+"smart_cube.plastic.clear" = "透明";
+"smart_cube.plastic.custom" = "自定义";
+"smart_cube.plastic.custom_color" = "自定义塑料颜色";
+"smart_cube.reflections" = "反光";

@@ -1986,3 +1986,21 @@
 "settings.smart_cube.highlight_animation" = "Vurgu Animasyonu";
 "settings.smart_cube.highlight_animation.instant" = "Anında";
 "settings.smart_cube.highlight_animation.animated" = "Animasyonlu";
+
+/* Virtual Cube presentation */
+"smart_cube.animation_speed" = "Animasyon Hızı";
+"smart_cube.animation_unlimited" = "Sınırsız";
+"smart_cube.appearance" = "Sanal Küp Görünümü";
+"smart_cube.appearance.classic" = "Klasik";
+"smart_cube.appearance.stickerless" = "Etiketsiz";
+"smart_cube.appearance.minimal" = "Minimal";
+
+/* Virtual Cube materials */
+"smart_cube.plastic" = "İç Plastik";
+"smart_cube.plastic.black" = "Siyah";
+"smart_cube.plastic.white" = "Beyaz";
+"smart_cube.plastic.natural" = "Doğal";
+"smart_cube.plastic.clear" = "Şeffaf";
+"smart_cube.plastic.custom" = "Özel";
+"smart_cube.plastic.custom_color" = "Özel Plastik Rengi";
+"smart_cube.reflections" = "Yansımalar";

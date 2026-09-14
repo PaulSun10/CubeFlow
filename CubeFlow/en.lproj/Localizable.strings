@@ -2069,3 +2069,21 @@
 "settings.smart_cube.highlight_animation" = "Highlight Animation";
 "settings.smart_cube.highlight_animation.instant" = "Instant";
 "settings.smart_cube.highlight_animation.animated" = "Animated";
+
+/* Virtual Cube presentation */
+"smart_cube.animation_speed" = "Animation Speed";
+"smart_cube.animation_unlimited" = "Unlimited";
+"smart_cube.appearance" = "Virtual Cube Appearance";
+"smart_cube.appearance.classic" = "Classic";
+"smart_cube.appearance.stickerless" = "Stickerless";
+"smart_cube.appearance.minimal" = "Minimal";
+
+/* Virtual Cube materials */
+"smart_cube.plastic" = "Internal Plastic";
+"smart_cube.plastic.black" = "Black";
+"smart_cube.plastic.white" = "White";
+"smart_cube.plastic.natural" = "Natural";
+"smart_cube.plastic.clear" = "Clear";
+"smart_cube.plastic.custom" = "Custom";
+"smart_cube.plastic.custom_color" = "Custom Plastic Color";
+"smart_cube.reflections" = "Reflections";

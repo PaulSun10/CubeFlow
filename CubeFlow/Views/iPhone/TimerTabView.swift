@@ -60,6 +60,7 @@ private enum TimerLayoutCoordinateSpace {
 }
 
 struct TimerTabView: View {
+    let isActive: Bool
     #if DEBUG
     private let marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>?
     #endif
@@ -238,12 +239,17 @@ struct TimerTabView: View {
     private let ganResultAutoCommitDelay: TimeInterval = 1.5
 
     #if DEBUG
-    init(marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>? = nil) {
+    init(isActive: Bool = true, marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>? = nil) {
+        self.isActive = isActive
         self.marketingPreviewConfiguration = marketingPreviewConfiguration
         let previewConfiguration = marketingPreviewConfiguration?.wrappedValue
         _selectedEvent = State(initialValue: previewConfiguration?.event ?? .threeByThree)
         _elapsedSeconds = State(initialValue: previewConfiguration?.elapsedSeconds ?? 0)
         _currentScramble = State(initialValue: previewConfiguration?.scramble ?? "")
+    }
+    #else
+    init(isActive: Bool = true) {
+        self.isActive = isActive
     }
     #endif
 
@@ -3087,13 +3093,19 @@ struct TimerTabView: View {
         let sideCenter = CGPoint(x: sideMinX + sideWidth / 2, y: center.y)
 
         return ZStack {
-            SmartCube3DView(
-                facelets: smartCube.facelets,
-                stateRevision: smartCube.cubeStateRevision,
-                fixedView: SmartCubeFixedView(rawValue: smartCubeFixedViewRawValue) ?? .urf
-            )
-            .frame(width: cubeSize, height: cubeSize)
-            .position(center)
+            if isActive {
+                SmartCube3DView(
+                    facelets: smartCube.facelets,
+                    stateRevision: smartCube.cubeStateRevision,
+                    fixedView: SmartCubeFixedView(rawValue: smartCubeFixedViewRawValue) ?? .urf,
+                    events: smartCube.canonicalEvents,
+                    connectionAttemptID: smartCube.connectionAttemptID,
+                    isStateTrusted: smartCube.hasTrustedCanonicalState,
+                    diagnosticOwner: "timer"
+                )
+                .frame(width: cubeSize, height: cubeSize)
+                .position(center)
+            }
 
             smartCubeSideTimer(width: sideWidth)
                 .frame(width: sideWidth)
