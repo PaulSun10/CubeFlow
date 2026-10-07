@@ -7,6 +7,7 @@ struct ScrambleDiagramView: View {
     let scramble: String
     let isInteractive: Bool
     let exportAppearance: ScrambleExportAppearance
+    @AppStorage("scrambleDiagramStrokeStyle") private var strokeRaw = DiagramStrokeStyle.thin.rawValue
 
     @AppStorage("scrambleDiagramColorSchemeData") private var colorSchemeData: Data?
 
@@ -29,7 +30,8 @@ struct ScrambleDiagramView: View {
         let diagram = ScrambleDiagramWebView(
             puzzleKey: puzzleKey,
             scramble: scramble,
-            colorScheme: colorScheme
+            colorScheme: colorScheme,
+            strokeScale: (DiagramStrokeStyle(rawValue: strokeRaw) ?? .thin).scale
         )
         .background(Color.clear)
 
@@ -66,8 +68,14 @@ struct ScrambleDiagramView: View {
             return 326.26914536239786 / 283.280
         case "squareone":
             return 495 / 283.5
+        case "fto":
+            return 308 / 319.7691453623979
         default:
-            return 39 / 29
+            if let key = Int(puzzleKey), key % 111 == 0 {
+                let size = CGFloat(key / 111)
+                return (130 * size + 5) / (290 * size / 3 + 5)
+            }
+            return 395 / 295
         }
     }
 }
@@ -975,7 +983,8 @@ private final class ScrambleDiagramImageRenderer: NSObject, WKNavigationDelegate
                 ScrambleDiagramWebView.html(
                     puzzleKey: puzzleKey,
                     scramble: scramble,
-                    colorScheme: colorScheme
+                    colorScheme: colorScheme,
+                    strokeScale: (DiagramStrokeStyle(rawValue: UserDefaults.standard.string(forKey: "scrambleDiagramStrokeStyle") ?? "thin") ?? .thin).scale
                 ),
                 baseURL: Bundle.main.resourceURL
             )
@@ -1024,8 +1033,10 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
     let puzzleKey: String
     let scramble: String
     let colorScheme: String
+    var strokeScale: Double = 1
 
     final class Coordinator {
+        var lastStrokeScale: Double?
         var lastPuzzleKey: String?
         var lastScramble: String?
         var lastColorScheme: String?
@@ -1054,19 +1065,23 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
         guard force
             || coordinator.lastPuzzleKey != puzzleKey
             || coordinator.lastScramble != scramble
-            || coordinator.lastColorScheme != colorScheme else {
+            || coordinator.lastColorScheme != colorScheme || coordinator.lastStrokeScale != strokeScale else {
             return
         }
         coordinator.lastPuzzleKey = puzzleKey
         coordinator.lastScramble = scramble
         coordinator.lastColorScheme = colorScheme
-        webView.loadHTMLString(Self.html(puzzleKey: puzzleKey, scramble: scramble, colorScheme: colorScheme), baseURL: Bundle.main.resourceURL)
+        coordinator.lastStrokeScale = strokeScale
+        webView.loadHTMLString(Self.html(puzzleKey: puzzleKey, scramble: scramble, colorScheme: colorScheme, strokeScale: strokeScale), baseURL: Bundle.main.resourceURL)
     }
 
-    fileprivate static func html(puzzleKey: String, scramble: String, colorScheme: String) -> String {
+    fileprivate static func html(puzzleKey: String, scramble: String, colorScheme: String, strokeScale: Double = 1) -> String {
         let sourceMap: [String: String] = [
             "main": loadJavaScript(relativePath: "main.js"),
             "mathlib": loadJavaScript(relativePath: "mathlib.js"),
+            "raster_geometry": loadJavaScript(relativePath: "raster_geometry.js"),
+            "fto_engine": loadJavaScript(relativePath: "fto_engine.js"),
+            "cubes/fto": loadJavaScript(relativePath: "cubes/fto.js"),
             "cubes/nnn": loadJavaScript(relativePath: "cubes/nnn.js"),
             "cubes/clk": loadJavaScript(relativePath: "cubes/clk.js"),
             "cubes/megaminx": loadJavaScript(relativePath: "cubes/megaminx.js"),
@@ -1139,27 +1154,56 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
             \(sourceEntries)
             };
 
+            globalThis.cubeFlowDiagramStrokeScale = \(strokeScale);
+            const fittedStrokePuzzle = /^(222|333|444|555|666|777|fto)$/.test(\(javaScriptLiteral(puzzleKey)));
             const factories = {};
             const cache = {};
 
             const canvasShim = {
               createCanvas: function(width, height) {
-                const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
+                // Rasterize at the final fitted size; CSS must not downsample thin strokes.
+                const dpr = Math.max(window.devicePixelRatio || 1, 1);
+                const fit = Math.min(window.innerWidth / width, window.innerHeight / height);
+                const pixelWidth = Math.max(1, Math.floor(width * fit * dpr));
+                const scale = pixelWidth / width;
                 const canvas = document.createElement("canvas");
-                canvas.width = Math.ceil(width * scale);
+                canvas.width = pixelWidth;
                 canvas.height = Math.ceil(height * scale);
-                canvas.style.width = width + "px";
-                canvas.style.height = height + "px";
+                canvas.style.width = canvas.width / dpr + "px";
+                canvas.style.height = canvas.height / dpr + "px";
                 const originalGetContext = canvas.getContext.bind(canvas);
                 canvas.getContext = function(type, ...args) {
                   const context = originalGetContext(type, ...args);
                   if (type === "2d" && context && !context.__cubeFlowScaled) {
                     context.scale(scale, scale);
+                  if (!fittedStrokePuzzle && globalThis.cubeFlowDiagramStrokeScale > 1) {
+                    // Retain the thin geometry by default; inset only the heavier legacy paths.
+                    // Include worst-case miter reach plus a transparent backing pixel.
+                    const inset = context.lineWidth * globalThis.cubeFlowDiagramStrokeScale * context.miterLimit / 2 + 1 / scale;
+                    context.translate(inset, inset);
+                    context.scale((width - 2 * inset) / width, (height - 2 * inset) / height);
+                    let prototype = Object.getPrototypeOf(context);
+                    let descriptor;
+                    while (prototype && !descriptor) {
+                      descriptor = Object.getOwnPropertyDescriptor(prototype, "lineWidth");
+                      prototype = Object.getPrototypeOf(prototype);
+                    }
+                    if (descriptor) Object.defineProperty(context, "lineWidth", {
+                      get: () => descriptor.get.call(context) / globalThis.cubeFlowDiagramStrokeScale,
+                      set: value => descriptor.set.call(context, value * globalThis.cubeFlowDiagramStrokeScale)
+                    });
+                    context.lineWidth = 1;
+                  }
                     context.__cubeFlowScaled = true;
                   }
                   return context;
                 };
-                canvas.toBuffer = () => canvas.toDataURL("image/png");
+                canvas.toBuffer = () => {
+                  const image = document.getElementById("diagram");
+                  image.style.width = canvas.style.width;
+                  image.style.height = canvas.style.height;
+                  return canvas.toDataURL("image/png");
+                };
                 return canvas;
               }
             };
@@ -1225,6 +1269,7 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
             }
 
             render();
+            window.addEventListener("resize", render);
           </script>
         </body>
         </html>

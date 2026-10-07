@@ -79,6 +79,7 @@ nonisolated enum TimerScrambleGenerator {
     )
 
     static func prewarm() {
+        FTOScrambler.prewarm()
         let requestedAt = ProcessInfo.processInfo.systemUptime
         queue.async {
             let startedAt = ProcessInfo.processInfo.systemUptime
@@ -97,13 +98,16 @@ nonisolated enum TimerScrambleGenerator {
         }
     }
 
+    private static let ftoQueue = DispatchQueue(label: "CubeFlow.fto-delivery", qos: .userInitiated)
+
     static func generate(
         for context: TimerScrambleGenerationContext,
         reason: String,
         completion: @escaping @MainActor (TimerScrambleGenerationPayload) -> Void
     ) {
         let requestedAt = ProcessInfo.processInfo.systemUptime
-        queue.async {
+        let deliveryQueue = context.event == .fto ? ftoQueue : queue
+        deliveryQueue.async {
             let startedAt = ProcessInfo.processInfo.systemUptime
             let payload = generateSynchronously(for: context)
             let finishedAt = ProcessInfo.processInfo.systemUptime
@@ -146,8 +150,9 @@ nonisolated enum TimerScrambleGenerator {
         if event == .fourByFourFast {
             return fastFourByFourScramble()
         }
+        if event == .fto { return FTOScrambler.scramble() ?? unavailableMessage }
 
-        let registry = tnoodleRegistry(for: event)
+        guard let registry = tnoodleRegistry(for: event) else { return unavailableMessage }
         if let scramble = TNoodleScrambler.scramble(for: registry), !scramble.isEmpty {
             return scramble
         }
@@ -176,7 +181,7 @@ nonisolated enum TimerScrambleGenerator {
         return scramble.joined(separator: " ")
     }
 
-    private static func tnoodleRegistry(for event: PuzzleEvent) -> TNoodlePuzzleRegistry {
+    private static func tnoodleRegistry(for event: PuzzleEvent) -> TNoodlePuzzleRegistry? {
         switch event {
         case .twoByTwo: .two
         case .threeByThree, .threeByThreeOH, .threeByThreeMBLD: .three
@@ -193,6 +198,7 @@ nonisolated enum TimerScrambleGenerator {
         case .threeByThreeBLD: .threeNI
         case .fourByFourBLD: .fourNI
         case .fiveByFiveBLD: .fiveNI
+        case .fto: nil
         }
     }
 }

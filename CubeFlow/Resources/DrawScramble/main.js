@@ -14,4 +14,5 @@ module.exports.genImage = (cube, scramble, colorsIn) => {
 	else if(cube === "pyraminx") return pyraminx.genImage(scramble, colorsIn)
 	else if(cube === "skewb") return skewb.genImage(scramble, colorsIn)
 	else if(cube === "squareone") return squareone.genImage(scramble, colorsIn)
+	else if(cube === "fto") return require("./cubes/fto").genImage(scramble, colorsIn)
 }

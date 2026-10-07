@@ -13,6 +13,7 @@ enum AlgPuzzle: String, CaseIterable, Identifiable {
     case squareOne = "Square-1"
     case clock = "Clock"
     case skewb = "Skewb"
+    case fto = "FTO"
     case threeByThreeBLD = "3x3 bld"
     case fourByFourBLD = "4x4 bld"
     case fiveByFiveBLD = "5x5 bld"
@@ -32,6 +33,7 @@ enum AlgPuzzle: String, CaseIterable, Identifiable {
         case .squareOne: return "event.square1"
         case .clock: return "event.clock"
         case .skewb: return "event.skewb"
+        case .fto: return "event.fto"
         case .threeByThreeBLD: return "event.3x3bld"
         case .fourByFourBLD: return "event.4x4bld"
         case .fiveByFiveBLD: return "event.5x5bld"
@@ -47,7 +49,8 @@ enum AlgPuzzle: String, CaseIterable, Identifiable {
             .squareOne,
             .megaminx,
             .pyraminx,
-            .skewb
+            .skewb,
+            .fto
         ]
     }
 
@@ -260,7 +263,10 @@ struct AlgSectionData: Identifiable {
             id: "square_one_large_sets",
             localizedTitleKey: "algs.section.large_sets",
             items: [
-                item(id: "lin", titleKey: "algs.item.lin.title", descriptionKey: "algs.item.lin.description")
+                item(id: "lin", titleKey: "algs.item.lin.title", descriptionKey: "algs.item.lin.description"),
+                item(id: "sq1csp", titleKey: "algs.item.sq1csp.title", descriptionKey: "algs.item.sq1csp.description"),
+                item(id: "sq1obl", titleKey: "algs.item.sq1obl.title", descriptionKey: "algs.item.sq1obl.description"),
+                item(id: "sq1pbl", titleKey: "algs.item.sq1pbl.title", descriptionKey: "algs.item.sq1pbl.description")
             ]
         )
     ]
@@ -307,7 +313,14 @@ struct AlgSectionData: Identifiable {
         )
     ]
 
-    static var allSections: [AlgSectionData] {
+static let ftoSections: [AlgSectionData] = [
+    AlgSectionData(id: "fto", localizedTitleKey: "event.fto", items: [
+        item(id: "ftoedges", titleKey: "algs.item.ftoedges.title", descriptionKey: "algs.item.ftoedges.description")
+    ])
+]
+
+static var allSections:
+ [AlgSectionData] {
         threeByThreeSections
         + twoByTwoSections
         + fourByFourSections
@@ -316,6 +329,7 @@ struct AlgSectionData: Identifiable {
         + megaminxSections
         + pyraminxSections
         + skewbSections
+        + ftoSections
     }
 
     static func sections(for puzzle: AlgPuzzle) -> [AlgSectionData] {
@@ -336,6 +350,8 @@ struct AlgSectionData: Identifiable {
             return pyraminxSections
         case .skewb:
             return skewbSections
+        case .fto:
+            return ftoSections
         default:
             return []
         }
@@ -535,7 +551,7 @@ func decodeAlgTrainerAttempts(from store: String) -> [AlgTrainerAttemptRecord] {
 }
 
 func makeAlgTrainerWeakReviewItems(from records: [AlgTrainerAttemptRecord], languageCode: String) -> [AlgTrainerWeakReviewItem] {
-    let grouped = Dictionary(grouping: records) { "\($0.setID)::\($0.caseID)" }
+    let grouped = Dictionary(grouping: records) { AlgCanonicalCases.identity(setID: $0.setID, caseID: $0.caseID) }
 
     let setTitles = Dictionary(uniqueKeysWithValues: AlgSectionData.allSections
         .flatMap(\.items)
@@ -567,7 +583,7 @@ func makeAlgTrainerWeakReviewItems(from records: [AlgTrainerAttemptRecord], lang
         )
 
         return AlgTrainerWeakReviewItem(
-            id: "\(first.setID)::\(first.caseID)",
+            id: AlgCanonicalCases.identity(setID: first.setID, caseID: first.caseID),
             setTitle: setTitles[first.setID.lowercased()] ?? payload.set,
             caseTitle: localizedAlgCaseName(setID: payload.set, caseName: algCase.displayName, languageCode: languageCode),
             subtitle: subtitle,
@@ -652,6 +668,10 @@ func algPuzzleSourceURL(puzzle: String) -> URL? {
 }
 
 func algSourceURL(puzzle: String, setID: String) -> URL? {
+    if setID.lowercased() == "sq1csp" { return URL(string: "https://speedcubedb.com/SQ1/Trace") }
+    if setID.lowercased() == "sq1obl" { return URL(string: "https://sq1obl.com/learn/") }
+    if setID.lowercased() == "sq1pbl" { return URL(string: "https://github.com/charlieharris0n/PBL-Manager") }
+    if setID.lowercased() == "ftoedges" { return URL(string: "https://gist.github.com/cs0x7f/1579492aa43c794d529057386c489702") }
     guard let puzzlePath = algPuzzleSourcePath(puzzle: puzzle) else { return nil }
 
     guard let encodedSetID = setID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
@@ -895,7 +915,8 @@ func algSubsetPreviewImageKey(setID: String, parentGroupTitle: String? = nil, su
     return nil
 }
 
-func displayAlgGroupTitle(setID: String, title: String) -> String {
+func displayAlgGroupTitle(setID: String, title: String, languageCode: String = UserDefaults.standard.string(forKey: "appLanguage") ?? "en") -> String {
+    if algSubgroupLocalizationKey(title) != nil { return localizedAlgSubgroup(title, languageCode: languageCode) }
     guard normalizedAlgSetID(setID) == "zbll" else { return title }
 
     switch title {
@@ -1215,46 +1236,30 @@ func learnedCaseStorage(from map: [String: Set<String>]) -> String {
 }
 
 func isAlgCaseLearned(setID: String, caseID: String, storage: String) -> Bool {
-    learnedCaseMap(from: storage)[normalizedAlgSetID(setID), default: []].contains(caseID)
+    AlgCanonicalCases.learned(setID: setID, caseID: caseID, map: learnedCaseMap(from: storage))
 }
 
 func updatedLearnedCaseStorage(storage: String, setID: String, caseID: String, learned: Bool) -> String {
-    var map = learnedCaseMap(from: storage)
-    let key = normalizedAlgSetID(setID)
-    var learnedCases = map[key, default: []]
-
-    if learned {
-        learnedCases.insert(caseID)
-    } else {
-        learnedCases.remove(caseID)
-    }
-
-    map[key] = learnedCases
-    return learnedCaseStorage(from: map)
+    updatedLearnedCaseStorageForAll(storage: storage, setID: setID, caseIDs: [caseID], learned: learned)
 }
 
 func updatedLearnedCaseStorageForAll(storage: String, setID: String, caseIDs: [String], learned: Bool) -> String {
     var map = learnedCaseMap(from: storage)
-    let key = normalizedAlgSetID(setID)
-    var learnedCases = map[key, default: []]
-
-    if learned {
-        learnedCases.formUnion(caseIDs)
-    } else {
-        learnedCases.subtract(caseIDs)
-    }
-
-    map[key] = learnedCases
+    for id in caseIDs { AlgCanonicalCases.setLearned(learned, setID: setID, caseID: id, map: &map) }
     return learnedCaseStorage(from: map)
 }
 
 func learnedCaseCount(setID: String, storage: String) -> Int {
-    learnedCaseMap(from: storage)[normalizedAlgSetID(setID), default: []].count
+    guard let set = AlgLibrarySet(itemID: setID), let payload = AlgLibraryLoader.loadRaw(set) else {
+        return learnedCaseMap(from: storage)[normalizedAlgSetID(setID), default: []].count
+    }
+    let ids = ((set == .sq1PBL || set == .sq1EP) ? AlgLibraryLoader.load(set)?.cases : payload.cases)?.map(\.id) ?? []
+    return learnedCaseCount(setID: setID, caseIDs: ids, storage: storage)
 }
 
 func learnedCaseCount(setID: String, caseIDs: [String], storage: String) -> Int {
-    let learned = learnedCaseMap(from: storage)[normalizedAlgSetID(setID), default: []]
-    return learned.intersection(Set(caseIDs)).count
+    let map = learnedCaseMap(from: storage)
+    return Set(caseIDs).filter { AlgCanonicalCases.learned(setID: setID, caseID: $0, map: map) }.count
 }
 
 func learnedPercent(setID: String, totalCases: Int, storage: String) -> Int {
@@ -1313,6 +1318,10 @@ func localizedAlgString(key: String, languageCode: String) -> String {
 
 func algSubgroupLocalizationKey(_ subgroup: String) -> String? {
     switch subgroup.lowercased() {
+    case "non-parity": return "algs.subset.non_parity"
+    case "parity": return "algs.subset.parity"
+    case "odd": return "algs.subset.odd"
+    case "even": return "algs.subset.even"
     case "free pairs":
         return "algs.f2l.subgroup.free_pairs"
     case "connected pairs":
@@ -1419,6 +1428,9 @@ func algCaseLocalizationKey(setID: String, caseName: String) -> String? {
 }
 
 func localizedAlgCaseName(setID: String, caseName: String, languageCode: String) -> String {
+    if normalizedAlgSetID(setID) == "sq1csp", ["Odd", "Even"].contains(caseName) {
+        return localizedAlgSubgroup(caseName, languageCode: languageCode)
+    }
     guard let key = algCaseLocalizationKey(setID: setID, caseName: caseName) else {
         return caseName
     }
@@ -1427,13 +1439,21 @@ func localizedAlgCaseName(setID: String, caseName: String, languageCode: String)
 
 #if os(iOS)
 enum AlgCaseImageProvider {
-    private static var cache: [String: UIImage] = [:]
+    private static let cache: NSCache<NSString, UIImage> = {
+        let cache = NSCache<NSString, UIImage>()
+        cache.totalCostLimit = 32 * 1_024 * 1_024
+        cache.countLimit = 128
+        return cache
+    }()
 
-    static func image(named imageKey: String) -> UIImage? {
-        if let cached = cache[imageKey] {
-            return cached
-        }
+    private static func remember(_ image: UIImage, for key: String) {
+        let cost = Int(image.size.width * image.scale * image.size.height * image.scale * 4)
+        cache.setObject(image, forKey: key as NSString, cost: cost)
+    }
 
+    static func image(named imageKey: String, quarterTurns: Int = 0) -> UIImage? {
+        if let image = cache.object(forKey: imageKey as NSString) { return image }
+        // Recognition artwork owns borders and ignored regions that state renderers lack.
         let folderName = imageFolderName(for: imageKey)
         let candidates: [String?] = [
             "Resources/Algs/\(folderName)",
@@ -1445,23 +1465,55 @@ enum AlgCaseImageProvider {
         for subdirectory in candidates {
             if let url = Bundle.main.url(forResource: imageKey, withExtension: "png", subdirectory: subdirectory),
                let image = UIImage(contentsOfFile: url.path) {
-                cache[imageKey] = image
+                remember(image, for: imageKey)
                 return image
             }
         }
 
         if let bundled = UIImage(named: imageKey) {
-            cache[imageKey] = bundled
+            remember(bundled, for: imageKey)
             return bundled
+        }
+
+        let record = source(named: imageKey)
+        let colors = ScrambleColorConfiguration.decode(from: UserDefaults.standard.data(forKey: "scrambleDiagramColorSchemeData"))
+        let cacheKey = imageKey + "|" + colors.cube.joined() + "|" + colors.squareOne.joined() + "|" + String(quarterTurns % 4)
+        if record?.stickers != nil, let image = cache.object(forKey: cacheKey as NSString) { return image }
+        if let stickers = record?.stickers, let image = AlgLastLayerDiagram.image(stickers: stickers, colors: colors.cube, quarterTurns: quarterTurns) {
+            remember(image, for: cacheKey); return image
+        }
+        if (imageKey.hasPrefix("sq1") || imageKey.hasPrefix("lin_") ? record?.setup : nil) != nil, let cached = cache.object(forKey: cacheKey as NSString) { return cached }
+        if let cached = cache.object(forKey: imageKey as NSString) {
+            return cached
+        }
+
+        if let setup = (imageKey.hasPrefix("sq1") || imageKey.hasPrefix("lin_") ? record?.setup : nil), let image = SquareOneCaseDiagram.image(setup: setup, colors: colors.squareOne, quarterTurns: quarterTurns) {
+            remember(image, for: cacheKey)
+            return image
         }
 
         return nil
     }
 
-    private static func imageFolderName(for imageKey: String) -> String {
+private static var sourceCache: [AlgLibrarySet: [String: AlgCase]] = [:]
+
+private static func source(named imageKey: String) -> AlgCase? {
+    guard let prefix = imageKey.split(separator: "_").first,
+          let set = AlgLibrarySet(rawValue: String(prefix).lowercased()) else { return nil }
+    func records(_ set: AlgLibrarySet) -> [String: AlgCase] {
+        if let cached = sourceCache[set] { return cached }
+        var result: [String: AlgCase] = [:]
+        for item in AlgLibraryLoader.loadRaw(set)?.cases ?? [] { result[item.imageKey] = item }
+        sourceCache[set] = result
+        return result
+    }
+    return records(set)[imageKey] ?? (set == .sq1PBL ? records(.sq1PBLParity)[imageKey] : nil)
+}
+
+private static func imageFolderName
+(for imageKey: String) -> String {
         let prefix = imageKey.split(separator: "_").first.map(String.init)?.uppercased() ?? "PLL"
         return "\(prefix)Images"
     }
 }
 #endif
-

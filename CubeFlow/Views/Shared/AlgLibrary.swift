@@ -12,16 +12,33 @@ struct AlgCase: Decodable, Identifiable, Hashable {
     let id: String
     let displayName: String
     let name: String
-    let group: String?
+    var group: String?
     let subgroup: String
     let imageKey: String
     let recognition: String
     let notes: String
     let setup: String?
-    let algorithms: [AlgFormula]
-    let algorithmGroups: [AlgFormulaGroup]?
+    var algorithms: [AlgFormula]
+    var algorithmGroups: [AlgFormulaGroup]?
+
+    var stickers: [String: String]? = nil
+    var probability: Double? = nil
+    var probabilityExact: AlgExactProbability? = nil
+    var probabilityBasis: String? = nil
+    var csp: SquareOneCSPCase? = nil
+
+    var sliceCount: Int? {
+        let counts = algorithms.compactMap { formula -> Int? in
+            guard let steps = SquareOneNotation.steps(formula.notation) else { return nil }
+            return steps.filter { $0 == .slice }.count
+        }
+        return counts.min() ?? (setup == "" ? 0 : nil)
+    }
 
     var displayAlgorithmsCount: Int {
+        if csp != nil, let algorithmGroups {
+            return Set(algorithmGroups.flatMap { $0.algorithms.map(\.id) }).count
+        }
         guard let algorithmGroups, !algorithmGroups.isEmpty else {
             return algorithms.count
         }
@@ -42,6 +59,7 @@ struct AlgFormulaGroup: Decodable, Identifiable, Hashable {
     let title: String
     let setup: String?
     let algorithms: [AlgFormula]
+    var executionAlignment: String? = nil
 }
 
 struct AlgFormula: Decodable, Identifiable, Hashable {
@@ -52,7 +70,7 @@ struct AlgFormula: Decodable, Identifiable, Hashable {
     let tags: [String]
 }
 
-enum AlgLibrarySet: String {
+enum AlgLibrarySet: String, CaseIterable {
     case pll
     case oll
     case f2l
@@ -79,6 +97,7 @@ enum AlgLibrarySet: String {
     case l2c
     case lin
     case sq1CS = "sq1cs"
+    case sq1CSP = "sq1csp"
     case sq1CO = "sq1co"
     case sq1EO = "sq1eo"
     case sq1CP = "sq1cp"
@@ -86,6 +105,11 @@ enum AlgLibrarySet: String {
     case sq1LinPLL = "sq1linpll"
     case sq1LinParityPLL = "sq1linparitypll"
     case sq1EP = "sq1ep"
+    case sq1PBL = "sq1pbl"
+    case sq1EPParity = "sq1epparity"
+    case sq1PBLParity = "sq1pblparity"
+    case sq1OBL = "sq1obl"
+    case ftoEdges = "ftoedges"
     case sq1LinPLL1 = "sq1linpll1"
     case megaminxOLL = "megaminxoll"
     case megaminxPLL = "megaminxpll"
@@ -127,6 +151,7 @@ enum AlgLibrarySet: String {
         case "l2c": self = .l2c
         case "lin": self = .lin
         case "sq1cs": self = .sq1CS
+        case "sq1csp": self = .sq1CSP
         case "sq1co": self = .sq1CO
         case "sq1eo": self = .sq1EO
         case "sq1cp": self = .sq1CP
@@ -134,6 +159,9 @@ enum AlgLibrarySet: String {
         case "sq1linpll": self = .sq1LinPLL
         case "sq1linparitypll": self = .sq1LinParityPLL
         case "sq1ep": self = .sq1EP
+        case "sq1pbl": self = .sq1PBL
+        case "sq1obl": self = .sq1OBL
+        case "ftoedges": self = .ftoEdges
         case "sq1linpll1": self = .sq1LinPLL1
         case "megaminxoll": self = .megaminxOLL
         case "megaminxpll": self = .megaminxPLL
@@ -150,9 +178,23 @@ enum AlgLibrarySet: String {
 }
 
 enum AlgLibraryLoader {
-    private static var payloadCache: [AlgLibrarySet: AlgSetPayload] = [:]
+    private static var normalizedCache: [AlgLibrarySet: AlgSetPayload] = [:]
 
     static func load(_ set: AlgLibrarySet) -> AlgSetPayload? {
+        if let cached = normalizedCache[set] { return cached }
+        guard var raw = loadRaw(set) else { return nil }
+        if set == .sq1PBL || set == .sq1EP {
+            let nonParity = raw.cases.map { item -> AlgCase in var value = item; value.group = "Non-parity"; return value }
+            raw = AlgSetPayload(puzzle: raw.puzzle, set: raw.set, version: raw.version, source: raw.source, cases: nonParity + (loadRaw(set == .sq1PBL ? .sq1PBLParity : .sq1EPParity)?.cases ?? []))
+        }
+        let normalized = AlgCanonicalCases.normalize(raw)
+        normalizedCache[set] = normalized
+        return normalized
+    }
+
+    private static var payloadCache: [AlgLibrarySet: AlgSetPayload] = [:]
+
+    static func loadRaw(_ set: AlgLibrarySet) -> AlgSetPayload? {
         if let cached = payloadCache[set] {
             return cached
         }

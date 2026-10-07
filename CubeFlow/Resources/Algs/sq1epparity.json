@@ -1,0 +1,2758 @@
+{
+  "puzzle": "SQ1",
+  "set": "SQ1EPPARITY",
+  "version": 1,
+  "source": "CubeFlow: 50 corner-solved cross-parity layer permutations from independently validated PBL references",
+  "cases": [
+    {
+      "id": "parity_adj_h",
+      "displayName": "Adj / H",
+      "name": "Adj / H",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_adj_h",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,-3) / (-4,0) / (0,-3) / (0,5) / (-5,0) / (3,0) / (0,-5) / (-1,2) / (-5,1) / (-4,-3)",
+      "algorithms": [
+        {
+          "id": "parity_adj_h-reference",
+          "notation": "(4,3) / (5,-1) / (1,-2) / (0,5) / (-3,0) / (5,0) / (0,-5) / (0,3) / (4,0) / (-4,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          10
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_adj_solved",
+      "displayName": "Adj / -",
+      "name": "Adj / -",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_adj_solved",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-5,-3) / (2,-1) / (4,1) / (3,0) / (-3,0) / (5,-1) / (-2,1) / (-4,3)",
+      "algorithms": [
+        {
+          "id": "parity_adj_solved-reference",
+          "notation": "(4,-3) / (2,-1) / (-5,1) / (3,0) / (-3,0) / (-4,-1) / (-2,1) / (5,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          10,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_adj_ua",
+      "displayName": "Adj / Ua",
+      "name": "Adj / Ua",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_adj_ua",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,0) / (0,3) / (5,5) / (3,0) / (-5,1) / (2,-6)",
+      "algorithms": [
+        {
+          "id": "parity_adj_ua-reference",
+          "notation": "(-2,-6) / (5,-1) / (-3,0) / (-5,-5) / (0,-3) / (2,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          14,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_adj_ub",
+      "displayName": "Adj / Ub",
+      "name": "Adj / Ub",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_adj_ub",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (0,2) / (-3,0) / (-5,-5) / (5,-4) / (0,-3) / (-5,1) / (-1,5) / (-3,-2)",
+      "algorithms": [
+        {
+          "id": "parity_adj_ub-reference",
+          "notation": "(3,2) / (1,-5) / (5,-1) / (0,3) / (-5,4) / (5,5) / (3,0) / (0,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_adj_z",
+      "displayName": "Adj / Z",
+      "name": "Adj / Z",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_adj_z",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,-3) / (0,3) / (-1,-1) / (1,-2) / (3,0) / (3,0) / (-1,-1) / (-2,1) / (-4,3)",
+      "algorithms": [
+        {
+          "id": "parity_adj_z-reference",
+          "notation": "(4,-3) / (2,-1) / (1,1) / (-3,0) / (-3,0) / (-1,2) / (1,1) / (0,-3) / (-1,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          14,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_h_adj",
+      "displayName": "H / Adj",
+      "name": "H / Adj",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_h_adj",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (0,2) / (-3,0) / (1,1) / (-3,0) / (3,0) / (-1,-1) / (3,0) / (-6,-2)",
+      "algorithms": [
+        {
+          "id": "parity_h_adj-reference",
+          "notation": "(-6,2) / (-3,0) / (1,1) / (-3,0) / (3,0) / (-1,-1) / (3,0) / (0,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          4,
+          1,
+          1,
+          6,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_h_oa",
+      "displayName": "H / Oa",
+      "name": "H / Oa",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_h_oa",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,-3) / (5,-4) / (-5,-2) / (0,3) / (-3,3) / (-1,-4) / (0,-3) / (-2,4) / (2,-6)",
+      "algorithms": [
+        {
+          "id": "parity_h_oa-reference",
+          "notation": "(-2,-6) / (2,-4) / (0,3) / (1,4) / (3,-3) / (0,-3) / (5,2) / (-5,4) / (2,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          4,
+          1,
+          1,
+          6,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          14,
+          11,
+          11,
+          8,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_h_ob",
+      "displayName": "H / Ob",
+      "name": "H / Ob",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_h_ob",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,-3) / (2,-4) / (0,3) / (-5,-2) / (-3,3) / (0,-3) / (-4,-1) / (-2,1) / (2,-6)",
+      "algorithms": [
+        {
+          "id": "parity_h_ob-reference",
+          "notation": "(-2,-6) / (2,-1) / (4,1) / (0,3) / (3,-3) / (5,2) / (0,-3) / (-2,4) / (-4,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          4,
+          1,
+          1,
+          6,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          14,
+          15,
+          15,
+          8
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_h_opp",
+      "displayName": "H / Opp",
+      "name": "H / Opp",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_h_opp",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,-3) / (0,-4) / (-3,0) / (5,0) / (0,-5) / (0,3) / (0,5) / (0,3) / (-5,1) / (2,3)",
+      "algorithms": [
+        {
+          "id": "parity_h_opp-reference",
+          "notation": "(-2,-3) / (5,-1) / (0,-3) / (0,-5) / (0,-3) / (0,5) / (-5,0) / (3,0) / (0,4) / (-4,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          4,
+          1,
+          1,
+          6,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          10,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_h_w",
+      "displayName": "H / W",
+      "name": "H / W",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_h_w",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,0) / (0,-3) / (3,-3) / (2,-4) / (0,3) / (-3,-3) / (-2,4) / (2,3)",
+      "algorithms": [
+        {
+          "id": "parity_h_w-reference",
+          "notation": "(-2,-3) / (2,-4) / (3,3) / (0,-3) / (-2,4) / (-3,3) / (0,3) / (-1,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          4,
+          1,
+          1,
+          6,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_oa_h",
+      "displayName": "Oa / H",
+      "name": "Oa / H",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_oa_h",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,-3) / (-4,0) / (0,-3) / (0,5) / (-5,0) / (3,0) / (0,-5) / (-1,2) / (-5,1) / (-1,-3)",
+      "algorithms": [
+        {
+          "id": "parity_oa_h-reference",
+          "notation": "(1,3) / (5,-1) / (1,-2) / (0,5) / (-3,0) / (5,0) / (0,-5) / (0,3) / (4,0) / (-1,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          2,
+          5,
+          5,
+          4,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          10
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_oa_solved",
+      "displayName": "Oa / -",
+      "name": "Oa / -",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_oa_solved",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,-3) / (2,-1) / (4,1) / (3,0) / (-3,0) / (5,-1) / (-2,1) / (-1,3)",
+      "algorithms": [
+        {
+          "id": "parity_oa_solved-reference",
+          "notation": "(1,-3) / (2,-1) / (-5,1) / (3,0) / (-3,0) / (-4,-1) / (-2,1) / (-4,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          2,
+          5,
+          5,
+          4,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          10,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_oa_ua",
+      "displayName": "Oa / Ua",
+      "name": "Oa / Ua",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_oa_ua",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-5,0) / (0,3) / (5,5) / (3,0) / (-5,1) / (5,-6)",
+      "algorithms": [
+        {
+          "id": "parity_oa_ua-reference",
+          "notation": "(-5,-6) / (5,-1) / (-3,0) / (-5,-5) / (0,-3) / (5,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          2,
+          5,
+          5,
+          4,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          14,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_oa_ub",
+      "displayName": "Oa / Ub",
+      "name": "Oa / Ub",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_oa_ub",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,2) / (-3,0) / (-5,-5) / (5,-4) / (0,-3) / (-5,1) / (-1,5) / (0,-2)",
+      "algorithms": [
+        {
+          "id": "parity_oa_ub-reference",
+          "notation": "(0,2) / (1,-5) / (5,-1) / (0,3) / (-5,4) / (5,5) / (3,0) / (3,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          2,
+          5,
+          5,
+          4,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_oa_z",
+      "displayName": "Oa / Z",
+      "name": "Oa / Z",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_oa_z",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,-3) / (0,3) / (-1,-1) / (1,-2) / (3,0) / (3,0) / (-1,-1) / (-2,1) / (-1,3)",
+      "algorithms": [
+        {
+          "id": "parity_oa_z-reference",
+          "notation": "(1,-3) / (2,-1) / (1,1) / (-3,0) / (-3,0) / (-1,2) / (1,1) / (0,-3) / (2,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          2,
+          5,
+          5,
+          4,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          14,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_ob_h",
+      "displayName": "Ob / H",
+      "name": "Ob / H",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ob_h",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-6,5) / (3,-3) / (-5,0) / (-3,0) / (-3,4) / (-3,2) / (0,3) / (-4,-3) / (0,-5)",
+      "algorithms": [
+        {
+          "id": "parity_ob_h-reference",
+          "notation": "(0,5) / (4,3) / (0,-3) / (3,-2) / (3,-4) / (3,0) / (5,0) / (-3,3) / (-6,-5) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          4,
+          3,
+          3,
+          6,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          10
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_ob_solved",
+      "displayName": "Ob / -",
+      "name": "Ob / -",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ob_solved",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,-3) / (2,-1) / (-5,1) / (3,0) / (-3,0) / (-4,-1) / (-2,1) / (-1,3)",
+      "algorithms": [
+        {
+          "id": "parity_ob_solved-reference",
+          "notation": "(1,-3) / (2,-1) / (4,1) / (3,0) / (-3,0) / (5,-1) / (-2,1) / (2,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          4,
+          3,
+          3,
+          6,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          10,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ob_ua",
+      "displayName": "Ob / Ua",
+      "name": "Ob / Ua",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ob_ua",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-5,0) / (5,-4) / (-5,-5) / (-3,0) / (0,-3) / (-1,5) / (-5,1) / (-4,-6)",
+      "algorithms": [
+        {
+          "id": "parity_ob_ua-reference",
+          "notation": "(4,-6) / (5,-1) / (1,-5) / (0,3) / (3,0) / (5,5) / (-5,4) / (5,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          4,
+          3,
+          3,
+          6,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          14,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ob_ub",
+      "displayName": "Ob / Ub",
+      "name": "Ob / Ub",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ob_ub",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,2) / (-3,0) / (-5,-5) / (0,-3) / (-1,5) / (-3,-2)",
+      "algorithms": [
+        {
+          "id": "parity_ob_ub-reference",
+          "notation": "(3,2) / (1,-5) / (0,3) / (5,5) / (3,0) / (3,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          4,
+          3,
+          3,
+          6,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ob_z",
+      "displayName": "Ob / Z",
+      "name": "Ob / Z",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ob_z",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,-3) / (0,3) / (-1,-1) / (1,-2) / (-3,0) / (3,0) / (-1,-1) / (-2,1) / (-1,3)",
+      "algorithms": [
+        {
+          "id": "parity_ob_z-reference",
+          "notation": "(1,-3) / (2,-1) / (1,1) / (-3,0) / (3,0) / (-1,2) / (1,1) / (0,-3) / (-4,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          4,
+          3,
+          3,
+          6,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          14,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_opp_h",
+      "displayName": "Opp / H",
+      "name": "Opp / H",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_opp_h",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (0,5) / (3,-3) / (-5,0) / (-3,0) / (-3,4) / (-3,2) / (0,3) / (-4,-3) / (-6,-5)",
+      "algorithms": [
+        {
+          "id": "parity_opp_h-reference",
+          "notation": "(-6,5) / (4,3) / (0,-3) / (3,-2) / (3,-4) / (3,0) / (5,0) / (-3,3) / (0,-5) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          10
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_opp_solved",
+      "displayName": "Opp / -",
+      "name": "Opp / -",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_opp_solved",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,-3) / (2,-1) / (-5,1) / (3,0) / (-3,0) / (-4,-1) / (-2,1) / (5,3)",
+      "algorithms": [
+        {
+          "id": "parity_opp_solved-reference",
+          "notation": "(-5,-3) / (2,-1) / (4,1) / (3,0) / (-3,0) / (5,-1) / (-2,1) / (-4,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          10,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_opp_ua",
+      "displayName": "Opp / Ua",
+      "name": "Opp / Ua",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_opp_ua",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,0) / (5,-4) / (-5,-5) / (-3,0) / (0,-3) / (-1,5) / (-5,1) / (2,-6)",
+      "algorithms": [
+        {
+          "id": "parity_opp_ua-reference",
+          "notation": "(-2,-6) / (5,-1) / (1,-5) / (0,3) / (3,0) / (5,5) / (-5,4) / (-1,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          14,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_opp_ub",
+      "displayName": "Opp / Ub",
+      "name": "Opp / Ub",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_opp_ub",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (3,2) / (-3,0) / (-5,-5) / (0,-3) / (-1,5) / (3,-2)",
+      "algorithms": [
+        {
+          "id": "parity_opp_ub-reference",
+          "notation": "(-3,2) / (1,-5) / (0,3) / (5,5) / (3,0) / (-3,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_opp_z",
+      "displayName": "Opp / Z",
+      "name": "Opp / Z",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_opp_z",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,-3) / (0,3) / (-1,-1) / (1,-2) / (-3,0) / (3,0) / (-1,-1) / (-2,1) / (5,3)",
+      "algorithms": [
+        {
+          "id": "parity_opp_z-reference",
+          "notation": "(-5,-3) / (2,-1) / (1,1) / (-3,0) / (3,0) / (-1,2) / (1,1) / (0,-3) / (2,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          14,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_solved_adj",
+      "displayName": "- / Adj",
+      "name": "- / Adj",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_solved_adj",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (3,-1) / (-3,0) / (-5,-5) / (-1,2) / (3,-5)",
+      "algorithms": [
+        {
+          "id": "parity_solved_adj-reference",
+          "notation": "(-3,5) / (1,-2) / (5,5) / (3,0) / (-3,1) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          2,
+          3,
+          3,
+          4,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_solved_oa",
+      "displayName": "- / Oa",
+      "name": "- / Oa",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_solved_oa",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,-3) / (0,3) / (0,2) / (1,-5) / (0,5) / (0,-3) / (0,3) / (-1,0) / (0,3) / (0,3) / (3,4)",
+      "algorithms": [
+        {
+          "id": "parity_solved_oa-reference",
+          "notation": "(-3,-4) / (0,-3) / (0,-3) / (1,0) / (0,-3) / (0,3) / (0,-5) / (-1,5) / (0,-2) / (0,-3) / (3,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          2,
+          3,
+          3,
+          4,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          14,
+          11,
+          11,
+          8,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_solved_ob",
+      "displayName": "- / Ob",
+      "name": "- / Ob",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_solved_ob",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,-3) / (3,3) / (-1,2) / (-5,4) / (-1,-4) / (-5,4) / (-3,0) / (3,0) / (2,-6)",
+      "algorithms": [
+        {
+          "id": "parity_solved_ob-reference",
+          "notation": "(-2,-6) / (-3,0) / (3,0) / (5,-4) / (1,4) / (5,-4) / (1,-2) / (-3,-3) / (-1,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          2,
+          3,
+          3,
+          4,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          14,
+          15,
+          15,
+          8
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_solved_opp",
+      "displayName": "- / Opp",
+      "name": "- / Opp",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_solved_opp",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,3) / (-1,0) / (-3,0) / (0,5) / (0,-5) / (3,0) / (1,0) / (-1,3)",
+      "algorithms": [
+        {
+          "id": "parity_solved_opp-reference",
+          "notation": "(1,-3) / (-1,0) / (-3,0) / (0,5) / (0,-5) / (3,0) / (1,0) / (-1,-3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          2,
+          3,
+          3,
+          4,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          10,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_solved_w",
+      "displayName": "- / W",
+      "name": "- / W",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_solved_w",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,3) / (0,3) / (-1,-1) / (0,3) / (0,-3) / (1,1) / (0,-3) / (2,3)",
+      "algorithms": [
+        {
+          "id": "parity_solved_w-reference",
+          "notation": "(-2,-3) / (0,3) / (-1,-1) / (0,3) / (0,-3) / (1,1) / (0,-3) / (2,-3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          0,
+          1,
+          1,
+          2,
+          3,
+          3,
+          4,
+          5,
+          5,
+          6,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ua_adj",
+      "displayName": "Ua / Adj",
+      "name": "Ua / Adj",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ua_adj",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (3,2) / (-3,0) / (1,1) / (-3,0) / (3,0) / (-1,-1) / (3,0) / (3,-2)",
+      "algorithms": [
+        {
+          "id": "parity_ua_adj-reference",
+          "notation": "(-3,2) / (-3,0) / (1,1) / (-3,0) / (3,0) / (-1,-1) / (3,0) / (-3,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ua_oa",
+      "displayName": "Ua / Oa",
+      "name": "Ua / Oa",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ua_oa",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,-3) / (5,-4) / (-5,-2) / (0,3) / (-3,3) / (-1,-4) / (0,-3) / (-2,4) / (-1,-6)",
+      "algorithms": [
+        {
+          "id": "parity_ua_oa-reference",
+          "notation": "(1,-6) / (2,-4) / (0,3) / (1,4) / (3,-3) / (0,-3) / (5,2) / (-5,4) / (-1,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          14,
+          11,
+          11,
+          8,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_ua_ob",
+      "displayName": "Ua / Ob",
+      "name": "Ua / Ob",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ua_ob",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-5,-3) / (2,-4) / (0,3) / (-5,-2) / (-3,3) / (0,-3) / (-4,-1) / (-2,1) / (-1,-6)",
+      "algorithms": [
+        {
+          "id": "parity_ua_ob-reference",
+          "notation": "(1,-6) / (2,-1) / (4,1) / (0,3) / (3,-3) / (5,2) / (0,-3) / (-2,4) / (5,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          14,
+          15,
+          15,
+          8
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_ua_opp",
+      "displayName": "Ua / Opp",
+      "name": "Ua / Opp",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ua_opp",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-5,-3) / (0,-4) / (-3,0) / (5,0) / (0,-5) / (0,3) / (0,5) / (0,3) / (-5,1) / (-1,3)",
+      "algorithms": [
+        {
+          "id": "parity_ua_opp-reference",
+          "notation": "(1,-3) / (5,-1) / (0,-3) / (0,-5) / (0,-3) / (0,5) / (-5,0) / (3,0) / (0,4) / (5,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          10,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ua_w",
+      "displayName": "Ua / W",
+      "name": "Ua / W",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ua_w",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,0) / (0,-3) / (3,-3) / (2,-4) / (0,3) / (-3,-3) / (-2,4) / (-1,3)",
+      "algorithms": [
+        {
+          "id": "parity_ua_w-reference",
+          "notation": "(1,-3) / (2,-4) / (3,3) / (0,-3) / (-2,4) / (-3,3) / (0,3) / (-4,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          0,
+          3,
+          3,
+          4,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ub_adj",
+      "displayName": "Ub / Adj",
+      "name": "Ub / Adj",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ub_adj",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,0) / (3,0) / (3,3) / (3,0) / (-5,0) / (5,-1) / (-5,4) / (-3,-3) / (3,0) / (-4,-6)",
+      "algorithms": [
+        {
+          "id": "parity_ub_adj-reference",
+          "notation": "(4,-6) / (-3,0) / (3,3) / (5,-4) / (-5,1) / (5,0) / (-3,0) / (-3,-3) / (-3,0) / (3,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ub_oa",
+      "displayName": "Ub / Oa",
+      "name": "Ub / Oa",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ub_oa",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,-1) / (4,4) / (0,3) / (-1,-1) / (0,-3) / (-2,-2) / (0,3) / (-1,-1) / (3,-2)",
+      "algorithms": [
+        {
+          "id": "parity_ub_oa-reference",
+          "notation": "(-3,2) / (1,1) / (0,-3) / (2,2) / (0,3) / (1,1) / (0,-3) / (-4,-4) / (3,1) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          14,
+          11,
+          11,
+          8,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_ub_ob",
+      "displayName": "Ub / Ob",
+      "name": "Ub / Ob",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ub_ob",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (1,-3) / (-1,5) / (0,-3) / (-5,-5) / (-4,2) / (-5,-5) / (-3,0) / (-1,-3)",
+      "algorithms": [
+        {
+          "id": "parity_ub_ob-reference",
+          "notation": "(1,3) / (3,0) / (5,5) / (4,-2) / (5,5) / (0,3) / (1,-5) / (-1,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          14,
+          15,
+          15,
+          8
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_ub_opp",
+      "displayName": "Ub / Opp",
+      "name": "Ub / Opp",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ub_opp",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,2) / (-5,-5) / (0,-3) / (-1,-1) / (0,-3) / (-5,-5) / (-4,-3)",
+      "algorithms": [
+        {
+          "id": "parity_ub_opp-reference",
+          "notation": "(4,3) / (5,5) / (0,3) / (1,1) / (0,3) / (5,5) / (3,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          10,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_ub_w",
+      "displayName": "Ub / W",
+      "name": "Ub / W",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_ub_w",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,-1) / (1,-2) / (5,2) / (0,-3) / (-3,3) / (-2,-5) / (3,0) / (-4,2) / (-6,-5)",
+      "algorithms": [
+        {
+          "id": "parity_ub_w-reference",
+          "notation": "(-6,5) / (4,-2) / (-3,0) / (2,5) / (3,-3) / (0,3) / (-5,-2) / (-1,2) / (3,1) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          2,
+          1,
+          1,
+          6,
+          3,
+          3,
+          4,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_w_h",
+      "displayName": "W / H",
+      "name": "W / H",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_w_h",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,5) / (-2,4) / (5,5) / (-2,-2) / (-1,5) / (-3,-5)",
+      "algorithms": [
+        {
+          "id": "parity_w_h-reference",
+          "notation": "(3,5) / (1,-5) / (2,2) / (-5,-5) / (2,-4) / (3,-5) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          10
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_w_solved",
+      "displayName": "W / -",
+      "name": "W / -",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_w_solved",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,-4) / (3,-3) / (3,-3) / (3,-1) / (3,-3) / (3,-3) / (-3,1)",
+      "algorithms": [
+        {
+          "id": "parity_w_solved-reference",
+          "notation": "(3,-1) / (-3,3) / (-3,3) / (-3,1) / (-3,3) / (-3,3) / (2,4) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          10,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_w_ua",
+      "displayName": "W / Ua",
+      "name": "W / Ua",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_w_ua",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,0) / (0,-4) / (-3,0) / (5,0) / (0,-5) / (0,3) / (-5,0) / (-4,5) / (-5,1) / (-4,-6)",
+      "algorithms": [
+        {
+          "id": "parity_w_ua-reference",
+          "notation": "(4,-6) / (5,-1) / (4,-5) / (5,0) / (0,-3) / (0,5) / (-5,0) / (3,0) / (0,4) / (-4,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          8,
+          11,
+          11,
+          14,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_w_ub",
+      "displayName": "W / Ub",
+      "name": "W / Ub",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_w_ub",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,5) / (-3,3) / (0,-5) / (0,-3) / (-2,3) / (-3,2) / (3,0) / (-4,-3) / (-3,-5)",
+      "algorithms": [
+        {
+          "id": "parity_w_ub-reference",
+          "notation": "(3,5) / (4,3) / (-3,0) / (3,-2) / (2,-3) / (0,3) / (0,5) / (3,-3) / (3,-5) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_w_z",
+      "displayName": "W / Z",
+      "name": "W / Z",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_w_z",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-3,-3) / (-3,-3) / (-4,-1) / (-4,2) / (-1,5) / (0,-3) / (-3,-3) / (3,3)",
+      "algorithms": [
+        {
+          "id": "parity_w_z-reference",
+          "notation": "(-3,-3) / (3,3) / (0,3) / (1,-5) / (4,-2) / (4,1) / (3,3) / (3,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          0,
+          5,
+          5,
+          2,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          14,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_z_adj",
+      "displayName": "Z / Adj",
+      "name": "Z / Adj",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_z_adj",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-6,2) / (-3,0) / (1,1) / (-3,0) / (3,0) / (-1,-1) / (3,0) / (0,-2)",
+      "algorithms": [
+        {
+          "id": "parity_z_adj-reference",
+          "notation": "(0,2) / (-3,0) / (1,1) / (-3,0) / (3,0) / (-1,-1) / (3,0) / (-6,-2) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          8,
+          13,
+          13,
+          12,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_z_oa",
+      "displayName": "Z / Oa",
+      "name": "Z / Oa",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_z_oa",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (4,-3) / (5,-4) / (-5,-2) / (0,3) / (-3,3) / (-1,-4) / (0,-3) / (-2,4) / (-4,-6)",
+      "algorithms": [
+        {
+          "id": "parity_z_oa-reference",
+          "notation": "(4,-6) / (2,-4) / (0,3) / (1,4) / (3,-3) / (0,-3) / (5,2) / (-5,4) / (-4,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          14,
+          11,
+          11,
+          8,
+          13,
+          13,
+          10,
+          15,
+          15,
+          12
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_z_ob",
+      "displayName": "Z / Ob",
+      "name": "Z / Ob",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_z_ob",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,-3) / (2,-4) / (0,3) / (-5,-2) / (-3,3) / (0,-3) / (-4,-1) / (-2,1) / (-4,-6)",
+      "algorithms": [
+        {
+          "id": "parity_z_ob-reference",
+          "notation": "(4,-6) / (2,-1) / (4,1) / (0,3) / (3,-3) / (5,2) / (0,-3) / (-2,4) / (2,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          12,
+          13,
+          13,
+          14,
+          15,
+          15,
+          8
+        ],
+        "m": 1
+      }
+    },
+    {
+      "id": "parity_z_opp",
+      "displayName": "Z / Opp",
+      "name": "Z / Opp",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_z_opp",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-2,-3) / (0,-4) / (-3,0) / (5,0) / (0,-5) / (0,3) / (0,5) / (0,3) / (-5,1) / (-4,3)",
+      "algorithms": [
+        {
+          "id": "parity_z_opp-reference",
+          "notation": "(4,-3) / (5,-1) / (0,-3) / (0,-5) / (0,-3) / (0,5) / (-5,0) / (3,0) / (0,4) / (2,3) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          12,
+          11,
+          11,
+          10,
+          13,
+          13,
+          8,
+          15,
+          15,
+          14
+        ],
+        "m": 0
+      }
+    },
+    {
+      "id": "parity_z_w",
+      "displayName": "Z / W",
+      "name": "Z / W",
+      "group": "Parity",
+      "subgroup": "",
+      "imageKey": "sq1epparity_parity_z_w",
+      "recognition": "",
+      "notes": "CubeFlow-generated corner-solved EP parity reference. PBL layer naming retained. Not a speed-optimized or slice-optimal algorithm.",
+      "setup": "(0,-3) / (0,3) / (1,-4) / (0,-2) / (0,2) / (-4,0) / (2,0) / (0,-2) / (-2,0) / (0,-3) / (0,3) / (0,-3) / (3,0) / (-5,0) / (0,-3) / (3,-3) / (2,-4) / (0,3) / (-3,-3) / (-2,4) / (-4,3)",
+      "algorithms": [
+        {
+          "id": "parity_z_w-reference",
+          "notation": "(4,-3) / (2,-4) / (3,3) / (0,-3) / (-2,4) / (-3,3) / (0,3) / (5,0) / (-3,0) / (0,3) / (0,-3) / (0,3) / (2,0) / (0,2) / (-2,0) / (4,0) / (0,-2) / (0,2) / (-1,4) / (0,-3) / (0,3)",
+          "isPrimary": true,
+          "source": "CubeFlow corner-aligned PBL parity reference",
+          "tags": [
+            "reference",
+            "inverse-setup",
+            "parity"
+          ]
+        }
+      ],
+      "nativeState": {
+        "top": [
+          6,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          5,
+          5,
+          0,
+          7,
+          7
+        ],
+        "bottom": [
+          9,
+          9,
+          10,
+          11,
+          11,
+          14,
+          13,
+          13,
+          8,
+          15,
+          15,
+          12
+        ],
+        "m": 0
+      }
+    }
+  ]
+}

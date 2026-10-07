@@ -1018,6 +1018,7 @@ enum PuzzleEvent: String, CaseIterable, Sendable {
     case square1 = "square-1"
     case clock = "clock"
     case skewb = "skewb"
+    case fto = "FTO"
     case threeByThreeOH = "3x3 oh"
     case threeByThreeFM = "3x3 fm"
     case threeByThreeBLD = "3x3 bld"
@@ -1039,6 +1040,7 @@ enum PuzzleEvent: String, CaseIterable, Sendable {
         case .square1: return "event.square1"
         case .clock: return "event.clock"
         case .skewb: return "event.skewb"
+        case .fto: return "event.fto"
         case .threeByThreeOH: return "event.3x3oh"
         case .threeByThreeFM: return "event.3x3fm"
         case .threeByThreeBLD: return "event.3x3bld"
@@ -1062,6 +1064,7 @@ enum PuzzleEvent: String, CaseIterable, Sendable {
             .square1,
             .clock,
             .skewb,
+            .fto,
             .threeByThreeOH,
             .threeByThreeFM
         ]
@@ -1108,6 +1111,8 @@ enum PuzzleEvent: String, CaseIterable, Sendable {
             return "clk"
         case .skewb:
             return "skewb"
+        case .fto:
+            return "fto"
         case .threeByThreeMBLD:
             return nil
         }

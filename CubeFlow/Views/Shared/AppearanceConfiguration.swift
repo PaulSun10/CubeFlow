@@ -38,7 +38,7 @@ enum AppearanceModeVariant: String, CaseIterable, Identifiable {
     }
 }
 
-struct StoredColorData: Codable, Equatable {
+nonisolated struct StoredColorData: Codable, Equatable, Sendable {
     var r: Double
     var g: Double
     var b: Double
@@ -51,7 +51,7 @@ struct StoredColorData: Codable, Equatable {
         self.a = a
     }
 
-    init(color: Color) {
+    @MainActor init(color: Color) {
         let rgba = color.toRGBA()
         self.init(r: rgba.r, g: rgba.g, b: rgba.b, a: rgba.a)
     }
@@ -265,7 +265,7 @@ struct AppearanceConfiguration: Codable, Equatable {
     )
 }
 
-private func sanitizeUnit(_ value: Double) -> Double {
+nonisolated private func sanitizeUnit(_ value: Double) -> Double {
     guard value.isFinite else { return 0 }
     return max(0, min(1, value))
 }

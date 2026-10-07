@@ -1,0 +1,284 @@
+{
+  "physicalPresentations": 170,
+  "theoreticalNonSolvedCS": 169,
+  "existingCSRows": 170,
+  "existingCSSetupPresentations": 155,
+  "intersection": 155,
+  "csOnly": [],
+  "cspOnly": [
+    "010101010111|010111111011",
+    "010101010111|011011101111",
+    "010101101011|010101111111",
+    "010101101011|011011101111",
+    "010101101011|011011110111",
+    "010101110111|010110110111",
+    "010101111011|010101111011",
+    "010101111011|010110110111",
+    "010110101111|010101101111",
+    "010110110111|010110111011",
+    "010110111011|010111011011",
+    "010111011011|010101101111",
+    "010111011111|010101011011",
+    "011011101111|010101101011",
+    "011011110111|010101101011"
+  ],
+  "existingCSIncludesSolved": true,
+  "invalidCS": [
+    {
+      "id": "muffin_right_paw",
+      "reason": "Slice splits corner"
+    }
+  ],
+  "duplicateCS": [
+    {
+      "presentation": "010111011111|010101101011",
+      "ids": [
+        "left_4_2_parallel_edges",
+        "3_1_2_parallel_edges"
+      ]
+    },
+    {
+      "presentation": "010101101011|010111011111",
+      "ids": [
+        "parallel_edges_left_4_2",
+        "parallel_edges_3_1_2"
+      ]
+    },
+    {
+      "presentation": "010111110111|010101101011",
+      "ids": [
+        "right_4_2_parallel_edges",
+        "parallel_edges_right_4_2",
+        "3_2_1_parallel_edges"
+      ]
+    },
+    {
+      "presentation": "010101010111|010110111111",
+      "ids": [
+        "pair_right_5_1",
+        "pair_left_5_1"
+      ]
+    },
+    {
+      "presentation": "010110110111|010101101111",
+      "ids": [
+        "left_fist_right_paw",
+        "right_fist_right_paw"
+      ]
+    },
+    {
+      "presentation": "010101111011|010111011011",
+      "ids": [
+        "right_paw_left_fist",
+        "right_paw_right_fist"
+      ]
+    },
+    {
+      "presentation": "010101101111|010101101111",
+      "ids": [
+        "right_paw_right_paw",
+        "left_paw_left_paw"
+      ]
+    },
+    {
+      "presentation": "010101111111|010101101011",
+      "ids": [
+        "6_parallel_edges",
+        "parallel_edges_6"
+      ]
+    },
+    {
+      "presentation": "010101011011|010111110111",
+      "ids": [
+        "left_4_2_perpendicular_edges",
+        "perpendicular_edges_left_4_2"
+      ]
+    },
+    {
+      "presentation": "011011101111|010101010111",
+      "ids": [
+        "3_2_1_pair",
+        "pair_3_1_2"
+      ]
+    },
+    {
+      "presentation": "010111011011|010101110111",
+      "ids": [
+        "right_fist_shield",
+        "shield_right_fist"
+      ]
+    },
+    {
+      "presentation": "010111011011|010110111011",
+      "ids": [
+        "left_fist_kite",
+        "right_fist_kite"
+      ]
+    },
+    {
+      "presentation": "010110111011|010110110111",
+      "ids": [
+        "kite_left_fist",
+        "kite_right_fist"
+      ]
+    }
+  ],
+  "unorderedLayerFamilies": 90,
+  "topBottomEquivalent": [
+    "010101011111|010101011111",
+    "010101101111|010101101111",
+    "010101110111|010101110111",
+    "010101111011|010101111011",
+    "010110101111|010110101111",
+    "010110110111|010110110111",
+    "010110111011|010110111011",
+    "010111010111|010111010111",
+    "010111011011|010111011011",
+    "011011011011|011011011011"
+  ],
+  "inversionEquivalent": [
+    "010101011111|010101011111",
+    "010101101111|010101111011",
+    "010101110111|010101110111",
+    "010101111011|010101101111",
+    "010110101111|010110101111",
+    "010110110111|010111011011",
+    "010110111011|010110111011",
+    "010111010111|010111010111",
+    "010111011011|010110110111",
+    "011011011011|011011011011"
+  ],
+  "inversionOrbits": 90,
+  "parityContexts": 340,
+  "solvedContexts": 2,
+  "referenceFormulas": 339,
+  "identityReferences": 1,
+  "independentlyVerifiedPackedSetups": 340,
+  "fiveCornerThreeThreeFixtures": [
+    {
+      "id": "csp_010101010111_010111101111_0",
+      "presentation": "010101010111|010111101111",
+      "parity": 0,
+      "setup": "(-5,-4) / (-3,0) / (-3,0) / (-4,-3) / (-5,2) /"
+    },
+    {
+      "id": "csp_010101010111_010111101111_1",
+      "presentation": "010101010111|010111101111",
+      "parity": 1,
+      "setup": "(-5,-4) / (-3,0) / (-3,0) / (-4,-3) / (-5,2) / (4,0) / (-5,0) /"
+    },
+    {
+      "id": "csp_present_010101011011_010111101111_0",
+      "presentation": "010101011011|010111101111",
+      "parity": 0,
+      "setup": "(-5,-4) / (-3,0) / (-1,4) / (2,0) /"
+    },
+    {
+      "id": "csp_present_010101011011_010111101111_1",
+      "presentation": "010101011011|010111101111",
+      "parity": 1,
+      "setup": "(-5,-4) / (-3,0) / (-1,4) / (-4,4) / (-6,-4) /"
+    },
+    {
+      "id": "csp_010101101011_010111101111_0",
+      "presentation": "010101101011|010111101111",
+      "parity": 0,
+      "setup": "(-5,-4) / (-3,-3) / (-5,-4) / (-4,-6) / (-4,5) /"
+    },
+    {
+      "id": "csp_010101101011_010111101111_1",
+      "presentation": "010101101011|010111101111",
+      "parity": 1,
+      "setup": "(-5,-4) / (-3,-3) / (-5,0) / (-2,2) / (-2,-5) /"
+    }
+  ],
+  "legacyArtworkPresentations": 155,
+  "legacyArtworkSetupIntersection": 151,
+  "artworkOnlyVersusSetups": [
+    "010101101011|011011101111",
+    "011011101111|010101101011",
+    "011011110111|010101101011",
+    "010101101011|011011110111"
+  ],
+  "setupsOnlyVersusArtwork": [
+    "010101101011|010111110111",
+    "010111110111|010101011011",
+    "010111011011|011011011011",
+    "011011011011|010110110111"
+  ],
+  "cspOnlyVersusArtwork": [
+    "010101010111|010111111011",
+    "010101010111|011011101111",
+    "010101101011|010101111111",
+    "010101101011|010111110111",
+    "010101110111|010110110111",
+    "010101111011|010101111011",
+    "010101111011|010110110111",
+    "010110101111|010101101111",
+    "010110110111|010110111011",
+    "010110111011|010111011011",
+    "010111011011|010101101111",
+    "010111011011|011011011011",
+    "010111011111|010101011011",
+    "010111110111|010101011011",
+    "011011011011|010110110111"
+  ],
+  "legacyArtworkSetupDiscrepancies": [
+    {
+      "id": "3_2_1_parallel_edges",
+      "name": "3-2-1 / Parallel Edges",
+      "shapeID": "010101101011|011011101111",
+      "assetSHA256": "d05313584deefde98eb8ab54ee1847c371bdf78754b3690f6c3eea5abaa8805a",
+      "actualSetupShape": "010111110111|010101101011"
+    },
+    {
+      "id": "parallel_edges_3_2_1",
+      "name": "Parallel Edges / 3-2-1",
+      "shapeID": "011011101111|010101101011",
+      "assetSHA256": "4f01aa3dd6f6a579a75e2fe35701de101d94fb3f7d22875115920cdaac2fe1e1",
+      "actualSetupShape": "010101101011|010111110111"
+    },
+    {
+      "id": "3_1_2_parallel_edges",
+      "name": "3-1-2 / Parallel Edges",
+      "shapeID": "011011110111|010101101011",
+      "assetSHA256": "2795e5ff4a85824454ee1696ec6e10e1b85f5b776e16e183929a12a89f4595ff",
+      "actualSetupShape": "010111011111|010101101011"
+    },
+    {
+      "id": "parallel_edges_3_1_2",
+      "name": "Parallel Edges / 3-1-2",
+      "shapeID": "010101101011|011011110111",
+      "assetSHA256": "64c1180d4ec7759e476ea9056430dd2744f3c4b8b77a8e1aaee9107d397addd4",
+      "actualSetupShape": "010101101011|010111011111"
+    },
+    {
+      "id": "perpendicular_edges_right_4_2",
+      "name": "Perpendicular Edges / Right 4-2",
+      "shapeID": "010101011011|010111011111",
+      "assetSHA256": "a0464663c4870c723ff4d53f2740e811f086bd23205bb2e966e26ba749e78735",
+      "actualSetupShape": "010111110111|010101011011"
+    },
+    {
+      "id": "muffin_right_paw",
+      "name": "Muffin / Right paw",
+      "shapeID": "010110101111|010101111011",
+      "assetSHA256": "eeb6c61d6b01e7539816c4dbbbab97b6d7236815572588210a296e4d57f90f01",
+      "error": "Slice splits corner"
+    },
+    {
+      "id": "right_fist_square",
+      "name": "Right fist / Square",
+      "shapeID": "011011011011|010111011011",
+      "assetSHA256": "3e7171309e249b9139bffc63a4c56d5ce56a54b6cf3b6144e8ab121f9521066e",
+      "actualSetupShape": "010111011011|011011011011"
+    },
+    {
+      "id": "square_right_fist",
+      "name": "Square / Right fist",
+      "shapeID": "010110110111|011011011011",
+      "assetSHA256": "e497e49c7032a7b62191871ef9c1131a2e89ee5ebeb6a6a99cf507d2b3abc8fe",
+      "actualSetupShape": "011011011011|010110110111"
+    }
+  ]
+}

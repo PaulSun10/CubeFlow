@@ -9,6 +9,7 @@ struct ScrambleColorConfiguration: Codable, Equatable {
     var squareOne: [String]
     var megaminx: [String]
     var clock: [String]
+    var fto: [String] = ["#ffffff", "#44ee00", "#aaaaaa", "#ff8000", "#f4f400", "#2266ff", "#ff0000", "#8800dd"]
 
     static let `default` = ScrambleColorConfiguration(
         cube: ["#ffffff", "#ff0000", "#00dd00", "#ffff00", "#ffaa00", "#0000ff"],
@@ -18,6 +19,25 @@ struct ScrambleColorConfiguration: Codable, Equatable {
         megaminx: ["#ffffff", "#dd0000", "#006600", "#8844ff", "#ffcc00", "#0000bb", "#ffffbb", "#88ddff", "#ff8833", "#77ee00", "#ff99ff", "#999999"],
         clock: ["#ffffff", "#000000", "#000000", "#ffffff", "#919191", "#4c4c4c"]
     )
+
+    enum CodingKeys: String, CodingKey { case cube, pyraminx, skewb, squareOne, megaminx, clock, fto }
+
+    init(cube: [String], pyraminx: [String], skewb: [String], squareOne: [String], megaminx: [String], clock: [String], fto: [String]? = nil) {
+        self.cube = cube; self.pyraminx = pyraminx; self.skewb = skewb
+        self.squareOne = squareOne; self.megaminx = megaminx; self.clock = clock
+        if let fto { self.fto = fto }
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        cube = try values.decode([String].self, forKey: .cube)
+        pyraminx = try values.decode([String].self, forKey: .pyraminx)
+        skewb = try values.decode([String].self, forKey: .skewb)
+        squareOne = try values.decode([String].self, forKey: .squareOne)
+        megaminx = try values.decode([String].self, forKey: .megaminx)
+        clock = try values.decode([String].self, forKey: .clock)
+        if let colors = try values.decodeIfPresent([String].self, forKey: .fto) { fto = colors }
+    }
 
     static func decode(from data: Data?) -> ScrambleColorConfiguration {
         guard let data,
@@ -39,6 +59,7 @@ struct ScrambleColorConfiguration: Codable, Equatable {
         case .squareOne: return squareOne
         case .megaminx: return megaminx
         case .clock: return clock
+        case .fto: return fto
         }
     }
 
@@ -50,6 +71,7 @@ struct ScrambleColorConfiguration: Codable, Equatable {
         case .squareOne: squareOne = colors
         case .megaminx: megaminx = colors
         case .clock: clock = colors
+        case .fto: fto = colors
         }
     }
 
@@ -70,6 +92,8 @@ struct ScrambleColorConfiguration: Codable, Equatable {
             return megaminx.joined()
         case .clock:
             return clock.joined()
+        case .fto:
+            return fto.joined()
         }
     }
 
@@ -81,7 +105,8 @@ struct ScrambleColorConfiguration: Codable, Equatable {
             skewb: Self.normalized(skewb, fallback: defaults.skewb),
             squareOne: Self.normalized(squareOne, fallback: defaults.squareOne),
             megaminx: Self.normalized(megaminx, fallback: defaults.megaminx),
-            clock: Self.normalized(clock, fallback: defaults.clock)
+            clock: Self.normalized(clock, fallback: defaults.clock),
+            fto: Self.normalized(fto, fallback: defaults.fto)
         )
     }
 
@@ -112,6 +137,7 @@ enum ScrambleColorPuzzle: String, CaseIterable, Identifiable {
     case squareOne
     case megaminx
     case clock
+    case fto
 
     var id: String { rawValue }
 
@@ -122,6 +148,7 @@ enum ScrambleColorPuzzle: String, CaseIterable, Identifiable {
         case "squareone": self = .squareOne
         case "megaminx": self = .megaminx
         case "clk": self = .clock
+        case "fto": self = .fto
         default: self = .cube
         }
     }
@@ -134,6 +161,7 @@ enum ScrambleColorPuzzle: String, CaseIterable, Identifiable {
         case .squareOne: return "Square-1"
         case .megaminx: return "Megaminx"
         case .clock: return "Clock"
+        case .fto: return "FTO"
         }
     }
 
@@ -147,6 +175,8 @@ enum ScrambleColorPuzzle: String, CaseIterable, Identifiable {
             return ["White", "Blue", "Red", "Yellow", "Green", "Orange"]
         case .megaminx:
             return (1...12).map { "Face \($0)" }
+        case .fto:
+            return ["U", "F", "BR", "BL", "D", "B", "R", "L"]
         case .clock:
             return ["Front Dial", "Back Dial", "Front Hand", "Back Hand", "Button Up", "Button Down"]
         }
@@ -174,7 +204,7 @@ extension Color {
     }
 }
 
-private extension UIColor {
+extension UIColor {
     convenience init(scrambleHex hex: String) {
         var value = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         if value.hasPrefix("#") { value.removeFirst() }

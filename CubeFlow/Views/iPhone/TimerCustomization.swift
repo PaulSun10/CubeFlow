@@ -1441,7 +1441,8 @@ struct TimerCustomizationPreview: View {
     }
 
     private func previewScramble(for event: PuzzleEvent) -> String {
-        TNoodleScrambler.scramble(for: event.previewTNoodleRegistry)
+        if event == .fto { return event.previewFallbackScramble }
+        return event.previewTNoodleRegistry.flatMap { TNoodleScrambler.scramble(for: $0) }
             .flatMap { $0.isEmpty ? nil : $0 }
             ?? event.previewFallbackScramble
     }
@@ -1542,7 +1543,7 @@ struct TimerCustomizationPreview: View {
 }
 
 private extension PuzzleEvent {
-    var previewTNoodleRegistry: TNoodlePuzzleRegistry {
+    var previewTNoodleRegistry: TNoodlePuzzleRegistry? {
         switch self {
         case .twoByTwo: .two
         case .threeByThree, .threeByThreeOH, .threeByThreeMBLD: .three
@@ -1559,6 +1560,7 @@ private extension PuzzleEvent {
         case .threeByThreeBLD: .threeNI
         case .fourByFourBLD: .fourNI
         case .fiveByFiveBLD: .fiveNI
+        case .fto: nil
         }
     }
 
@@ -1586,6 +1588,8 @@ private extension PuzzleEvent {
             "UR1+ DR2+ DL3- UL4+ U1+ R2- D3+ L4- ALL1+ y2 U1+ R2+ D1- L2- ALL3+"
         case .skewb:
             "R U R' L U' B R' B'"
+        case .fto:
+            "U R' F BR D' BL U' L B'"
         }
     }
 }

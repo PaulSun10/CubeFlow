@@ -1,4 +1,5 @@
 let nnnCanvas, ctx;
+const rasterGeometry = require('../raster_geometry');
 
 function Transform(arr) {
     var ret;
@@ -30,7 +31,7 @@ function drawPolygon(ctx, color, arr, trans) {
     }
     ctx.closePath();
     ctx.fill();
-    ctx.stroke();
+    // Grid strokes are drawn once after all sticker fills.
 }
 
 function parseScramble(scramble) {
@@ -341,8 +342,11 @@ var nnnImage = (function() {
 
     return function(size, moveseq, colorsIn) {
 
-        nnnCanvas = new Canvas.createCanvas(39 * size / 9 * width + 1, 29 * size / 9 * width + 1)
+        nnnCanvas = new Canvas.createCanvas(39 * size / 9 * width + 5, 29 * size / 9 * width + 5)
         ctx = nnnCanvas.getContext("2d")
+        const fit = rasterGeometry.fitted(nnnCanvas.width, nnnCanvas.height,
+            39 * size / 9 * width, 29 * size / 9 * width, ctx.getTransform().a);
+        ctx.setTransform(fit.scale, 0, 0, fit.scale, fit.x, fit.y);
 
         if(colorsIn === "default") {
             colors = "#ff0#fa0#00f#fff#f00#0d0".match(colre);
@@ -372,6 +376,39 @@ var nnnImage = (function() {
         for (var i = 0; i < 6; i++) {
             face(i, size);
         }
+        // Snap shared grid edges to backing pixels, with one uniform pixel width.
+        // Draw after fills so neighboring stickers cannot erase half an edge.
+        var scale = ctx.getTransform().a;
+        var pixelStroke = fit.stroke;
+        ctx.lineWidth = pixelStroke / scale;
+        ctx.strokeStyle = "#000";
+        function snappedX(value) {
+            return rasterGeometry.snapped(value, scale, fit.x, pixelStroke);
+        }
+        function snappedY(value) {
+            return rasterGeometry.snapped(value, scale, fit.y, pixelStroke);
+        }
+        var origins = [[size, size * 2], [0, size], [size * 3, size], [size, 0], [size * 2, size], [size, size]];
+        ctx.lineJoin = "miter";
+        ctx.lineCap = "butt";
+        ctx.beginPath();
+        for (var f = 0; f < origins.length; f++) {
+            var x = origins[f][0] * width * 10 / 9;
+            var y = origins[f][1] * width * 10 / 9;
+            // A closed contour owns the corners; internal edges meet it without caps.
+            ctx.moveTo(snappedX(x), snappedY(y));
+            ctx.lineTo(snappedX(x + size * width), snappedY(y));
+            ctx.lineTo(snappedX(x + size * width), snappedY(y + size * width));
+            ctx.lineTo(snappedX(x), snappedY(y + size * width));
+            ctx.closePath();
+            for (var edge = 1; edge < size; edge++) {
+                ctx.moveTo(snappedX(x + edge * width), snappedY(y));
+                ctx.lineTo(snappedX(x + edge * width), snappedY(y + size * width));
+                ctx.moveTo(snappedX(x), snappedY(y + edge * width));
+                ctx.lineTo(snappedX(x + size * width), snappedY(y + edge * width));
+            }
+        }
+        ctx.stroke();
         return nnnCanvas.toBuffer()
     }
 })();

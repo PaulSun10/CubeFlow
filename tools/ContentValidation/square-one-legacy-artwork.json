@@ -1,0 +1,1022 @@
+[
+  {
+    "id": "kite_kite",
+    "name": "Kite / Kite",
+    "shapeID": "010110111011|010110111011",
+    "assetSHA256": "c8d15d8e448cb9a2fe4e8c5221a52cc5d4674cd365b4694ef975043963875b2d"
+  },
+  {
+    "id": "left_fist_right_fist",
+    "name": "Left fist / Right fist",
+    "shapeID": "010110110111|010111011011",
+    "assetSHA256": "5e78ea0cb2c08049ac9c8e082b187def052dc3ab0e2c287bab7d4854174e7648"
+  },
+  {
+    "id": "right_fist_left_fist",
+    "name": "Right fist / Left fist",
+    "shapeID": "010111011011|010110110111",
+    "assetSHA256": "2c7d96b53dc342ad491bf377b639f8585c5a005339ade3220bd13f7bd2f207ed"
+  },
+  {
+    "id": "barrel_barrel",
+    "name": "Barrel / Barrel",
+    "shapeID": "010111010111|010111010111",
+    "assetSHA256": "f15ae49698fe1ae129aee544a18654d61d1e68a58d215ea89583eee4311cb3e6"
+  },
+  {
+    "id": "muffin_square",
+    "name": "Muffin / Square",
+    "shapeID": "010110101111|011011011011",
+    "assetSHA256": "8bcbdd3b840b438f265001a577d056830bb66b8011af3dd4f465f6bcecf15ce6"
+  },
+  {
+    "id": "square_muffin",
+    "name": "Square / Muffin",
+    "shapeID": "011011011011|010110101111",
+    "assetSHA256": "4210e181a14b67c75e7a759908f4e979e400a4b376ec5621eda131ba1fb76599"
+  },
+  {
+    "id": "shield_square",
+    "name": "Shield / Square",
+    "shapeID": "010101110111|011011011011",
+    "assetSHA256": "3109c7e93d3d085c091f648687aa42169a8d6754474b283db8e7adee66dbe9fe"
+  },
+  {
+    "id": "square_shield",
+    "name": "Square / Shield",
+    "shapeID": "011011011011|010101110111",
+    "assetSHA256": "a520305ba4c7d189b895a56e2ff6172c6b381dc990209ac00aa53a6edd31eaf2"
+  },
+  {
+    "id": "right_paw_left_paw",
+    "name": "Right paw / Left paw",
+    "shapeID": "010101101111|010101111011",
+    "assetSHA256": "0aafa46c9f024d815e66436ec6e9e4d702aca6bf6c959da14b7524f63a80d64e"
+  },
+  {
+    "id": "left_paw_right_paw",
+    "name": "Left paw / Right paw",
+    "shapeID": "010101111011|010101101111",
+    "assetSHA256": "87714d4d99603a50696edf1ff6840ee8616b509b5ff1afe694d90c65ea45c349"
+  },
+  {
+    "id": "muffin_muffin",
+    "name": "Muffin / Muffin",
+    "shapeID": "010110101111|010110101111",
+    "assetSHA256": "5784271d6aa65135f3a9e0b5959912a0ba6921a38e1b5e6b805e0dc024a2cd1e"
+  },
+  {
+    "id": "shield_shield",
+    "name": "Shield / Shield",
+    "shapeID": "010101110111|010101110111",
+    "assetSHA256": "6b76cb1a4a31530043d40b1db701003a4373fb14f6b07436134dede6ada0f337"
+  },
+  {
+    "id": "scallop_scallop",
+    "name": "Scallop / Scallop",
+    "shapeID": "010101011111|010101011111",
+    "assetSHA256": "1346e4c18b7fe7679bda93645d23c76ebee91921a2898e3185ddd5f3bdde6d51"
+  },
+  {
+    "id": "barrel_kite",
+    "name": "Barrel / Kite",
+    "shapeID": "010111010111|010110111011",
+    "assetSHA256": "05506837edbda94d786b73fbdf413b3395f82cc141cc670736d2b251c30fa961"
+  },
+  {
+    "id": "kite_barrel",
+    "name": "Kite / Barrel",
+    "shapeID": "010110111011|010111010111",
+    "assetSHA256": "7c47d73085861292fd71767197f438e97e112ef8dcec2bd71a0c495b55b2af05"
+  },
+  {
+    "id": "scallop_kite",
+    "name": "Scallop / Kite",
+    "shapeID": "010101011111|010110111011",
+    "assetSHA256": "a43608761d139c8a8563c8716c20827951bc781872d7efb8864942e131276c51"
+  },
+  {
+    "id": "kite_scallop",
+    "name": "Kite / Scallop",
+    "shapeID": "010110111011|010101011111",
+    "assetSHA256": "87691dcf2e82c44241ee1faccebe3cd5407d7ee1a541a55050e0fd3f416536a1"
+  },
+  {
+    "id": "star_6_2",
+    "name": "Star / 6-2",
+    "shapeID": "010101010101|011101111111",
+    "assetSHA256": "688285c618a716c93700e162f4050128b5284418586f5a5fbbfd27df23a2113a"
+  },
+  {
+    "id": "6_2_star",
+    "name": "6-2 / Star",
+    "shapeID": "011101111111|010101010101",
+    "assetSHA256": "db5a1ea6ec0de4d96389c16db5bf796da6628a44cd043d7304d3dd9a5b82c0bb"
+  },
+  {
+    "id": "star_8",
+    "name": "Star / 8",
+    "shapeID": "010101010101|010111111111",
+    "assetSHA256": "660412d82441b059888d3adb7f2e8eb4f136ccc0d405b05fd8207a0791ca74fd"
+  },
+  {
+    "id": "8_star",
+    "name": "8 / Star",
+    "shapeID": "010111111111|010101010101",
+    "assetSHA256": "964599134dda74b90ca8127f4f027a14e908118bafd01ded61b0ca493d84b049"
+  },
+  {
+    "id": "star_4_4",
+    "name": "Star / 4-4",
+    "shapeID": "010101010101|011111011111",
+    "assetSHA256": "0cedfcc04ad8fecb524e959b9237c13781da0542dd2d1d7bcb3cbae7c091404e"
+  },
+  {
+    "id": "4_4_star",
+    "name": "4-4 / Star",
+    "shapeID": "011111011111|010101010101",
+    "assetSHA256": "c92596849b2feb6714e4748306dac6e8d7611e682ea813b85d383d7245038a14"
+  },
+  {
+    "id": "left_4_2_parallel_edges",
+    "name": "Left 4-2 / Parallel Edges",
+    "shapeID": "010111011111|010101101011",
+    "assetSHA256": "ffb919df138d6afee955857edf4b53cbf76d6c958840829b88d298bd66e1ba9c"
+  },
+  {
+    "id": "parallel_edges_left_4_2",
+    "name": "Parallel Edges / Left 4-2",
+    "shapeID": "010101101011|010111011111",
+    "assetSHA256": "eb43478f23b7858d7d0e8e2eb1c085d8e42b8128d367d760bf41aae9e5cb495e"
+  },
+  {
+    "id": "right_4_2_parallel_edges",
+    "name": "Right 4-2 / Parallel Edges",
+    "shapeID": "010111110111|010101101011",
+    "assetSHA256": "ffd61ab3609891817d8978db6af3af79c155271bb8b06df945a4159ca06d73b5"
+  },
+  {
+    "id": "parallel_edges_right_4_2",
+    "name": "Parallel Edges / Right 4-2",
+    "shapeID": "010111110111|010101101011",
+    "assetSHA256": "b855783723d939056f12ed6acd2506eca1b7b7bf5bf260e13bc6dfa6979acdcf"
+  },
+  {
+    "id": "right_5_1_perpendicular_edges",
+    "name": "Right 5-1 / Perpendicular Edges",
+    "shapeID": "010110111111|010101011011",
+    "assetSHA256": "342ed43cc70a72ef10e2003aaa3ccd436c1063f643fce5013637176a3677a76c"
+  },
+  {
+    "id": "perpendicular_edges_right_5_1",
+    "name": "Perpendicular Edges / Right 5-1",
+    "shapeID": "010101011011|010110111111",
+    "assetSHA256": "e114edd781ed59fedbff3c222b0291057016cbaf0c7b036fc445735d7d898b6e"
+  },
+  {
+    "id": "left_5_1_perpendicular_edges",
+    "name": "Left 5-1 / Perpendicular Edges",
+    "shapeID": "010111111011|010101011011",
+    "assetSHA256": "eba05f7e4629d890cd39836d6dc39af8a72eb037afe0b3bbca6fe125fafbd458"
+  },
+  {
+    "id": "perpendicular_edges_left_5_1",
+    "name": "Perpendicular Edges / Left 5-1",
+    "shapeID": "010101011011|010111111011",
+    "assetSHA256": "9e2fba0dfd32a26816615bfcca0f8b673130b4658f954289eb1184f59b8245fb"
+  },
+  {
+    "id": "4_1_1_perpendicular_edges",
+    "name": "4-1-1 / Perpendicular Edges",
+    "shapeID": "010101011011|011011011111",
+    "assetSHA256": "0e57e894d588f48f6703b7a235d206908bc0fbb5c767b2e16ee1bc659c9a2174"
+  },
+  {
+    "id": "perpendicular_edges_4_1_1",
+    "name": "Perpendicular Edges / 4-1-1",
+    "shapeID": "011011011111|010101011011",
+    "assetSHA256": "40dedf6b626ad804376e0d18a334ee81b2c90880845b713bf739aadd3662302a"
+  },
+  {
+    "id": "3_2_1_perpendicular_edges",
+    "name": "3-2-1 / Perpendicular Edges",
+    "shapeID": "011011101111|010101011011",
+    "assetSHA256": "8630e7bd3209e4b46bee73fe6e5b7dbaf2032e6350796e1d7585c08d6f0e0532"
+  },
+  {
+    "id": "perpendicular_edges_3_2_1",
+    "name": "Perpendicular Edges / 3-2-1",
+    "shapeID": "010101011011|011011101111",
+    "assetSHA256": "77c55873d7d0a89e9285f731cdbfec0f891d82e805efabe46c235ed96592bde7"
+  },
+  {
+    "id": "3_1_2_perpendicular_edges",
+    "name": "3-1-2 / Perpendicular Edges",
+    "shapeID": "011011110111|010101011011",
+    "assetSHA256": "37c806794c058f0ab64b65eb12534c35cacf8cab53140fd4671d47afc2ff90a7"
+  },
+  {
+    "id": "perpendicular_edges_3_1_2",
+    "name": "Perpendicular Edges / 3-1-2",
+    "shapeID": "010101011011|011011110111",
+    "assetSHA256": "906f8b55ca45607780de1675e0139beb1d1394f165f179de649b606d36cf4af1"
+  },
+  {
+    "id": "3_3_perpendicular_edges",
+    "name": "3-3 / Perpendicular Edges",
+    "shapeID": "010111101111|010101011011",
+    "assetSHA256": "c7e0131813d7fe964dc290b88c5e69bbe3804c364a19a908f92d34105138e29c"
+  },
+  {
+    "id": "perpendicular_edges_3_3",
+    "name": "Perpendicular Edges / 3-3",
+    "shapeID": "010101011011|010111101111",
+    "assetSHA256": "76c19991eb74d24d75744b238261d1139462afeb4d96e097d292b9e2b0dc8a64"
+  },
+  {
+    "id": "right_5_1_pair",
+    "name": "Right 5-1 / Pair",
+    "shapeID": "010110111111|010101010111",
+    "assetSHA256": "357667b0abfc62df860175bd01d9eb15d7e87aeb10feaa1622d187469d59b707"
+  },
+  {
+    "id": "pair_right_5_1",
+    "name": "Pair / Right 5-1",
+    "shapeID": "010101010111|010110111111",
+    "assetSHA256": "a83a7cb8d368e79a59cb269a543c8c5480347bfd3a71cc19a95d1febb43519c8"
+  },
+  {
+    "id": "left_5_1_pair",
+    "name": "Left 5-1 / Pair",
+    "shapeID": "010111111011|010101010111",
+    "assetSHA256": "ff31f4d97363e79d924262f7df03474298bbfd61afe69ae08ac6b05a6b289c96"
+  },
+  {
+    "id": "pair_left_5_1",
+    "name": "Pair / Left 5-1",
+    "shapeID": "010101010111|010110111111",
+    "assetSHA256": "94be7aaaea8ec3c422d17164d04f2989a29076839e57ab81b1ec76d0bf7ab63f"
+  },
+  {
+    "id": "4_1_1_pair",
+    "name": "4-1-1 / Pair",
+    "shapeID": "011011011111|010101010111",
+    "assetSHA256": "64c8c8bba98ac648c1da20e57e5e8c1e47d5e3856cb0f96b54a8b5a318d91060"
+  },
+  {
+    "id": "pair_4_1_1",
+    "name": "Pair / 4-1-1",
+    "shapeID": "010101010111|011011011111",
+    "assetSHA256": "48447b3d08a25aa00f72e41dd5aab4a7d8d856a882681f00bfbe825493183366"
+  },
+  {
+    "id": "2_2_2_pair",
+    "name": "2-2-2 / Pair",
+    "shapeID": "011101110111|010101010111",
+    "assetSHA256": "519e7257b3096602733460f7e551fdf7d0a3c8d3d674e9cad55e928d207423be"
+  },
+  {
+    "id": "pair_2_2_2",
+    "name": "Pair / 2-2-2",
+    "shapeID": "010101010111|011101110111",
+    "assetSHA256": "919883bba04b7c4f59f9ee986a784a35c951d00ae4309de1556da9e869100f48"
+  },
+  {
+    "id": "left_4_2_pair",
+    "name": "Left 4-2 / Pair",
+    "shapeID": "010111110111|010101010111",
+    "assetSHA256": "18a8e5134b15e6056993c5f1415d9d87e48952106bcee76abf151fc5ff507526"
+  },
+  {
+    "id": "pair_left_4_2",
+    "name": "Pair / Left 4-2",
+    "shapeID": "010101010111|010111110111",
+    "assetSHA256": "5f881c20fcd0b16d3281c515fcd2fce4fca66c47de0f2fd1e6eee541e45d98b9"
+  },
+  {
+    "id": "right_4_2_pair",
+    "name": "Right 4-2 / Pair",
+    "shapeID": "010111011111|010101010111",
+    "assetSHA256": "309598de5e9562474a7faa5acd482b663eac65a0069bb313dd08dc3f5b319090"
+  },
+  {
+    "id": "pair_right_4_2",
+    "name": "Pair / Right 4-2",
+    "shapeID": "010101010111|010111011111",
+    "assetSHA256": "9eb926e2a11eea90a414d8f89fb1297c00c7fe5ba9d31fb0a9b4b69390c3dbef"
+  },
+  {
+    "id": "6_pair",
+    "name": "6 / Pair",
+    "shapeID": "010101111111|010101010111",
+    "assetSHA256": "a6f0e1cd0ebadbdc92c2269ff61792ec59142a3e566bd78935bbe53089bfa3f8"
+  },
+  {
+    "id": "pair_6",
+    "name": "Pair / 6",
+    "shapeID": "010101010111|010101111111",
+    "assetSHA256": "9064adebe74d78533771ebcca69d8a1be315402ff583655db7ed01d958870858"
+  },
+  {
+    "id": "right_fist_left_paw",
+    "name": "Right fist / Left paw",
+    "shapeID": "010111011011|010101111011",
+    "assetSHA256": "4bd1ac546cef92f575a8c41f6ce2acd379528846cfc13e1ea7717bddef0f7742"
+  },
+  {
+    "id": "left_paw_right_fist",
+    "name": "Left paw / Right fist",
+    "shapeID": "010101101111|010110110111",
+    "assetSHA256": "53bd58c493bc47ca60e012760e6c149cb87c201b773ef919c9ad7ea17d1090a2"
+  },
+  {
+    "id": "left_fist_right_paw",
+    "name": "Left fist / Right paw",
+    "shapeID": "010110110111|010101101111",
+    "assetSHA256": "a90b5d3c128cc4b2588ec8eaea9eefc5ea82dabc122c0a56c31b18855a923e48"
+  },
+  {
+    "id": "right_paw_left_fist",
+    "name": "Right paw / Left fist",
+    "shapeID": "010101111011|010111011011",
+    "assetSHA256": "46e1d1be297ee583ca79ab255ff85079a4435ddaa493a7d43c5f98ac29e45b21"
+  },
+  {
+    "id": "right_paw_right_paw",
+    "name": "Right paw / Right paw",
+    "shapeID": "010101101111|010101101111",
+    "assetSHA256": "7b0d51b7c1874e9bce91cef53828988bc3b13d0354d6d9a226982472f5566ed4"
+  },
+  {
+    "id": "muffin_shield",
+    "name": "Muffin / Shield",
+    "shapeID": "010110101111|010101110111",
+    "assetSHA256": "ba06e26c7a23e48ce91ef644306fd96bb1aee4e2e7e5124c0e4c80e3c8bb8e88"
+  },
+  {
+    "id": "shield_muffin",
+    "name": "Shield / Muffin",
+    "shapeID": "010101110111|010110101111",
+    "assetSHA256": "e875f9e60fa4907f8ea4cd2faaf42f4e667a6a99caf6c955280056cba6cad87d"
+  },
+  {
+    "id": "scallop_barrel",
+    "name": "Scallop / Barrel",
+    "shapeID": "010101011111|010111010111",
+    "assetSHA256": "382745114855e1b431f4c89e3a4236f1d54cd8aa5b5c279e7e00231d03874ef0"
+  },
+  {
+    "id": "barrel_scallop",
+    "name": "Barrel / Scallop",
+    "shapeID": "010111010111|010101011111",
+    "assetSHA256": "61e4152078d98f9ce6527a3ae7e951e07c7f8bf03a0a7b0ffcf99e019721c9fd"
+  },
+  {
+    "id": "right_paw_square",
+    "name": "Right paw / Square",
+    "shapeID": "010101101111|011011011011",
+    "assetSHA256": "f5f5d47c8390b05934eb768f8006816de127045a5db3e583fe8851ae4024b34d"
+  },
+  {
+    "id": "square_right_paw",
+    "name": "Square / Right paw",
+    "shapeID": "011011011011|010101111011",
+    "assetSHA256": "6c2057aaaf7fdb600ac22ee68d6ec754548cd2a6f5c49d6d262b4b22f80c2ac2"
+  },
+  {
+    "id": "left_paw_square",
+    "name": "Left paw / Square",
+    "shapeID": "010101111011|011011011011",
+    "assetSHA256": "5c26f57b7118650fda05fe0ecd7361861d01bce3a1e60fb12d28b125d9c9eb31"
+  },
+  {
+    "id": "square_left_paw",
+    "name": "Square / Left paw",
+    "shapeID": "011011011011|010101101111",
+    "assetSHA256": "b15089189876927ef29a0c2ed1ead43ac7d34565625cc6b7946e44ffdf4fa847"
+  },
+  {
+    "id": "scallop_square",
+    "name": "Scallop / Square",
+    "shapeID": "010101011111|011011011011",
+    "assetSHA256": "e19ec1b391d40436d7746c321ec66ec2a30c1a774188eba9a0a7991144bc0e18"
+  },
+  {
+    "id": "square_scallop",
+    "name": "Square / Scallop",
+    "shapeID": "011011011011|010101011111",
+    "assetSHA256": "fa3812e54fa072efa7af15c3a8f28cd0e8448e6a2046af5861b3130ebf30109f"
+  },
+  {
+    "id": "4_1_1_parallel_edges",
+    "name": "4-1-1 / Parallel Edges",
+    "shapeID": "011011011111|010101101011",
+    "assetSHA256": "3f640d0588b847a1cb747fc253b5c163bd7f9c0ed2e0218e1db6d32874484a86"
+  },
+  {
+    "id": "parallel_edges_4_1_1",
+    "name": "Parallel Edges / 4-1-1",
+    "shapeID": "010101101011|011011011111",
+    "assetSHA256": "04347929cb56213bc12748bb122418640f72589302a9058a3ab2ed891c9b909b"
+  },
+  {
+    "id": "6_parallel_edges",
+    "name": "6 / Parallel Edges",
+    "shapeID": "010101111111|010101101011",
+    "assetSHA256": "3d6a7d3acc30bcc7249a7cd0f67d6dea091cced1c55df3bd3d1cddade073cdc5"
+  },
+  {
+    "id": "parallel_edges_6",
+    "name": "Parallel Edges / 6",
+    "shapeID": "010101111111|010101101011",
+    "assetSHA256": "4ef08bf2cc295fd7b593c8677d9b400d101bd7199a27181501c9ab1cb3ed2d40"
+  },
+  {
+    "id": "3_2_1_parallel_edges",
+    "name": "3-2-1 / Parallel Edges",
+    "shapeID": "010101101011|011011101111",
+    "assetSHA256": "d05313584deefde98eb8ab54ee1847c371bdf78754b3690f6c3eea5abaa8805a"
+  },
+  {
+    "id": "parallel_edges_3_2_1",
+    "name": "Parallel Edges / 3-2-1",
+    "shapeID": "011011101111|010101101011",
+    "assetSHA256": "4f01aa3dd6f6a579a75e2fe35701de101d94fb3f7d22875115920cdaac2fe1e1"
+  },
+  {
+    "id": "3_1_2_parallel_edges",
+    "name": "3-1-2 / Parallel Edges",
+    "shapeID": "011011110111|010101101011",
+    "assetSHA256": "2795e5ff4a85824454ee1696ec6e10e1b85f5b776e16e183929a12a89f4595ff"
+  },
+  {
+    "id": "parallel_edges_3_1_2",
+    "name": "Parallel Edges / 3-1-2",
+    "shapeID": "010101101011|011011110111",
+    "assetSHA256": "64c1180d4ec7759e476ea9056430dd2744f3c4b8b77a8e1aaee9107d397addd4"
+  },
+  {
+    "id": "3_3_parallel_edges",
+    "name": "3-3 / Parallel Edges",
+    "shapeID": "010111101111|010101101011",
+    "assetSHA256": "d27f052e56031b863dc5c9fd2012f42312f508acfe2b7fe68eadf7babffe85bf"
+  },
+  {
+    "id": "parallel_edges_3_3",
+    "name": "Parallel Edges / 3-3",
+    "shapeID": "010101101011|010111101111",
+    "assetSHA256": "d4ca60fba6d0d398cb151c236d1c5826c561ca141796e15ae4ca6b6f647f4aa0"
+  },
+  {
+    "id": "left_5_1_parallel_edges",
+    "name": "Left 5-1 / Parallel Edges",
+    "shapeID": "010111111011|010101101011",
+    "assetSHA256": "3643e2eeac9f35c2ce452b870d2164ded040cc5401895586afff54400867cc03"
+  },
+  {
+    "id": "parallel_edges_left_5_1",
+    "name": "Parallel Edges / Left 5-1",
+    "shapeID": "010101101011|010111111011",
+    "assetSHA256": "c59d1758c13c94dd8eedcf10791d0b434e16c64423631db92f64cd431ed58f93"
+  },
+  {
+    "id": "right_5_1_parallel_edges",
+    "name": "Right 5-1 / Parallel Edges",
+    "shapeID": "010110111111|010101101011",
+    "assetSHA256": "f9025ed92ce47a9c4b281914e4d6cccbd76626159f07308a85b5d0d5250622ba"
+  },
+  {
+    "id": "parallel_edges_right_5_1",
+    "name": "Parallel Edges / Right 5-1",
+    "shapeID": "010101101011|010110111111",
+    "assetSHA256": "fcc0e312e93ed8c4c502d73d28b48b6f0576633029a10cb1b4139db6390370ae"
+  },
+  {
+    "id": "right_4_2_perpendicular_edges",
+    "name": "Right 4-2 / Perpendicular Edges",
+    "shapeID": "010101011011|010111011111",
+    "assetSHA256": "d43d74c43abec8f181fd49e74ee03790e3910f3e9308879285834fe27980328c"
+  },
+  {
+    "id": "perpendicular_edges_right_4_2",
+    "name": "Perpendicular Edges / Right 4-2",
+    "shapeID": "010101011011|010111011111",
+    "assetSHA256": "a0464663c4870c723ff4d53f2740e811f086bd23205bb2e966e26ba749e78735"
+  },
+  {
+    "id": "left_4_2_perpendicular_edges",
+    "name": "Left 4-2 / Perpendicular Edges",
+    "shapeID": "010101011011|010111110111",
+    "assetSHA256": "ac745e9bd6b01722940555a64c6132e54d858425585e1a4573b117aa887e98b2"
+  },
+  {
+    "id": "perpendicular_edges_left_4_2",
+    "name": "Perpendicular Edges / Left 4-2",
+    "shapeID": "010101011011|010111110111",
+    "assetSHA256": "0edfc981a99ccef76b4aec215ccbf872acad1ddc95f73b51e7ce8b696efd5c71"
+  },
+  {
+    "id": "6_perpendicular_edges",
+    "name": "6 / Perpendicular Edges",
+    "shapeID": "010101111111|010101011011",
+    "assetSHA256": "4ab97dd3e131d722955b63569b638eb1d70059a008de4b99a432226ab753664e"
+  },
+  {
+    "id": "perpendicular_edges_6",
+    "name": "Perpendicular Edges / 6",
+    "shapeID": "010101011011|010101111111",
+    "assetSHA256": "6081e242c741118c2be43a05043ec843fc042baefc3b84b399969ed6dc92f180"
+  },
+  {
+    "id": "3_2_1_pair",
+    "name": "3-2-1 / Pair",
+    "shapeID": "011011101111|010101010111",
+    "assetSHA256": "306e654624a9261eebbb41b102ba6ed9067bccf30e7a4fab32d1ab46b5390cef"
+  },
+  {
+    "id": "pair_3_2_1",
+    "name": "Pair / 3-2-1",
+    "shapeID": "010101010111|011011110111",
+    "assetSHA256": "48d1112a4f1c5f264609ad48727f8961c1b0e748669336c645100abc7e94ce4b"
+  },
+  {
+    "id": "3_1_2_pair",
+    "name": "3-1-2 / Pair",
+    "shapeID": "011011110111|010101010111",
+    "assetSHA256": "0f02e9d7a91f4d255d9abe9508a1082e0c920c385cde90ee4ee3b63585fffd95"
+  },
+  {
+    "id": "pair_3_1_2",
+    "name": "Pair / 3-1-2",
+    "shapeID": "011011101111|010101010111",
+    "assetSHA256": "aa51b5ebda6dd6d2c6885b89276a330b8b7656da35b4dccdfd53c0d387e86e67"
+  },
+  {
+    "id": "3_3_pair",
+    "name": "3-3 / Pair",
+    "shapeID": "010111101111|010101010111",
+    "assetSHA256": "41962e1484e34910fc402975653739a374c56161aa8e63fbf038c4d1d7a09015"
+  },
+  {
+    "id": "pair_3_3",
+    "name": "Pair / 3-3",
+    "shapeID": "010101010111|010111101111",
+    "assetSHA256": "e0c0856c6592897136fdbf982ccbfb044d0bba7e91ffcdb53ebc2417b1ea18cb"
+  },
+  {
+    "id": "left_paw_left_paw",
+    "name": "Left paw / Left paw",
+    "shapeID": "010101101111|010101101111",
+    "assetSHA256": "73e814437a8290a2f07e8e6eca24e7ae3acce4322be5db98e24a5015c034c4d6"
+  },
+  {
+    "id": "left_fist_left_paw",
+    "name": "Left fist / Left paw",
+    "shapeID": "010110110111|010101111011",
+    "assetSHA256": "742a950f090b250fa7239be100c24d00cd4a34f1522d9a411ff315b9106555b6"
+  },
+  {
+    "id": "left_paw_left_fist",
+    "name": "Left paw / Left fist",
+    "shapeID": "010101101111|010111011011",
+    "assetSHA256": "aff4bcc459f7f944622639e99569ade1ce616edc3abfa520caf2ab491cb60313"
+  },
+  {
+    "id": "right_fist_right_paw",
+    "name": "Right fist / Right paw",
+    "shapeID": "010110110111|010101101111",
+    "assetSHA256": "aae555bfabf78e5cb2379e36ce52034456b62c5a150861d5e92f427da78ab507"
+  },
+  {
+    "id": "right_paw_right_fist",
+    "name": "Right paw / Right fist",
+    "shapeID": "010101111011|010111011011",
+    "assetSHA256": "3c3981655769010941bd1e25b22c1056c0e152aceb49a1beeaaa42ead6cfd9b9"
+  },
+  {
+    "id": "right_paw_muffin",
+    "name": "Right paw / Muffin",
+    "shapeID": "010101111011|010110101111",
+    "assetSHA256": "edbf986f0e261affd1e4cc741ef59756705648e9c2b6e0c7582c157e0bebec64"
+  },
+  {
+    "id": "muffin_right_paw",
+    "name": "Muffin / Right paw",
+    "shapeID": "010110101111|010101111011",
+    "assetSHA256": "eeb6c61d6b01e7539816c4dbbbab97b6d7236815572588210a296e4d57f90f01"
+  },
+  {
+    "id": "left_paw_muffin",
+    "name": "Left paw / Muffin",
+    "shapeID": "010101101111|010110101111",
+    "assetSHA256": "6cab828fc91519b9648de3c620b35ce7e91bc0c913cd0142fd3861fde21c4059"
+  },
+  {
+    "id": "muffin_left_paw",
+    "name": "Muffin / Left paw",
+    "shapeID": "010110101111|010101111011",
+    "assetSHA256": "965f60e672e16b7a7b7cfcc2564b03b48a7a8ff6cf0125c2b975c37137016210"
+  },
+  {
+    "id": "left_paw_shield",
+    "name": "Left paw / Shield",
+    "shapeID": "010101111011|010101110111",
+    "assetSHA256": "3021a64eaacbaa021874c401ac69eb763dd414644015b8b2c2aeba3df31d44ca"
+  },
+  {
+    "id": "shield_left_paw",
+    "name": "Shield / Left paw",
+    "shapeID": "010101110111|010101101111",
+    "assetSHA256": "c06db57b8beeb9a5c31d5143db3cb866e70ae1ea0cfb59c4185e3a7809f69dca"
+  },
+  {
+    "id": "right_paw_shield",
+    "name": "Right paw / Shield",
+    "shapeID": "010101101111|010101110111",
+    "assetSHA256": "016e8c5760b788cd3f1569b05de9db249f1211a153094b73a9b2fb658a016c70"
+  },
+  {
+    "id": "shield_right_paw",
+    "name": "Shield / Right paw",
+    "shapeID": "010101110111|010101111011",
+    "assetSHA256": "141edbb1d2f9b9d270c4be622e9360e887a5cb6090c6add6f943b93c5a00862e"
+  },
+  {
+    "id": "right_fist_shield",
+    "name": "Right fist / Shield",
+    "shapeID": "010111011011|010101110111",
+    "assetSHA256": "8eac64fe2979579585a1ddb3573f902a1087c95bf1059a7ef05aa7508b478eda"
+  },
+  {
+    "id": "shield_right_fist",
+    "name": "Shield / Right fist",
+    "shapeID": "010111011011|010101110111",
+    "assetSHA256": "6f2bf370a7cdc0bc9e0741ce39bbf34c4354570a89001f8c4ea66b3f18a04656"
+  },
+  {
+    "id": "left_fist_shield",
+    "name": "Left fist / Shield",
+    "shapeID": "010110110111|010101110111",
+    "assetSHA256": "65cf5fecd8b23ea629df123d20e27f16ef3b28097227e034ea30f6b922d4a4f1"
+  },
+  {
+    "id": "shield_left_fist",
+    "name": "Shield / Left fist",
+    "shapeID": "010101110111|010111011011",
+    "assetSHA256": "5caa052c588b7c53fdd053b6ff537d399719f479ca4cedc523b9ea5eda2f3b02"
+  },
+  {
+    "id": "muffin_scallop",
+    "name": "Muffin / Scallop",
+    "shapeID": "010110101111|010101011111",
+    "assetSHA256": "7c5de6f9c85f906ee6ff857e13d6344f7ccc74c1dd06cb45a50fbb04254f5846"
+  },
+  {
+    "id": "scallop_muffin",
+    "name": "Scallop / Muffin",
+    "shapeID": "010101011111|010110101111",
+    "assetSHA256": "55bfb035ae8b8bdf1a3d4da6b7dfe1760caad8b5dc6715e4e90faf346d0825b7"
+  },
+  {
+    "id": "left_fist_scallop",
+    "name": "Left fist / Scallop",
+    "shapeID": "010110110111|010101011111",
+    "assetSHA256": "3804d39312f8778455e4a2b46d861a9166037e0512b94bd87a3834d568668f68"
+  },
+  {
+    "id": "scallop_left_fist",
+    "name": "Scallop / Left fist",
+    "shapeID": "010101011111|010111011011",
+    "assetSHA256": "f2ca097602fc1ba5b82ded57c15fb14996fa2541836b456c71512cb052434eb2"
+  },
+  {
+    "id": "right_fist_scallop",
+    "name": "Right fist / Scallop",
+    "shapeID": "010111011011|010101011111",
+    "assetSHA256": "7eb62607c5cbdc02f81f43c9eac647f21dd495876949c8b1689b1a38a529da9f"
+  },
+  {
+    "id": "scallop_right_fist",
+    "name": "Scallop / Right fist",
+    "shapeID": "010101011111|010110110111",
+    "assetSHA256": "8e68b49a8dccfa9077a1d1697eddf6bc6e64001da3f91983727fae28947e7778"
+  },
+  {
+    "id": "left_paw_scallop",
+    "name": "Left paw / Scallop",
+    "shapeID": "010101111011|010101011111",
+    "assetSHA256": "4894676d75899b12933f314cd070edbc95505b2e118ae60950995e8e0ef6a083"
+  },
+  {
+    "id": "scallop_left_paw",
+    "name": "Scallop / Left paw",
+    "shapeID": "010101011111|010101101111",
+    "assetSHA256": "28c55ffc62293c7b34c5c64a2ff318b1bec034856f799789ea250b8c0cf2cd0d"
+  },
+  {
+    "id": "right_paw_scallop",
+    "name": "Right paw / Scallop",
+    "shapeID": "010101101111|010101011111",
+    "assetSHA256": "128d3e2c2853035ed57e3f131a3512de50f8c0d027ac53ccbc675f346e55ac1b"
+  },
+  {
+    "id": "scallop_right_paw",
+    "name": "Scallop / Right paw",
+    "shapeID": "010101011111|010101111011",
+    "assetSHA256": "417e474f12f308e462ea06ee261676af9d8ad550182dbd650c16414cfe129685"
+  },
+  {
+    "id": "shield_scallop",
+    "name": "Shield / Scallop",
+    "shapeID": "010101110111|010101011111",
+    "assetSHA256": "3f64efb8ee4a857955c69b08e0e880c0d7018e2daa6035644eecf197b06939e4"
+  },
+  {
+    "id": "scallop_shield",
+    "name": "Scallop / Shield",
+    "shapeID": "010101011111|010101110111",
+    "assetSHA256": "bc77c80afd3b449a64a188a1c8d98510b5fa92cb90206651c1d2e861e2081df0"
+  },
+  {
+    "id": "left_paw_barrel",
+    "name": "Left paw / Barrel",
+    "shapeID": "010101111011|010111010111",
+    "assetSHA256": "a6309232a672307738a1b0701fd59e6eef87ab0929d3904f203376ba82e44363"
+  },
+  {
+    "id": "barrel_left_paw",
+    "name": "Barrel / Left paw",
+    "shapeID": "010111010111|010101101111",
+    "assetSHA256": "0a5161b458a73f70eadc98dfe0e40e68f1b5a9ac42634dd2f18406e4e378a7c1"
+  },
+  {
+    "id": "right_paw_barrel",
+    "name": "Right paw / Barrel",
+    "shapeID": "010111010111|010101111011",
+    "assetSHA256": "7114b2283efff74b6825548c7f79f9b9119eed3e851a8ab1d54760e8cd3e440c"
+  },
+  {
+    "id": "barrel_right_paw",
+    "name": "Barrel / Right paw",
+    "shapeID": "010101101111|010111010111",
+    "assetSHA256": "cb27cbd0411b0e59fd88e6a5f58d88f27cc424f5abca3dd102541392055c67c6"
+  },
+  {
+    "id": "shield_barrel",
+    "name": "Shield / Barrel",
+    "shapeID": "010101110111|010111010111",
+    "assetSHA256": "facc0198e7d9b46d39274346087674af4e1bac95b35ace40b7551c6477d836ff"
+  },
+  {
+    "id": "barrel_shield",
+    "name": "Barrel / Shield",
+    "shapeID": "010111010111|010101110111",
+    "assetSHA256": "f771f6ccb91979171128af6d24ff2f462081042de1f04238322746f08c5d6fad"
+  },
+  {
+    "id": "left_paw_kite",
+    "name": "Left paw / Kite",
+    "shapeID": "010101111011|010110111011",
+    "assetSHA256": "10fa58f7403de48485b75cea06244aafc5b636f6e71a80bef78d16f54529bd34"
+  },
+  {
+    "id": "kite_left_paw",
+    "name": "Kite / Left paw",
+    "shapeID": "010110111011|010101111011",
+    "assetSHA256": "11ef8ac4dc305570d7aca8a16de61f6490697a379b6fde3883e249798d884334"
+  },
+  {
+    "id": "shield_kite",
+    "name": "Shield / Kite",
+    "shapeID": "010110111011|010101110111",
+    "assetSHA256": "39b506961ef6b608ea69005975e0cec85850ad8a67fce2ffd1105c56ecd87be1"
+  },
+  {
+    "id": "kite_shield",
+    "name": "Kite / Shield",
+    "shapeID": "010101110111|010110111011",
+    "assetSHA256": "3c1a56074d59602df809e050a41d95e1a6bdc72ddbd6f93d2105da2a711213f4"
+  },
+  {
+    "id": "right_paw_kite",
+    "name": "Right paw / Kite",
+    "shapeID": "010101101111|010110111011",
+    "assetSHA256": "9d310f2244a979525578b58659b5e6db736234ef5cdf6d3817afc4c326cb45b5"
+  },
+  {
+    "id": "kite_right_paw",
+    "name": "Kite / Right paw",
+    "shapeID": "010110111011|010101101111",
+    "assetSHA256": "7622468ce418a65dc6cf969d95b8e8ecca6a40168dcf1200068e05d1a4e21edf"
+  },
+  {
+    "id": "left_fist_square",
+    "name": "Left fist / Square",
+    "shapeID": "010110110111|011011011011",
+    "assetSHA256": "a520e456d394d14ab94cfde0b95af2a3b7ba20ecc39ecd66e495c25d36ca06e5"
+  },
+  {
+    "id": "square_left_fist",
+    "name": "Square / Left fist",
+    "shapeID": "011011011011|010111011011",
+    "assetSHA256": "e2662a830d20ffe845aa65912ea8f30883b20eda77c411f016750342029a59d5"
+  },
+  {
+    "id": "right_fist_square",
+    "name": "Right fist / Square",
+    "shapeID": "011011011011|010111011011",
+    "assetSHA256": "3e7171309e249b9139bffc63a4c56d5ce56a54b6cf3b6144e8ab121f9521066e"
+  },
+  {
+    "id": "square_right_fist",
+    "name": "Square / Right fist",
+    "shapeID": "010110110111|011011011011",
+    "assetSHA256": "e497e49c7032a7b62191871ef9c1131a2e89ee5ebeb6a6a99cf507d2b3abc8fe"
+  },
+  {
+    "id": "barrel_square",
+    "name": "Barrel / Square",
+    "shapeID": "010111010111|011011011011",
+    "assetSHA256": "dd5ce61ca8bf327692d20ed4a24d79e02ddedf9b53ae2d11e1c5157ecdaa3e3f"
+  },
+  {
+    "id": "square_barrel",
+    "name": "Square / Barrel",
+    "shapeID": "011011011011|010111010111",
+    "assetSHA256": "3036d3b3e0b5b669c74c5be356316c42d9e5d9ea8de4a3ef4280e14ba23bffea"
+  },
+  {
+    "id": "star_7_1",
+    "name": "Star / 7-1",
+    "shapeID": "010101010101|011011111111",
+    "assetSHA256": "19a6158ac273679dc1cd2145b7d1d7c81bcfae1c638336e84a8a5e9ec7fe4535"
+  },
+  {
+    "id": "7_1_star",
+    "name": "7-1 / Star",
+    "shapeID": "011011111111|010101010101",
+    "assetSHA256": "8fe8d2c80d5f27d91d8cf1a9638d34536af23f98a0a73f59e06d82b345495ac0"
+  },
+  {
+    "id": "star_5_3",
+    "name": "Star / 5-3",
+    "shapeID": "010101010101|011110111111",
+    "assetSHA256": "d304abf895585fa0d4c48e55e0c8e8f9529dba022decc110a0527299d5dca6d3"
+  },
+  {
+    "id": "5_3_star",
+    "name": "5-3 / Star",
+    "shapeID": "011110111111|010101010101",
+    "assetSHA256": "3bb5242e8c4b1d4ca51c8e65b89d7436e9cc0b5f6c61483ba9c834a98b436760"
+  },
+  {
+    "id": "2_2_2_parallel_edges",
+    "name": "2-2-2 / Parallel Edges",
+    "shapeID": "011101110111|010101101011",
+    "assetSHA256": "1e1f2b60ac42d56a647c6c5dc7b445341c5e59486c4858e9571a9ac206a64587"
+  },
+  {
+    "id": "parallel_edges_2_2_2",
+    "name": "Parallel Edges / 2-2-2",
+    "shapeID": "010101101011|011101110111",
+    "assetSHA256": "9e7383a001895349367e5d60f5c69fbfa309525c57787188a126055f31fb3f4a"
+  },
+  {
+    "id": "2_2_2_perpendicular_edges",
+    "name": "2-2-2 / Perpendicular Edges",
+    "shapeID": "011101110111|010101011011",
+    "assetSHA256": "ce291c4c45c5f15a0a64dcc4017e855be280553382abf2b95dcc26b1437695ea"
+  },
+  {
+    "id": "perpendicular_edges_2_2_2",
+    "name": "Perpendicular Edges / 2-2-2",
+    "shapeID": "010101011011|011101110111",
+    "assetSHA256": "ef890e5949a742291f9e74c3c4f8e441d022d99c8aba8da9da73218b325c70da"
+  },
+  {
+    "id": "left_fist_left_fist",
+    "name": "Left fist / Left fist",
+    "shapeID": "010111011011|010111011011",
+    "assetSHA256": "28826d2439a79ecf01fcdb7e2cd22a8b20e1e34f4e3eaf5b0b8c60b72144f5e5"
+  },
+  {
+    "id": "right_fist_right_fist",
+    "name": "Right fist / Right fist",
+    "shapeID": "010110110111|010110110111",
+    "assetSHA256": "037327f2b773c65a5f2280df4a223b116e6c8daf18229b04bb4261a759bb1755"
+  },
+  {
+    "id": "right_fist_muffin",
+    "name": "Right fist / Muffin",
+    "shapeID": "010111011011|010110101111",
+    "assetSHA256": "a831a8a406199aac6b2572305e37a5664d761a72ea9b8a5df94cdb41f93c7e1e"
+  },
+  {
+    "id": "muffin_right_fist",
+    "name": "Muffin / Right fist",
+    "shapeID": "010110101111|010110110111",
+    "assetSHA256": "3bf312eab94a24e7b910f33564fa2499d983760f9ef3026adaf3579e018576b7"
+  },
+  {
+    "id": "left_fist_muffin",
+    "name": "Left fist / Muffin",
+    "shapeID": "010110110111|010110101111",
+    "assetSHA256": "b32758c6130f5861c95e48061b2ee2099c03de940d11af4df11e3d89b444b5bb"
+  },
+  {
+    "id": "muffin_left_fist",
+    "name": "Muffin / Left fist",
+    "shapeID": "010110101111|010111011011",
+    "assetSHA256": "db99e1492cefbc6368fe435e52e628e2bf9a2a18fac3ae30746d8d7093354ef1"
+  },
+  {
+    "id": "right_fist_barrel",
+    "name": "Right fist / Barrel",
+    "shapeID": "010111011011|010111010111",
+    "assetSHA256": "9e546bdad39b16dba29446f94dc896c5a987196f58ba1912ca6e142a5e3e3d52"
+  },
+  {
+    "id": "barrel_right_fist",
+    "name": "Barrel / Right fist",
+    "shapeID": "010111010111|010110110111",
+    "assetSHA256": "361ddf4862f3ed6d6cf43c04793e699033cf9037f488429c4235213f8b2a1f57"
+  },
+  {
+    "id": "left_fist_barrel",
+    "name": "Left fist / Barrel",
+    "shapeID": "010110110111|010111010111",
+    "assetSHA256": "caa9e01cc472e84718c999bd121e7a8735fec64bcff348f0c55351b89d2cf26c"
+  },
+  {
+    "id": "barrel_left_fist",
+    "name": "Barrel / Left fist",
+    "shapeID": "010111010111|010111011011",
+    "assetSHA256": "1b3beb7eec6be456a7b86210cbea029c2621e7689067e198cb2de1cc9d205c9c"
+  },
+  {
+    "id": "muffin_barrel",
+    "name": "Muffin / Barrel",
+    "shapeID": "010110101111|010111010111",
+    "assetSHA256": "78ee56e5077022722648d3be0af6e057d5d68eaac3cadace4f56e45c722752d9"
+  },
+  {
+    "id": "barrel_muffin",
+    "name": "Barrel / Muffin",
+    "shapeID": "010111010111|010110101111",
+    "assetSHA256": "9ca02b3c218b9e430eaf8fb83004f3361d76b8b5ff7869e33c8f2a7077b51014"
+  },
+  {
+    "id": "left_fist_kite",
+    "name": "Left fist / Kite",
+    "shapeID": "010111011011|010110111011",
+    "assetSHA256": "1cef6aadab230e6d9ed94eae5c9a43672a60c3d8c9c48f84806110724ccf4c9e"
+  },
+  {
+    "id": "kite_left_fist",
+    "name": "Kite / Left fist",
+    "shapeID": "010110111011|010110110111",
+    "assetSHA256": "6c4c743b420ed480758bf84068c442cb64dc9e82155e64a3b3e51716b71411e4"
+  },
+  {
+    "id": "right_fist_kite",
+    "name": "Right fist / Kite",
+    "shapeID": "010111011011|010110111011",
+    "assetSHA256": "76d5d7e1a3cc60bb6dc2ee84b733a28c188614bf2ad01d263ac1dcc6f8a6e7c7"
+  },
+  {
+    "id": "kite_right_fist",
+    "name": "Kite / Right fist",
+    "shapeID": "010110111011|010110110111",
+    "assetSHA256": "d939b3953a59020007dafff0cd8e1d471382e215f2bf00d5c9ccf15232d6a16e"
+  },
+  {
+    "id": "muffin_kite",
+    "name": "Muffin / Kite",
+    "shapeID": "010110101111|010110111011",
+    "assetSHA256": "e322800986da723ea1d7dd7d8d809f5aa8b4c9d8957394bf5109ff2fbe9d81e1"
+  },
+  {
+    "id": "kite_muffin",
+    "name": "Kite / Muffin",
+    "shapeID": "010110111011|010110101111",
+    "assetSHA256": "626e1eb2b6539737de71b0a51ac14596eec7d47af1741b989835a1efa302c758"
+  },
+  {
+    "id": "kite_square",
+    "name": "Kite / Square",
+    "shapeID": "010110111011|011011011011",
+    "assetSHA256": "45274e05f64c7c407f56396cbb6703ffbeb293c83f4cfacb6855374dc5f9db35"
+  },
+  {
+    "id": "square_kite",
+    "name": "Square / Kite",
+    "shapeID": "011011011011|010110111011",
+    "assetSHA256": "dc9a115d31a61f54a42d25d108b9c73f521c26f182f83bfdf83ad2f95a57d521"
+  },
+  {
+    "id": "square_square",
+    "name": "Square / Square",
+    "shapeID": "011011011011|011011011011",
+    "assetSHA256": "76658d07d58470e531fff46f3284149e528cac0d2040512f86ebbd2093860fe1"
+  }
+]

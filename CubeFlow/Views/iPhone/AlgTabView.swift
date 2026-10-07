@@ -36,6 +36,8 @@ private extension View {
 }
 
 struct AlgsTabView: View {
+    @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
+    @AppStorage("algCaseSort") private var caseSortRaw = "default"
     private let usesSystemBottomAccessory: Bool
     private let isActive: Bool
     @Binding private var isOverviewBottomAccessoryVisible: Bool
@@ -866,6 +868,8 @@ struct AlgSetPlaceholderView: View {
 }
 
 struct AlgCaseListView: View {
+    @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
+    @AppStorage("algCaseSort") private var caseSortRaw = "default"
     let payload: AlgSetPayload
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("algLearnedCasesStore") private var learnedCasesStore: String = "{}"
@@ -890,7 +894,7 @@ struct AlgCaseListView: View {
                 Button {
                     isShowingInfoSheet = true
                 } label: {
-                    Image(systemName: "info.circle")
+                    Image(systemName: "info")
                         .font(.system(size: 16, weight: .medium))
                 }
             }
@@ -987,7 +991,7 @@ struct AlgCaseListView: View {
                     }
                 }
             } else {
-                ForEach(visibleCases) { algCase in
+                ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                     NavigationLink {
                         AlgCaseDetailView(payload: payload, algCase: algCase)
                     } label: {
@@ -1063,7 +1067,7 @@ struct AlgCaseListView: View {
                             }
                         }
                     } else {
-                        ForEach(visibleCases) { algCase in
+                        ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                             NavigationLink {
                                 AlgCaseDetailView(payload: payload, algCase: algCase)
                             } label: {
@@ -1223,11 +1227,11 @@ struct AlgCaseListView: View {
     }
 
     private var usesHybridCapsules: Bool {
-        browseOrganization == .hybrid && supportsHybridCapsules
+        !["sq1pbl", "sq1ep", "sq1csp"].contains(normalizedAlgSetID(payload.set)) && browseOrganization == .hybrid && supportsHybridCapsules
     }
 
     private var showsSubsetBrowser: Bool {
-        browseOrganization == .subset || (browseOrganization == .hybrid && supportsSubsetBrowsing && childGroupsHaveSourcePages)
+        ["sq1pbl", "sq1ep", "sq1csp"].contains(normalizedAlgSetID(payload.set)) || browseOrganization == .subset || (browseOrganization == .hybrid && supportsSubsetBrowsing && childGroupsHaveSourcePages)
     }
 
     private var selectedHybridSubset: AlgSubset? {
@@ -1318,6 +1322,8 @@ struct AlgCaseListView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.orange)
             }
+
+            AlgProbabilityLabel(algCase: algCase)
         }
         .padding(.vertical, 2)
     }
@@ -1356,7 +1362,7 @@ struct AlgCaseListView: View {
                 .frame(width: 56, height: 56)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(displayAlgGroupTitle(setID: payload.set, title: group.title))
+                Text(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
                     .font(.system(size: 17, weight: .semibold))
 
                 Text(
@@ -1384,7 +1390,7 @@ struct AlgCaseListView: View {
                 .frame(width: 56, height: 56)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(group.title)
+                Text(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
                     .font(.system(size: 17, weight: .semibold))
 
                 Text(
@@ -1572,7 +1578,7 @@ struct AlgCaseListView: View {
                 .frame(height: 92)
                 .frame(maxWidth: .infinity)
 
-            Text(displayAlgGroupTitle(setID: payload.set, title: group.title))
+            Text(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -1606,7 +1612,7 @@ struct AlgCaseListView: View {
                 .frame(height: 92)
                 .frame(maxWidth: .infinity)
 
-            Text(group.title)
+            Text(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -1663,6 +1669,7 @@ struct AlgCaseListView: View {
 
     private var browseOptionsButton: some View {
         Menu {
+            AlgCaseOrderingControls(cases: payload.cases, puzzle: payload.puzzle, selection: $caseSortRaw)
             Section(browseViewSectionTitle) {
                 Picker(browseViewSectionTitle, selection: browseViewModeSelection) {
                     Label(gridViewButtonText, systemImage: "square.grid.2x2")
@@ -1778,7 +1785,7 @@ struct AlgCaseListView: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(.blue.opacity(0.12))
 
-                Text(displayAlgGroupTitle(setID: payload.set, title: group.title))
+                Text(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.blue)
             }
@@ -1799,7 +1806,7 @@ struct AlgCaseListView: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(.blue.opacity(0.12))
 
-                Text(group.title)
+                Text(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.blue)
             }
@@ -1839,6 +1846,8 @@ struct AlgCaseListView: View {
 }
 
 struct AlgSubsetGroupListView: View {
+    @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
+    @AppStorage("algCaseSort") private var caseSortRaw = "default"
     let payload: AlgSetPayload
     let group: AlgSubsetGroup
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -1849,7 +1858,7 @@ struct AlgSubsetGroupListView: View {
     @State private var selectedHybridSubsetID = ""
 
     private var displayGroupTitle: String {
-        displayAlgGroupTitle(setID: payload.set, title: group.title)
+        displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage)
     }
 
     var body: some View {
@@ -1866,7 +1875,7 @@ struct AlgSubsetGroupListView: View {
                 Button {
                     isShowingInfoSheet = true
                 } label: {
-                    Image(systemName: "info.circle")
+                    Image(systemName: "info")
                         .font(.system(size: 16, weight: .medium))
                 }
             }
@@ -1915,7 +1924,7 @@ struct AlgSubsetGroupListView: View {
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
                     .listRowSeparator(.hidden)
 
-                ForEach(visibleCases) { algCase in
+                ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                     NavigationLink {
                         AlgCaseDetailView(payload: payload, algCase: algCase)
                     } label: {
@@ -1933,7 +1942,7 @@ struct AlgSubsetGroupListView: View {
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 }
             } else {
-                ForEach(visibleCases) { algCase in
+                ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                     NavigationLink {
                         AlgCaseDetailView(payload: payload, algCase: algCase)
                     } label: {
@@ -1967,7 +1976,7 @@ struct AlgSubsetGroupListView: View {
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 220), spacing: 12)], spacing: 12) {
                     if usesHybridCapsules {
-                        ForEach(visibleCases) { algCase in
+                        ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                             NavigationLink {
                                 AlgCaseDetailView(payload: payload, algCase: algCase)
                             } label: {
@@ -1985,7 +1994,7 @@ struct AlgSubsetGroupListView: View {
                             .buttonStyle(.plain)
                         }
                     } else {
-                        ForEach(visibleCases) { algCase in
+                        ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                             NavigationLink {
                                 AlgCaseDetailView(payload: payload, algCase: algCase)
                             } label: {
@@ -2304,6 +2313,8 @@ struct AlgSubsetGroupListView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.orange)
             }
+
+            AlgProbabilityLabel(algCase: algCase)
         }
         .padding(.vertical, 2)
     }
@@ -2341,6 +2352,7 @@ struct AlgSubsetGroupListView: View {
 
     private var browseOptionsButton: some View {
         Menu {
+            AlgCaseOrderingControls(cases: payload.cases, puzzle: payload.puzzle, selection: $caseSortRaw)
             Section(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage)) {
                 Picker(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage), selection: browseViewModeSelection) {
                     Label(localizedAlgString(key: "algs.menu.grid_view", languageCode: appLanguage), systemImage: "square.grid.2x2")
@@ -2394,6 +2406,8 @@ struct AlgSubsetGroupListView: View {
 }
 
 private struct AlgCaseGroupListView: View {
+    @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
+    @AppStorage("algCaseSort") private var caseSortRaw = "default"
     let payload: AlgSetPayload
     let group: AlgCaseGroup
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -2411,13 +2425,13 @@ private struct AlgCaseGroupListView: View {
                 gridContent
             }
         }
-        .scrollAwareNavigationTitle(group.title)
+        .scrollAwareNavigationTitle(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     isShowingInfoSheet = true
                 } label: {
-                    Image(systemName: "info.circle")
+                    Image(systemName: "info")
                         .font(.system(size: 16, weight: .medium))
                 }
             }
@@ -2446,7 +2460,7 @@ private struct AlgCaseGroupListView: View {
         .sheet(isPresented: $isShowingInfoSheet) {
             AlgSetInfoSheet(
                 setID: "\(payload.set)_\(group.id)",
-                fallbackTitle: group.title,
+                fallbackTitle: displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage),
                 fallbackSubtitle: payload.set,
                 sourceURL: sourceURL,
                 languageCode: appLanguage
@@ -2466,7 +2480,7 @@ private struct AlgCaseGroupListView: View {
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
                     .listRowSeparator(.hidden)
 
-                ForEach(visibleCases) { algCase in
+                ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                     NavigationLink {
                         AlgCaseDetailView(payload: payload, algCase: algCase)
                     } label: {
@@ -2484,7 +2498,7 @@ private struct AlgCaseGroupListView: View {
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 }
             } else {
-                ForEach(group.cases) { algCase in
+                ForEach(AlgCaseOrdering.sorted(group.cases, by: caseSortRaw)) { algCase in
                     NavigationLink {
                         AlgCaseDetailView(payload: payload, algCase: algCase)
                     } label: {
@@ -2518,7 +2532,7 @@ private struct AlgCaseGroupListView: View {
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 220), spacing: 12)], spacing: 12) {
                     if usesHybridCapsules {
-                        ForEach(visibleCases) { algCase in
+                        ForEach(AlgCaseOrdering.sorted(visibleCases, by: caseSortRaw)) { algCase in
                             NavigationLink {
                                 AlgCaseDetailView(payload: payload, algCase: algCase)
                             } label: {
@@ -2536,7 +2550,7 @@ private struct AlgCaseGroupListView: View {
                             .buttonStyle(.plain)
                         }
                     } else {
-                        ForEach(group.cases) { algCase in
+                        ForEach(AlgCaseOrdering.sorted(group.cases, by: caseSortRaw)) { algCase in
                             NavigationLink {
                                 AlgCaseDetailView(payload: payload, algCase: algCase)
                             } label: {
@@ -2563,7 +2577,7 @@ private struct AlgCaseGroupListView: View {
 
     private var headerContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            ScrollAwareContentTitle(title: group.title)
+            ScrollAwareContentTitle(title: displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
                 .font(.system(size: 34, weight: .bold))
 
             Text(payload.set)
@@ -2753,6 +2767,8 @@ private struct AlgCaseGroupListView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.orange)
             }
+
+            AlgProbabilityLabel(algCase: algCase)
         }
         .padding(.vertical, 2)
     }
@@ -2910,6 +2926,7 @@ private struct AlgCaseGroupListView: View {
 
     private var browseOptionsButton: some View {
         Menu {
+            AlgCaseOrderingControls(cases: payload.cases, puzzle: payload.puzzle, selection: $caseSortRaw)
             Section(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage)) {
                 Picker(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage), selection: browseViewModeSelection) {
                     Label(localizedAlgString(key: "algs.menu.grid_view", languageCode: appLanguage), systemImage: "square.grid.2x2")
@@ -2963,6 +2980,8 @@ private struct AlgCaseGroupListView: View {
 }
 
 struct AlgSubsetCaseListView: View {
+    @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
+    @AppStorage("algCaseSort") private var caseSortRaw = "default"
     let payload: AlgSetPayload
     let subset: AlgSubset
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -2985,7 +3004,7 @@ struct AlgSubsetCaseListView: View {
                 Button {
                     isShowingInfoSheet = true
                 } label: {
-                    Image(systemName: "info.circle")
+                    Image(systemName: "info")
                         .font(.system(size: 16, weight: .medium))
                 }
             }
@@ -3046,7 +3065,7 @@ struct AlgSubsetCaseListView: View {
                 .listRowSeparator(.hidden)
             }
 
-            ForEach(subset.cases) { algCase in
+            ForEach(AlgCaseOrdering.sorted(subset.cases, by: caseSortRaw)) { algCase in
                 NavigationLink {
                     AlgCaseDetailView(payload: payload, algCase: algCase)
                 } label: {
@@ -3087,7 +3106,7 @@ struct AlgSubsetCaseListView: View {
                 }
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 220), spacing: 12)], spacing: 12) {
-                    ForEach(subset.cases) { algCase in
+                    ForEach(AlgCaseOrdering.sorted(subset.cases, by: caseSortRaw)) { algCase in
                         NavigationLink {
                             AlgCaseDetailView(payload: payload, algCase: algCase)
                         } label: {
@@ -3202,6 +3221,8 @@ struct AlgSubsetCaseListView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.orange)
             }
+
+            AlgProbabilityLabel(algCase: algCase)
         }
         .padding(.vertical, 2)
     }
@@ -3315,6 +3336,7 @@ struct AlgSubsetCaseListView: View {
 
     private var browseOptionsButton: some View {
         Menu {
+            AlgCaseOrderingControls(cases: payload.cases, puzzle: payload.puzzle, selection: $caseSortRaw)
             Section(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage)) {
                 Picker(localizedAlgString(key: "algs.menu.view", languageCode: appLanguage), selection: browseViewModeSelection) {
                     Label(localizedAlgString(key: "algs.menu.grid_view", languageCode: appLanguage), systemImage: "square.grid.2x2")
@@ -5133,6 +5155,8 @@ private struct AlgSetInfoContent {
 }
 
 struct AlgCaseDetailView: View {
+    @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
+    @AppStorage("algCaseSort") private var caseSortRaw = "default"
     let payload: AlgSetPayload
     let algCase: AlgCase
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -5307,7 +5331,7 @@ struct AlgCaseDetailView: View {
     private var algorithmsContent: some View {
         if let directionalAlgorithmGroups {
             VStack(alignment: .leading, spacing: 14) {
-                Picker("Direction", selection: directionalAlgorithmGroupSelection) {
+                Picker("algs.direction", selection: directionalAlgorithmGroupSelection) {
                     ForEach(directionalAlgorithmGroups) { group in
                         Text(localizedGroupTitle(group.title))
                             .tag(group.id)
@@ -5385,6 +5409,15 @@ struct AlgCaseDetailView: View {
                 setupText(setup)
             }
 
+            if let alignment = group.executionAlignment, !alignment.isEmpty {
+                HStack {
+                    Text("algs.execution_alignment")
+                    Text(alignment).font(.system(.subheadline, design: .monospaced))
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+
             VStack(spacing: 12) {
                 algorithmCards(for: group.algorithms)
             }
@@ -5397,6 +5430,8 @@ struct AlgCaseDetailView: View {
         }
 
         switch title.lowercased() {
+        case "normal": return localizedAlgString(key: "algs.orientation.normal", languageCode: appLanguage)
+        case "inverted": return localizedAlgString(key: "algs.orientation.inverted", languageCode: appLanguage)
         case "front right":
             return localizedAlgString(key: "algs.orientation.front_right", languageCode: appLanguage)
         case "front left":

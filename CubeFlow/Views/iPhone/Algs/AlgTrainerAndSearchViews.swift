@@ -3,6 +3,7 @@ import UIKit
 import Combine
 
 struct AlgRecognitionTrainerView: View {
+    @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
     let title: String
     let scopeTitle: String
     let languageCode: String

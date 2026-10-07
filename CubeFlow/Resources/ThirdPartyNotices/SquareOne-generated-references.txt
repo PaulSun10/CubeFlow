@@ -1,0 +1,29 @@
+CubeFlow independently generated Square-1 reference content (2026-10-05).
+
+PBL non-parity setup/case taxonomy: PBL-Manager, MIT, commit
+18cf975e5e22c474be8788eab4e4cb469cf90c1b. Retain PBL-Manager-MIT.txt.
+https://github.com/charlieharris0n/PBL-Manager
+PBL parity and EP parity references compose these permitted setups with the
+pre-existing sq1parity/adj_parity seed. That legacy seed is attributed to
+SpeedCubeDB, but its redistribution permission is NOT newly established here.
+Release rights review remains required; do not describe the entire inherited
+algorithm library as MIT licensed.
+
+OBL and CSP state enumeration, breadth-first reference solutions, validation,
+and programmatic diagrams are independent CubeFlow work. No external OBL/CSP
+curated algorithm list, website artwork, case table, or implementation was copied.
+These generated inverse setups are mathematically valid references, not curated
+ergonomic or globally slice-optimal speed algorithms.
+
+Research only (not a grant of redistribution permission):
+https://sarah.cubing.net/square-1/ep
+https://sq1obl.com/learn/
+https://speedcubedb.com/SQ1/Trace
+https://brandonlin.com/cubing/csp.html
+https://github.com/mikavilpas/squanmate
+
+CSP uses an explicit full-piece cycle convention, cubeflow-piece-cycles-v1.
+Its even/odd labels are relative to the stored reference and counting positions,
+not assumed to be interchangeable with Cale/counting-tool labels. The reference
+keeps opposite solutions distinct. Curated CSP names/solutions and any future
+counting-convention conversion require permission and independent validation.
