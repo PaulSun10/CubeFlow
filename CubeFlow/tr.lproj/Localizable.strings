@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "Özel";
 "smart_cube.plastic.custom_color" = "Özel Plastik Rengi";
 "smart_cube.reflections" = "Yansımalar";
+
+"settings.entering_times_smart_cube_and_gan" = "Akıllı Küp + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "Bağlı cihazlar";
+"connected_devices.section" = "Cihazlar";
+"connected_devices.smart_timer" = "Akıllı zamanlayıcı";
+"connected_devices.requires_both" = "Akıllı küp ve akıllı zamanlayıcı gerektirir.";
+"connected_devices.requires_cube" = "Akıllı küp gerektirir.";
+"connected_devices.requires_timer" = "Akıllı zamanlayıcı gerektirir.";
+"connected_devices.waiting" = "Her iki cihazın hazır olması bekleniyor";
+
+/* Explore Foundation */
+"tab.explore" = "Keşfet";
+"explore.rankings" = "Sıralamalar";
+"explore.records" = "Rekorlar";
+"explore.highlights" = "Öne çıkanlar";
+"explore.browse" = "Göz at";
+"explore.search" = "Ara";
+"explore.loading" = "Yarışmalar aranıyor";
+"explore.unavailable" = "İçerik yüklenemedi";
+"explore.empty" = "Yakında daha fazlası";
+"explore.unavailable_body" = "Yarışmalar yüklenemedi. Tekrar deneyin veya aşağıdaki listeyi açın.";
+"explore.empty_body" = "Mevcut bilgilerde yaklaşan yarışma yok. Aşağıdaki kategorilere göz atın.";
+"explore.retry" = "Tekrar dene";
+"explore.refresh_failed" = "Bazı içerikler yenilenemedi.";
+"explore.cached" = "Kaydedilmiş bilgiler";
+"explore.future" = "Gelecek bir güncellemede sunulacak.";
+"explore.rankings_body" = "Etkinlik ve bölgeye göre resmî WCA sıralamaları.";
+"explore.records_body" = "Güncel rekorlar ve ardındaki anlar.";
+"explore.highlights_body" = "Küp dünyasındaki insanlar, yerler ve yarışmalar.";
+"explore.search_scope" = "Buraya yüklenen yarışmalarda arayın. Daha fazlası için tam listeyi açın.";
+"explore.all_competitions" = "Tüm yarışmalar";
+"explore.no_results" = "Eşleşen yarışma yok.";
+"explore.search_prompt" = "Yarışma veya yer";
+"explore.see_all" = "Tümünü gör";
+"explore.discover" = "Keşfet";
+"explore.open_hint" = "Ayrıntıları açar";
+"explore.preview" = "Önizleme";
+"explore.competition_spotlight" = "Yarışma odağı";
+"explore.upcoming" = "Yaklaşan yarışmalar";
+"explore.registration_open" = "Kayıt açık";
+
+"explore.stats" = "İstatistikler";
+"explore.stats_body" = "WCA istatistikleri gelecekteki bir Keşfet güncellemesinde sunulacak.";
+
+"smart_cube.timer.timer_disconnected" = "Lütfen bir akıllı zamanlayıcı bağlayın";
+
+"smart_cube.device.icon_color" = "Simge Rengi";
+"smart_cube.device.reset_icon_color" = "Varsayılan Simge Rengini Kullan";
+"smart_cube.device.active" = "Etkin Akıllı Küp";
+"smart_cube.device.mark_solved_help" = "Küpün mevcut fiziksel durumunu çözülmüş durum olarak kullanın.";
+
+"smart_cube.device.no_active" = "Etkin Küp Yok";
+
+"timer.personal_best" = "Kişisel rekor";
+
+"solve.method.touch" = "Dokunma";
+
+"solve.method.typing" = "Yazma";
+
+"solve.method.smart_cube" = "Akıllı küp";
+
+"solve.method.smart_timer" = "Akıllı zamanlayıcı";
+
+"solve.method.combined" = "Birleşik";
+
+"solve.method.unknown" = "Bilinmiyor";
+
+"data.move.action" = "Taşı";
+
+"data.move.destination" = "Hedef oturum";
+
+"data.select.to_here" = "Buraya kadar seç";
+
+"data.move.failed" = "Seçili çözümler taşınamadı.";
+
+"data.move.confirm" = "Seçilen çözümler “%@” oturumuna taşınsın mı?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 durum ve kurulumun tersine referans çözümler, optimize algoritmalar değil.";
+"algs.item.ftoedges.title" = "Kenar Döngüleri";
+"algs.item.ftoedges.description" = "16 kesin kenar döngüsü referansı, optimize algoritmalar değil.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "Köşe ve kenar yönlendirme";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "Sırala";
+"algs.sort_default" = "Varsayılan";
+"algs.sort_likely" = "En olası";
+"algs.sort_unlikely" = "En az olası";
+"algs.sort_slices" = "Algoritma kesimleri";
+"algs.probability_basis" = "Olasılık, ölçülen sıklığı değil eşit dağılımlı durumları varsayar.";
+"settings.diagram_stroke" = "Şema çizgi kalınlığı";
+"settings.diagram_stroke_thin" = "İnce";
+"settings.diagram_stroke_thick" = "Kalın";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "Açık sayım referanslarıyla küp şekli paritesi.";
+"algs.subset.odd" = "Tek";
+"algs.subset.even" = "Çift";
+
+"settings.diagram_stroke_medium" = "Orta";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "Olasılık";
+"algs.orientation.normal" = "Normal";
+"algs.orientation.inverted" = "Ters (x2)";
+"algs.execution_alignment" = "Hizalama";
+"algs.direction" = "Yön";
+"settings.font_downloading" = "İndiriliyor";

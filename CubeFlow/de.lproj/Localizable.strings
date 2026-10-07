@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "Benutzerdefiniert";
 "smart_cube.plastic.custom_color" = "Eigene Kunststofffarbe";
 "smart_cube.reflections" = "Reflexionen";
+
+"settings.entering_times_smart_cube_and_gan" = "Smart Cube + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "Verbundene Geräte";
+"connected_devices.section" = "Geräte";
+"connected_devices.smart_timer" = "Smart Timer";
+"connected_devices.requires_both" = "Erfordert einen Smart Cube und einen Smart Timer.";
+"connected_devices.requires_cube" = "Erfordert einen Smart Cube.";
+"connected_devices.requires_timer" = "Erfordert einen Smart Timer.";
+"connected_devices.waiting" = "Warten, bis beide Geräte bereit sind";
+
+/* Explore Foundation */
+"tab.explore" = "Entdecken";
+"explore.rankings" = "Ranglisten";
+"explore.records" = "Rekorde";
+"explore.highlights" = "Highlights";
+"explore.browse" = "Stöbern";
+"explore.search" = "Suchen";
+"explore.loading" = "Wettbewerbe werden gesucht";
+"explore.unavailable" = "Inhalte nicht verfügbar";
+"explore.empty" = "Bald mehr entdecken";
+"explore.unavailable_body" = "Wettbewerbe konnten nicht geladen werden. Versuche es erneut oder öffne die Wettbewerbsübersicht.";
+"explore.empty_body" = "Keine bevorstehenden Wettbewerbe in den verfügbaren Daten. Entdecke unten weitere Inhalte.";
+"explore.retry" = "Erneut versuchen";
+"explore.refresh_failed" = "Einige Inhalte konnten nicht aktualisiert werden.";
+"explore.cached" = "Gespeicherte Informationen";
+"explore.future" = "In einem zukünftigen Update verfügbar.";
+"explore.rankings_body" = "Offizielle WCA-Ranglisten nach Disziplin und Region.";
+"explore.records_body" = "Aktuelle Rekorde und ihre besonderen Momente.";
+"explore.highlights_body" = "Geschichten über Menschen, Orte und Wettbewerbe.";
+"explore.search_scope" = "Suche in den hier geladenen Wettbewerben. Weitere findest du in der vollständigen Übersicht.";
+"explore.all_competitions" = "Alle Wettbewerbe";
+"explore.no_results" = "Keine passenden Wettbewerbe.";
+"explore.search_prompt" = "Wettbewerb oder Ort";
+"explore.see_all" = "Alle anzeigen";
+"explore.discover" = "Entdecken";
+"explore.open_hint" = "Öffnet Details";
+"explore.preview" = "Vorschau";
+"explore.competition_spotlight" = "Wettbewerb im Fokus";
+"explore.upcoming" = "Bevorstehende Wettbewerbe";
+"explore.registration_open" = "Anmeldung geöffnet";
+
+"explore.stats" = "Statistiken";
+"explore.stats_body" = "WCA-Statistiken sind für ein zukünftiges Explore-Update geplant.";
+
+"smart_cube.timer.timer_disconnected" = "Bitte verbinde einen Smart Timer";
+
+"smart_cube.device.icon_color" = "Symbolfarbe";
+"smart_cube.device.reset_icon_color" = "Standardfarbe verwenden";
+"smart_cube.device.active" = "Aktiver Smart Cube";
+"smart_cube.device.mark_solved_help" = "Den aktuellen physischen Zustand des Würfels als gelöst verwenden.";
+
+"smart_cube.device.no_active" = "Kein aktiver Würfel";
+
+"timer.personal_best" = "Persönliche Bestleistung";
+
+"solve.method.touch" = "Touch";
+
+"solve.method.typing" = "Eingabe";
+
+"solve.method.smart_cube" = "Smart Cube";
+
+"solve.method.smart_timer" = "Smart Timer";
+
+"solve.method.combined" = "Kombiniert";
+
+"solve.method.unknown" = "Unbekannt";
+
+"data.move.action" = "Verschieben";
+
+"data.move.destination" = "Zielsitzung";
+
+"data.select.to_here" = "Bis hier auswählen";
+
+"data.move.failed" = "Die ausgewählten Ergebnisse konnten nicht verschoben werden.";
+
+"data.move.confirm" = "Ausgewählte Versuche nach „%@“ verschieben?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 Fälle mit umgekehrten Setups als Referenz, keine optimierten Algorithmen.";
+"algs.item.ftoedges.title" = "Kantenzyklen";
+"algs.item.ftoedges.description" = "16 exakte Kantenzyklen als Referenz, keine optimierten Algorithmen.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "Ecken- und Kantenorientierung";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "Sortieren";
+"algs.sort_default" = "Standard";
+"algs.sort_likely" = "Häufigste zuerst";
+"algs.sort_unlikely" = "Seltenste zuerst";
+"algs.sort_slices" = "Algorithmus-Slices";
+"algs.probability_basis" = "Die Wahrscheinlichkeit basiert auf gleichverteilten Fallzuständen, nicht auf gemessener Häufigkeit.";
+"settings.diagram_stroke" = "Diagrammlinienstärke";
+"settings.diagram_stroke_thin" = "Dünn";
+"settings.diagram_stroke_thick" = "Dick";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "Cubeshape-Parität mit eindeutigen Zählreferenzen.";
+"algs.subset.odd" = "Ungerade";
+"algs.subset.even" = "Gerade";
+
+"settings.diagram_stroke_medium" = "Mittel";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "Wahrscheinlichkeit";
+"algs.orientation.normal" = "Normal";
+"algs.orientation.inverted" = "Umgedreht (x2)";
+"algs.execution_alignment" = "Ausrichtung";
+"algs.direction" = "Richtung";
+"settings.font_downloading" = "Wird heruntergeladen";

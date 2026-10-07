@@ -2087,3 +2087,131 @@
 "smart_cube.plastic.custom" = "Custom";
 "smart_cube.plastic.custom_color" = "Custom Plastic Color";
 "smart_cube.reflections" = "Reflections";
+
+"settings.entering_times_smart_cube_and_gan" = "Smart Cube + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "Connected Devices";
+"connected_devices.section" = "Devices";
+"connected_devices.smart_timer" = "Smart Timer";
+"connected_devices.requires_both" = "Requires a Smart Cube and Smart Timer.";
+"connected_devices.requires_cube" = "Requires a Smart Cube.";
+"connected_devices.requires_timer" = "Requires a Smart Timer.";
+"connected_devices.waiting" = "Waiting for both devices to be ready";
+
+/* Explore Foundation */
+"tab.explore" = "Explore";
+"explore.rankings" = "Rankings";
+"explore.records" = "Records";
+"explore.highlights" = "Highlights";
+"explore.browse" = "Browse";
+"explore.search" = "Search";
+"explore.loading" = "Finding competitions";
+"explore.unavailable" = "Unable to load Explore";
+"explore.empty" = "More to explore soon";
+"explore.unavailable_body" = "Competition information could not be loaded. Try again or open the competition browser below.";
+"explore.empty_body" = "There are no upcoming competitions in the available information. Browse the cubing world below.";
+"explore.retry" = "Try Again";
+"explore.refresh_failed" = "Some content could not be refreshed.";
+"explore.cached" = "Showing saved information";
+"explore.future" = "Coming in a future Explore update.";
+"explore.rankings_body" = "Explore official WCA rankings by event and region.";
+"explore.records_body" = "Discover current records and the moments behind them.";
+"explore.highlights_body" = "Stories about the people, places, and competitions of cubing.";
+"explore.search_scope" = "Search competitions currently loaded in Explore. Use the full browser for more competitions.";
+"explore.all_competitions" = "Browse All Competitions";
+"explore.no_results" = "No matching competitions in Explore.";
+"explore.search_prompt" = "Competition name or place";
+"explore.see_all" = "See All";
+"explore.discover" = "Discover";
+"explore.open_hint" = "Opens details";
+"explore.preview" = "Preview content";
+"explore.competition_spotlight" = "Competition spotlight";
+"explore.upcoming" = "Upcoming competitions";
+"explore.registration_open" = "Registration open";
+
+"explore.stats" = "Stats";
+"explore.stats_body" = "WCA statistics are planned for a future Explore update.";
+
+"smart_cube.timer.timer_disconnected" = "Please connect a Smart Timer";
+
+"settings.smart_cube.timer_layout" = "Timer Layout";
+"settings.smart_cube.timer_layout.centered" = "Centered";
+"settings.smart_cube.timer_layout.split" = "Split";
+"smart_cube.my_devices" = "My Devices";
+"smart_cube.no_saved_devices" = "No saved Smart Cubes";
+"smart_cube.nearby_devices" = "Nearby Devices";
+"smart_cube.device.model" = "Model";
+"smart_cube.device.original_name" = "Original Device Name";
+"smart_cube.device.rename" = "Rename";
+"smart_cube.device.reset_name" = "Use Original Name";
+"smart_cube.device.name" = "Name";
+"smart_cube.device.auto_connect" = "Auto-Connect";
+"smart_cube.device.connect" = "Connect";
+"smart_cube.device.troubleshooting" = "Troubleshooting";
+
+"smart_cube.device.icon_color" = "Icon Color";
+"smart_cube.device.reset_icon_color" = "Use Default Icon Color";
+"smart_cube.device.active" = "Active Smart Cube";
+"smart_cube.device.mark_solved_help" = "Use the cube's current physical state as solved.";
+
+"smart_cube.device.no_active" = "No Active Cube";
+
+"timer.personal_best" = "Personal best";
+
+"solve.method.touch" = "Touch";
+
+"solve.method.typing" = "Typing";
+
+"solve.method.smart_cube" = "Smart Cube";
+
+"solve.method.smart_timer" = "Smart Timer";
+
+"solve.method.combined" = "Combined";
+
+"solve.method.unknown" = "Unknown";
+
+"data.move.action" = "Move";
+
+"data.move.destination" = "Destination Session";
+
+"data.select.to_here" = "Select to Here";
+
+"data.move.failed" = "Could not move the selected solves.";
+
+"data.move.confirm" = "Move the selected solves to “%@”?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 cases with inverse-setup reference solutions, not optimized algorithms.";
+"algs.item.ftoedges.title" = "Edge Cycles";
+"algs.item.ftoedges.description" = "16 exact edge-cycle references, not optimized algorithms.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "Corner and edge orientation";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "Sort";
+"algs.sort_default" = "Default";
+"algs.sort_likely" = "Most likely";
+"algs.sort_unlikely" = "Least likely";
+"algs.sort_slices" = "Algorithm slices";
+"algs.probability_basis" = "Probability assumes uniformly distributed case states, not measured solve frequency.";
+"settings.diagram_stroke" = "Diagram line width";
+"settings.diagram_stroke_thin" = "Thin";
+"settings.diagram_stroke_thick" = "Thick";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "Cubeshape parity with explicit odd/even counting references.";
+"algs.subset.odd" = "Odd";
+"algs.subset.even" = "Even";
+
+"settings.diagram_stroke_medium" = "Medium";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "Probability";
+"algs.orientation.normal" = "Normal";
+"algs.orientation.inverted" = "Inverted (x2)";
+"algs.execution_alignment" = "Alignment";
+"algs.direction" = "Direction";
+"settings.font_downloading" = "Downloading";

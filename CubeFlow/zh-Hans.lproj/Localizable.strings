@@ -2048,3 +2048,131 @@
 "smart_cube.plastic.custom" = "自定义";
 "smart_cube.plastic.custom_color" = "自定义塑料颜色";
 "smart_cube.reflections" = "反光";
+
+"settings.entering_times_smart_cube_and_gan" = "智能魔方 + GAN 智能计时器";
+
+/* Connected Devices */
+"connected_devices.title" = "已连接设备";
+"connected_devices.section" = "设备";
+"connected_devices.smart_timer" = "智能计时器";
+"connected_devices.requires_both" = "需要智能魔方和智能计时器。";
+"connected_devices.requires_cube" = "需要智能魔方。";
+"connected_devices.requires_timer" = "需要智能计时器。";
+"connected_devices.waiting" = "等待两个设备就绪";
+
+/* Explore Foundation */
+"tab.explore" = "探索";
+"explore.rankings" = "排名";
+"explore.records" = "纪录";
+"explore.highlights" = "精选";
+"explore.browse" = "浏览";
+"explore.search" = "搜索";
+"explore.loading" = "正在查找比赛";
+"explore.unavailable" = "无法加载探索";
+"explore.empty" = "更多内容即将呈现";
+"explore.unavailable_body" = "无法加载比赛信息。请重试或打开下方的比赛浏览器。";
+"explore.empty_body" = "现有信息中暂无即将举行的比赛。可在下方继续浏览。";
+"explore.retry" = "重试";
+"explore.refresh_failed" = "部分内容未能刷新。";
+"explore.cached" = "正在显示已保存的信息";
+"explore.future" = "将在后续探索更新中推出。";
+"explore.rankings_body" = "按项目和地区探索 WCA 官方排名。";
+"explore.records_body" = "探索当前纪录及其背后的精彩时刻。";
+"explore.highlights_body" = "了解魔方世界的人物、地点和比赛故事。";
+"explore.search_scope" = "搜索探索页面已加载的比赛。更多比赛请使用完整浏览器。";
+"explore.all_competitions" = "浏览全部比赛";
+"explore.no_results" = "探索中没有匹配的比赛。";
+"explore.search_prompt" = "比赛名称或地点";
+"explore.see_all" = "查看全部";
+"explore.discover" = "了解详情";
+"explore.open_hint" = "打开详情";
+"explore.preview" = "预览内容";
+"explore.competition_spotlight" = "比赛聚焦";
+"explore.upcoming" = "即将举行的比赛";
+"explore.registration_open" = "报名开放";
+
+"explore.stats" = "统计";
+"explore.stats_body" = "WCA 统计功能将在未来的 Explore 更新中推出。";
+
+"smart_cube.timer.timer_disconnected" = "请连接智能计时器";
+
+"settings.smart_cube.timer_layout" = "计时器布局";
+"settings.smart_cube.timer_layout.centered" = "居中";
+"settings.smart_cube.timer_layout.split" = "分栏";
+"smart_cube.my_devices" = "我的设备";
+"smart_cube.no_saved_devices" = "没有已保存的智能魔方";
+"smart_cube.nearby_devices" = "附近设备";
+"smart_cube.device.model" = "型号";
+"smart_cube.device.original_name" = "原始设备名称";
+"smart_cube.device.rename" = "重命名";
+"smart_cube.device.reset_name" = "使用原始名称";
+"smart_cube.device.name" = "名称";
+"smart_cube.device.auto_connect" = "自动连接";
+"smart_cube.device.connect" = "连接";
+"smart_cube.device.troubleshooting" = "故障排查";
+
+"smart_cube.device.icon_color" = "图标颜色";
+"smart_cube.device.reset_icon_color" = "使用默认图标颜色";
+"smart_cube.device.active" = "当前智能魔方";
+"smart_cube.device.mark_solved_help" = "将魔方当前的实物状态设为还原状态。";
+
+"smart_cube.device.no_active" = "未选择当前魔方";
+
+"timer.personal_best" = "个人最佳";
+
+"solve.method.touch" = "触摸";
+
+"solve.method.typing" = "输入";
+
+"solve.method.smart_cube" = "智能魔方";
+
+"solve.method.smart_timer" = "智能计时器";
+
+"solve.method.combined" = "组合";
+
+"solve.method.unknown" = "未知";
+
+"data.move.action" = "移动";
+
+"data.move.destination" = "目标分组";
+
+"data.select.to_here" = "选到这里";
+
+"data.move.failed" = "无法移动所选成绩。";
+
+"data.move.confirm" = "将所选成绩移动到“%@”？";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 个案例及逆打乱参考解法，并非优化速拧公式。";
+"algs.item.ftoedges.title" = "棱块循环";
+"algs.item.ftoedges.description" = "16 个精确棱块循环参考解法，并非优化公式。";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "角块和棱块定向";
+"algs.subset.non_parity" = "无特";
+"algs.subset.parity" = "有特";
+"algs.sort" = "排序";
+"algs.sort_default" = "默认";
+"algs.sort_likely" = "概率从高到低";
+"algs.sort_unlikely" = "概率从低到高";
+"algs.sort_slices" = "公式切数";
+"algs.probability_basis" = "概率按均匀分布的案例状态计算，并非实测出现频率。";
+"settings.diagram_stroke" = "图示线宽";
+"settings.diagram_stroke_thin" = "细";
+"settings.diagram_stroke_thick" = "粗";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "按明确的计数参考学习奇偶成形。";
+"algs.subset.odd" = "奇数";
+"algs.subset.even" = "偶数";
+
+"settings.diagram_stroke_medium" = "中";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "概率";
+"algs.orientation.normal" = "正常";
+"algs.orientation.inverted" = "倒置（x2）";
+"algs.execution_alignment" = "对位";
+"algs.direction" = "方向";
+"settings.font_downloading" = "正在下载";

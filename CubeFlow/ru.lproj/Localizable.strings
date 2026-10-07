@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "Свой цвет";
 "smart_cube.plastic.custom_color" = "Свой цвет пластика";
 "smart_cube.reflections" = "Отражения";
+
+"settings.entering_times_smart_cube_and_gan" = "Умный куб + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "Подключённые устройства";
+"connected_devices.section" = "Устройства";
+"connected_devices.smart_timer" = "Умный таймер";
+"connected_devices.requires_both" = "Нужны умный кубик и умный таймер.";
+"connected_devices.requires_cube" = "Нужен умный кубик.";
+"connected_devices.requires_timer" = "Нужен умный таймер.";
+"connected_devices.waiting" = "Ожидание готовности обоих устройств";
+
+/* Explore Foundation */
+"tab.explore" = "Обзор";
+"explore.rankings" = "Рейтинги";
+"explore.records" = "Рекорды";
+"explore.highlights" = "Интересное";
+"explore.browse" = "Категории";
+"explore.search" = "Поиск";
+"explore.loading" = "Поиск соревнований";
+"explore.unavailable" = "Не удалось загрузить";
+"explore.empty" = "Скоро больше интересного";
+"explore.unavailable_body" = "Не удалось загрузить соревнования. Повторите попытку или откройте список ниже.";
+"explore.empty_body" = "В доступных данных нет предстоящих соревнований. Посмотрите категории ниже.";
+"explore.retry" = "Повторить";
+"explore.refresh_failed" = "Не удалось обновить часть информации.";
+"explore.cached" = "Сохранённая информация";
+"explore.future" = "Появится в следующем обновлении.";
+"explore.rankings_body" = "Официальные рейтинги WCA по дисциплинам и регионам.";
+"explore.records_body" = "Текущие рекорды и их история.";
+"explore.highlights_body" = "Истории о людях, местах и соревнованиях.";
+"explore.search_scope" = "Поиск среди загруженных здесь соревнований. Больше соревнований в полном списке.";
+"explore.all_competitions" = "Все соревнования";
+"explore.no_results" = "Совпадений не найдено.";
+"explore.search_prompt" = "Соревнование или место";
+"explore.see_all" = "Смотреть все";
+"explore.discover" = "Подробнее";
+"explore.open_hint" = "Открывает подробности";
+"explore.preview" = "Предпросмотр";
+"explore.competition_spotlight" = "В центре внимания";
+"explore.upcoming" = "Предстоящие соревнования";
+"explore.registration_open" = "Регистрация открыта";
+
+"explore.stats" = "Статистика";
+"explore.stats_body" = "Статистика WCA появится в одном из будущих обновлений раздела Explore.";
+
+"smart_cube.timer.timer_disconnected" = "Подключите умный таймер";
+
+"smart_cube.device.icon_color" = "Цвет значка";
+"smart_cube.device.reset_icon_color" = "Использовать цвет по умолчанию";
+"smart_cube.device.active" = "Активный умный куб";
+"smart_cube.device.mark_solved_help" = "Использовать текущее физическое состояние куба как собранное.";
+
+"smart_cube.device.no_active" = "Нет активного куба";
+
+"timer.personal_best" = "Личный рекорд";
+
+"solve.method.touch" = "Касание";
+
+"solve.method.typing" = "Ввод";
+
+"solve.method.smart_cube" = "Умный куб";
+
+"solve.method.smart_timer" = "Умный таймер";
+
+"solve.method.combined" = "Совмещённый";
+
+"solve.method.unknown" = "Неизвестно";
+
+"data.move.action" = "Переместить";
+
+"data.move.destination" = "Целевая сессия";
+
+"data.select.to_here" = "Выбрать до этого места";
+
+"data.move.failed" = "Не удалось переместить выбранные сборки.";
+
+"data.move.confirm" = "Переместить выбранные сборки в «%@»?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 случаев с обратными установочными решениями для справки, без оптимизации.";
+"algs.item.ftoedges.title" = "Циклы рёбер";
+"algs.item.ftoedges.description" = "16 точных циклов рёбер для справки, без оптимизации.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "Ориентация углов и рёбер";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "Сортировка";
+"algs.sort_default" = "По умолчанию";
+"algs.sort_likely" = "Чаще сначала";
+"algs.sort_unlikely" = "Реже сначала";
+"algs.sort_slices" = "Срезы алгоритма";
+"algs.probability_basis" = "Вероятность предполагает равномерные состояния, а не измеренную частоту.";
+"settings.diagram_stroke" = "Толщина линий";
+"settings.diagram_stroke_thin" = "Тонкие";
+"settings.diagram_stroke_thick" = "Толстые";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "Чётность формы с явными ориентирами подсчёта.";
+"algs.subset.odd" = "Нечётная";
+"algs.subset.even" = "Чётная";
+
+"settings.diagram_stroke_medium" = "Средняя";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "Вероятность";
+"algs.orientation.normal" = "Обычная";
+"algs.orientation.inverted" = "Перевёрнутая (x2)";
+"algs.execution_alignment" = "Выравнивание";
+"algs.direction" = "Направление";
+"settings.font_downloading" = "Загрузка";

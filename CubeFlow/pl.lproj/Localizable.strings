@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "Własny";
 "smart_cube.plastic.custom_color" = "Własny kolor plastiku";
 "smart_cube.reflections" = "Odbicia";
+
+"settings.entering_times_smart_cube_and_gan" = "Smart Cube + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "Połączone urządzenia";
+"connected_devices.section" = "Urządzenia";
+"connected_devices.smart_timer" = "Inteligentny timer";
+"connected_devices.requires_both" = "Wymaga inteligentnej kostki i inteligentnego timera.";
+"connected_devices.requires_cube" = "Wymaga inteligentnej kostki.";
+"connected_devices.requires_timer" = "Wymaga inteligentnego timera.";
+"connected_devices.waiting" = "Oczekiwanie na gotowość obu urządzeń";
+
+/* Explore Foundation */
+"tab.explore" = "Odkrywaj";
+"explore.rankings" = "Rankingi";
+"explore.records" = "Rekordy";
+"explore.highlights" = "Ciekawostki";
+"explore.browse" = "Przeglądaj";
+"explore.search" = "Szukaj";
+"explore.loading" = "Wyszukiwanie zawodów";
+"explore.unavailable" = "Nie można wczytać";
+"explore.empty" = "Wkrótce więcej treści";
+"explore.unavailable_body" = "Nie udało się wczytać zawodów. Spróbuj ponownie lub otwórz listę poniżej.";
+"explore.empty_body" = "Brak nadchodzących zawodów w dostępnych danych. Przejrzyj kategorie poniżej.";
+"explore.retry" = "Spróbuj ponownie";
+"explore.refresh_failed" = "Nie udało się odświeżyć części treści.";
+"explore.cached" = "Zapisane informacje";
+"explore.future" = "Dostępne w przyszłej aktualizacji.";
+"explore.rankings_body" = "Oficjalne rankingi WCA według konkurencji i regionu.";
+"explore.records_body" = "Aktualne rekordy i ich historie.";
+"explore.highlights_body" = "Historie ludzi, miejsc i zawodów.";
+"explore.search_scope" = "Szukaj w załadowanych tutaj zawodach. Więcej znajdziesz na pełnej liście.";
+"explore.all_competitions" = "Wszystkie zawody";
+"explore.no_results" = "Brak pasujących zawodów.";
+"explore.search_prompt" = "Zawody lub miejsce";
+"explore.see_all" = "Zobacz wszystkie";
+"explore.discover" = "Odkryj";
+"explore.open_hint" = "Otwiera szczegóły";
+"explore.preview" = "Podgląd";
+"explore.competition_spotlight" = "Zawody w centrum uwagi";
+"explore.upcoming" = "Nadchodzące zawody";
+"explore.registration_open" = "Rejestracja otwarta";
+
+"explore.stats" = "Statystyki";
+"explore.stats_body" = "Statystyki WCA pojawią się w przyszłej aktualizacji sekcji Explore.";
+
+"smart_cube.timer.timer_disconnected" = "Połącz inteligentny timer";
+
+"smart_cube.device.icon_color" = "Kolor ikony";
+"smart_cube.device.reset_icon_color" = "Użyj domyślnego koloru ikony";
+"smart_cube.device.active" = "Aktywna inteligentna kostka";
+"smart_cube.device.mark_solved_help" = "Użyj aktualnego fizycznego stanu kostki jako stanu ułożonego.";
+
+"smart_cube.device.no_active" = "Brak aktywnej kostki";
+
+"timer.personal_best" = "Rekord życiowy";
+
+"solve.method.touch" = "Dotyk";
+
+"solve.method.typing" = "Wpisywanie";
+
+"solve.method.smart_cube" = "Inteligentna kostka";
+
+"solve.method.smart_timer" = "Inteligentny timer";
+
+"solve.method.combined" = "Łączony";
+
+"solve.method.unknown" = "Nieznane";
+
+"data.move.action" = "Przenieś";
+
+"data.move.destination" = "Sesja docelowa";
+
+"data.select.to_here" = "Zaznacz do tego miejsca";
+
+"data.move.failed" = "Nie udało się przenieść wybranych ułożeń.";
+
+"data.move.confirm" = "Przenieść wybrane ułożenia do „%@”?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 przypadków z rozwiązaniami odwracającymi ustawienie, bez optymalizacji.";
+"algs.item.ftoedges.title" = "Cykle krawędzi";
+"algs.item.ftoedges.description" = "16 dokładnych cykli krawędzi, bez optymalizacji.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "Orientacja narożników i krawędzi";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "Sortuj";
+"algs.sort_default" = "Domyślnie";
+"algs.sort_likely" = "Najbardziej prawdopodobne";
+"algs.sort_unlikely" = "Najmniej prawdopodobne";
+"algs.sort_slices" = "Cięcia algorytmu";
+"algs.probability_basis" = "Prawdopodobieństwo zakłada równomierne stany, nie zmierzoną częstość.";
+"settings.diagram_stroke" = "Grubość linii";
+"settings.diagram_stroke_thin" = "Cienkie";
+"settings.diagram_stroke_thick" = "Grube";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "Parzystość kształtu z określonymi odniesieniami liczenia.";
+"algs.subset.odd" = "Nieparzysta";
+"algs.subset.even" = "Parzysta";
+
+"settings.diagram_stroke_medium" = "Średnia";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "Prawdopodobieństwo";
+"algs.orientation.normal" = "Normalnie";
+"algs.orientation.inverted" = "Odwrócone (x2)";
+"algs.execution_alignment" = "Wyrównanie";
+"algs.direction" = "Kierunek";
+"settings.font_downloading" = "Pobieranie";

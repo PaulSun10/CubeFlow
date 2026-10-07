@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "กำหนดเอง";
 "smart_cube.plastic.custom_color" = "สีพลาสติกที่กำหนดเอง";
 "smart_cube.reflections" = "แสงสะท้อน";
+
+"settings.entering_times_smart_cube_and_gan" = "สมาร์ทคิวบ์ + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "อุปกรณ์ที่เชื่อมต่อ";
+"connected_devices.section" = "อุปกรณ์";
+"connected_devices.smart_timer" = "ตัวจับเวลาอัจฉริยะ";
+"connected_devices.requires_both" = "ต้องใช้ลูกบาศก์อัจฉริยะและตัวจับเวลาอัจฉริยะ";
+"connected_devices.requires_cube" = "ต้องใช้ลูกบาศก์อัจฉริยะ";
+"connected_devices.requires_timer" = "ต้องใช้ตัวจับเวลาอัจฉริยะ";
+"connected_devices.waiting" = "กำลังรอให้อุปกรณ์ทั้งสองพร้อม";
+
+/* Explore Foundation */
+"tab.explore" = "สำรวจ";
+"explore.rankings" = "อันดับ";
+"explore.records" = "สถิติ";
+"explore.highlights" = "ไฮไลต์";
+"explore.browse" = "หมวดหมู่";
+"explore.search" = "ค้นหา";
+"explore.loading" = "กำลังค้นหาการแข่งขัน";
+"explore.unavailable" = "ไม่สามารถโหลดได้";
+"explore.empty" = "จะมีเนื้อหาเพิ่มเติมเร็ว ๆ นี้";
+"explore.unavailable_body" = "ไม่สามารถโหลดการแข่งขันได้ ลองอีกครั้งหรือเปิดรายการด้านล่าง";
+"explore.empty_body" = "ไม่มีการแข่งขันที่กำลังจะมาถึงในข้อมูลที่มีอยู่ สำรวจหมวดหมู่ด้านล่าง";
+"explore.retry" = "ลองอีกครั้ง";
+"explore.refresh_failed" = "ไม่สามารถรีเฟรชเนื้อหาบางส่วนได้";
+"explore.cached" = "ข้อมูลที่บันทึกไว้";
+"explore.future" = "จะพร้อมใช้งานในการอัปเดตในอนาคต";
+"explore.rankings_body" = "อันดับ WCA อย่างเป็นทางการตามประเภทและภูมิภาค";
+"explore.records_body" = "สถิติปัจจุบันและช่วงเวลาที่น่าจดจำ";
+"explore.highlights_body" = "เรื่องราวของผู้คน สถานที่ และการแข่งขัน";
+"explore.search_scope" = "ค้นหาการแข่งขันที่โหลดไว้ที่นี่ เปิดรายการทั้งหมดเพื่อดูเพิ่มเติม";
+"explore.all_competitions" = "การแข่งขันทั้งหมด";
+"explore.no_results" = "ไม่พบการแข่งขันที่ตรงกัน";
+"explore.search_prompt" = "ชื่อการแข่งขันหรือสถานที่";
+"explore.see_all" = "ดูทั้งหมด";
+"explore.discover" = "ค้นพบ";
+"explore.open_hint" = "เปิดรายละเอียด";
+"explore.preview" = "ตัวอย่าง";
+"explore.competition_spotlight" = "การแข่งขันที่น่าสนใจ";
+"explore.upcoming" = "การแข่งขันที่กำลังจะมาถึง";
+"explore.registration_open" = "เปิดรับสมัคร";
+
+"explore.stats" = "สถิติ";
+"explore.stats_body" = "สถิติ WCA มีแผนเพิ่มในการอัปเดต Explore ในอนาคต";
+
+"smart_cube.timer.timer_disconnected" = "โปรดเชื่อมต่อตัวจับเวลาอัจฉริยะ";
+
+"smart_cube.device.icon_color" = "สีไอคอน";
+"smart_cube.device.reset_icon_color" = "ใช้สีไอคอนเริ่มต้น";
+"smart_cube.device.active" = "สมาร์ตคิวบ์ที่ใช้งาน";
+"smart_cube.device.mark_solved_help" = "ใช้สภาพจริงปัจจุบันของลูกบาศก์เป็นสถานะที่แก้เสร็จแล้ว";
+
+"smart_cube.device.no_active" = "ไม่มีคิวบ์ที่ใช้งาน";
+
+"timer.personal_best" = "สถิติส่วนตัวที่ดีที่สุด";
+
+"solve.method.touch" = "สัมผัส";
+
+"solve.method.typing" = "พิมพ์";
+
+"solve.method.smart_cube" = "สมาร์ตคิวบ์";
+
+"solve.method.smart_timer" = "สมาร์ตไทเมอร์";
+
+"solve.method.combined" = "รวม";
+
+"solve.method.unknown" = "ไม่ทราบ";
+
+"data.move.action" = "ย้าย";
+
+"data.move.destination" = "เซสชันปลายทาง";
+
+"data.select.to_here" = "เลือกถึงที่นี่";
+
+"data.move.failed" = "ไม่สามารถย้ายการแก้ที่เลือกได้";
+
+"data.move.confirm" = "ย้ายผลที่เลือกไปยัง “%@” หรือไม่?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 กรณีพร้อมวิธีอ้างอิงย้อนกลับการจัดตั้ง ไม่ใช่สูตรที่ปรับให้เร็วที่สุด";
+"algs.item.ftoedges.title" = "วงจรชิ้นขอบ";
+"algs.item.ftoedges.description" = "16 วงจรชิ้นขอบที่แม่นยำสำหรับอ้างอิง ไม่ใช่สูตรที่ปรับให้เร็วที่สุด";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "การจัดทิศมุมและขอบ";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "เรียงลำดับ";
+"algs.sort_default" = "ค่าเริ่มต้น";
+"algs.sort_likely" = "โอกาสมากที่สุด";
+"algs.sort_unlikely" = "โอกาสน้อยที่สุด";
+"algs.sort_slices" = "จำนวนสไลซ์ของสูตร";
+"algs.probability_basis" = "ความน่าจะเป็นสมมติให้สถานะกระจายเท่ากัน ไม่ใช่ความถี่ที่วัดได้";
+"settings.diagram_stroke" = "ความหนาเส้น";
+"settings.diagram_stroke_thin" = "บาง";
+"settings.diagram_stroke_thick" = "หนา";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "พาริตีรูปทรงด้วยจุดอ้างอิงการนับที่ชัดเจน";
+"algs.subset.odd" = "คี่";
+"algs.subset.even" = "คู่";
+
+"settings.diagram_stroke_medium" = "ปานกลาง";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "ความน่าจะเป็น";
+"algs.orientation.normal" = "ปกติ";
+"algs.orientation.inverted" = "กลับด้าน (x2)";
+"algs.execution_alignment" = "การจัดแนว";
+"algs.direction" = "ทิศทาง";
+"settings.font_downloading" = "กำลังดาวน์โหลด";

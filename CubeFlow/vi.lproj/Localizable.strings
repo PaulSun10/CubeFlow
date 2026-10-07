@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "Tùy chỉnh";
 "smart_cube.plastic.custom_color" = "Màu nhựa tùy chỉnh";
 "smart_cube.reflections" = "Phản chiếu";
+
+"settings.entering_times_smart_cube_and_gan" = "Smart Cube + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "Thiết bị đã kết nối";
+"connected_devices.section" = "Thiết bị";
+"connected_devices.smart_timer" = "Bộ bấm giờ thông minh";
+"connected_devices.requires_both" = "Cần khối Rubik thông minh và bộ bấm giờ thông minh.";
+"connected_devices.requires_cube" = "Cần khối Rubik thông minh.";
+"connected_devices.requires_timer" = "Cần bộ bấm giờ thông minh.";
+"connected_devices.waiting" = "Đang chờ cả hai thiết bị sẵn sàng";
+
+/* Explore Foundation */
+"tab.explore" = "Khám phá";
+"explore.rankings" = "Xếp hạng";
+"explore.records" = "Kỷ lục";
+"explore.highlights" = "Nổi bật";
+"explore.browse" = "Duyệt";
+"explore.search" = "Tìm kiếm";
+"explore.loading" = "Đang tìm giải đấu";
+"explore.unavailable" = "Không thể tải";
+"explore.empty" = "Sắp có thêm nội dung";
+"explore.unavailable_body" = "Không thể tải giải đấu. Hãy thử lại hoặc mở danh sách bên dưới.";
+"explore.empty_body" = "Không có giải đấu sắp tới trong dữ liệu hiện có. Hãy duyệt các mục bên dưới.";
+"explore.retry" = "Thử lại";
+"explore.refresh_failed" = "Không thể làm mới một số nội dung.";
+"explore.cached" = "Thông tin đã lưu";
+"explore.future" = "Sẽ có trong bản cập nhật sau.";
+"explore.rankings_body" = "Xếp hạng WCA chính thức theo nội dung và khu vực.";
+"explore.records_body" = "Kỷ lục hiện tại và những khoảnh khắc đáng nhớ.";
+"explore.highlights_body" = "Câu chuyện về con người, địa điểm và giải đấu.";
+"explore.search_scope" = "Tìm trong các giải đấu đã tải ở đây. Mở danh sách đầy đủ để xem thêm.";
+"explore.all_competitions" = "Tất cả giải đấu";
+"explore.no_results" = "Không có giải đấu phù hợp.";
+"explore.search_prompt" = "Tên giải đấu hoặc địa điểm";
+"explore.see_all" = "Xem tất cả";
+"explore.discover" = "Khám phá";
+"explore.open_hint" = "Mở chi tiết";
+"explore.preview" = "Xem trước";
+"explore.competition_spotlight" = "Giải đấu tiêu điểm";
+"explore.upcoming" = "Giải đấu sắp tới";
+"explore.registration_open" = "Đang mở đăng ký";
+
+"explore.stats" = "Thống kê";
+"explore.stats_body" = "Thống kê WCA sẽ có trong bản cập nhật Khám phá sau.";
+
+"smart_cube.timer.timer_disconnected" = "Vui lòng kết nối bộ bấm giờ thông minh";
+
+"smart_cube.device.icon_color" = "Màu biểu tượng";
+"smart_cube.device.reset_icon_color" = "Dùng màu biểu tượng mặc định";
+"smart_cube.device.active" = "Khối lập phương thông minh đang dùng";
+"smart_cube.device.mark_solved_help" = "Dùng trạng thái vật lý hiện tại của khối lập phương làm trạng thái đã giải.";
+
+"smart_cube.device.no_active" = "Không có khối đang dùng";
+
+"timer.personal_best" = "Kỷ lục cá nhân";
+
+"solve.method.touch" = "Chạm";
+
+"solve.method.typing" = "Nhập";
+
+"solve.method.smart_cube" = "Khối thông minh";
+
+"solve.method.smart_timer" = "Đồng hồ thông minh";
+
+"solve.method.combined" = "Kết hợp";
+
+"solve.method.unknown" = "Không rõ";
+
+"data.move.action" = "Chuyển";
+
+"data.move.destination" = "Phiên đích";
+
+"data.select.to_here" = "Chọn đến đây";
+
+"data.move.failed" = "Không thể chuyển các lượt giải đã chọn.";
+
+"data.move.confirm" = "Chuyển các lượt giải đã chọn sang “%@”?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 trường hợp với lời giải tham khảo đảo thiết lập, không phải công thức tối ưu.";
+"algs.item.ftoedges.title" = "Chu kỳ cạnh";
+"algs.item.ftoedges.description" = "16 chu kỳ cạnh chính xác để tham khảo, không phải công thức tối ưu.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "Định hướng góc và cạnh";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "Sắp xếp";
+"algs.sort_default" = "Mặc định";
+"algs.sort_likely" = "Xác suất cao nhất";
+"algs.sort_unlikely" = "Xác suất thấp nhất";
+"algs.sort_slices" = "Số lát cắt công thức";
+"algs.probability_basis" = "Xác suất giả định trạng thái phân bố đều, không phải tần suất đo được.";
+"settings.diagram_stroke" = "Độ dày nét";
+"settings.diagram_stroke_thin" = "Mảnh";
+"settings.diagram_stroke_thick" = "Dày";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "Chẵn lẻ hình khối với quy ước đếm rõ ràng.";
+"algs.subset.odd" = "Lẻ";
+"algs.subset.even" = "Chẵn";
+
+"settings.diagram_stroke_medium" = "Vừa";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "Xác suất";
+"algs.orientation.normal" = "Thông thường";
+"algs.orientation.inverted" = "Lật ngược (x2)";
+"algs.execution_alignment" = "Căn chỉnh";
+"algs.direction" = "Hướng";
+"settings.font_downloading" = "Đang tải xuống";

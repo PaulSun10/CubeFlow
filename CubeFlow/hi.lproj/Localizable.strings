@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "कस्टम";
 "smart_cube.plastic.custom_color" = "कस्टम प्लास्टिक रंग";
 "smart_cube.reflections" = "प्रतिबिंब";
+
+"settings.entering_times_smart_cube_and_gan" = "स्मार्ट क्यूब + GAN स्मार्ट टाइमर";
+
+/* Connected Devices */
+"connected_devices.title" = "कनेक्ट किए गए डिवाइस";
+"connected_devices.section" = "डिवाइस";
+"connected_devices.smart_timer" = "स्मार्ट टाइमर";
+"connected_devices.requires_both" = "स्मार्ट क्यूब और स्मार्ट टाइमर आवश्यक हैं।";
+"connected_devices.requires_cube" = "स्मार्ट क्यूब आवश्यक है।";
+"connected_devices.requires_timer" = "स्मार्ट टाइमर आवश्यक है।";
+"connected_devices.waiting" = "दोनों डिवाइस तैयार होने की प्रतीक्षा में";
+
+/* Explore Foundation */
+"tab.explore" = "खोजें";
+"explore.rankings" = "रैंकिंग";
+"explore.records" = "रिकॉर्ड";
+"explore.highlights" = "खास बातें";
+"explore.browse" = "ब्राउज़ करें";
+"explore.search" = "खोज";
+"explore.loading" = "प्रतियोगिताएँ खोजी जा रही हैं";
+"explore.unavailable" = "लोड नहीं हो सका";
+"explore.empty" = "जल्द और सामग्री आएगी";
+"explore.unavailable_body" = "प्रतियोगिताएँ लोड नहीं हुईं। फिर कोशिश करें या नीचे सूची खोलें।";
+"explore.empty_body" = "उपलब्ध जानकारी में आगामी प्रतियोगिताएँ नहीं हैं। नीचे की श्रेणियाँ देखें।";
+"explore.retry" = "फिर कोशिश करें";
+"explore.refresh_failed" = "कुछ सामग्री रीफ़्रेश नहीं हो सकी।";
+"explore.cached" = "सहेजी गई जानकारी";
+"explore.future" = "आने वाले अपडेट में उपलब्ध होगा।";
+"explore.rankings_body" = "इवेंट और क्षेत्र के अनुसार आधिकारिक WCA रैंकिंग।";
+"explore.records_body" = "वर्तमान रिकॉर्ड और उनके खास पल।";
+"explore.highlights_body" = "क्यूबिंग के लोगों, स्थानों और प्रतियोगिताओं की कहानियाँ।";
+"explore.search_scope" = "यहाँ लोड की गई प्रतियोगिताएँ खोजें। अधिक के लिए पूरी सूची खोलें।";
+"explore.all_competitions" = "सभी प्रतियोगिताएँ";
+"explore.no_results" = "कोई मेल खाती प्रतियोगिता नहीं।";
+"explore.search_prompt" = "प्रतियोगिता या स्थान";
+"explore.see_all" = "सभी देखें";
+"explore.discover" = "जानें";
+"explore.open_hint" = "विवरण खोलता है";
+"explore.preview" = "पूर्वावलोकन";
+"explore.competition_spotlight" = "प्रतियोगिता पर नज़र";
+"explore.upcoming" = "आगामी प्रतियोगिताएँ";
+"explore.registration_open" = "पंजीकरण खुला है";
+
+"explore.stats" = "आँकड़े";
+"explore.stats_body" = "WCA आँकड़े Explore के भविष्य के अपडेट में आएँगे।";
+
+"smart_cube.timer.timer_disconnected" = "कृपया स्मार्ट टाइमर कनेक्ट करें";
+
+"smart_cube.device.icon_color" = "आइकन का रंग";
+"smart_cube.device.reset_icon_color" = "डिफ़ॉल्ट आइकन रंग इस्तेमाल करें";
+"smart_cube.device.active" = "सक्रिय स्मार्ट क्यूब";
+"smart_cube.device.mark_solved_help" = "क्यूब की वर्तमान भौतिक स्थिति को हल की गई स्थिति मानें।";
+
+"smart_cube.device.no_active" = "कोई सक्रिय क्यूब नहीं";
+
+"timer.personal_best" = "व्यक्तिगत सर्वश्रेष्ठ";
+
+"solve.method.touch" = "स्पर्श";
+
+"solve.method.typing" = "टाइपिंग";
+
+"solve.method.smart_cube" = "स्मार्ट क्यूब";
+
+"solve.method.smart_timer" = "स्मार्ट टाइमर";
+
+"solve.method.combined" = "संयुक्त";
+
+"solve.method.unknown" = "अज्ञात";
+
+"data.move.action" = "स्थानांतरित करें";
+
+"data.move.destination" = "गंतव्य सत्र";
+
+"data.select.to_here" = "यहाँ तक चुनें";
+
+"data.move.failed" = "चुने गए हल स्थानांतरित नहीं किए जा सके।";
+
+"data.move.confirm" = "चयनित हल “%@” में ले जाएँ?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 केस और सेटअप के उलटे संदर्भ हल, अनुकूलित एल्गोरिदम नहीं।";
+"algs.item.ftoedges.title" = "एज चक्र";
+"algs.item.ftoedges.description" = "16 सटीक संदर्भ एज चक्र, अनुकूलित एल्गोरिदम नहीं।";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "कोनों और किनारों का उन्मुखीकरण";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "क्रम";
+"algs.sort_default" = "डिफ़ॉल्ट";
+"algs.sort_likely" = "सबसे संभावित";
+"algs.sort_unlikely" = "सबसे कम संभावित";
+"algs.sort_slices" = "एल्गोरिदम स्लाइस";
+"algs.probability_basis" = "संभावना समान रूप से वितरित अवस्थाएँ मानती है, मापी गई आवृत्ति नहीं।";
+"settings.diagram_stroke" = "आरेख रेखा की मोटाई";
+"settings.diagram_stroke_thin" = "पतली";
+"settings.diagram_stroke_thick" = "मोटी";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "स्पष्ट गणना संदर्भों के साथ घन आकार सम-विषम अभ्यास।";
+"algs.subset.odd" = "विषम";
+"algs.subset.even" = "सम";
+
+"settings.diagram_stroke_medium" = "मध्यम";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "संभावना";
+"algs.orientation.normal" = "सामान्य";
+"algs.orientation.inverted" = "उलटा (x2)";
+"algs.execution_alignment" = "संरेखण";
+"algs.direction" = "दिशा";
+"settings.font_downloading" = "डाउनलोड हो रहा है";

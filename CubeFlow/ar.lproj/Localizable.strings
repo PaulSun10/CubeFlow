@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "مخصص";
 "smart_cube.plastic.custom_color" = "لون البلاستيك المخصص";
 "smart_cube.reflections" = "الانعكاسات";
+
+"settings.entering_times_smart_cube_and_gan" = "المكعب الذكي + مؤقت GAN الذكي";
+
+/* Connected Devices */
+"connected_devices.title" = "الأجهزة المتصلة";
+"connected_devices.section" = "الأجهزة";
+"connected_devices.smart_timer" = "مؤقت ذكي";
+"connected_devices.requires_both" = "يتطلب مكعبًا ذكيًا ومؤقتًا ذكيًا.";
+"connected_devices.requires_cube" = "يتطلب مكعبًا ذكيًا.";
+"connected_devices.requires_timer" = "يتطلب مؤقتًا ذكيًا.";
+"connected_devices.waiting" = "بانتظار جاهزية الجهازين";
+
+/* Explore Foundation */
+"tab.explore" = "استكشاف";
+"explore.rankings" = "التصنيفات";
+"explore.records" = "الأرقام القياسية";
+"explore.highlights" = "مختارات";
+"explore.browse" = "تصفح";
+"explore.search" = "بحث";
+"explore.loading" = "جارٍ البحث عن المسابقات";
+"explore.unavailable" = "تعذر التحميل";
+"explore.empty" = "المزيد قريبًا";
+"explore.unavailable_body" = "تعذر تحميل المسابقات. حاول مجددًا أو افتح القائمة أدناه.";
+"explore.empty_body" = "لا توجد مسابقات قادمة في المعلومات المتاحة. تصفح الأقسام أدناه.";
+"explore.retry" = "حاول مجددًا";
+"explore.refresh_failed" = "تعذر تحديث بعض المحتوى.";
+"explore.cached" = "معلومات محفوظة";
+"explore.future" = "متاح في تحديث قادم.";
+"explore.rankings_body" = "تصنيفات WCA الرسمية حسب الفعالية والمنطقة.";
+"explore.records_body" = "الأرقام القياسية الحالية واللحظات التي صنعتها.";
+"explore.highlights_body" = "قصص عن الأشخاص والأماكن والمسابقات.";
+"explore.search_scope" = "ابحث في المسابقات المحملة هنا. افتح القائمة الكاملة للمزيد.";
+"explore.all_competitions" = "جميع المسابقات";
+"explore.no_results" = "لا توجد مسابقات مطابقة.";
+"explore.search_prompt" = "اسم المسابقة أو المكان";
+"explore.see_all" = "عرض الكل";
+"explore.discover" = "اكتشف";
+"explore.open_hint" = "يفتح التفاصيل";
+"explore.preview" = "معاينة";
+"explore.competition_spotlight" = "مسابقة في دائرة الضوء";
+"explore.upcoming" = "المسابقات القادمة";
+"explore.registration_open" = "التسجيل مفتوح";
+
+"explore.stats" = "الإحصاءات";
+"explore.stats_body" = "إحصاءات WCA مخطط لها في تحديث قادم لقسم الاستكشاف.";
+
+"smart_cube.timer.timer_disconnected" = "يرجى توصيل مؤقت ذكي";
+
+"smart_cube.device.icon_color" = "لون الأيقونة";
+"smart_cube.device.reset_icon_color" = "استخدام لون الأيقونة الافتراضي";
+"smart_cube.device.active" = "المكعب الذكي النشط";
+"smart_cube.device.mark_solved_help" = "استخدم الحالة المادية الحالية للمكعب كحالة محلولة.";
+
+"smart_cube.device.no_active" = "لا يوجد مكعب نشط";
+
+"timer.personal_best" = "أفضل رقم شخصي";
+
+"solve.method.touch" = "لمس";
+
+"solve.method.typing" = "إدخال";
+
+"solve.method.smart_cube" = "مكعب ذكي";
+
+"solve.method.smart_timer" = "مؤقت ذكي";
+
+"solve.method.combined" = "مدمج";
+
+"solve.method.unknown" = "غير معروف";
+
+"data.move.action" = "نقل";
+
+"data.move.destination" = "الجلسة الوجهة";
+
+"data.select.to_here" = "تحديد حتى هنا";
+
+"data.move.failed" = "تعذر نقل المحاولات المحددة.";
+
+"data.move.confirm" = "نقل الحلول المحددة إلى «%@»؟";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 حالة مع حلول مرجعية تعكس الإعداد، وليست خوارزميات محسنة.";
+"algs.item.ftoedges.title" = "دورات الحواف";
+"algs.item.ftoedges.description" = "16 دورة حواف دقيقة مرجعية، وليست خوارزميات محسنة.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "توجيه الزوايا والحواف";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "ترتيب";
+"algs.sort_default" = "افتراضي";
+"algs.sort_likely" = "الأكثر احتمالاً";
+"algs.sort_unlikely" = "الأقل احتمالاً";
+"algs.sort_slices" = "شرائح الخوارزمية";
+"algs.probability_basis" = "يفترض الاحتمال حالات موزعة بالتساوي، وليس تكراراً مقاساً.";
+"settings.diagram_stroke" = "سماكة خطوط الرسم";
+"settings.diagram_stroke_thin" = "رفيع";
+"settings.diagram_stroke_thick" = "سميك";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "تكافؤ شكل المكعب وفق مراجع عد واضحة.";
+"algs.subset.odd" = "فردي";
+"algs.subset.even" = "زوجي";
+
+"settings.diagram_stroke_medium" = "متوسط";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "الاحتمال";
+"algs.orientation.normal" = "عادي";
+"algs.orientation.inverted" = "مقلوب (x2)";
+"algs.execution_alignment" = "المحاذاة";
+"algs.direction" = "الاتجاه";
+"settings.font_downloading" = "جارٍ التنزيل";

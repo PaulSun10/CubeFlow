@@ -136,12 +136,12 @@ nonisolated func appLocalizedBundle(for languageCode: String) -> Bundle? {
     return nil
 }
 
-nonisolated func appLocalizedString(_ key: String, languageCode: String, defaultValue: String? = nil) -> String {
+nonisolated func appLocalizedString(_ key: String, languageCode: String, defaultValue: String? = nil, tableName: String? = nil) -> String {
     let explicitFallback = defaultValue.flatMap { value in
         value == key || appLooksLikeLocalizationKey(value) ? nil : value
     }
     let fallbackValue = explicitFallback ?? appHumanReadableLocalizationFallback(for: key, languageCode: languageCode)
-    let cacheKey = "\(languageCode)\u{1F}\(key)\u{1F}\(fallbackValue)"
+    let cacheKey = "\(languageCode)\u{1F}\(tableName ?? "Localizable")\u{1F}\(key)\u{1F}\(fallbackValue)"
     if let cached = AppLocalizationCache.shared.localizedString(for: cacheKey) {
         return cached
     }
@@ -152,7 +152,7 @@ nonisolated func appLocalizedString(_ key: String, languageCode: String, default
               let bundle = Bundle(path: path) else {
             continue
         }
-        let localized = bundle.localizedString(forKey: key, value: nil, table: nil)
+        let localized = bundle.localizedString(forKey: key, value: nil, table: tableName)
         if localized != key, !appLooksLikeLocalizationKey(localized) {
             resolved = localized
             break
@@ -160,7 +160,7 @@ nonisolated func appLocalizedString(_ key: String, languageCode: String, default
     }
 
     if resolved == nil {
-        let localized = Bundle.main.localizedString(forKey: key, value: nil, table: nil)
+        let localized = Bundle.main.localizedString(forKey: key, value: nil, table: tableName)
         if localized != key, !appLooksLikeLocalizationKey(localized) {
             resolved = localized
         }

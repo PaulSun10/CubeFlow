@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "カスタム";
 "smart_cube.plastic.custom_color" = "カスタムプラスチック色";
 "smart_cube.reflections" = "反射";
+
+"settings.entering_times_smart_cube_and_gan" = "スマートキューブ + GANスマートタイマー";
+
+/* Connected Devices */
+"connected_devices.title" = "接続デバイス";
+"connected_devices.section" = "デバイス";
+"connected_devices.smart_timer" = "スマートタイマー";
+"connected_devices.requires_both" = "スマートキューブとスマートタイマーが必要です。";
+"connected_devices.requires_cube" = "スマートキューブが必要です。";
+"connected_devices.requires_timer" = "スマートタイマーが必要です。";
+"connected_devices.waiting" = "両方のデバイスの準備を待っています";
+
+/* Explore Foundation */
+"tab.explore" = "見つける";
+"explore.rankings" = "ランキング";
+"explore.records" = "記録";
+"explore.highlights" = "ハイライト";
+"explore.browse" = "カテゴリ";
+"explore.search" = "検索";
+"explore.loading" = "大会を検索中";
+"explore.unavailable" = "読み込めませんでした";
+"explore.empty" = "今後のコンテンツをお楽しみに";
+"explore.unavailable_body" = "大会情報を読み込めませんでした。再試行するか、下の大会一覧を開いてください。";
+"explore.empty_body" = "現在の情報には今後の大会がありません。下のカテゴリをご覧ください。";
+"explore.retry" = "再試行";
+"explore.refresh_failed" = "一部の情報を更新できませんでした。";
+"explore.cached" = "保存済みの情報を表示中";
+"explore.future" = "今後のアップデートで利用できます。";
+"explore.rankings_body" = "種目や地域ごとの WCA 公式ランキング。";
+"explore.records_body" = "現在の記録と、その瞬間を振り返ります。";
+"explore.highlights_body" = "キューブの世界の人々、場所、大会の物語。";
+"explore.search_scope" = "ここに読み込まれた大会を検索します。その他の大会は全大会一覧をご覧ください。";
+"explore.all_competitions" = "すべての大会";
+"explore.no_results" = "一致する大会がありません。";
+"explore.search_prompt" = "大会名または場所";
+"explore.see_all" = "すべて表示";
+"explore.discover" = "詳しく見る";
+"explore.open_hint" = "詳細を開きます";
+"explore.preview" = "プレビュー";
+"explore.competition_spotlight" = "大会に注目";
+"explore.upcoming" = "今後の大会";
+"explore.registration_open" = "参加登録受付中";
+
+"explore.stats" = "統計";
+"explore.stats_body" = "WCA統計は今後のExploreアップデートで追加予定です。";
+
+"smart_cube.timer.timer_disconnected" = "スマートタイマーを接続してください";
+
+"smart_cube.device.icon_color" = "アイコンの色";
+"smart_cube.device.reset_icon_color" = "デフォルトの色を使用";
+"smart_cube.device.active" = "使用中のスマートキューブ";
+"smart_cube.device.mark_solved_help" = "キューブの現在の実物の状態を完成状態として使用します。";
+
+"smart_cube.device.no_active" = "使用中のキューブなし";
+
+"timer.personal_best" = "自己ベスト";
+
+"solve.method.touch" = "タッチ";
+
+"solve.method.typing" = "手入力";
+
+"solve.method.smart_cube" = "スマートキューブ";
+
+"solve.method.smart_timer" = "スマートタイマー";
+
+"solve.method.combined" = "併用";
+
+"solve.method.unknown" = "不明";
+
+"data.move.action" = "移動";
+
+"data.move.destination" = "移動先のセッション";
+
+"data.select.to_here" = "ここまで選択";
+
+"data.move.failed" = "選択した記録を移動できませんでした。";
+
+"data.move.confirm" = "選択した記録を「%@」に移動しますか？";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 ケースとセットアップの逆手順。最適化された手順ではありません。";
+"algs.item.ftoedges.title" = "エッジサイクル";
+"algs.item.ftoedges.description" = "16 の正確なエッジサイクル。最適化された手順ではありません。";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "コーナーとエッジの向き";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "並べ替え";
+"algs.sort_default" = "標準";
+"algs.sort_likely" = "確率が高い順";
+"algs.sort_unlikely" = "確率が低い順";
+"algs.sort_slices" = "手順のスライス数";
+"algs.probability_basis" = "確率は均等な状態分布を仮定し、実測頻度ではありません。";
+"settings.diagram_stroke" = "図の線幅";
+"settings.diagram_stroke_thin" = "細い";
+"settings.diagram_stroke_thick" = "太い";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "明確な数え方で奇数・偶数のキューブシェイプを学習。";
+"algs.subset.odd" = "奇数";
+"algs.subset.even" = "偶数";
+
+"settings.diagram_stroke_medium" = "中";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "確率";
+"algs.orientation.normal" = "通常";
+"algs.orientation.inverted" = "上下反転（x2）";
+"algs.execution_alignment" = "位置合わせ";
+"algs.direction" = "方向";
+"settings.font_downloading" = "ダウンロード中";

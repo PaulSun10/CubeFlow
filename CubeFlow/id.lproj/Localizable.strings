@@ -2004,3 +2004,116 @@
 "smart_cube.plastic.custom" = "Kustom";
 "smart_cube.plastic.custom_color" = "Warna Plastik Kustom";
 "smart_cube.reflections" = "Pantulan";
+
+"settings.entering_times_smart_cube_and_gan" = "Smart Cube + GAN Smart Timer";
+
+/* Connected Devices */
+"connected_devices.title" = "Perangkat terhubung";
+"connected_devices.section" = "Perangkat";
+"connected_devices.smart_timer" = "Timer pintar";
+"connected_devices.requires_both" = "Memerlukan kubus pintar dan timer pintar.";
+"connected_devices.requires_cube" = "Memerlukan kubus pintar.";
+"connected_devices.requires_timer" = "Memerlukan timer pintar.";
+"connected_devices.waiting" = "Menunggu kedua perangkat siap";
+
+/* Explore Foundation */
+"tab.explore" = "Jelajahi";
+"explore.rankings" = "Peringkat";
+"explore.records" = "Rekor";
+"explore.highlights" = "Sorotan";
+"explore.browse" = "Telusuri";
+"explore.search" = "Cari";
+"explore.loading" = "Mencari kompetisi";
+"explore.unavailable" = "Tidak dapat memuat";
+"explore.empty" = "Segera hadir lebih banyak";
+"explore.unavailable_body" = "Kompetisi tidak dapat dimuat. Coba lagi atau buka daftar di bawah.";
+"explore.empty_body" = "Tidak ada kompetisi mendatang dalam informasi yang tersedia. Telusuri kategori di bawah.";
+"explore.retry" = "Coba Lagi";
+"explore.refresh_failed" = "Sebagian konten tidak dapat diperbarui.";
+"explore.cached" = "Informasi tersimpan";
+"explore.future" = "Tersedia dalam pembaruan mendatang.";
+"explore.rankings_body" = "Peringkat resmi WCA menurut cabang dan wilayah.";
+"explore.records_body" = "Rekor terkini dan momen di baliknya.";
+"explore.highlights_body" = "Kisah orang, tempat, dan kompetisi dunia kubus.";
+"explore.search_scope" = "Cari kompetisi yang dimuat di sini. Buka daftar lengkap untuk kompetisi lainnya.";
+"explore.all_competitions" = "Semua Kompetisi";
+"explore.no_results" = "Tidak ada kompetisi yang cocok.";
+"explore.search_prompt" = "Nama kompetisi atau tempat";
+"explore.see_all" = "Lihat Semua";
+"explore.discover" = "Jelajahi";
+"explore.open_hint" = "Membuka detail";
+"explore.preview" = "Pratinjau";
+"explore.competition_spotlight" = "Sorotan kompetisi";
+"explore.upcoming" = "Kompetisi mendatang";
+"explore.registration_open" = "Pendaftaran dibuka";
+
+"explore.stats" = "Statistik";
+"explore.stats_body" = "Statistik WCA direncanakan untuk pembaruan Jelajahi mendatang.";
+
+"smart_cube.timer.timer_disconnected" = "Hubungkan Smart Timer";
+
+"smart_cube.device.icon_color" = "Warna Ikon";
+"smart_cube.device.reset_icon_color" = "Gunakan Warna Ikon Default";
+"smart_cube.device.active" = "Smart Cube Aktif";
+"smart_cube.device.mark_solved_help" = "Gunakan keadaan fisik kubus saat ini sebagai keadaan terselesaikan.";
+
+"smart_cube.device.no_active" = "Tidak Ada Kubus Aktif";
+
+"timer.personal_best" = "Rekor pribadi";
+
+"solve.method.touch" = "Sentuh";
+
+"solve.method.typing" = "Ketik";
+
+"solve.method.smart_cube" = "Kubus pintar";
+
+"solve.method.smart_timer" = "Timer pintar";
+
+"solve.method.combined" = "Gabungan";
+
+"solve.method.unknown" = "Tidak diketahui";
+
+"data.move.action" = "Pindahkan";
+
+"data.move.destination" = "Sesi tujuan";
+
+"data.select.to_here" = "Pilih hingga di sini";
+
+"data.move.failed" = "Tidak dapat memindahkan penyelesaian yang dipilih.";
+
+"data.move.confirm" = "Pindahkan hasil terpilih ke “%@”?";
+"algs.item.sq1pbl.title" = "PBL";
+"algs.item.sq1pbl.description" = "967 kasus dengan solusi referensi kebalikan setup, bukan algoritme optimal.";
+"algs.item.ftoedges.title" = "Siklus Edge";
+"algs.item.ftoedges.description" = "16 siklus edge tepat sebagai referensi, bukan algoritme optimal.";
+"event.fto" = "FTO";
+
+// Depth correction: state-based organization and diagram strokes.
+"algs.item.sq1obl.title" = "OBL";
+"algs.item.sq1obl.description" = "Orientasi sudut dan tepi";
+"algs.subset.non_parity" = "Non-Parity";
+"algs.subset.parity" = "Parity";
+"algs.sort" = "Urutkan";
+"algs.sort_default" = "Bawaan";
+"algs.sort_likely" = "Paling mungkin";
+"algs.sort_unlikely" = "Paling jarang";
+"algs.sort_slices" = "Irisan algoritma";
+"algs.probability_basis" = "Probabilitas mengasumsikan keadaan merata, bukan frekuensi terukur.";
+"settings.diagram_stroke" = "Ketebalan garis";
+"settings.diagram_stroke_thin" = "Tipis";
+"settings.diagram_stroke_thick" = "Tebal";
+
+"algs.item.sq1csp.title" = "CSP";
+"algs.item.sq1csp.description" = "Paritas bentuk dengan acuan hitungan yang jelas.";
+"algs.subset.odd" = "Ganjil";
+"algs.subset.even" = "Genap";
+
+"settings.diagram_stroke_medium" = "Sedang";
+
+// Recognition presentation and validated CSP execution frames.
+"algs.probability" = "Probabilitas";
+"algs.orientation.normal" = "Normal";
+"algs.orientation.inverted" = "Terbalik (x2)";
+"algs.execution_alignment" = "Penyelarasan";
+"algs.direction" = "Arah";
+"settings.font_downloading" = "Mengunduh";

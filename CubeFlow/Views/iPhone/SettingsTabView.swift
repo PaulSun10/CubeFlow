@@ -3128,19 +3128,19 @@ private extension SettingsTabView {
                     .progressViewStyle(.circular)
                     .controlSize(.small)
                     .accessibilityLabel(
-                        Text("Downloading ") + Text(option.localizedKey)
+                        Text("settings.font_downloading") + Text(" ") + Text(option.localizedKey)
                     )
-                    .accessibilityValue("\(Int(progress * 100)) percent")
+                    .accessibilityValue(Text(progress, format: .percent.precision(.fractionLength(0))))
             } else {
                 ProgressView()
                     .controlSize(.small)
                     .accessibilityLabel(
-                        Text("Downloading ") + Text(option.localizedKey)
+                        Text("settings.font_downloading") + Text(" ") + Text(option.localizedKey)
                     )
             }
 
         case .failed:
-            Label("Retry", systemImage: "arrow.clockwise")
+            Label("wca.results_retry", systemImage: "arrow.clockwise")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.red)
 
