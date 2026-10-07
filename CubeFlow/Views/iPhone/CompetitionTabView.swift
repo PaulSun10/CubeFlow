@@ -1176,7 +1176,7 @@ private enum CompetitionRowPreparation {
     }
 }
 
-struct CompetitionTabView: View {
+struct CompetitionBrowserView: View {
     private static let paginationProgressPublishInterval: TimeInterval = 1.0
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -1250,7 +1250,6 @@ struct CompetitionTabView: View {
     }
 
     var body: some View {
-        CompatibleNavigationContainer {
             competitionListSurface
             .background(competitionsTabBackgroundView.ignoresSafeArea())
             .safeAreaInset(edge: .bottom) {
@@ -1360,7 +1359,6 @@ struct CompetitionTabView: View {
                     competitionDetailMissingView
                 }
             }
-        }
     }
 
     private var competitionsTabBackgroundView: some View {
@@ -4676,24 +4674,7 @@ private func usesCompetitionLiveAverage(formatID: String) -> Bool {
 }
 
 private func formatCompetitionLiveResultValue(_ value: Int, eventID: String) -> String {
-    guard value != 0 else { return "" }
-    if value == -1 { return "DNF" }
-    if value == -2 { return "DNS" }
-
-    switch eventID {
-    case "333fm":
-        return value > 1000 ? String(format: "%.2f", Double(value) / 100.0) : "\(value)"
-    case "333mbf":
-        return "\(value)"
-    default:
-        let minutes = value / 6000
-        let seconds = (value % 6000) / 100
-        let hundredths = value % 100
-        if minutes > 0 {
-            return String(format: "%d:%02d.%02d", minutes, seconds, hundredths)
-        }
-        return String(format: "%d.%02d", seconds, hundredths)
-    }
+    WCAResultFormatter.string(from: value, eventID: eventID)
 }
 
 private func secondaryCompetitionLiveResultText(best: Int, average: Int, eventID: String) -> String? {
@@ -4913,6 +4894,7 @@ private struct CompetitionWCALiveRoundDetailView: View {
     let competitionID: Int
     let languageCode: String
     let areEventIconsReady: Bool
+    let resultDeepLink: CompetitionWCALiveResultDeepLink?
 
     @StateObject private var realtimeManager: CompetitionWCALiveRealtimeManager
 
@@ -4927,12 +4909,15 @@ private struct CompetitionWCALiveRoundDetailView: View {
         round: CompetitionWCALiveRound,
         competitionID: Int,
         languageCode: String,
-        areEventIconsReady: Bool
+        areEventIconsReady: Bool,
+        resultDeepLink: CompetitionWCALiveResultDeepLink? = nil
     ) {
         initialRound = round
         self.competitionID = competitionID
         self.languageCode = languageCode
         self.areEventIconsReady = areEventIconsReady
+        self.resultDeepLink = resultDeepLink
+        _selectedResult = State(initialValue: resultDeepLink?.result(in: round))
         _realtimeManager = StateObject(
             wrappedValue: CompetitionWCALiveRealtimeManager(
                 round: round,
@@ -5062,6 +5047,7 @@ private struct CompetitionWCALiveRoundDetailView: View {
         .onAppear {
             realtimeManager.configure(round: initialRound, languageCode: languageCode)
             realtimeManager.start()
+            revealDeepLinkedResultIfAvailable()
         }
         .onDisappear {
             realtimeManager.stop()
@@ -5078,6 +5064,15 @@ private struct CompetitionWCALiveRoundDetailView: View {
                 break
             }
         }
+        .onChange(of: round.results) { _ in
+            revealDeepLinkedResultIfAvailable()
+        }
+    }
+
+    private func revealDeepLinkedResultIfAvailable() {
+        guard selectedResult == nil,
+              let result = resultDeepLink?.result(in: round) else { return }
+        selectedResult = result
     }
 
     private var resultHeader: some View {
@@ -6435,6 +6430,7 @@ private extension View {
 struct CompetitionDetailView: View {
     let competition: CompetitionSummary
     let appLanguage: String
+    let initialWCALiveResultDeepLink: CompetitionWCALiveResultDeepLink?
 
     @State private var selectedTab: CompetitionDetailTab = .info
     @State private var selectedWCAInfoSectionID = ""
@@ -6450,7 +6446,10 @@ struct CompetitionDetailView: View {
     @State private var psychPreviewCache: [String: [CompetitionCompetitorPsychPreview]] = [:]
     @State private var isLoadingWCALive = false
     @State private var wcaLiveContentOverride: CompetitionWCALiveContent?
+    @State private var didAttemptInitialWCALiveRoundLoad = false
     @State private var selectedWCALiveRoundID = ""
+    @State private var isPresentingInitialWCALiveResult = false
+    @State private var didPresentInitialWCALiveResult = false
     @State private var selectedWCALiveScheduleDate: Date?
     @State private var selectedScheduleEventCode = ""
     @State private var wcaScheduleDisplayMode: WCAScheduleDisplayMode = .calendar
@@ -6481,6 +6480,22 @@ struct CompetitionDetailView: View {
 
     private let collapsedNavigationTitleFadeDistance: CGFloat = 28
     private let collapsedNavigationTitleTriggerOffset: CGFloat = 0
+
+    init(
+        competition: CompetitionSummary,
+        appLanguage: String,
+        initialWCALiveRoundID: String? = nil,
+        initialWCALiveResultDeepLink: CompetitionWCALiveResultDeepLink? = nil
+    ) {
+        self.competition = competition
+        self.appLanguage = appLanguage
+        self.initialWCALiveResultDeepLink = initialWCALiveResultDeepLink
+        let roundID = initialWCALiveResultDeepLink?.roundID
+            ?? initialWCALiveRoundID?.trimmingCharacters(in: .whitespacesAndNewlines)
+            ?? ""
+        _selectedTab = State(initialValue: roundID.isEmpty ? .info : .live)
+        _selectedWCALiveRoundID = State(initialValue: roundID)
+    }
     private let wcaCompetitorEventColumnWidth: CGFloat = 40
 
     private var activeScheduleEventCode: String {
@@ -6639,6 +6654,7 @@ struct CompetitionDetailView: View {
 
     private var shouldRefreshWCALiveContent: Bool {
         guard !isMainlandChinaCompetition else { return false }
+        if wcaLiveContentOverride != nil, detailContent.wcaLiveContent == nil { return true }
         guard let content = effectiveWCALiveContent else { return true }
         guard content.competitionName != nil else { return true }
         return !content.venues.contains { venue in
@@ -7074,6 +7090,25 @@ struct CompetitionDetailView: View {
                 }
             }
         )
+        .background {
+            if let initialWCALiveResultDeepLink,
+               let round = wcaLiveRounds.first(where: { $0.id == initialWCALiveResultDeepLink.roundID }),
+               let competitionID = effectiveWCALiveContent?.competitionID {
+                NavigationLink(
+                    destination: CompetitionWCALiveRoundDetailView(
+                        round: round,
+                        competitionID: competitionID,
+                        languageCode: appLanguage,
+                        areEventIconsReady: areCompetitionEventIconsReady,
+                        resultDeepLink: initialWCALiveResultDeepLink
+                    ),
+                    isActive: $isPresentingInitialWCALiveResult
+                ) {
+                    EmptyView()
+                }
+                .hidden()
+            }
+        }
         .onPreferenceChange(CompetitionDetailHeaderSeparatorPreferenceKey.self) { separatorY in
             guard !isUsingModernScrollGeometry else { return }
             detailHeaderSeparatorY = separatorY
@@ -7086,12 +7121,19 @@ struct CompetitionDetailView: View {
             areCompetitionEventIconsReady = CompetitionEventIconFont.ensureRegistered()
             await loadDetailContent()
         }
+        .task(id: "\(competition.id)|\(appLanguage)|\(initialWCALiveResultDeepLink?.roundID ?? "")") {
+            await loadInitialWCALiveRoundIfNeeded()
+        }
         .task(id: "\(competition.id)|\(appLanguage)|\(selectedTab.rawValue)|\(selectedCompetitorsMode.rawValue)|\(selectedCompetitorEventID)|\(wcaPsychSortColumn.rawValue)") {
             await loadCompetitionCompetitorsIfNeeded()
             await loadPsychPreviewsIfNeeded()
         }
         .task(id: "\(competition.id)|\(appLanguage)|\(selectedTab.rawValue)") {
             await loadWCALiveContentIfNeeded()
+            presentInitialWCALiveResultIfAvailable()
+        }
+        .onChange(of: wcaLiveRounds.map(\.id)) { _ in
+            presentInitialWCALiveResultIfAvailable()
         }
         .onChange(of: competitorSearchText) { _ in
             updateCompetitionDetailDerivedState()
@@ -7180,6 +7222,16 @@ struct CompetitionDetailView: View {
         } message: {
             Text(calendarPreviewError ?? "")
         }
+    }
+
+    private func presentInitialWCALiveResultIfAvailable() {
+        guard !didPresentInitialWCALiveResult,
+              let deepLink = initialWCALiveResultDeepLink,
+              wcaLiveRounds.contains(where: { $0.id == deepLink.roundID }) else { return }
+        selectedTab = .live
+        selectedWCALiveRoundID = deepLink.roundID
+        didPresentInitialWCALiveResult = true
+        isPresentingInitialWCALiveResult = true
     }
 
     private var wcaPrimaryNavigationList: some View {
@@ -10824,7 +10876,8 @@ struct CompetitionDetailView: View {
                                         round: round,
                                         competitionID: content.competitionID,
                                         languageCode: appLanguage,
-                                        areEventIconsReady: areCompetitionEventIconsReady
+                                        areEventIconsReady: areCompetitionEventIconsReady,
+                                        resultDeepLink: record.resultDeepLink
                                     )
                                 } label: {
                                     wcaLiveRecordRow(record)
@@ -11545,6 +11598,7 @@ struct CompetitionDetailView: View {
 
     private func loadWCALiveContentIfNeeded() async {
         guard selectedTab == .live else { return }
+        guard initialWCALiveResultDeepLink == nil || didAttemptInitialWCALiveRoundLoad else { return }
         guard !isLoadingWCALive else { return }
 
         if isMainlandChinaCompetition {
@@ -11560,8 +11614,26 @@ struct CompetitionDetailView: View {
             includeLive: true
         )
         detailContent = detailContent.replacingLive(from: fetched)
-        wcaLiveContentOverride = nil
+        if fetched.wcaLiveContent != nil {
+            wcaLiveContentOverride = nil
+        }
         isLoadingWCALive = false
+    }
+
+    private func loadInitialWCALiveRoundIfNeeded() async {
+        guard let deepLink = initialWCALiveResultDeepLink else { return }
+        let fetched = await CompetitionService.fetchCompetitionWCALiveContent(
+            for: competition,
+            languageCode: appLanguage,
+            targetRoundID: deepLink.roundID
+        )
+        guard !Task.isCancelled else { return }
+        if let fetched {
+            wcaLiveContentOverride = fetched
+            presentInitialWCALiveResultIfAvailable()
+        }
+        didAttemptInitialWCALiveRoundLoad = true
+        await loadWCALiveContentIfNeeded()
     }
 
     private func loadPsychPreviewsIfNeeded() async {

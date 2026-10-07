@@ -410,7 +410,7 @@ private extension View {
     }
 }
 
-private struct CompetitionRegionPickerView: View {
+struct CompetitionRegionPickerView: View {
     private struct CountryOption: Identifiable, Hashable {
         let code: String
         let title: String

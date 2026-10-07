@@ -1,0 +1,35 @@
+
+/* Explore Home editorial selection */
+"explore.near_you" = "Near You";
+"explore.saved_updated" = "Showing saved data · Updated";
+"explore.event_count" = "Events: %d";
+"explore.home_quiet" = "Explore the cubing world";
+"explore.home_quiet_body" = "Discover competitions through Browse.";
+
+/* Content-first Explore */
+"explore.upcoming" = "Coming Up";
+"explore.in_region" = "In Your WCA Region";
+"explore.interesting" = "Interesting Competitions";
+"explore.discover" = "Discover";
+"explore.northernmost" = "Farthest North";
+"explore.southernmost" = "Farthest South";
+"explore.first_competition" = "Where It Began";
+"explore.most_events" = "The Most Events";
+"explore.discoveries_intro" = "Extraordinary places in WCA competition history. Explore the venues and the communities that brought cubing there.";
+"explore.competitions_held" = "WCA competitions held";
+"explore.countries_reached" = "Across %d countries and regions";
+"explore.by_year" = "Competitions by Year";
+"explore.by_country" = "Countries & Regions · Top 10";
+"explore.by_event" = "Competitions Offering Each Event";
+"explore.history_scope" = "Completed, non-cancelled competitions before %@. This is a dated results-export snapshot, not live statistics. The latest year is partial.";
+"explore.coordinate_scope" = "Geographic discoveries use the %d of %d completed competitions with valid venue coordinates. Locations are not deduplicated; tied extremes are all shown.";
+"explore.history_source" = "Source: Robin Engelbrecht’s WCA Export API";
+"explore.history_as_of" = "WCA export · %@";
+"explore.live_records_note" = "Recent achievements from WCA Live are provisional. WR, CR and NR describe the achievement, not a current rank. Live only supplies the best recent result per record category; earlier superseded achievements may be absent. Open Records for official history.";
+"explore.filters" = "Filters";
+"explore.source_refused" = "WCA is currently refusing this data request. Your filters are retained; you can view the same selection on the WCA website.";
+"explore.open_wca" = "View on WCA";
+"explore.live_provisional" = "WCA Live · Provisional";
+"explore.about_live" = "About Recent Records";
+"explore.events_tied" = "%d events · %d competitions";
+"explore.earlier_years" = "Earlier Years";

@@ -1,0 +1,35 @@
+
+/* Explore Home editorial selection */
+"explore.near_you" = "你所在的地区";
+"explore.saved_updated" = "正在显示已保存的数据 · 更新于";
+"explore.event_count" = "项目：%d";
+"explore.home_quiet" = "探索魔方世界";
+"explore.home_quiet_body" = "通过“浏览”发现比赛。";
+
+/* Content-first Explore */
+"explore.upcoming" = "即将举行";
+"explore.in_region" = "你的 WCA 地区";
+"explore.interesting" = "有趣的比赛";
+"explore.discover" = "发现";
+"explore.northernmost" = "最北端的比赛";
+"explore.southernmost" = "最南端的比赛";
+"explore.first_competition" = "一切的起点";
+"explore.most_events" = "项目最多的比赛";
+"explore.discoveries_intro" = "探索 WCA 比赛历史中的非凡地点，以及将魔方带到那里的社群。";
+"explore.competitions_held" = "已举行的 WCA 比赛";
+"explore.countries_reached" = "遍布 %d 个国家和地区";
+"explore.by_year" = "历年比赛数量";
+"explore.by_country" = "国家和地区 · 前十名";
+"explore.by_event" = "举办各项目的比赛数量";
+"explore.history_scope" = "%@ 之前已结束且未取消的比赛。本页为注明日期的成绩导出快照，并非实时统计。最新年份的数据尚不完整。";
+"explore.coordinate_scope" = "地理发现基于 %d 场有有效场馆坐标的比赛（共 %d 场）。地点不去重，并列的极值比赛全部显示。";
+"explore.history_source" = "来源：Robin Engelbrecht 的 WCA 导出 API";
+"explore.history_as_of" = "WCA 导出 · %@";
+"explore.live_records_note" = "WCA Live 提供的是暂定的近期纪录。WR、CR、NR 表示取得的纪录等级，而非当前排名。Live 仅提供各纪录类别的最佳近期成绩，已被打破的早期纪录可能不在其中。官方历史请查看「纪录」。";
+"explore.filters" = "筛选";
+"explore.source_refused" = "WCA 当前拒绝了此数据请求。筛选条件已保留，你可以在 WCA 网站查看相同选择。";
+"explore.open_wca" = "在 WCA 查看";
+"explore.live_provisional" = "WCA Live · 暂定成绩";
+"explore.about_live" = "关于近期纪录";
+"explore.events_tied" = "%d 个项目 · %d 场比赛";
+"explore.earlier_years" = "更早年份";

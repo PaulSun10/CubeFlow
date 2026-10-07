@@ -1666,8 +1666,12 @@ struct WCAMyCompetitionsView: View {
     ) -> some View {
         VStack(spacing: 0) {
             ForEach(Array(competitions.enumerated()), id: \.element.id) { index, competition in
-                Button {
-                    openCompetition(competition)
+                NavigationLink {
+                    ExploreCompetitionLookupDestination(
+                        competitionID: competition.id,
+                        roundID: nil,
+                        language: appLanguage
+                    )
                 } label: {
                     competitionRow(
                         competition,
@@ -1802,11 +1806,6 @@ struct WCAMyCompetitionsView: View {
             .padding(.horizontal, 13)
             .padding(.vertical, 12)
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
-    }
-
-    private func openCompetition(_ competition: WCAMyCompetitionSummary) {
-        guard let url = competition.officialURL else { return }
-        openURL(url)
     }
 
     private func localizedRegistrationStatus(_ status: String?) -> String? {

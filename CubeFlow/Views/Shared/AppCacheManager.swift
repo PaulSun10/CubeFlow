@@ -39,7 +39,8 @@ enum AppCacheManager {
 
     nonisolated static func currentReport() -> AppCacheReport {
         AppCacheReport(
-            competitionListBytes: fileSize(for: cacheFileURL("competition-query-cache-v2.json")),
+            competitionListBytes: fileSize(for: cacheFileURL("competition-query-cache-v2.json"))
+                + ExploreCompetitionCache.diskBytes,
             competitionDetailBytes:
                 fileSize(for: cacheFileURL("competition-detail-cache-v2.json"))
                 + fileSize(for: cacheFileURL("competition-detail-cache-v1.json")),
@@ -51,6 +52,7 @@ enum AppCacheManager {
     }
 
     static func clearCompetitionListCache() async {
+        await ExploreCompetitionCache.shared.clear()
         await CompetitionService.clearCompetitionListCache()
         URLCache.shared.removeAllCachedResponses()
     }
@@ -74,6 +76,7 @@ enum AppCacheManager {
     }
 
     static func clearAllCaches() async {
+        await ExploreCompetitionCache.shared.clear()
         await CompetitionService.clearAllCompetitionCaches()
         await WCAResultsService.clearAllCaches()
         URLCache.shared.removeAllCachedResponses()

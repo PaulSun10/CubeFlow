@@ -1,23 +1,27 @@
 # CubeFlow Roadmap
 
-This is CubeFlow's durable product and engineering planning reference, consolidated on 2026-09-06. Preserve implemented behavior; revisit priorities after each release. Documentation is not authorization to implement or deploy.
+This is CubeFlow's durable product and engineering planning reference, reconciled against the current local worktree on 2026-10-05. Historical hardware evidence is retained below. Preserve implemented behavior; revisit priorities after each release. Documentation is not authorization to implement or deploy.
 
 ## Product Boundaries And Planning Status
 
-**Implemented/accepted foundation:** current Timer customization, numeral presentation, Data functionality, Competition browsing/details, Smart Cube Phases 0/1/1.5/2A/2A.1, and iPhone Draw Scramble default 275. These are not new TODOs. The Smart Cube checkpoint is `1844425d`; its architecture and physical evidence remain below.
+**Implemented/accepted foundation:** Timer customization, numeral presentation, Data/provenance, Explore home and focused Competition/Rankings/Records/Recent Records destinations. Smart Cube Phases 0-2 retain checkpoint `1844425d` and the physical evidence below; current Phase 3-6 foundations are described in the current status section. Do not rebuild accepted UI, event-icon alignment or device behavior.
 
-**Near-term engineering:** Smart Cube Phase 2B is complete and physically validated. Do not begin Phase 3 without an explicit request. Existing P0/P1 priorities below remain important product/reliability work, not an instruction to interrupt that sequence. P2/P3 are retained topic/priority labels, not a sprint schedule.
+**Near-term engineering:** physically/manual validate the new 1.0 Data/PB/content/FTO/backup corrections, then deepen authoritative Competition Detail, reminders and a WCIF-first Competition Day dashboard. Smart Cube Phase 7/8 and regional Live are research/design only, requiring explicit implementation authorization. P0-P3 are priority/topic labels, not a sprint schedule.
 
-**Planned product work:** Competition Day, private sync, training, public Explore content and Weekly. **Long-term direction:** shared rules/session semantics, Community, cross-platform clients and advanced analytics. **Exploratory:** exact Explore composition, proximity UX, richer social discussion and rolling video capture. None becomes the next sprint by being listed here.
+**Implemented, pending physical validation from this pass:** restored solve hierarchy/native selection/Move confirmation, precise Select to Here, persistent PB plus bounded confetti, stroke-safe diagrams, native backup telemetry preservation, and first-class FTO practice workflow. Algorithm content is expanded, not a redesigned trainer. See [closeout evidence](docs/1.0-depth-closeout.md).
 
-Current tabs: **Timer | Data | Alg | Competitions | Settings**. A future candidate is **Timer | Data | Alg | Explore | Settings**, but do not rename Competitions until enough Explore content exists.
+**Planned product work:** Competition Day/reminders, private sync, deeper training and public Explore content/Weekly. **Long-term direction:** shared rules/session semantics, Community, cross-platform clients and advanced analytics. **Exploratory:** proximity UX, richer social discussion and rolling video capture. None becomes the next sprint by being listed here.
+
+Current iPhone tabs: **Timer | Data | Alg | Explore | Settings**. Competitions remains its established focused destination under Explore, not a discarded feature.
+
+**Focused 1.0 correction:** Default Rain PB emitters, Data metadata spacing, canonical case/shared-progress normalization, PBL/EP parity children, independently generated OBL/CSP references, conditional probability/Square-1 slice organization, palette-aware cached state diagrams, Thin/Thick, measured Timer scroll bounds, FTO four-entry reserve and root StoredColorData isolation correction are implemented. See [scope, sources, tests and compatibility findings](docs/1.0-depth-correction.md). Physical validation and curated algorithm permissions remain gates; iOS deployment stays 15.0, with 13 feasibility not established.
 
 | Destination | Responsibility |
 | --- | --- |
 | Timer | Solving and activity execution |
 | Data = Me | Personal solves, sessions, averages, records, graphs and later Smart Cube analysis |
 | Alg | Learning and training |
-| Explore = Everyone (planned) | Public competitions, rankings/records/stats, Weekly, Community and appropriate challenges/battles |
+| Explore = Everyone | Implemented public competitions/rankings/records discovery; later public stats, Weekly, Community and appropriate challenges/battles |
 | Settings | Configuration |
 
 Keep customization strong but Automatic/default behavior useful without configuration. Prefer native SwiftUI/system behavior; do not expose settings for every decorative detail.
@@ -28,7 +32,7 @@ Keep customization strong but Automatic/default behavior useful without configur
 
 **Why it matters:** At a competition, the highest-frequency task is checking the next assignment and the latest result. Requiring repeated navigation between the WCA site, WCA Live, and Competition Groups is slow and error-prone when the user is preparing to compete or staff.
 
-**Product direction:** Add a competition-day dashboard to My Competitions and make it the fastest route from the Competitions tab.
+**Product direction (planned):** Add a competition-day dashboard to My Competitions under Explore. Competition Detail owns general information and contextual Live; My Competition Day owns the user's next assignment/role, not another standings destination.
 
 - Identify the signed-in competitor with the WCA profile `wcaId`.
 - Load the selected competition's public WCIF and match the user's assignments.
@@ -41,11 +45,13 @@ Keep customization strong but Automatic/default behavior useful without configur
 
 **Data strategy:** Competition Groups documents that it presents assignments stored in WCIF. CubeFlow should consume WCA WCIF directly rather than scrape or depend on Competition Groups' UI.
 
+**Sequence and source boundaries:** authoritative detail depth first, then availability-aware reminders/Live Activities, then the WCIF-first personal dashboard. Preserve existing WCA Live GraphQL/realtime behavior. A future Cubing China adapter must verify the current v2 structured contract; the public PHP/Yii repository and dormant legacy socket client do not prove that contract. Keep official results, provisional Live scores and scheduled assignments distinct, with provider IDs, cache age and offline snapshots. See [competition/Live design](docs/competition-data-live-design.md). No regional Live UI or dashboard was implemented in the depth pass.
+
 **First release completion criteria:** A signed-in user can open an upcoming or active competition and see their next group and latest result without leaving CubeFlow.
 
 ### Other Planned Competition Work
 
-- Post-competition Results experience and China competition filtering by province.
+- Preserve implemented WCA Live/official result presentation; deepen source reconciliation, regional province/registration-stage filtering and local detail only with verified data contracts.
 - Preserve the current browser's Large Title, context/subtitle/count, Map, Filter and full list. A future Explore layer leads into this destination, not a cluttered replacement.
 - Keep WCIF/WCA Live dashboard planning above and existing accepted Competition UI intact.
 
@@ -59,6 +65,8 @@ Keep customization strong but Automatic/default behavior useful without configur
 - Verify Time, Average, and Record in every supported language and Dynamic Type size.
 - Verify selection mode, graph actions, rotation, sheets, and iOS 26/27 navigation transitions.
 - Add a focused regression checklist before release.
+
+**1.0 closeout:** relationship-only solve Move, provenance presentation, direct/native selection and visual-boundary range tests are implemented. The physically ineffective hold/drag bridge is omitted rather than maintained as fragile gesture infrastructure. Rows restore an independent number column and prominent time; PB semantic value color remains separate from blue/orange celebration. New visual behavior still needs device/Dynamic Type/VoiceOver acceptance.
 
 ### iOS 26+ Horizontal Selector Liquid Glass Unification
 
@@ -110,7 +118,15 @@ Keep customization strong but Automatic/default behavior useful without configur
 
 ## P2 - Smart Cube Usability
 
-### Project State (2026-09-06)
+### Current Project State (2026-10-05)
+
+- **Phase 3-6 foundations implemented in the existing local worktree:** genuine 2x2/3x3 Virtual Cube presentation, layer animation/material work, Timer-owned Combined lifecycle/readiness, Observation, solve-owned reconstruction, 2x2/3x3 Replay and raw TPS. Prior user-reported physical acceptance is frozen; this pass did not revalidate BLE or change these protocols/lifecycles.
+- **WeiPo V5 AI 2x2:** physically verified native A3/reference tracking and A5-to-A3 presentation are preserved. Do not reopen a speculative physical six-face mapping or equate the anchored corner, native sticker frame and AB orientation. GAN 251 software support is not blanket hardware certification.
+- **Many Connected, One Active / background BLE / saved-device identity and Auto-Connect:** existing implementation retained. Saved devices, connected sessions and the selected active consumer remain separate; no new parallel owner.
+- **Final Gyroscope Following / WeiPo AB-driven hand orientation:** deferred. Replay's retained yaw/temporary peek and canonical movement truth are not permission to implement visual gyro following.
+- **Phase 7/8:** [repo-specific design completed](docs/smart-cube-phase7-8-design.md), production implementation not started. Existing raw move counts/TPS must not be relabelled as completed phase analytics.
+
+### Historical Phase 0-2 Checkpoint (2026-09-06)
 
 - **Phase 0: complete.** Existing afedotov-based GAN/MoYu BLE protocol foundation, packet/history recovery, normalization into canonical moves/state, Virtual Cube tracking, and Bluetooth Timer support. Do not rebuild discovery or protocol detection.
 - **Phase 1: complete.** State-based scramble progress; completion enters Ready/Inspection, and the next physical move starts timing. The final scramble move is excluded. Physical solved state completes and automatically saves the solve. Manual Entry remains independent. Collapse/Trail transitions and URF orientation are physically validated; freeze URF.
@@ -167,16 +183,12 @@ Each Session is the authoritative owner of its selected event and Timing Method.
 
 Automated verification: unsigned generic iOS Debug build, full CubeFlowTests including focused replan/pending-fallback and connection-readiness lifecycle coverage, localization checks and diff whitespace checks. DEBUG `[SCDEBUG] REPLAN` reports correction/current-plan remaining/total Recovery/candidate costs, inverse penalty, exact reason, generation transition and stale/lifecycle/continuity rejection with throttling; `[SCDEBUG] GUIDANCE` records unavailable, waiting, planning (including correction cost, trail length and triggering canonical move), Recovery fallback and restored states. Final physical validation passed: immediate one-/two-move Recovery, direct Replan at three or more corrections without a long-Recovery flash, fallback behavior, repeated/rapid replans, immutable-target completion, Timer Loading/reset-policy/one-shot Connected readiness, and restoration behavior. Phase 2A.1 physical evidence above remains separate.
 
-### Subsequent Phases (Not Implemented Here)
+### Remaining Smart Cube Sequence
 
-1. **Phase 2B physical validation/checkpoint:** validate the implementation above before advancing; tune only from evidence.
-2. **Phase 3:** real Virtual Cube layer-turn animation and polish, without sacrificing facelet truth.
-3. **Phase 4:** simultaneous Smart Cube + Bluetooth Timer. External timer supplies official total; cube first-to-last interval measures start/stop overhead.
-4. **Phase 5:** Smart 2x2/additional hardware, prioritizing the user's MoYu smart 2x2.
-5. **Phase 6:** timestamped solve reconstruction/replay.
-6. **Phase 7:** CFOP/Roux phase analysis.
-7. **Phase 8:** TPS, move counts, pauses, phase times and trends.
-8. **Phase 9:** algorithm recognition, PLL/OLL execution, recognition versus execution, TPS bursts, pause heatmaps, AUF, efficiency and case statistics.
+1. **Phase 3-6 maintenance:** preserve accepted hardware/native state, Combined official timing, immutable scramble targets and raw reconstruction/Replay/TPS. Final visual gyro work remains a separate explicitly deferred feature.
+2. **Phase 7 (design only):** deterministic state predicates and stable boundaries in an explicit method/frame; Cross/F2L/OLL/PLL, skips and versioned AUF handling. Method classification is heuristic, not raw truth; add Roux only with suitable evidence/fixtures.
+3. **Phase 8 (design only):** trusted phase intervals/counts/TPS, observable pauses and trends. Equal/batched/fallback timestamps cannot prove recognition time. Keep Combined start/stop overhead separate and derived caches bounded/versioned/cancellable.
+4. **Phase 9 (future):** algorithm recognition, execution/case statistics, efficiency and pause heatmaps with explicit inference confidence; no invented recognition-versus-execution ground truth.
 
 Do not optimize the extreme long-deviation trail merely because cumulative work may approach O(N^2); preserve correctness and let Phase 2B address normal user workload first.
 
@@ -190,8 +202,10 @@ Do not optimize the extreme long-deviation trail merely because cumulative work 
 - Configurable pre-scrambles.
 - Training-aware completion for OLL, PLL, F2L, CMLL, and related subsets.
 - qCube, qLast, and q2Look-style virtual cube views where they fit the native app.
-- Square-1 training categories: OBL, PBL, 有特 EP and 有特 PBL. These are explicitly Square-1, not Smart 2x2/2x2 terminology; confirm unfamiliar taxonomy before expanding it.
-- FTO: preserve already accepted competition event/name/icon/filter support. The supplied planning assumption is formal WCA-event status from January 2027; verify the official transition when implementing remaining event workflows. Treat it as a canonical WCA-event member at transition, not a permanent unofficial extension. This is not a request to redo existing FTO support or implement more now.
+- **Content foundation:** 45 bundled sets / 7,586 case entries; preserve established 3x3/2x2/big-cube/Megaminx/Pyraminx/Skewb coverage. Existing hidden training entrypoints are not a completed new training UX. See [content audit](docs/1.0-content-audit.md).
+- **Square-1:** 967 MIT PBL recognition setups with explicitly labelled inverse-setup references added, not 967 curated speed algorithms. Native complete diagrams fix all 49 EP setups and other legal families; four existing baseline exceptions retain legacy assets. OBL/curated PBL redistribution, Karnotation conversion and unfamiliar 有特 EP/PBL taxonomy remain permission/definition-gated; these are not 2x2 categories.
+- **FTO:** first-class practice generation/Timer/prefetch/diagram/palette/Data/statistics/backup workflow implemented; 16 generated edge-cycle references, not a complete Bencisco/Nautilus library. Pinned standalone MIT engine and independently validated state/net; device notation/color/cold-start acceptance remains. The [WCA announcement](https://www.worldcubeassociation.org/posts/changes-to-the-wca-s-list-of-official-events-june-2026) establishes introduction on 2027-01-02; verify official scrambling requirements rather than claiming this generator is certified TNoodle. Preserve Clock local practice/history through its announced official retirement.
+- **Rights/model gates:** OBL/curated FTO datasets and legacy SpeedCubeDB redistribution need permission review; blind commutator training needs buffer/orbit/piece identities independent of personal lettering, Clock needs a pattern/state model. ZBLS's advertised count is not an implemented dataset.
 
 ### Advanced Statistics
 
@@ -205,16 +219,20 @@ Do not optimize the extreme long-deviation trail merely because cumulative work 
 - Optional automatic export and backup intervals.
 - Clear success, failure, and last-backup states.
 
-## Planned Explore And Participation
+**Implemented manual interchange:** native optional input provenance/reconstruction bytes round-trip without guessing legacy sources; mixed-event csTimer exports split only exported sessions and retain distinct official event identity. csTimer cannot preserve all telemetry or generator variants; use native backup for lossless CubeFlow metadata. Automatic backup remains planned. See [event/provenance audit](docs/1.0-scramble-event-audit.md).
+
+## Explore Foundation And Planned Participation
 
 ### Explore Home And Public Data
 
-Explore is a content-first discovery layer, not merely a destination List, uniform Grid or identical-card dashboard. Reference the browsing rhythm of Apple Music Home/New/Radio, Apple News and the App Store: one vertical surface mixing a full-width hero, large typography/numbers, editorial carousels/compact rows, record highlights, charts, Weekly and structured Community content. Exact order and layout remain open.
+**Implemented foundation:** current Explore home composition, focused competitions, Rankings/Records/Recent Records, official profile navigation, filters and cache/error states. Preserve accepted typography/density and frozen Cubing Icons leading/grid alignment; no redesign in this pass. Future editorial/public stats/Weekly/Community depth remains distinct from the implemented foundation.
+
+Explore is a content-first discovery layer, not merely a destination List, uniform Grid or identical-card dashboard. Maintain the established editorial rhythm; later content may add charts, Weekly and structured Community without turning the page into interchangeable promotional cards.
 
 Use a stable skeleton with one contextual hero and very limited promotion of exceptional current content. Candidate hero priorities include a registered competition happening soon, Weekly ending soon, a significant WR, an upcoming competition or active Weekly. Do not randomly reorder the page or build AI/recommendation-feed infrastructure.
 
 - **Competitions:** retain the focused existing destination described above.
-- **Rankings & Records:** likely one destination with Rankings/Records peers. Keep frequent ranking controls visible: Event, Single/Average, World/Continent/Country or Region. Reuse existing WCA Profile navigation. Records include current WR/CR/NR, progression/history, charts and recent records, not just rank #1.
+- **Rankings & Records:** existing focused views and filters/navigation are implemented and preserved, including Recent Records. Official WCA records and provisional live records are distinct. Deeper historical progression/charts require actual source/coverage review, not relabelling a current record list as a complete history.
 - **Public Stats:** discovery-oriented large-number facts can lead to full leaderboards/details. Candidates: most competitions, official solves, podiums, wins, countries, competitions by year, competition streaks, consecutive home-country competitions and longest competitive career. These are public WCA-derived stats, distinct from personal Data.
 
 ### Weekly And Community

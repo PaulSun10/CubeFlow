@@ -9,10 +9,11 @@ struct IPhoneContentView: View {
     @State private var isDataSelectingSolves = false
     @State private var selectedTab: IPhoneTab = .timer
     @State private var algsSearchRequestID = 0
-    @State private var competitionSearchRequestID = 0
+    @State private var exploreCompetitionRequestID = 0
+    @State private var exploreCompetitionSearchRequestID = 0
+    @State private var isExploreCompetitionBottomAccessoryVisible = false
     @State private var dataSearchRequestID = 0
     @State private var isAlgsOverviewBottomAccessoryVisible = false
-    @State private var isCompetitionBottomAccessoryVisible = false
     @State private var isDataBottomAccessoryVisible = false
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
@@ -77,20 +78,17 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.algs)
 
-            CompetitionTabView(
+            ExploreView(
+                isActive: selectedTab == .explore,
+                competitionRequestID: exploreCompetitionRequestID,
                 usesSystemBottomAccessory: usesSystemTabBottomAccessory,
-                isActive: selectedTab == .competitions,
-                isBottomAccessoryVisible: $isCompetitionBottomAccessoryVisible,
-                searchRequestID: $competitionSearchRequestID
+                isCompetitionBottomAccessoryVisible: $isExploreCompetitionBottomAccessoryVisible,
+                searchRequestID: $exploreCompetitionSearchRequestID
             )
                 .tabItem {
-                    Label {
-                        Text(appLocalizedString("tab.competitions", languageCode: appLanguage))
-                    } icon: {
-                        Image(systemName: competitionsTabSystemImage)
-                    }
+                    Label(appLocalizedString("tab.explore", languageCode: appLanguage), systemImage: "binoculars")
                 }
-                .tag(IPhoneTab.competitions)
+                .tag(IPhoneTab.explore)
 
             SettingsTabView(isActive: selectedTab == .settings)
                 .tabItem {
@@ -107,7 +105,7 @@ struct IPhoneContentView: View {
             tabBottomAccessoryContent
         }
         .compatibleTabBarMinimizeOnScrollDown(
-            isEnabled: !isDataSelectingSolves && (selectedTab == .data || selectedTab == .algs || selectedTab == .competitions)
+            isEnabled: !isDataSelectingSolves && (selectedTab == .data || selectedTab == .algs || selectedTab == .explore)
         )
         .compatibleTabBarBackground()
         .environment(\.locale, contentLocale)
@@ -131,7 +129,8 @@ struct IPhoneContentView: View {
     }
 
     private var shouldShowTabBottomAccessory: Bool {
-        shouldShowDataBottomAccessory || shouldShowAlgsBottomAccessory || shouldShowCompetitionBottomAccessory
+        shouldShowDataBottomAccessory || shouldShowAlgsBottomAccessory
+            || (selectedTab == .explore && isExploreCompetitionBottomAccessoryVisible)
     }
 
     private var shouldShowDataBottomAccessory: Bool {
@@ -140,10 +139,6 @@ struct IPhoneContentView: View {
 
     private var shouldShowAlgsBottomAccessory: Bool {
         selectedTab == .algs && isAlgsOverviewBottomAccessoryVisible
-    }
-
-    private var shouldShowCompetitionBottomAccessory: Bool {
-        selectedTab == .competitions && isCompetitionBottomAccessoryVisible
     }
 
     @ViewBuilder
@@ -161,12 +156,9 @@ struct IPhoneContentView: View {
             ) {
                 algsSearchRequestID += 1
             }
-        case .competitions:
-            CompetitionBottomSearchBar(
-                languageCode: appLanguage,
-                usesContainerGlass: false
-            ) {
-                competitionSearchRequestID += 1
+        case .explore:
+            CompetitionBottomSearchBar(languageCode: appLanguage, usesContainerGlass: false) {
+                exploreCompetitionSearchRequestID += 1
             }
         default:
             EmptyView()
@@ -191,15 +183,14 @@ struct IPhoneContentView: View {
         )
     }
 
-    private var competitionsTabSystemImage: String {
-        if #available(iOS 16.0, *) {
-            return "trophy.fill"
-        }
-        return "flag.2.crossed.fill"
-    }
-
     private func handleRequestedTab() {
         guard !isDataSelectingSolves else { return }
+        if requestedIPhoneTab == "competitions" {
+            selectedTab = .explore
+            exploreCompetitionRequestID += 1
+            requestedIPhoneTab = ""
+            return
+        }
         guard let requested = IPhoneTab(rawValue: requestedIPhoneTab) else { return }
         selectedTab = requested
         requestedIPhoneTab = ""
@@ -244,6 +235,6 @@ private enum IPhoneTab: String {
     case timer
     case data
     case algs
-    case competitions
+    case explore
     case settings
 }

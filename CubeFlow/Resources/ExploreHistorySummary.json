@@ -1,0 +1,2522 @@
+{
+  "exportDate": "2026-10-04",
+  "sourceCommit": "faf544a5807aa78f1cfbf251f21d4b1eb301d61c",
+  "sourceURL": "https://wca-rest-api.robiningelbrecht.be/",
+  "inputCount": 18830,
+  "completedCount": 17886,
+  "locatedCount": 17873,
+  "countries": [
+    {
+      "id": "US",
+      "count": 4064
+    },
+    {
+      "id": "IN",
+      "count": 773
+    },
+    {
+      "id": "CN",
+      "count": 765
+    },
+    {
+      "id": "BR",
+      "count": 721
+    },
+    {
+      "id": "PL",
+      "count": 652
+    },
+    {
+      "id": "AU",
+      "count": 561
+    },
+    {
+      "id": "CO",
+      "count": 559
+    },
+    {
+      "id": "ES",
+      "count": 517
+    },
+    {
+      "id": "CA",
+      "count": 513
+    },
+    {
+      "id": "PH",
+      "count": 420
+    },
+    {
+      "id": "SE",
+      "count": 410
+    },
+    {
+      "id": "FR",
+      "count": 391
+    },
+    {
+      "id": "GB",
+      "count": 356
+    },
+    {
+      "id": "IT",
+      "count": 299
+    },
+    {
+      "id": "DE",
+      "count": 298
+    },
+    {
+      "id": "MX",
+      "count": 281
+    },
+    {
+      "id": "JP",
+      "count": 275
+    },
+    {
+      "id": "PE",
+      "count": 267
+    },
+    {
+      "id": "ID",
+      "count": 261
+    },
+    {
+      "id": "DK",
+      "count": 245
+    },
+    {
+      "id": "RU",
+      "count": 207
+    },
+    {
+      "id": "FI",
+      "count": 196
+    },
+    {
+      "id": "CH",
+      "count": 186
+    },
+    {
+      "id": "BO",
+      "count": 181
+    },
+    {
+      "id": "NZ",
+      "count": 178
+    },
+    {
+      "id": "NO",
+      "count": 175
+    },
+    {
+      "id": "CL",
+      "count": 172
+    },
+    {
+      "id": "TW",
+      "count": 171
+    },
+    {
+      "id": "UA",
+      "count": 155
+    },
+    {
+      "id": "RO",
+      "count": 152
+    },
+    {
+      "id": "NL",
+      "count": 148
+    },
+    {
+      "id": "TR",
+      "count": 138
+    },
+    {
+      "id": "AR",
+      "count": 134
+    },
+    {
+      "id": "KR",
+      "count": 134
+    },
+    {
+      "id": "MY",
+      "count": 134
+    },
+    {
+      "id": "SG",
+      "count": 119
+    },
+    {
+      "id": "ZA",
+      "count": 119
+    },
+    {
+      "id": "BE",
+      "count": 110
+    },
+    {
+      "id": "TH",
+      "count": 107
+    },
+    {
+      "id": "IE",
+      "count": 102
+    },
+    {
+      "id": "VE",
+      "count": 101
+    },
+    {
+      "id": "CZ",
+      "count": 100
+    },
+    {
+      "id": "HU",
+      "count": 82
+    },
+    {
+      "id": "IL",
+      "count": 80
+    },
+    {
+      "id": "VN",
+      "count": 78
+    },
+    {
+      "id": "KZ",
+      "count": 76
+    },
+    {
+      "id": "EC",
+      "count": 75
+    },
+    {
+      "id": "PT",
+      "count": 73
+    },
+    {
+      "id": "EE",
+      "count": 72
+    },
+    {
+      "id": "GT",
+      "count": 66
+    },
+    {
+      "id": "SK",
+      "count": 66
+    },
+    {
+      "id": "UY",
+      "count": 64
+    },
+    {
+      "id": "MN",
+      "count": 60
+    },
+    {
+      "id": "GR",
+      "count": 55
+    },
+    {
+      "id": "AZ",
+      "count": 53
+    },
+    {
+      "id": "LV",
+      "count": 50
+    },
+    {
+      "id": "GE",
+      "count": 47
+    },
+    {
+      "id": "SI",
+      "count": 45
+    },
+    {
+      "id": "IR",
+      "count": 42
+    },
+    {
+      "id": "PY",
+      "count": 42
+    },
+    {
+      "id": "AT",
+      "count": 41
+    },
+    {
+      "id": "BY",
+      "count": 41
+    },
+    {
+      "id": "HR",
+      "count": 40
+    },
+    {
+      "id": "SV",
+      "count": 40
+    },
+    {
+      "id": "LT",
+      "count": 37
+    },
+    {
+      "id": "CR",
+      "count": 33
+    },
+    {
+      "id": "DO",
+      "count": 31
+    },
+    {
+      "id": "PA",
+      "count": 31
+    },
+    {
+      "id": "BG",
+      "count": 30
+    },
+    {
+      "id": "HK",
+      "count": 30
+    },
+    {
+      "id": "RS",
+      "count": 30
+    },
+    {
+      "id": "JO",
+      "count": 29
+    },
+    {
+      "id": "UZ",
+      "count": 29
+    },
+    {
+      "id": "BD",
+      "count": 28
+    },
+    {
+      "id": "KE",
+      "count": 28
+    },
+    {
+      "id": "HN",
+      "count": 24
+    },
+    {
+      "id": "NP",
+      "count": 24
+    },
+    {
+      "id": "TN",
+      "count": 24
+    },
+    {
+      "id": "AE",
+      "count": 22
+    },
+    {
+      "id": "XE",
+      "count": 21
+    },
+    {
+      "id": "CY",
+      "count": 20
+    },
+    {
+      "id": "IS",
+      "count": 17
+    },
+    {
+      "id": "LK",
+      "count": 16
+    },
+    {
+      "id": "BA",
+      "count": 14
+    },
+    {
+      "id": "MA",
+      "count": 14
+    },
+    {
+      "id": "KG",
+      "count": 13
+    },
+    {
+      "id": "KW",
+      "count": 13
+    },
+    {
+      "id": "AM",
+      "count": 12
+    },
+    {
+      "id": "BH",
+      "count": 11
+    },
+    {
+      "id": "DZ",
+      "count": 10
+    },
+    {
+      "id": "EG",
+      "count": 10
+    },
+    {
+      "id": "AO",
+      "count": 9
+    },
+    {
+      "id": "PS",
+      "count": 9
+    },
+    {
+      "id": "XA",
+      "count": 9
+    },
+    {
+      "id": "AD",
+      "count": 8
+    },
+    {
+      "id": "NG",
+      "count": 8
+    },
+    {
+      "id": "XW",
+      "count": 8
+    },
+    {
+      "id": "ME",
+      "count": 7
+    },
+    {
+      "id": "MU",
+      "count": 6
+    },
+    {
+      "id": "SM",
+      "count": 6
+    },
+    {
+      "id": "XM",
+      "count": 6
+    },
+    {
+      "id": "MD",
+      "count": 5
+    },
+    {
+      "id": "MG",
+      "count": 5
+    },
+    {
+      "id": "MK",
+      "count": 5
+    },
+    {
+      "id": "XS",
+      "count": 5
+    },
+    {
+      "id": "MT",
+      "count": 4
+    },
+    {
+      "id": "AL",
+      "count": 3
+    },
+    {
+      "id": "BZ",
+      "count": 3
+    },
+    {
+      "id": "GH",
+      "count": 3
+    },
+    {
+      "id": "KH",
+      "count": 3
+    },
+    {
+      "id": "LI",
+      "count": 3
+    },
+    {
+      "id": "LU",
+      "count": 3
+    },
+    {
+      "id": "PK",
+      "count": 3
+    },
+    {
+      "id": "TJ",
+      "count": 3
+    },
+    {
+      "id": "XK",
+      "count": 3
+    },
+    {
+      "id": "XN",
+      "count": 3
+    },
+    {
+      "id": "BB",
+      "count": 2
+    },
+    {
+      "id": "CI",
+      "count": 2
+    },
+    {
+      "id": "LA",
+      "count": 2
+    },
+    {
+      "id": "ZM",
+      "count": 2
+    },
+    {
+      "id": "BS",
+      "count": 1
+    },
+    {
+      "id": "CU",
+      "count": 1
+    },
+    {
+      "id": "CV",
+      "count": 1
+    },
+    {
+      "id": "FJ",
+      "count": 1
+    },
+    {
+      "id": "MO",
+      "count": 1
+    },
+    {
+      "id": "OM",
+      "count": 1
+    },
+    {
+      "id": "TO",
+      "count": 1
+    },
+    {
+      "id": "TT",
+      "count": 1
+    },
+    {
+      "id": "UG",
+      "count": 1
+    },
+    {
+      "id": "WS",
+      "count": 1
+    },
+    {
+      "id": "XF",
+      "count": 1
+    },
+    {
+      "id": "XO",
+      "count": 1
+    }
+  ],
+  "years": [
+    {
+      "id": "2026",
+      "count": 2028
+    },
+    {
+      "id": "2025",
+      "count": 2711
+    },
+    {
+      "id": "2024",
+      "count": 2714
+    },
+    {
+      "id": "2023",
+      "count": 2135
+    },
+    {
+      "id": "2022",
+      "count": 1082
+    },
+    {
+      "id": "2021",
+      "count": 242
+    },
+    {
+      "id": "2020",
+      "count": 240
+    },
+    {
+      "id": "2019",
+      "count": 1328
+    },
+    {
+      "id": "2018",
+      "count": 1154
+    },
+    {
+      "id": "2017",
+      "count": 924
+    },
+    {
+      "id": "2016",
+      "count": 679
+    },
+    {
+      "id": "2015",
+      "count": 572
+    },
+    {
+      "id": "2014",
+      "count": 481
+    },
+    {
+      "id": "2013",
+      "count": 359
+    },
+    {
+      "id": "2012",
+      "count": 303
+    },
+    {
+      "id": "2011",
+      "count": 305
+    },
+    {
+      "id": "2010",
+      "count": 226
+    },
+    {
+      "id": "2009",
+      "count": 169
+    },
+    {
+      "id": "2008",
+      "count": 109
+    },
+    {
+      "id": "2007",
+      "count": 53
+    },
+    {
+      "id": "2006",
+      "count": 33
+    },
+    {
+      "id": "2005",
+      "count": 24
+    },
+    {
+      "id": "2004",
+      "count": 12
+    },
+    {
+      "id": "2003",
+      "count": 2
+    },
+    {
+      "id": "1982",
+      "count": 1
+    }
+  ],
+  "events": [
+    {
+      "id": "333",
+      "count": 15483
+    },
+    {
+      "id": "222",
+      "count": 13139
+    },
+    {
+      "id": "444",
+      "count": 12310
+    },
+    {
+      "id": "pyram",
+      "count": 11709
+    },
+    {
+      "id": "333oh",
+      "count": 11139
+    },
+    {
+      "id": "333bf",
+      "count": 9898
+    },
+    {
+      "id": "555",
+      "count": 9361
+    },
+    {
+      "id": "skewb",
+      "count": 9051
+    },
+    {
+      "id": "minx",
+      "count": 8213
+    },
+    {
+      "id": "sq1",
+      "count": 7494
+    },
+    {
+      "id": "clock",
+      "count": 7245
+    },
+    {
+      "id": "666",
+      "count": 5814
+    },
+    {
+      "id": "777",
+      "count": 5524
+    },
+    {
+      "id": "333fm",
+      "count": 3915
+    },
+    {
+      "id": "333mbf",
+      "count": 3725
+    },
+    {
+      "id": "444bf",
+      "count": 3486
+    },
+    {
+      "id": "555bf",
+      "count": 2819
+    },
+    {
+      "id": "333ft",
+      "count": 1596
+    },
+    {
+      "id": "magic",
+      "count": 867
+    },
+    {
+      "id": "mmagic",
+      "count": 685
+    },
+    {
+      "id": "333mbo",
+      "count": 60
+    }
+  ],
+  "northernmost": [
+    {
+      "id": "Svalbard2025",
+      "name": "Svalbard 2025",
+      "city": "Longyearbyen",
+      "country": "NO",
+      "start": "2025-02-10",
+      "end": "2025-02-10",
+      "latitude": 78.219248,
+      "longitude": 15.642299,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333oh",
+        "444",
+        "pyram"
+      ]
+    }
+  ],
+  "southernmost": [
+    {
+      "id": "UshuaiaOpen2026",
+      "name": "Ushuaia Open 2026",
+      "city": "Ushuaia, Tierra del Fuego",
+      "country": "AR",
+      "start": "2026-04-11",
+      "end": "2026-04-11",
+      "latitude": -54.81537,
+      "longitude": -68.320932,
+      "events": [
+        "222",
+        "333",
+        "333oh",
+        "444",
+        "555",
+        "clock",
+        "minx",
+        "pyram",
+        "skewb"
+      ]
+    }
+  ],
+  "earliest": [
+    {
+      "id": "WC1982",
+      "name": "World Rubik's Cube Championship 1982",
+      "city": "Budapest",
+      "country": "HU",
+      "start": "1982-06-05",
+      "end": "1982-06-05",
+      "latitude": 47.498403,
+      "longitude": 19.040759,
+      "events": [
+        "333"
+      ]
+    }
+  ],
+  "eventRich": [
+    {
+      "id": "IndonesianChampionship2012",
+      "name": "Indonesian Championship 2012",
+      "city": "Yogyakarta, Yogyakarta Special Region",
+      "country": "ID",
+      "start": "2012-12-14",
+      "end": "2012-12-16",
+      "latitude": -7.7872,
+      "longitude": 110.376449,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "ItalianChampionship2012",
+      "name": "Italian Championship 2012",
+      "city": "Rome",
+      "country": "IT",
+      "start": "2012-12-08",
+      "end": "2012-12-09",
+      "latitude": 41.89339,
+      "longitude": 12.48291,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "JuraOpen2012",
+      "name": "Jura Open 2012",
+      "city": "Zawiercie",
+      "country": "PL",
+      "start": "2012-12-08",
+      "end": "2012-12-09",
+      "latitude": 50.494482,
+      "longitude": 19.427069,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "KharkivWinter2012",
+      "name": "Kharkiv Winter 2012",
+      "city": "Kharkiv",
+      "country": "UA",
+      "start": "2012-12-08",
+      "end": "2012-12-09",
+      "latitude": 49.98247,
+      "longitude": 36.22901,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "BeijingWinter2012",
+      "name": "Beijing Winter 2012",
+      "city": "Beijing",
+      "country": "CN",
+      "start": "2012-11-24",
+      "end": "2012-11-25",
+      "latitude": 39.90647,
+      "longitude": 116.3912,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "WarszawaOpen2012",
+      "name": "Warszawa Open 2012",
+      "city": "Warszawa",
+      "country": "PL",
+      "start": "2012-11-24",
+      "end": "2012-11-25",
+      "latitude": 52.17755,
+      "longitude": 21.016201,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "Euro2012",
+      "name": "European Rubik's Cube Championship 2012",
+      "city": "Wrocław",
+      "country": "PL",
+      "start": "2012-10-12",
+      "end": "2012-10-14",
+      "latitude": 51.119144,
+      "longitude": 17.09102,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "AsianChampionship2012",
+      "name": "Asian Championship 2012",
+      "city": "Hong Kong",
+      "country": "HK",
+      "start": "2012-10-05",
+      "end": "2012-10-07",
+      "latitude": 22.34117,
+      "longitude": 114.20107,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "JapanOpen2012",
+      "name": "Japan Open 2012",
+      "city": "Tokyo",
+      "country": "JP",
+      "start": "2012-09-16",
+      "end": "2012-09-17",
+      "latitude": 35.68007,
+      "longitude": 139.768519,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "HungarianOpen2012",
+      "name": "Hungarian Open 2012",
+      "city": "Budapest",
+      "country": "HU",
+      "start": "2012-09-08",
+      "end": "2012-09-09",
+      "latitude": 47.49834,
+      "longitude": 19.04047,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "PolishNationals2012",
+      "name": "Polish Nationals 2012",
+      "city": "Starogard Gdanski",
+      "country": "PL",
+      "start": "2012-08-04",
+      "end": "2012-08-05",
+      "latitude": 53.96608,
+      "longitude": 18.535003,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "USNationals2012",
+      "name": "United States National Championships 2012",
+      "city": "Las Vegas, Nevada",
+      "country": "US",
+      "start": "2012-08-03",
+      "end": "2012-08-05",
+      "latitude": 36.114646,
+      "longitude": -115.172816,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "SESCSantos2012",
+      "name": "SESC Santos 2012",
+      "city": "Santos, São Paulo",
+      "country": "BR",
+      "start": "2012-07-20",
+      "end": "2012-07-22",
+      "latitude": -23.978217,
+      "longitude": -46.307316,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "CzechOpen2012",
+      "name": "Czech Open 2012",
+      "city": "Pardubice",
+      "country": "CZ",
+      "start": "2012-07-13",
+      "end": "2012-07-15",
+      "latitude": 50.037828,
+      "longitude": 15.780833,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "PolishOpen2012",
+      "name": "Polish Open 2012",
+      "city": "Białystok",
+      "country": "PL",
+      "start": "2012-05-26",
+      "end": "2012-05-27",
+      "latitude": 53.141319,
+      "longitude": 23.167937,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "RapidashOpen2012",
+      "name": "Rapid Dash Open 2012",
+      "city": "Guildford, Surrey",
+      "country": "GB",
+      "start": "2012-04-14",
+      "end": "2012-04-15",
+      "latitude": 51.235637,
+      "longitude": -0.570052,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "DanishOpen2012",
+      "name": "Danish Open 2012",
+      "city": "Odense",
+      "country": "DK",
+      "start": "2012-04-06",
+      "end": "2012-04-08",
+      "latitude": 55.409838,
+      "longitude": 10.403348,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "NorwegianChampionship2012",
+      "name": "Norwegian Championship 2012",
+      "city": "Trondheim",
+      "country": "NO",
+      "start": "2012-02-18",
+      "end": "2012-02-19",
+      "latitude": 63.430514,
+      "longitude": 10.395052,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "GermanNationals2011",
+      "name": "German Nationals 2011",
+      "city": "Gütersloh",
+      "country": "DE",
+      "start": "2011-12-10",
+      "end": "2011-12-11",
+      "latitude": 51.883928,
+      "longitude": 8.367446,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "HumanRightsDay2011",
+      "name": "Human Rights Day 2011",
+      "city": "Beijing",
+      "country": "CN",
+      "start": "2011-12-10",
+      "end": "2011-12-11",
+      "latitude": 39.904214,
+      "longitude": 116.407413,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "SwedishCubedays2011",
+      "name": "Swedish Cubedays 2011",
+      "city": "Stockholm",
+      "country": "SE",
+      "start": "2011-11-26",
+      "end": "2011-11-27",
+      "latitude": 59.34829,
+      "longitude": 17.884352,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "WC2011",
+      "name": "World Rubik's Cube Championship 2011",
+      "city": "Bangkok",
+      "country": "TH",
+      "start": "2011-10-14",
+      "end": "2011-10-16",
+      "latitude": 13.723418,
+      "longitude": 100.476231,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "LyonOpen2011",
+      "name": "Lyon Open 2011",
+      "city": "Lyon",
+      "country": "FR",
+      "start": "2011-09-24",
+      "end": "2011-09-25",
+      "latitude": 45.740948,
+      "longitude": 4.886221,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "SwedishChampionship2011",
+      "name": "Swedish Championship 2011",
+      "city": "Stockholm",
+      "country": "SE",
+      "start": "2011-09-17",
+      "end": "2011-09-18",
+      "latitude": 59.332788,
+      "longitude": 18.064488,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "HungarianOpen2011",
+      "name": "Hungarian Open 2011",
+      "city": "Budapest",
+      "country": "HU",
+      "start": "2011-09-03",
+      "end": "2011-09-04",
+      "latitude": 47.498405,
+      "longitude": 19.040756,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "PolishNationals2011",
+      "name": "Polish Nationals 2011",
+      "city": "Starogard Gdański",
+      "country": "PL",
+      "start": "2011-08-13",
+      "end": "2011-08-14",
+      "latitude": 53.969633,
+      "longitude": 18.525749,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "USNationals2011",
+      "name": "United States National Championships 2011",
+      "city": "Columbus, Ohio",
+      "country": "US",
+      "start": "2011-08-12",
+      "end": "2011-08-14",
+      "latitude": 39.998527,
+      "longitude": -83.035243,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "GuildfordSummerOpen2011",
+      "name": "Guildford Summer Open 2011",
+      "city": "Guildford, Surrey",
+      "country": "GB",
+      "start": "2011-07-30",
+      "end": "2011-07-31",
+      "latitude": 51.236418,
+      "longitude": -0.570291,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "JapanOpen2011",
+      "name": "Japan Open 2011",
+      "city": "Hyogo",
+      "country": "JP",
+      "start": "2011-07-30",
+      "end": "2011-07-31",
+      "latitude": 34.733733,
+      "longitude": 135.406375,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "IndonesianOpen2011",
+      "name": "Indonesian Open 2011",
+      "city": "Jakarta",
+      "country": "ID",
+      "start": "2011-07-22",
+      "end": "2011-07-24",
+      "latitude": -6.211544,
+      "longitude": 106.845172,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "CzechOpen2011",
+      "name": "Czech Open 2011",
+      "city": "Pardubice",
+      "country": "CZ",
+      "start": "2011-07-15",
+      "end": "2011-07-17",
+      "latitude": 50.037828,
+      "longitude": 15.780833,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "VargardaOpen2011",
+      "name": "Vårgårda Open 2011",
+      "city": "Vårgårda",
+      "country": "SE",
+      "start": "2011-06-18",
+      "end": "2011-06-19",
+      "latitude": 58.034183,
+      "longitude": 12.808939,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "DanishOpen2011",
+      "name": "Danish Open 2011",
+      "city": "Lejre",
+      "country": "DK",
+      "start": "2011-04-22",
+      "end": "2011-04-24",
+      "latitude": 55.604358,
+      "longitude": 11.97494,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "ItalianChampionship2011",
+      "name": "Italian Rubik's Cube Championship 2011",
+      "city": "Mantova",
+      "country": "IT",
+      "start": "2011-04-21",
+      "end": "2011-04-23",
+      "latitude": 45.160448,
+      "longitude": 10.788933,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "FrenchOpen2011",
+      "name": "French Open 2011",
+      "city": "Saint-Etienne-du-Rouvray",
+      "country": "FR",
+      "start": "2011-03-26",
+      "end": "2011-03-27",
+      "latitude": 49.38362,
+      "longitude": 1.07802,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "HelsinkiOpen2011",
+      "name": "Helsinki Open 2011",
+      "city": "Helsinki",
+      "country": "FI",
+      "start": "2011-01-22",
+      "end": "2011-01-23",
+      "latitude": 60.169812,
+      "longitude": 24.93824,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "DutchNationals2010",
+      "name": "Dutch Nationals 2010",
+      "city": "Sint Michielsgestel",
+      "country": "NL",
+      "start": "2010-11-13",
+      "end": "2010-11-14",
+      "latitude": 51.627481,
+      "longitude": 5.334709,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "NaonedOpen2010",
+      "name": "Naoned Open 2010",
+      "city": "Nantes",
+      "country": "FR",
+      "start": "2010-10-23",
+      "end": "2010-10-24",
+      "latitude": 47.206153,
+      "longitude": -1.549981,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "AsianChampionship2010",
+      "name": "Asian Championship 2010",
+      "city": "Bangkok",
+      "country": "TH",
+      "start": "2010-10-09",
+      "end": "2010-10-10",
+      "latitude": 13.723418,
+      "longitude": 100.476231,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "GuangdongOpen2010",
+      "name": "Guangdong Open 2010",
+      "city": "Guangzhou, Guangdong Province",
+      "country": "CN",
+      "start": "2010-10-03",
+      "end": "2010-10-04",
+      "latitude": 23.129075,
+      "longitude": 113.264423,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "Euro2010",
+      "name": "European Rubik's Cube Championship 2010",
+      "city": "Budapest",
+      "country": "HU",
+      "start": "2010-10-01",
+      "end": "2010-10-03",
+      "latitude": 47.407687,
+      "longitude": 19.016994,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "PabianiceOpen2010",
+      "name": "Pabianice Open 2010",
+      "city": "Pabianice",
+      "country": "PL",
+      "start": "2010-09-18",
+      "end": "2010-09-19",
+      "latitude": 51.654515,
+      "longitude": 19.378299,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "SwedishOpen2010",
+      "name": "Swedish Open 2010",
+      "city": "Vattholma (Uppsala)",
+      "country": "SE",
+      "start": "2010-09-11",
+      "end": "2010-09-12",
+      "latitude": 60.016666,
+      "longitude": 17.733333,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "HungarianOpen2010",
+      "name": "Hungarian Open 2010",
+      "city": "Budapest",
+      "country": "HU",
+      "start": "2010-09-03",
+      "end": "2010-09-04",
+      "latitude": 47.407687,
+      "longitude": 19.016994,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "USNationals2010",
+      "name": "United States Rubik's Cube Championships 2010",
+      "city": "Cambridge, Massachusetts",
+      "country": "US",
+      "start": "2010-08-06",
+      "end": "2010-08-08",
+      "latitude": 42.359089,
+      "longitude": -71.093412,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "ItalianChampionship2010",
+      "name": "S.P.Q.R. Italian Rubik's Cube Championship 2010",
+      "city": "Rome",
+      "country": "IT",
+      "start": "2010-07-26",
+      "end": "2010-07-27",
+      "latitude": 41.895465,
+      "longitude": 12.482324,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "CzechOpen2010",
+      "name": "Czech Open 2010",
+      "city": "Pardubice",
+      "country": "CZ",
+      "start": "2010-07-16",
+      "end": "2010-07-18",
+      "latitude": 50.037828,
+      "longitude": 15.780833,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "JapanOpen2010",
+      "name": "Japan Open 2010",
+      "city": "Osaka",
+      "country": "JP",
+      "start": "2010-03-27",
+      "end": "2010-03-28",
+      "latitude": 34.693737,
+      "longitude": 135.502165,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "DanishOpen2010",
+      "name": "Danish Open 2010",
+      "city": "Århus",
+      "country": "DK",
+      "start": "2010-02-27",
+      "end": "2010-02-28",
+      "latitude": 56.158135,
+      "longitude": 10.212001,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "SwedishCubeDay2009",
+      "name": "Swedish Cube Day competition 2009",
+      "city": "Kungsängen",
+      "country": "SE",
+      "start": "2009-12-05",
+      "end": "2009-12-06",
+      "latitude": 59.484758,
+      "longitude": 17.757768,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "HungarianOpen2009",
+      "name": "Hungarian Open 2009",
+      "city": "Budapest",
+      "country": "HU",
+      "start": "2009-10-16",
+      "end": "2009-10-18",
+      "latitude": 47.41328,
+      "longitude": 19.035953,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "WC2009",
+      "name": "World Rubik's Cube Championship 2009",
+      "city": "Düsseldorf",
+      "country": "DE",
+      "start": "2009-10-09",
+      "end": "2009-10-11",
+      "latitude": 51.174745,
+      "longitude": 6.864554,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "PolishOpen2009",
+      "name": "Polish Open 2009",
+      "city": "Pabianice",
+      "country": "PL",
+      "start": "2009-09-26",
+      "end": "2009-09-27",
+      "latitude": 51.656646,
+      "longitude": 19.361269,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "JapanOpen2009",
+      "name": "Japan Open 2009",
+      "city": "Matsudo, Chiba",
+      "country": "JP",
+      "start": "2009-08-01",
+      "end": "2009-08-02",
+      "latitude": 35.787649,
+      "longitude": 139.903093,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "CzechOpen2009",
+      "name": "Czech Open 2009",
+      "city": "Pardubice",
+      "country": "CZ",
+      "start": "2009-07-17",
+      "end": "2009-07-19",
+      "latitude": 50.040267,
+      "longitude": 15.769486,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    },
+    {
+      "id": "OhioOpen2009",
+      "name": "Ohio Open 2009",
+      "city": "Columbus, Ohio",
+      "country": "US",
+      "start": "2009-03-28",
+      "end": "2009-03-29",
+      "latitude": 40.005158,
+      "longitude": -83.015403,
+      "events": [
+        "222",
+        "333",
+        "333bf",
+        "333fm",
+        "333ft",
+        "333mbf",
+        "333oh",
+        "444",
+        "444bf",
+        "555",
+        "555bf",
+        "666",
+        "777",
+        "clock",
+        "magic",
+        "minx",
+        "mmagic",
+        "pyram",
+        "sq1"
+      ]
+    }
+  ]
+}
