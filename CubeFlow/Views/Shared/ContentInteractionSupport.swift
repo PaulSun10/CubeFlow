@@ -2,6 +2,7 @@
 import Photos
 import SwiftUI
 import UIKit
+import CoreText
 
 extension View {
     /// Enables the system selection menu for user-authored or data-bearing text.
@@ -309,6 +310,7 @@ struct SelectableAttributedContent: UIViewRepresentable {
             inlineButtons.values.forEach { $0.isHidden = true }
             guard attributedText.length > 0, !inlineButtons.isEmpty else { return }
             layoutManager.ensureLayout(for: textContainer)
+            var rowCorrections: [Int: CGFloat] = [:]
             attributedText.enumerateAttribute(
                 .selectableInlineControlID,
                 in: NSRange(location: 0, length: attributedText.length)
@@ -353,24 +355,60 @@ struct SelectableAttributedContent: UIViewRepresentable {
                     width: max(minimumHitSize.width, anchorRect.width + 6),
                     height: max(minimumHitSize.height, anchorRect.height + 4)
                 )
-                let buttonCenterX: CGFloat
-                if control.alignment == .glyphLeading,
-                   let metrics = control.content.glyphInkMetrics {
-                    buttonCenterX = anchorRect.minX
-                        + metrics.bounds.minX
-                        + metrics.bounds.width / 2
-                        + CompetitionEventIconFont.leadingOpticalInset
+                let rowOriginCorrection: CGFloat
+                if case let .glyphRow(firstGlyph, _) = control.alignment,
+                   case let .glyph(_, _, fontSize) = control.content {
+                    rowOriginCorrection = CompetitionEventIconFont.rowOriginCorrection(
+                        firstGlyph: firstGlyph,
+                        cellWidth: anchorRect.width,
+                        pointSize: fontSize
+                    )
                 } else {
-                    buttonCenterX = anchorRect.midX
+                    rowOriginCorrection = 0
                 }
                 button.frame = CGRect(
-                    x: buttonCenterX - hitSize.width / 2,
+                    x: anchorRect.midX + rowOriginCorrection - hitSize.width / 2,
                     y: anchorRect.midY - hitSize.height / 2,
                     width: hitSize.width,
                     height: hitSize.height
                 ).integral
+                if case let .glyphRow(_, titleRange?) = control.alignment {
+                    // Measure once per row after UIKit has applied its title layout and frame rounding.
+                    if rowCorrections[titleRange.location] == nil,
+                       let titleLeading = titleInkLeading(in: titleRange),
+                       let iconLeading = renderedIconInkLeading(in: button) {
+                        rowCorrections[titleRange.location] = CompetitionEventIconFont.rowOriginCorrection(
+                            titleInkLeading: titleLeading,
+                            renderedInkLeading: iconLeading
+                        )
+                    }
+                    button.frame.origin.x += rowCorrections[titleRange.location] ?? 0
+                }
                 button.isHidden = false
             }
+        }
+
+        private func titleInkLeading(in range: NSRange) -> CGFloat? {
+            guard range.location != NSNotFound, range.length > 0,
+                  NSMaxRange(range) <= attributedText.length else { return nil }
+            let glyphRange = layoutManager.glyphRange(forCharacterRange: range, actualCharacterRange: nil)
+            guard glyphRange.length > 0 else { return nil }
+            let fragment = layoutManager.lineFragmentRect(forGlyphAt: glyphRange.location, effectiveRange: nil)
+            let glyphLocation = layoutManager.location(forGlyphAt: glyphRange.location)
+            let ink = CompetitionEventIconFont.textInkBounds(attributedText.attributedSubstring(from: range))
+            return fragment.minX + glyphLocation.x + ink.minX + textContainerInset.left - contentOffset.x
+        }
+
+        private func renderedIconInkLeading(in button: UIButton) -> CGFloat? {
+            button.layoutIfNeeded()
+            guard let label = button.titleLabel, let text = label.text, let font = label.font else { return nil }
+            let attributed = NSAttributedString(string: text, attributes: [.font: font])
+            let line = CTLineCreateWithAttributedString(attributed)
+            let advance = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
+            let ink = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds)
+            let textRect = label.textRect(forBounds: label.bounds, limitedToNumberOfLines: 1)
+            let textOrigin = textRect.midX - advance / 2
+            return label.convert(CGPoint(x: textOrigin + ink.minX, y: 0), to: self).x
         }
 
         @objc private func didTapInlineControl(_ sender: UIButton) {
@@ -539,7 +577,7 @@ struct SelectableInlineControl {
 
     enum Alignment: Equatable {
         case glyphCenter
-        case glyphLeading
+        case glyphRow(firstGlyph: String, titleRange: NSRange?)
         case paragraphCenter
     }
 

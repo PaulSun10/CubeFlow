@@ -165,6 +165,8 @@ struct CompetitionEventGlyph: View {
     var color: Color = .primary
 
     var body: some View {
+        // Registration must precede SwiftUI resolving the custom font, not onAppear.
+        let _ = CompetitionEventIconFont.ensureRegistered()
         Text(glyph)
             .font(.custom(CompetitionEventIconFont.fontName, size: size))
             .foregroundStyle(color)
@@ -177,8 +179,6 @@ struct CompetitionEventGlyph: View {
 
 enum CompetitionEventIconFont {
     static let fontName = "event-icon"
-    static let leadingOpticalInset: CGFloat = 1.5
-
     struct GlyphMetrics {
         let bounds: CGRect
         let advance: CGFloat
@@ -319,6 +319,21 @@ enum CompetitionEventIconFont {
         var advance = CGSize.zero
         CTFontGetAdvancesForGlyphs(font, .default, &glyphCopy, &advance, 1)
         return GlyphMetrics(bounds: bounds, advance: advance.width)
+    }
+
+    static func rowOriginCorrection(firstGlyph: String, cellWidth: CGFloat, pointSize: CGFloat, titleInkLeading: CGFloat = 0) -> CGFloat {
+        guard let metrics = glyphMetrics(for: firstGlyph, pointSize: pointSize) else { return 0 }
+        let inkLeading = cellWidth / 2 - metrics.advance / 2
+            - metrics.centerOffset + metrics.bounds.minX
+        return rowOriginCorrection(titleInkLeading: titleInkLeading, renderedInkLeading: inkLeading)
+    }
+
+    static func rowOriginCorrection(titleInkLeading: CGFloat, renderedInkLeading: CGFloat) -> CGFloat {
+        titleInkLeading - renderedInkLeading
+    }
+
+    static func textInkBounds(_ text: NSAttributedString) -> CGRect {
+        CTLineGetBoundsWithOptions(CTLineCreateWithAttributedString(text), .useGlyphPathBounds)
     }
 
     /// System menus do not preserve arbitrary custom-font `Text` labels. Render

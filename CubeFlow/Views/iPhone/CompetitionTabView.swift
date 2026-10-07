@@ -4724,6 +4724,7 @@ private struct CompetitionEventIconPopoverButton: View {
     let eventTitle: String
     let size: CGFloat
     var color: Color = .primary
+    var centersInkInCell = false
 
     @State private var showsEventName = false
 
@@ -4737,6 +4738,9 @@ private struct CompetitionEventIconPopoverButton: View {
                 size: size,
                 color: color
             )
+                .offset(x: centersInkInCell
+                    ? -(CompetitionEventIconFont.glyphMetrics(for: glyph, pointSize: size)?.centerOffset ?? 0)
+                    : 0)
                 .frame(minWidth: 30, minHeight: 32)
         }
         .buttonStyle(.plain)
@@ -4847,24 +4851,35 @@ private struct CompetitionWCALiveCompetitorEventGroup: Identifiable {
     let results: [CompetitionWCALiveCompetitorResult]
 }
 
-private struct CompetitionWCARecordTagView: View {
+struct CompetitionWCARecordTagView: View {
+    enum Variant {
+        case standard
+        case compact
+    }
+
     let tag: String
     var usesLitePersonalRecord = false
-    var usesListSizing = false
+    var variant: Variant = .compact
 
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Text(tag.uppercased())
-            .font(.system(size: usesListSizing ? 11 : 8, weight: .semibold))
+            .font(.system(size: isStandard ? 12 : 9.5, weight: .bold))
             .foregroundStyle(foregroundColor)
             .lineLimit(1)
-            .padding(.horizontal, usesListSizing ? 8 : 4)
-            .padding(.vertical, usesListSizing ? 6 : 3)
+            .padding(.horizontal, isStandard ? 8 : 2.2)
+            .padding(.vertical, isStandard ? 6 : 1)
+            .frame(minWidth: isStandard ? nil : 0, minHeight: isStandard ? nil : 0)
             .background(backgroundColor)
-            .clipShape(RoundedRectangle(cornerRadius: usesListSizing ? 4 : 3, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: isStandard ? 4 : 4.5, style: .continuous))
             .fixedSize()
             .accessibilityLabel(tag.uppercased())
+    }
+
+    private var isStandard: Bool {
+        if case .standard = variant { return true }
+        return false
     }
 
     private var backgroundColor: Color {
@@ -5152,8 +5167,8 @@ private struct CompetitionWCALiveRoundDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
 
             if let recordTag, !recordTag.isEmpty {
-                CompetitionWCARecordTagView(tag: recordTag, usesLitePersonalRecord: true)
-                    .offset(x: 21, y: -5)
+                CompetitionWCARecordTagView(tag: recordTag, usesLitePersonalRecord: true, variant: .compact)
+                    .offset(x: 23, y: -6)
             }
         }
         .frame(width: width, alignment: .trailing)
@@ -5718,14 +5733,15 @@ private struct CompetitionWCALiveRoundDetailView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.primary)
 
-            HStack(alignment: .firstTextBaseline, spacing: 7) {
+            HStack(alignment: .top, spacing: 4) {
                 Text(value)
                     .font(.system(size: 15, weight: .regular))
                     .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 if let recordTag, !recordTag.isEmpty {
-                    CompetitionWCARecordTagView(tag: recordTag, usesLitePersonalRecord: true)
+                    CompetitionWCARecordTagView(tag: recordTag, usesLitePersonalRecord: true, variant: .compact)
+                        .offset(y: -3)
                 }
             }
         }
@@ -11137,9 +11153,9 @@ struct CompetitionDetailView: View {
             styledSummary[attributedResultRange].font = .system(size: 14, weight: .semibold)
         }
 
-        return HStack(alignment: .center, spacing: 12) {
-            CompetitionWCARecordTagView(tag: record.tag, usesListSizing: true)
-                .frame(width: 44, alignment: .leading)
+        return HStack(alignment: .center, spacing: 10) {
+            CompetitionWCARecordTagView(tag: record.tag, variant: .standard)
+                .frame(width: 36, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(styledSummary)
@@ -12644,6 +12660,7 @@ private struct CompetitionRichHTMLContent: View {
                 }
 
                 let termParagraph = NSMutableParagraphStyle()
+                let titleRange = NSRange(location: rowStart, length: result.length - rowStart)
                 termParagraph.paragraphSpacing = row.eventIDs.isEmpty ? 4 : 0
                 result.addAttribute(
                     .paragraphStyle,
@@ -12657,6 +12674,7 @@ private struct CompetitionRichHTMLContent: View {
                     row,
                     elementIndex: elementIndex,
                     rowIndex: rowIndex,
+                    titleRange: titleRange,
                     to: result,
                     font: richBodyUIFont(),
                     inlineControls: &inlineControls
@@ -12868,6 +12886,21 @@ private struct CompetitionRichHTMLContent: View {
         )
     }
 
+    private func eventIconRowOriginCorrection(for row: CompetitionRichHTMLDefinitionRow) -> CGFloat {
+        guard let firstGlyph = row.eventIDs.compactMap({ CompetitionEventIconFont.glyph(for: $0) }).first else {
+            return 0
+        }
+        return CompetitionEventIconFont.rowOriginCorrection(
+            firstGlyph: firstGlyph,
+            cellWidth: 38,
+            pointSize: 24,
+            titleInkLeading: CompetitionEventIconFont.textInkBounds(NSAttributedString(
+                string: row.term,
+                attributes: [.font: UIFont.systemFont(ofSize: row.prefersVerticalFieldLayout ? 15 : 14, weight: .semibold)]
+            )).minX
+        )
+    }
+
     private func appendInlineSystemIcon(
         name: String,
         label: String,
@@ -12927,6 +12960,7 @@ private struct CompetitionRichHTMLContent: View {
         _ row: CompetitionRichHTMLDefinitionRow,
         elementIndex: Int,
         rowIndex: Int,
+        titleRange: NSRange? = nil,
         to result: NSMutableAttributedString,
         font: UIFont,
         inlineControls: inout [SelectableInlineControl]
@@ -12952,14 +12986,21 @@ private struct CompetitionRichHTMLContent: View {
             if result.length > valueStart, hasVisibleValueText {
                 result.append(NSAttributedString(string: " "))
             }
+            let firstVisibleGlyph = row.eventIDs.compactMap { CompetitionEventIconFont.glyph(for: $0) }.first
             for (index, eventID) in row.eventIDs.enumerated() {
                 guard let glyph = CompetitionEventIconFont.glyph(for: eventID) else { continue }
+                let alignment: SelectableInlineControl.Alignment
+                if containsOnlyEventIcons, let firstVisibleGlyph {
+                    alignment = .glyphRow(firstGlyph: firstVisibleGlyph, titleRange: titleRange)
+                } else {
+                    alignment = .glyphCenter
+                }
                 appendInlineEventIcon(
                     glyph: glyph,
                     eventID: eventID,
                     title: localizedEventTitle(eventID),
                     id: "element-\(elementIndex)-row-\(rowIndex)-event-\(index)",
-                    alignment: containsOnlyEventIcons ? .glyphLeading : .glyphCenter,
+                    alignment: alignment,
                     to: result,
                     inlineControls: &inlineControls
                 )
@@ -13024,8 +13065,10 @@ private struct CompetitionRichHTMLContent: View {
                                 CompetitionEventIconPopoverButton(
                                     glyph: glyph,
                                     eventTitle: localizedEventTitle(eventID),
-                                    size: 24
+                                    size: 24,
+                                    centersInkInCell: true
                                 )
+                                .frame(width: 38, height: 40)
                             }
                         }
                     }
@@ -13040,14 +13083,17 @@ private struct CompetitionRichHTMLContent: View {
                                 CompetitionEventIconPopoverButton(
                                     glyph: glyph,
                                     eventTitle: localizedEventTitle(eventID),
-                                    size: 24
+                                    size: 24,
+                                    centersInkInCell: true
                                 )
+                                .frame(width: 38, height: 40)
                             }
                         }
                     }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .offset(x: eventIconRowOriginCorrection(for: row))
             .frame(minHeight: 40)
         } else {
             if row.hasCalendarLink, let onAddScheduleToCalendar {
