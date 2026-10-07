@@ -131,7 +131,7 @@ nonisolated struct NumeralPreferencesSnapshot: Equatable, Sendable {
     let statisticsOverride: NumeralScopePreference?
 
     static let defaults = NumeralPreferencesSnapshot(
-        app: NumeralScopePreference(system: .systemDefault, chineseOptions: ChineseNumeralOptions()),
+        app: NumeralScopePreference(system: .westernArabic, chineseOptions: ChineseNumeralOptions()),
         timerOverride: nil,
         statisticsOverride: nil
     )
@@ -148,7 +148,7 @@ nonisolated struct NumeralPreferencesSnapshot: Equatable, Sendable {
         let app = preference(
             scope: .app,
             rawSystem: defaults.string(forKey: NumeralPreferenceKeys.appSystem)
-                ?? NumeralSystem.systemDefault.rawValue,
+                ?? NumeralSystem.westernArabic.rawValue,
             defaults: defaults
         ) ?? NumeralPreferencesSnapshot.defaults.app
         return NumeralPreferencesSnapshot(

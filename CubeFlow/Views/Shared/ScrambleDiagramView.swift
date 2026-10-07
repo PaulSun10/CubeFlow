@@ -218,15 +218,20 @@ private struct ScrambleDiagramActionsModifier: ViewModifier {
     let scramble: String
     let colorScheme: String
     let exportAppearance: ScrambleExportAppearance
+    var opensDetail = true
 
-    @State private var showingViewer = false
+    @State private var showingDetail = false
     @State private var showingShareChoice = false
     @State private var sharedImage: ScrambleSharedImage?
     @State private var errorMessage: String?
 
     func body(content: Content) -> some View {
         content
-            .onTapGesture { showingViewer = true }
+            .onTapGesture { if opensDetail { showingDetail = true } }
+            .zoomViewerPresentation(isPresented: $showingDetail) {
+                ScrambleDiagramSheet(title: "timer.scramble_diagram", puzzleKey: puzzleKey,
+                    scramble: scramble, exportAppearance: exportAppearance)
+            }
             .contextMenu {
                 Button {
                     perform(.diagramOnly) { ContentImageActions.copy($0) }
@@ -256,15 +261,6 @@ private struct ScrambleDiagramActionsModifier: ViewModifier {
                     showingShareChoice = true
                 } label: {
                     Label("Share…", systemImage: "square.and.arrow.up")
-                }
-            }
-            .zoomViewerPresentation(isPresented: $showingViewer) {
-                CompatibleNavigationContainer {
-                    ScrambleDiagramViewer(
-                        puzzleKey: puzzleKey,
-                        scramble: scramble,
-                        exportAppearance: exportAppearance
-                    )
                 }
             }
             .confirmationDialog("Share", isPresented: $showingShareChoice) {
@@ -336,9 +332,18 @@ private struct ScrambleDiagramActionsModifier: ViewModifier {
     }
 }
 
-private struct ScrambleSharedImage: Identifiable {
-    let id = UUID()
-    let image: UIImage
+struct ScrambleDetailSeparator: ViewModifier {
+    static let contentSpacing: CGFloat = 24
+
+    func body(content: Content) -> some View {
+        content.overlay(alignment: .bottom) {
+            // Draw in the existing gap without changing either content frame.
+            Divider()
+                .offset(y: Self.contentSpacing / 2)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
+    }
 }
 
 private struct ScrambleDiagramViewer: View {
@@ -372,10 +377,12 @@ private struct ScrambleDiagramViewer: View {
     var body: some View {
         GeometryReader { proxy in
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: ScrambleDetailSeparator.contentSpacing) {
                     Group {
                         if let image {
-                            ZoomableContentImage(image: image)
+                            Image(uiImage: image).resizable().scaledToFit()
+                                .modifier(ScrambleDiagramActionsModifier(puzzleKey: puzzleKey, scramble: scramble,
+                                    colorScheme: colorScheme, exportAppearance: exportAppearance, opensDetail: false))
                         } else if let errorMessage {
                             VStack(spacing: 10) {
                                 Image(systemName: "photo.badge.exclamationmark")
@@ -397,6 +404,7 @@ private struct ScrambleDiagramViewer: View {
                         ScrambleDiagramView.diagramAspectRatio(for: puzzleKey),
                         contentMode: .fit
                     )
+                    .modifier(ScrambleDetailSeparator())
 
                     Text(scramble)
                         .font(fontDesign.font(size: min(max(fontSize, 14), 32), style: fontStyle))
@@ -412,6 +420,7 @@ private struct ScrambleDiagramViewer: View {
                 .frame(minHeight: proxy.size.height, alignment: .center)
             }
         }
+        .background(Color(uiColor: .systemBackground).ignoresSafeArea())
         .compatibleSoftScrollEdgeEffect()
         .navigationTitle("Scramble")
         .navigationBarTitleDisplayMode(.inline)
@@ -444,12 +453,10 @@ private struct ScrambleDiagramViewer: View {
         }
         .task(id: "\(puzzleKey)|\(scramble)|\(colorScheme)") {
             do {
-                image = try await ScrambleExportRenderer.render(
+                image = try await ScrambleExportRenderer.diagramForDisplay(
                     puzzleKey: puzzleKey,
                     scramble: scramble,
-                    colorScheme: colorScheme,
-                    kind: .diagramOnly,
-                    appearance: exportAppearance
+                    colorScheme: colorScheme
                 )
                 errorMessage = nil
             } catch {
@@ -476,8 +483,19 @@ private struct ScrambleDiagramViewer: View {
     }
 }
 
+private struct ScrambleSharedImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
 @MainActor
 enum ScrambleExportRenderer {
+    /// Viewing follows the surrounding native appearance; export backgrounds
+    /// belong only to copy/save/share, never to the on-screen diagram.
+    static func diagramForDisplay(puzzleKey: String, scramble: String, colorScheme: String) async throws -> UIImage {
+        try await ScrambleDiagramImageRenderer.render(puzzleKey: puzzleKey, scramble: scramble, colorScheme: colorScheme)
+    }
+
     static func render(
         puzzleKey: String,
         scramble: String,

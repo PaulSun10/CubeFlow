@@ -457,17 +457,20 @@ struct TimerStatisticDisplayItem: Identifiable, Hashable {
     let title: String
     let value: String
     let isAvailable: Bool
+    let isPersonalBest: Bool
 
     init(
         metric: TimerStatisticMetric,
         title: String,
         value: String,
-        isAvailable: Bool = true
+        isAvailable: Bool = true,
+        isPersonalBest: Bool = false
     ) {
         self.metric = metric
         self.title = title
         self.value = value
         self.isAvailable = isAvailable
+        self.isPersonalBest = isPersonalBest
     }
 
     var id: TimerStatisticMetric { metric }
@@ -763,16 +766,25 @@ enum TimerArrangementLayout {
         timerReservedHeight: CGFloat,
         topControlsHeight: CGFloat
     ) -> CGFloat {
-        nonnegativeFinite(
-            max(
-                72,
-                nonnegativeFinite(containerHeight) / 2
-                    + (timerVerticalOffset.isFinite ? timerVerticalOffset : 0)
-                    - nonnegativeFinite(timerReservedHeight) / 2
-                    - nonnegativeFinite(topControlsHeight)
-            ),
-            fallback: 72
-        )
+        // Initial/preview fallback until the live Timer frame is measured.
+        max(0, nonnegativeFinite(containerHeight) / 2
+            + (timerVerticalOffset.isFinite ? timerVerticalOffset : 0)
+            - nonnegativeFinite(timerReservedHeight) / 2
+            - nonnegativeFinite(topControlsHeight) - 12)
+    }
+
+    static func measuredScrambleAvailableHeight(timerTop: CGFloat, scrambleTop: CGFloat) -> CGFloat {
+        guard timerTop.isFinite, scrambleTop.isFinite else { return 0 }
+        return max(0, timerTop - scrambleTop - 12)
+    }
+
+    static func scrollViewportHeight(availableHeight: CGFloat, topOffset: CGFloat) -> CGFloat {
+        max(0, nonnegativeFinite(availableHeight) - nonnegativeFinite(topOffset))
+    }
+
+    static func measuredScrollViewportHeight(availableHeight: CGFloat, timerTop: CGFloat?, viewportTop: CGFloat) -> CGFloat {
+        guard let timerTop else { return nonnegativeFinite(availableHeight) }
+        return min(nonnegativeFinite(availableHeight), measuredScrambleAvailableHeight(timerTop: timerTop, scrambleTop: viewportTop))
     }
 
     static func centeredGroupTop(containerHeight: CGFloat, groupHeight: CGFloat) -> CGFloat {
@@ -916,6 +928,7 @@ struct TimerCardStatisticsView: View {
                     .compatibleFontWidth(fontDesign)
                     .lineLimit(1)
                     .minimumScaleFactor(0.68)
+                    .foregroundStyle(item.isPersonalBest ? AnyShapeStyle(WCAResultEmphasis.personalBest.color) : textStyle)
             }
         }
         .foregroundStyle(textStyle)
@@ -943,6 +956,7 @@ struct TimerStatisticsView: View {
     let fontStyle: TimerFontStyleOption
     let fontSize: Double
     let usesAutomaticSize: Bool
+    var prominent = false
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -975,7 +989,7 @@ struct TimerStatisticsView: View {
                     metricRows(size: size)
                 }
             case .verticalCentered:
-                VStack(alignment: .center, spacing: 6) {
+                VStack(alignment: .center, spacing: prominent ? 9 : 6) {
                     metricRows(size: size)
                 }
             case .horizontal:
@@ -1003,7 +1017,7 @@ struct TimerStatisticsView: View {
                 .compatibleFontWidth(fontDesign)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
-                .foregroundStyle(textStyle)
+                .foregroundStyle(item.isPersonalBest ? AnyShapeStyle(WCAResultEmphasis.personalBest.color) : textStyle)
         }
     }
 
@@ -1024,8 +1038,34 @@ struct TimerStatisticsView: View {
     }
 
     private var textStyle: AnyShapeStyle {
-        guard appearance.style != .system else { return AnyShapeStyle(Color.secondary) }
+        guard appearance.style != .system else {
+            return AnyShapeStyle(prominent ? Color.primary.opacity(0.78) : Color.secondary)
+        }
         return timerAppearanceShapeStyle(for: appearance, colorScheme: colorScheme)
+    }
+}
+
+/// Bounds the whole positioned area, including drawing transitions, not only
+/// the inner ScrollView's proposed height. Both frames use the same space.
+struct TimerScrambleScrollViewport<Content: View>: View {
+    let availableHeight: CGFloat
+    let timerTop: CGFloat?
+    let coordinateSpace: String
+    @ViewBuilder var content: (CGFloat) -> Content
+
+    var body: some View {
+        GeometryReader { viewport in
+            let height = TimerArrangementLayout.measuredScrollViewportHeight(
+                availableHeight: availableHeight,
+                timerTop: timerTop,
+                viewportTop: viewport.frame(in: .named(coordinateSpace)).minY
+            )
+            content(height)
+                .frame(height: height, alignment: .top)
+                .clipped()
+        }
+        .frame(height: TimerArrangementLayout.nonnegativeFinite(availableHeight))
+        .clipped()
     }
 }
 

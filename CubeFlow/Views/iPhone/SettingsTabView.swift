@@ -50,6 +50,7 @@ private enum TimerCustomizationListRow: Hashable, Identifiable {
     case cardsStatisticSlot(Int)
     case diagramPlacement
     case diagramSize
+    case diagramStroke
     case colorPuzzle
     case colorPreview
     case colorFace(Int)
@@ -131,12 +132,13 @@ struct SettingsTabView: View {
     @AppStorage("timerUpdatingMode") private var timerUpdatingMode: String = TimerUpdatingMode.on.rawValue
     @AppStorage("timerAccuracy") private var timerAccuracy: String = SolveTimeAccuracy.thousandths.rawValue
     @AppStorage("enteringTimesWith") private var enteringTimesWith: String = SessionTimingMethod.timer.rawValue
-    @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = false
+    @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = true
     @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
     @AppStorage("competitionsBackgroundImageData") private var competitionsBackgroundImageData: Data?
     @AppStorage("drawScramblePlacement") private var drawScramblePlacement: String = DrawScramblePlacement.inline.rawValue
     @AppStorage("drawScrambleFloatingSize") private var drawScrambleFloatingSize: Double = TimerCustomizationDefaults.drawScrambleSize
+    @AppStorage("scrambleDiagramStrokeStyle") private var diagramStrokeRaw = DiagramStrokeStyle.thin.rawValue
     @AppStorage("scrambleDiagramColorSchemeData") private var scrambleDiagramColorSchemeData: Data?
     @AppStorage("timerTextFontSize") private var timerTextFontSize: Double = 64
     @AppStorage("scrambleTextFontSize") private var scrambleTextFontSize: Double = 20
@@ -147,7 +149,7 @@ struct SettingsTabView: View {
     @AppStorage("timerTextFontWeight") private var timerTextFontWeight: String = TimerFontWeightOption.semibold.rawValue
     @AppStorage("scrambleTextFontWeight") private var scrambleTextFontWeight: String = TimerFontWeightOption.medium.rawValue
     @AppStorage("averageTextFontWeight") private var averageTextFontWeight: String = TimerFontWeightOption.medium.rawValue
-    @AppStorage("timerArrangement") private var timerArrangement: String = TimerArrangement.classic.rawValue
+    @AppStorage("timerArrangement") private var timerArrangement: String = TimerArrangement.cards.rawValue
     @AppStorage("timerMinimalMode") private var timerMinimalMode: Bool = false
     @AppStorage("timerMinimalArrangementMigrationCompleted") private var timerMinimalArrangementMigrationCompleted: Bool = false
     @AppStorage("timerSplitOrder") private var timerSplitOrder: String = TimerSplitOrder.statisticsLeading.rawValue
@@ -161,7 +163,7 @@ struct SettingsTabView: View {
     @AppStorage("showNextScrambleButton") private var showNextScrambleButton: Bool = true
     @AppStorage("selectedAppIcon") private var selectedAppIcon: String = AppIconOption.red.rawValue
     @AppStorage("competitionCardStyle") private var competitionCardStyle: String = CompetitionCardStyleOption.list.rawValue
-    @AppStorage("appNumeralSystem") private var appNumeralSystem = NumeralSystem.systemDefault.rawValue
+    @AppStorage("appNumeralSystem") private var appNumeralSystem = NumeralSystem.westernArabic.rawValue
     @AppStorage("timerNumeralSystem") private var timerNumeralSystem = NumeralPreferenceKeys.inheritedRawValue
     @AppStorage("statisticsNumeralSystem") private var statisticsNumeralSystem = NumeralPreferenceKeys.inheritedRawValue
     @AppStorage("appNumeralChineseFinancial") private var appNumeralChineseFinancial = false
@@ -1306,7 +1308,7 @@ private extension SettingsTabView {
             return rows
 
         case .scrambleDiagram:
-            var rows: [TimerCustomizationListRow] = [.back(.components), .diagramPlacement, .diagramSize]
+            var rows: [TimerCustomizationListRow] = [.back(.components), .diagramPlacement, .diagramSize, .diagramStroke]
             rows.append(.navigation(.scrambleDiagramColors))
             return rows
 
@@ -1386,6 +1388,13 @@ private extension SettingsTabView {
 
         case .cardsStatisticSlot(let index):
             return AnyView(timerCardsStatisticSlotRow(index: index))
+
+        case .diagramStroke:
+            return AnyView(Picker("settings.diagram_stroke", selection: $diagramStrokeRaw) {
+                ForEach(DiagramStrokeStyle.allCases) { style in
+                    Text(LocalizedStringKey(style.localizationKey)).tag(style.rawValue)
+                }
+            })
 
         case .diagramPlacement:
             if resolvedTimerArrangement.allowsIndependentDiagramPlacement {

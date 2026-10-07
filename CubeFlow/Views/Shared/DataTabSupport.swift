@@ -41,8 +41,9 @@ struct SessionSolveSample: Identifiable, Sendable {
     let scramble: String
     let comment: String
     let eventRawValue: String
+    let inputSourceRaw: String?
 
-    nonisolated init(id: UUID, date: Date, time: Double, resultRaw: String, scramble: String, comment: String, eventRawValue: String) {
+    nonisolated init(id: UUID, date: Date, time: Double, resultRaw: String, scramble: String, comment: String, eventRawValue: String, inputSourceRaw: String? = nil) {
         self.id = id
         self.date = date
         self.time = time
@@ -50,7 +51,10 @@ struct SessionSolveSample: Identifiable, Sendable {
         self.scramble = scramble
         self.comment = comment
         self.eventRawValue = eventRawValue
+        self.inputSourceRaw = inputSourceRaw
     }
+
+    nonisolated var inputSource: SolveInputSource? { inputSourceRaw.flatMap(SolveInputSource.init(rawValue:)) }
 
     nonisolated var adjustedTime: Double? {
         switch SolveResult(rawValue: resultRaw) ?? .solved {

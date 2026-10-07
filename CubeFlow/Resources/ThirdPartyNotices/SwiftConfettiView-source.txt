@@ -1,0 +1,11 @@
+SwiftConfettiView by Ugur Ethem AYDIN, MIT license.
+https://github.com/ugurethemaydin/SwiftConfettiView
+Pinned commit: 7b0d18301b9135ea62274d470e050fe032dace91
+Vendored UIKit emitter and four original particle assets; no package/runtime dependency.
+CubeFlow adaptations: iOS compilation guard, namespaced resource lookup,
+explicit synchronous cancellation for UIViewRepresentable teardown, and a
+birth-stop/drain API that preserves existing particles until their natural end.
+PB uses DefaultRainDemo intensity 0.75 / density 1.5 with a saturated five-color
+multicolor palette. Emission lasts 3.2 seconds; the view then remains through
+the maximum emitter-cell lifetime (10.5 seconds plus a 0.1-second margin).
+No sound, haptic, alternate preset, or style selector. Default rain depth behavior retained.

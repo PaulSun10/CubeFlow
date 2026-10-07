@@ -37,6 +37,13 @@ struct DataTabView: View {
     @State private var segmentTransitionDirection: Edge = .trailing
     @State private var isSelecting = false
     @State private var selectedSolveIDs: Set<UUID> = []
+    @State private var selectionAnchorID: UUID?
+    @State private var rowFrames: [UUID: CGRect] = [:]
+    @State private var listViewport = CGRect.zero
+    @State private var rangeControlFrame = CGRect.zero
+    @ScaledMetric(relativeTo: .title) private var solveTimeFontSize = 28
+    @State private var moveRequest: SolveMoveRequest?
+    @Binding private var isSelectingSolves: Bool
     @State private var showingSessionSheet = false
     @State private var solveDetailSample: SessionSolveSample?
     @State private var averageDetailEntry: AverageListEntry?
@@ -70,11 +77,13 @@ struct DataTabView: View {
     init(
         usesSystemBottomAccessory: Bool = false,
         isBottomAccessoryVisible: Binding<Bool> = .constant(false),
-        searchRequestID: Binding<Int> = .constant(0)
+        searchRequestID: Binding<Int> = .constant(0),
+        isSelectingSolves: Binding<Bool> = .constant(false)
     ) {
         self.usesSystemBottomAccessory = usesSystemBottomAccessory
         _isBottomAccessoryVisible = isBottomAccessoryVisible
         _searchRequestID = searchRequestID
+        _isSelectingSolves = isSelectingSolves
     }
 
     private var selectedSession: Session? {
@@ -89,20 +98,7 @@ struct DataTabView: View {
         filteredSessionSolves.count
     }
 
-    private var personalBestSingleSolveIDs: Set<UUID> {
-        var bestTime: Double?
-        var recordIDs = Set<UUID>()
-
-        for solve in sessionSolves.reversed() {
-            guard let adjustedTime = solve.adjustedTime else { continue }
-            if bestTime == nil || adjustedTime < bestTime! {
-                bestTime = adjustedTime
-                recordIDs.insert(solve.id)
-            }
-        }
-
-        return recordIDs
-    }
+    @State private var personalBestSingleSolveIDs = Set<UUID>()
 
     private var selectedSessionPuzzleKey: String? {
         guard let rawValue = selectedSession?.selectedEventRawValue,
@@ -167,6 +163,11 @@ struct DataTabView: View {
                     onResetRecordFilters: resetRecordFilters
                 )
             )
+            .toolbar {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    if isSelecting && selectedSegment == .time { selectionActionBar }
+                }
+            }
             .compatibleNavigationDestination(isPresented: $isShowingSearch) {
                 if let selectedSession {
                     DataSolveSearchView(
@@ -195,6 +196,16 @@ struct DataTabView: View {
                 personalBestSingleSolveIDs: personalBestSingleSolveIDs
             )
                 .compatibleLargeSheet()
+        }
+        .sheet(item: $moveRequest) { request in
+            SolveMoveDestinationView(sessions: Array(sessions), request: request, languageCode: appLanguage) { destination in
+                try SolveSessionMembership.move(ids: request.solveIDs, from: request.sourceID, to: destination, context: modelContext)
+                filteredSessionSolves.removeAll { request.solveIDs.contains($0.id) }
+                updateVisibleSessionSolves()
+                endSelecting()
+                NotificationCenter.default.post(name: solvesDidChangeNotification, object: nil)
+            }
+            .compatibleMediumLargeSheet()
         }
         .sheet(item: $recordAverageDetail) { selection in
             AverageDetailSheet(
@@ -239,9 +250,7 @@ struct DataTabView: View {
             .compatibleMediumLargeSheet()
         }
         .safeAreaInset(edge: .bottom) {
-            if selectedSegment == .time && isSelecting && !selectedSolveIDs.isEmpty {
-                selectionActionBar
-            } else if selectedSegment == .average && !availableAverageTypes.isEmpty {
+            if selectedSegment == .average && !availableAverageTypes.isEmpty {
                 averageTypeBar
             } else if !usesSystemBottomAccessory && shouldShowBottomAccessory {
                 DataBottomSearchBar(languageCode: appLanguage, usesContainerGlass: true) {
@@ -269,7 +278,17 @@ struct DataTabView: View {
             }
             updateBottomAccessoryVisibility()
         }
-        .onChange(of: isSelecting) { _ in
+        .compatibleTabBarVisibility(hidden: isSelecting)
+        .background {
+            if #unavailable(iOS 16.0) {
+                DataLegacyTabBarVisibility(hidden: isSelecting).frame(width: 0, height: 0)
+            }
+        }
+        .onChange(of: isSelecting) { selecting in
+            isSelectingSolves = selecting
+            if !selecting {
+                selectionAnchorID = nil
+            }
             updateBottomAccessoryVisibility()
         }
         .onChange(of: selectedSessionID) { _ in
@@ -474,18 +493,38 @@ struct DataTabView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 48)
             } else {
-                List {
-                    Section(selectedSession?.name ?? "") {
-                        ForEach(visibleSessionSolves) { solve in
-                            solveRow(
-                                for: solve,
-                                position: solvePositionByID[solve.id] ?? 0
-                            )
+                GeometryReader { proxy in
+                    List {
+                        Section(selectedSession?.name ?? "") {
+                            ForEach(visibleSessionSolves) { solve in
+                                solveRow(for: solve, position: solvePositionByID[solve.id] ?? 0)
+                                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                                    .background {
+                                        GeometryReader { rowProxy in
+                                            Color.clear.preference(key: SolveRowFramesKey.self,
+                                                                   value: [solve.id: rowProxy.frame(in: .global)])
+                                        }
+                                    }
+                            }
                         }
                     }
+                    .listStyle(.insetGrouped)
+                    .compatibleSoftScrollEdgeEffect()
+                    .onPreferenceChange(SolveRowFramesKey.self) { rowFrames = $0 }
+                    .onPreferenceChange(SolveRangeControlFrameKey.self) { rangeControlFrame = $0 }
+                    .overlay(alignment: .top) {
+                        if let boundary = rangeBoundary, !boundary.anchorIsAbove {
+                            selectToHereButton(boundary).padding(.top, 8)
+                        }
+                    }
+                    .overlay(alignment: .bottom) {
+                        if let boundary = rangeBoundary, boundary.anchorIsAbove {
+                            selectToHereButton(boundary).padding(.bottom, 8)
+                        }
+                    }
+                    .onAppear { listViewport = proxy.frame(in: .global) }
+                    .onChange(of: proxy.frame(in: .global)) { listViewport = $0 }
                 }
-                .listStyle(.insetGrouped)
-                .compatibleSoftScrollEdgeEffect()
             }
         }
     }
@@ -692,7 +731,7 @@ struct DataTabView: View {
                 Text(SolveMetrics.formatAverage(entry.value, decimals: solveTimeAccuracy.decimals))
                     .font(.system(size: 24, weight: .semibold))
                     .monospacedDigit()
-                    .foregroundStyle(entry.isPersonalBest ? .orange : .primary)
+                    .foregroundStyle(entry.isPersonalBest ? WCAResultEmphasis.personalBest.color : .primary)
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
@@ -704,85 +743,108 @@ struct DataTabView: View {
 
     private func solveRow(for solve: SessionSolveSample, position: Int) -> some View {
         Button {
-            if isSelecting {
-                toggleSelection(for: solve)
-            } else {
-                solveDetailSample = solve
-            }
+            if isSelecting { toggleSelection(for: solve) } else { solveDetailSample = solve }
         } label: {
             HStack(spacing: 12) {
-                Text("#\(position)")
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(.primary)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals))
-                        .font(.system(size: 28, weight: .semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(personalBestSingleSolveIDs.contains(solve.id) ? .orange : .primary)
-
-                    Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
-
-                    if solve.scramble.isEmpty {
-                        Text("data.scramble_empty")
-                            .font(.system(size: 13, weight: .regular))
-                            .foregroundStyle(.secondary)
+                Text("#\(NumeralPresentation.formatInteger(position))")
+                    .font(.body).monospacedDigit().foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .frame(minWidth: solveNumberColumnWidth, alignment: .leading)
+                VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals))
+                            .font(.system(size: solveTimeFontSize, weight: .semibold)).monospacedDigit()
+                            .foregroundStyle(personalBestSingleSolveIDs.contains(solve.id) ? WCAResultEmphasis.personalBest.color : .primary)
                             .lineLimit(1)
-                    } else {
-                        HStack(spacing: 0) {
-                            Text("data.scramble_prefix")
-                            Text(solve.scramble)
+                        HStack(spacing: 6) {
+                            if let glyph = solveEventGlyph(solve) {
+                                CompetitionEventGlyph(glyph: glyph, eventName: solveEventName(solve), size: 15, color: .secondary)
+                            }
+                            Text(appLocalizedString(solve.inputSource?.localizationKey ?? "solve.method.unknown", languageCode: appLanguage))
+                                .font(.subheadline).foregroundStyle(.secondary).layoutPriority(1)
+                            Spacer(minLength: 2)
+                            Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
+                                .font(.subheadline).foregroundStyle(.secondary)
                         }
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                     }
+                    Text(solve.scramble.isEmpty ? appLocalizedString("data.scramble_empty", languageCode: appLanguage) : solve.scramble)
+                        .font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
                 }
-
-                Spacer()
-
-                if isSelecting {
-                    Image(systemName: selectedSolveIDs.contains(solve.id) ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(selectedSolveIDs.contains(solve.id) ? .blue : .secondary)
-                } else {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Group {
+                    if isSelecting {
+                        SolveSelectionCheckmark(selected: selectedSolveIDs.contains(solve.id))
+                    } else {
+                        Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    }
                 }
+                .frame(width: 28)
             }
-            .padding(.vertical, 6)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelecting && selectedSolveIDs.contains(solve.id) ? .isSelected : [])
     }
 
-    private var selectionActionBar: some View {
-        HStack {
-            Button("common.select_all") {
-                selectedSolveIDs = Set(visibleSessionSolves.map(\.id))
-            }
-            .font(.system(size: 17, weight: .medium))
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .compatibleGlassFromIOS16(in: Capsule())
+    private var solveNumberColumnWidth: CGFloat {
+        let text = "#\(NumeralPresentation.formatInteger(max(filteredSessionSolves.count, 1)))"
+        let font = UIFont.monospacedDigitSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize, weight: .regular)
+        return ceil((text as NSString).size(withAttributes: [.font: font]).width)
+    }
 
-            Spacer()
+    private func solveEventGlyph(_ solve: SessionSolveSample) -> String? {
+        let id = PuzzleEvent.fromSolveEvent(solve.eventRawValue)?.cubingEventID ?? solve.eventRawValue
+        return CompetitionEventIconFont.glyph(for: id)
+    }
 
-            Button(role: .destructive) {
-                isShowingDeleteSelectedSolvesAlert = true
-            } label: {
-                    Text("common.delete")
-                        .font(.system(size: 17, weight: .semibold))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                }
-            .compatibleGlassFromIOS16(in: Capsule())
+    private func solveEventName(_ solve: SessionSolveSample) -> String {
+        if let event = PuzzleEvent.fromSolveEvent(solve.eventRawValue) {
+            return appLocalizedString(event.localizationKey, languageCode: appLanguage)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        return solve.eventRawValue
+    }
+
+    @ViewBuilder private var selectionActionBar: some View {
+        Button("common.select_all") {
+            selectedSolveIDs = Set(visibleSessionSolves.map(\.id))
+        }
+        Spacer()
+        Button(solveMoveLabel(count: selectedSolveIDs.count, languageCode: appLanguage)) {
+            guard let source = selectedSession else { return }
+            moveRequest = SolveMoveRequest(sourceID: source.id, solveIDs: selectedSolveIDs)
+        }
+        .disabled(selectedSolveIDs.isEmpty)
+        Spacer()
+        Button("common.delete", role: .destructive) { isShowingDeleteSelectedSolvesAlert = true }
+            .disabled(selectedSolveIDs.isEmpty)
+    }
+
+    private var rangeBoundary: SolveSelectionRange.Boundary? {
+        guard isSelecting else { return nil }
+        let ordered = visibleSessionSolves.map(\.id)
+        let visible = SolveSelectionRange.visuallyVisibleIDs(rowFrames: rowFrames, viewport: listViewport)
+        guard let boundary = SolveSelectionRange.boundary(anchor: selectionAnchorID, visibleIDs: visible, orderedIDs: ordered) else { return nil }
+        let endpointRows = SolveSelectionRange.visuallyVisibleIDs(rowFrames: rowFrames, viewport: listViewport,
+            control: rangeControlFrame, anchorIsAbove: boundary.anchorIsAbove)
+        return SolveSelectionRange.boundary(anchor: selectionAnchorID, visibleIDs: endpointRows, orderedIDs: ordered)
+    }
+
+    private func selectToHereButton(_ boundary: SolveSelectionRange.Boundary) -> some View {
+        Button {
+            guard let anchor = selectionAnchorID else { return }
+            selectedSolveIDs.formUnion(SolveSelectionRange.ids(from: anchor, through: boundary.id, orderedIDs: visibleSessionSolves.map(\.id)))
+        } label: {
+            Label("data.select.to_here", systemImage: boundary.anchorIsAbove ? "arrow.down" : "arrow.up")
+                .font(.subheadline.weight(.medium)).padding(.horizontal, 14).padding(.vertical, 9)
+        }
+        .compatibleGlass(in: Capsule())
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(key: SolveRangeControlFrameKey.self, value: proxy.frame(in: .global))
+            }
+        }
     }
 
     private var averageTypeBar: some View {
@@ -805,6 +867,7 @@ struct DataTabView: View {
         } else {
             selectedSolveIDs.insert(solve.id)
         }
+        selectionAnchorID = SolveSelectionRange.anchorAfterDirectToggle(id: solve.id, selected: selectedSolveIDs.contains(solve.id), previous: selectionAnchorID)
     }
 
     private func deleteSelectedSolves() {
@@ -962,7 +1025,8 @@ struct DataTabView: View {
                     resultRaw: solve.resultRaw,
                     scramble: solve.scramble,
                     comment: solve.comment,
-                    eventRawValue: solve.event
+                    eventRawValue: solve.event,
+                    inputSourceRaw: solve.inputSourceRaw
                 )
             }
 
@@ -983,7 +1047,23 @@ struct DataTabView: View {
         }
     }
 
+    private func refreshSinglePBIDs() {
+        var bestTime: Double?
+        var recordIDs = Set<UUID>()
+
+        for solve in sessionSolves.reversed() {
+            guard let adjustedTime = solve.adjustedTime else { continue }
+            if bestTime == nil || adjustedTime < bestTime! {
+                bestTime = adjustedTime
+                recordIDs.insert(solve.id)
+            }
+        }
+
+        personalBestSingleSolveIDs = recordIDs
+    }
+
     private func updateVisibleSessionSolves() {
+        refreshSinglePBIDs()
         solvePositionByID = Dictionary(
             uniqueKeysWithValues: filteredSessionSolves.enumerated().map { index, solve in
                 (solve.id, filteredSessionSolves.count - index)
@@ -1015,6 +1095,9 @@ struct DataTabView: View {
         }
         let sortOption = DataSolveSortOption(rawValue: solveSortOptionRawValue) ?? .newest
         visibleSessionSolves = matchingSolves.sorted(by: sortOption.areInIncreasingOrder)
+        let availableIDs = Set(visibleSessionSolves.map(\.id))
+        selectedSolveIDs.formIntersection(availableIDs)
+        if let anchor = selectionAnchorID, !availableIDs.contains(anchor) { selectionAnchorID = nil }
     }
 
     private var shouldShowBottomAccessory: Bool {
@@ -1886,7 +1969,8 @@ private struct DataSolveSearchView: View {
                     resultRaw: $0.resultRaw,
                     scramble: $0.scramble,
                     comment: $0.comment,
-                    eventRawValue: $0.event
+                    eventRawValue: $0.event,
+                    inputSourceRaw: $0.inputSourceRaw
                 )
             }
 
@@ -2272,6 +2356,7 @@ private struct SolveDetailSheet: View {
     @State private var showingShareOptions = false
     @State private var shareContentKind: SolveShareContentKind = .solveCard
     @State private var shareBackground: SolveShareBackground = .light
+    @State private var reconstruction: SolveReconstruction?
 
     init(sample: SessionSolveSample, position: Int?, fallbackPuzzleKey: String?) {
         self.sample = sample
@@ -2287,10 +2372,10 @@ private struct SolveDetailSheet: View {
     }
 
     private var puzzleKey: String? {
-        if let event = PuzzleEvent(rawValue: sample.eventRawValue) {
+        if let event = PuzzleEvent.fromSolveEvent(sample.eventRawValue) {
             return event.scrambleDiagramPuzzleKey
         }
-        return fallbackPuzzleKey
+        return nil
     }
 
     private var shouldShowScrambleDetail: Bool {
@@ -2314,6 +2399,15 @@ private struct SolveDetailSheet: View {
                         Text(SolveMetrics.displayTime(for: sample, decimals: solveTimeAccuracy.decimals))
                             .font(.system(size: 44, weight: .semibold))
                             .monospacedDigit()
+                        HStack(spacing: 8) {
+                            if let event = PuzzleEvent.fromSolveEvent(sample.eventRawValue),
+                               let glyph = CompetitionEventIconFont.glyph(for: event.cubingEventID) {
+                                CompetitionEventGlyph(glyph: glyph,
+                                    eventName: appLocalizedString(event.localizationKey, languageCode: appLanguage), size: 17, color: .secondary)
+                            }
+                            Text(appLocalizedString(sample.inputSource?.localizationKey ?? "solve.method.unknown", languageCode: appLanguage))
+                                .font(.subheadline).foregroundStyle(.secondary)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -2328,6 +2422,10 @@ private struct SolveDetailSheet: View {
                         )
                             .aspectRatio(aspectRatio, contentMode: .fit)
                             .frame(maxWidth: .infinity)
+                    }
+
+                    if let reconstruction {
+                        reconstructionSection(reconstruction)
                     }
 
                     commentSection
@@ -2385,6 +2483,7 @@ private struct SolveDetailSheet: View {
             .sheet(item: $sharedSolveImage) { item in
                 SystemShareSheet(items: [item.image])
             }
+            .task { loadReconstruction() }
             .onDisappear(perform: saveComment)
             .alert("delete.solve.title", isPresented: $isShowingDeleteSolveAlert) {
                 Button("common.delete", role: .destructive) {
@@ -2420,6 +2519,59 @@ private struct SolveDetailSheet: View {
                 .compatibleLargeSheet()
             }
         }
+    }
+
+    private func reconstructionSection(_ reconstruction: SolveReconstruction) -> some View {
+        Group {
+            if reconstruction.isReplayable {
+                NavigationLink {
+                    ReconstructionReplayView(reconstruction: reconstruction, actualSolveDuration: sample.time)
+                } label: {
+                    replayRow(reconstruction)
+                }
+                .buttonStyle(.plain)
+            } else {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Replay unavailable")
+                        .font(.headline)
+                    Text("Stored cube state or moves cannot be reconstructed.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(14)
+            }
+        }
+    }
+
+    private func replayRow(_ reconstruction: SolveReconstruction) -> some View {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Replay")
+                        .font(.headline)
+                    Text(replaySubtitle(reconstruction))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(14)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func replaySubtitle(_ reconstruction: SolveReconstruction) -> String {
+        let moveCount = "\(reconstruction.moves.count) moves"
+        if let tps = reconstruction.turnsPerSecond(actualDuration: sample.time) {
+            return "\(moveCount) · \(String(format: "%.2f", tps)) TPS"
+        }
+        return reconstruction.completeness == .complete ? moveCount : "\(moveCount) · Incomplete"
+    }
+
+    private func loadReconstruction() {
+        guard let solve = try? modelContext.fetchSolve(with: sample.id) else { return }
+        reconstruction = solve.reconstruction
     }
 
     @ViewBuilder
@@ -2779,7 +2931,7 @@ private struct AverageDetailSheet: View {
             Text(value)
                 .font(.system(size: isPrimary ? 26 : 18, weight: isPrimary ? .semibold : .medium))
                 .monospacedDigit()
-                .foregroundStyle(isPrimary && entry.isPersonalBest ? .orange : .primary)
+                .foregroundStyle(isPrimary && entry.isPersonalBest ? WCAResultEmphasis.personalBest.color : .primary)
                 .layoutPriority(1)
         }
         .padding(.vertical, isPrimary ? 6 : 3)
@@ -2801,7 +2953,7 @@ private struct AverageDetailSheet: View {
                     Text(displayText)
                         .font(.system(size: 21, weight: .semibold))
                         .monospacedDigit()
-                        .foregroundStyle(personalBestSingleSolveIDs.contains(solve.id) ? .orange : .primary)
+                        .foregroundStyle(personalBestSingleSolveIDs.contains(solve.id) ? WCAResultEmphasis.personalBest.color : .primary)
 
                     Text(SolveMetrics.displayDate(solve.date, languageCode: appLanguage))
                         .font(.system(size: 13, weight: .medium))

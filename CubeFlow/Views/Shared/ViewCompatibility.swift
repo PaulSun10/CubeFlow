@@ -159,6 +159,25 @@ extension View {
     }
 
     @ViewBuilder
+    func compatibleBottomSoftScrollEdgeEffect() -> some View {
+        if #available(iOS 26.0, *) {
+            compatibleSoftScrollEdgeEffect(for: .bottom)
+        } else {
+            mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .white, location: 0),
+                        .init(color: .white, location: 0.94),
+                        .init(color: .white.opacity(0.28), location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
     func compatibleListSectionSpacing(_ spacing: CGFloat) -> some View {
         if #available(iOS 17.0, *) {
             self.listSectionSpacing(spacing)

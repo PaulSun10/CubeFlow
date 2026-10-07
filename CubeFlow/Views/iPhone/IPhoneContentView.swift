@@ -6,6 +6,7 @@ struct IPhoneContentView: View {
     #if DEBUG
     private let marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>?
     #endif
+    @State private var isDataSelectingSolves = false
     @State private var selectedTab: IPhoneTab = .timer
     @State private var algsSearchRequestID = 0
     @State private var competitionSearchRequestID = 0
@@ -35,7 +36,7 @@ struct IPhoneContentView: View {
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: Binding(get: { selectedTab }, set: { if !isDataSelectingSolves { selectedTab = $0 } })) {
             timerTabContent
                 .tabItem {
                     Label {
@@ -49,7 +50,8 @@ struct IPhoneContentView: View {
             DataTabView(
                 usesSystemBottomAccessory: usesSystemTabBottomAccessory,
                 isBottomAccessoryVisible: $isDataBottomAccessoryVisible,
-                searchRequestID: $dataSearchRequestID
+                searchRequestID: $dataSearchRequestID,
+                isSelectingSolves: $isDataSelectingSolves
             )
                 .tabItem {
                     Label {
@@ -105,7 +107,7 @@ struct IPhoneContentView: View {
             tabBottomAccessoryContent
         }
         .compatibleTabBarMinimizeOnScrollDown(
-            isEnabled: selectedTab == .data || selectedTab == .algs || selectedTab == .competitions
+            isEnabled: !isDataSelectingSolves && (selectedTab == .data || selectedTab == .algs || selectedTab == .competitions)
         )
         .compatibleTabBarBackground()
         .environment(\.locale, contentLocale)
@@ -113,6 +115,9 @@ struct IPhoneContentView: View {
         .onAppear(perform: handleRequestedTab)
         .onChange(of: requestedIPhoneTab) { _ in
             handleRequestedTab()
+        }
+        .onChange(of: isDataSelectingSolves) { selecting in
+            if !selecting { handleRequestedTab() }
         }
     }
 
@@ -194,6 +199,7 @@ struct IPhoneContentView: View {
     }
 
     private func handleRequestedTab() {
+        guard !isDataSelectingSolves else { return }
         guard let requested = IPhoneTab(rawValue: requestedIPhoneTab) else { return }
         selectedTab = requested
         requestedIPhoneTab = ""

@@ -291,18 +291,23 @@ enum DataTransferManager {
         var root: [String: Any] = [:]
         var sessionMetadata: [String: [String: Any]] = [:]
 
-        for (index, session) in exportSessions.enumerated() {
-            let sessionNumber = index + 1
-            let sessionKey = "session\(sessionNumber)"
+        var exportedSessionCount = 0
+        for session in exportSessions {
             let sessionSolves = (solvesBySessionID[session.id] ?? [])
                 .sorted { $0.date < $1.date }
-
-            root[sessionKey] = sessionSolves.map(csTimerSolveEntry(for:))
-            sessionMetadata[String(sessionNumber)] = csTimerSessionMetadata(
-                session: session,
-                sessionNumber: sessionNumber,
-                solves: sessionSolves
-            )
+            // csTimer has one event per session. Split mixed-event exports, not the local Session.
+            let eventGroups = Dictionary(grouping: sessionSolves) { csTimerScrType(for: $0.event) }
+            for type in eventGroups.keys.sorted() {
+                let rows = eventGroups[type] ?? []
+                exportedSessionCount += 1
+                root["session\(exportedSessionCount)"] = rows.map(csTimerSolveEntry(for:))
+                sessionMetadata[String(exportedSessionCount)] = csTimerSessionMetadata(
+                    session: session,
+                    sessionNumber: exportedSessionCount,
+                    solves: rows,
+                    name: eventGroups.count > 1 ? "\(session.name) - \(rows.first?.event ?? type)" : session.name
+                )
+            }
         }
 
         let sessionData = try JSONSerialization.data(withJSONObject: sessionMetadata, options: [.sortedKeys])
@@ -310,8 +315,8 @@ enum DataTransferManager {
         root["properties"] = [
             "sessionData": sessionDataString
         ]
-        root["session"] = exportSessions.isEmpty ? 0 : 1
-        root["sessionN"] = exportSessions.count
+        root["session"] = exportedSessionCount == 0 ? 0 : 1
+        root["sessionN"] = exportedSessionCount
 
         let data = try JSONSerialization.data(withJSONObject: root, options: [.sortedKeys])
         let formatter = DateFormatter()
@@ -804,7 +809,8 @@ enum DataTransferManager {
     private static func csTimerSessionMetadata(
         session: Session,
         sessionNumber: Int,
-        solves: [Solve]
+        solves: [Solve],
+        name: String
     ) -> [String: Any] {
         let dominantEvent = mostCommonEvent(in: solves) ?? solves.first?.event ?? "3x3"
         let scrType = csTimerScrType(for: dominantEvent)
@@ -817,7 +823,7 @@ enum DataTransferManager {
         let lastTimestamp = Int((solves.max(by: { $0.date < $1.date })?.date ?? session.createdAt).timeIntervalSince1970)
 
         return [
-            "name": session.name,
+            "name": name,
             "opt": ["scrType": scrType],
             "rank": sessionNumber,
             "stat": [solves.count, dnfCount, averageMilliseconds],
@@ -838,7 +844,7 @@ enum DataTransferManager {
             return "222so"
         case "3x3":
             return "333"
-        case "4x4":
+        case "4x4", "4x4 fast":
             return "444wca"
         case "5x5":
             return "555wca"
@@ -856,16 +862,18 @@ enum DataTransferManager {
             return "clkwca"
         case "skewb":
             return "skbso"
+        case "fto":
+            return "ftoso"
         case "3x3 oh":
             return "333oh"
         case "3x3 fm":
             return "333fm"
         case "3x3 bld":
-            return "333bf"
+            return "333ni"
         case "4x4 bld":
-            return "444bf"
+            return "444bld"
         case "5x5 bld":
-            return "555bf"
+            return "555bld"
         case "3x3 mbld":
             return "r3ni"
         default:
@@ -874,17 +882,11 @@ enum DataTransferManager {
     }
 
     nonisolated private static func cubeFlowEventString(scrType: String?, sessionName: String) -> String {
-        let normalizedName = sessionName.lowercased()
-        if normalizedName.contains("4x4 bld") { return "4x4 bld" }
-        if normalizedName.contains("5x5 bld") { return "5x5 bld" }
-        if normalizedName.contains("3x3 bld") || normalizedName.contains("3bld") { return "3x3 bld" }
-        if normalizedName.contains("3x3 oh") || normalizedName.contains("oh") { return "3x3 oh" }
-        if normalizedName.contains("fmc") || normalizedName.contains("fm") { return "3x3 fm" }
-        if normalizedName.contains("mbld") || normalizedName.contains("多盲") { return "3x3 mbld" }
-
         switch scrType?.lowercased() {
         case "222so": return "2x2"
-        case "333", "333ni", "333oh0": return "3x3"
+        case "333": return "3x3"
+        case "333ni": return "3x3 bld"
+        case "333oh0": return "3x3 oh"
         case "444wca": return "4x4"
         case "555wca": return "5x5"
         case "666wca": return "6x6"
@@ -894,12 +896,22 @@ enum DataTransferManager {
         case "sqrs": return "square-1"
         case "clkwca": return "clock"
         case "skbso": return "skewb"
+        case "fto", "ftoso": return "FTO"
+        case "r3ni": return "3x3 mbld"
         case "333oh": return "3x3 oh"
         case "333fm": return "3x3 fm"
         case "333bf": return "3x3 bld"
-        case "444bf": return "4x4 bld"
-        case "555bf": return "5x5 bld"
+        case "444bf", "444bld": return "4x4 bld"
+        case "555bf", "555bld": return "5x5 bld"
         default:
+            let normalizedName = sessionName.lowercased()
+            if normalizedName.contains("4x4 bld") { return "4x4 bld" }
+            if normalizedName.contains("5x5 bld") { return "5x5 bld" }
+            if normalizedName.contains("3x3 bld") || normalizedName.contains("3bld") { return "3x3 bld" }
+            if normalizedName.contains("3x3 oh") || normalizedName.contains("oh") { return "3x3 oh" }
+            if normalizedName.contains("fmc") || normalizedName.contains("fm") { return "3x3 fm" }
+            if normalizedName.contains("mbld") || normalizedName.contains("多盲") { return "3x3 mbld" }
+
             return "3x3"
         }
     }

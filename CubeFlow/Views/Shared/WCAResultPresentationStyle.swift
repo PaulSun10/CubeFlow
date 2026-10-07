@@ -9,6 +9,7 @@ enum WCAResultEmphasis: String, Codable, Hashable, Sendable {
     var color: Color {
         switch self {
         case .personalBest:
+            // Original My Results semantic palette; celebration colors are separate.
             return Self.adaptiveColor(light: 0xFC4A0A, dark: 0xFF9B73)
         case .worldRecord:
             return Self.adaptiveColor(light: 0x0366D6, dark: 0x77B7FF)
