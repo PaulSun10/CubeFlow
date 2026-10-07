@@ -29,6 +29,7 @@ struct SmartCubeScrambleProgressView: View {
     let foregroundStyle: AnyShapeStyle
     let highlightBackgroundStyle: AnyShapeStyle
     let highlightForegroundStyle: AnyShapeStyle
+    var showsLiveProgress = false
 
     var body: some View {
         VStack(spacing: 6) {
@@ -69,6 +70,19 @@ struct SmartCubeScrambleProgressView: View {
 
             if let recoveryPlan, recoveryDisplay == .separate {
                 recoveryLane(recoveryPlan)
+            }
+            if showsLiveProgress, !tokens.isEmpty {
+                HStack(spacing: 8) {
+                    ProgressView(value: Double(completedTokenIndices.count), total: Double(tokens.count))
+                        .tint(.accentColor)
+                    Text("\(completedTokenIndices.count)/\(tokens.count)")
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: 220)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("settings.smart_cube.scramble_progress"))
+                .accessibilityValue(Text("\(completedTokenIndices.count)/\(tokens.count)"))
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)

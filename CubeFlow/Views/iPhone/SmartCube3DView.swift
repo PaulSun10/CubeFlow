@@ -12,6 +12,8 @@ struct SmartCube3DView: UIViewRepresentable {
     var connectionAttemptID: UUID?
     var isStateTrusted: Bool = true
     var diagnosticOwner = "unspecified"
+    var animationTPSOverride: Int?
+    var temporaryVerticalPeek = false
     @AppStorage("smartCubeAnimationTPS") private var animationTPS = 10
     @AppStorage("smartCubeAppearance") private var appearanceRawValue = VirtualCubeAppearance.classic.rawValue
     @AppStorage("smartCubeInternalPlastic") private var plasticRawValue = VirtualCubePlastic.black.rawValue
@@ -35,7 +37,8 @@ struct SmartCube3DView: UIViewRepresentable {
             events: events,
             attemptID: connectionAttemptID,
             trusted: isStateTrusted,
-            tps: animationTPS,
+            tps: animationTPSOverride ?? animationTPS,
+            temporaryVerticalPeek: temporaryVerticalPeek,
             appearance: VirtualCubeAppearance(rawValue: appearanceRawValue) ?? .classic,
             plastic: VirtualCubePlastic(rawValue: plasticRawValue) ?? .black,
             reflections: reflections,
@@ -56,6 +59,8 @@ struct SmartCube3DView: UIViewRepresentable {
         private let cameraNode = SCNNode()
         private var lastStateRevision = -1
         private var dragYaw = SmartCubeFixedView.urf.yaw
+        private var dragPitch: Float = 0
+        private var temporaryVerticalPeek = false
         private var selectedFixedView: SmartCubeFixedView = .urf
         private var presentation = CubeTurnPresentation(facelets: SmartCube3DView.solvedFacelets)
         private var subscription: AnyCancellable?
@@ -161,18 +166,20 @@ struct SmartCube3DView: UIViewRepresentable {
             attemptID: UUID?,
             trusted: Bool,
             tps: Int,
+            temporaryVerticalPeek: Bool = false,
             appearance: VirtualCubeAppearance,
             plastic: VirtualCubePlastic,
             reflections: Bool,
             customColor: UIColor
         ) {
+            self.temporaryVerticalPeek = temporaryVerticalPeek
             if fixedView != selectedFixedView {
                 selectedFixedView = fixedView
                 dragYaw = fixedView.yaw
                 SCNTransaction.begin()
                 SCNTransaction.animationDuration = 0.2
                 SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                interactionNode.eulerAngles = SCNVector3(0, dragYaw, 0)
+                interactionNode.eulerAngles = SCNVector3(dragPitch, dragYaw, 0)
                 positionCamera()
                 SCNTransaction.commit()
             }
@@ -301,14 +308,27 @@ struct SmartCube3DView: UIViewRepresentable {
             let translation = recognizer.translation(in: recognizer.view)
             recognizer.setTranslation(.zero, in: recognizer.view)
 
-            // Only yaw is user-controlled. The top/bottom alignment stays stable.
-            dragYaw += Float(translation.x) * 0.008
-            dragYaw = Self.normalizedAngle(dragYaw)
-
-            SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0
-            interactionNode.eulerAngles = SCNVector3(0, dragYaw, 0)
-            SCNTransaction.commit()
+            switch recognizer.state {
+            case .began, .changed:
+                dragYaw = Self.normalizedAngle(dragYaw + Float(translation.x) * 0.008)
+                if temporaryVerticalPeek {
+                    dragPitch = min(0.85, max(-0.85, dragPitch + Float(translation.y) * 0.008))
+                }
+                SCNTransaction.begin()
+                SCNTransaction.animationDuration = 0
+                interactionNode.eulerAngles = SCNVector3(dragPitch, dragYaw, 0)
+                SCNTransaction.commit()
+            case .ended, .cancelled, .failed:
+                guard temporaryVerticalPeek else { return }
+                dragPitch = 0
+                SCNTransaction.begin()
+                SCNTransaction.animationDuration = 0.28
+                SCNTransaction.animationTimingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.2, 1)
+                interactionNode.eulerAngles = SCNVector3(0, dragYaw, 0)
+                SCNTransaction.commit()
+            default:
+                break
+            }
         }
 
         private static func normalizedAngle(_ value: Float) -> Float {
@@ -390,7 +410,7 @@ struct SmartCube3DView: UIViewRepresentable {
                 }
                 let colorKey = index < chars.count ? chars[index] : "U"
                 let sticker = SCNNode(geometry: resources.face(index: index, size: size, color: Self.color(for: colorKey), colorKey: colorKey))
-                let distance = resources.faceDistance(pitch: pitch)
+                let distance = resources.faceDistance(pitch: pitch, size: size)
                 let normal = surface.normal
                 sticker.position = SCNVector3(Float(normal.x) * distance, Float(normal.y) * distance, Float(normal.z) * distance)
                 switch (normal.x, normal.y, normal.z) {

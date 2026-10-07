@@ -41,8 +41,27 @@ enum SessionTimingMethod: String, CaseIterable, Identifiable, Sendable {
     case typing
     case gan
     case smartCube
+    case smartCubeAndGAN
 
     var id: String { rawValue }
+
+    var usesSmartCube: Bool {
+        self == .smartCube || self == .smartCubeAndGAN
+    }
+
+    var usesGANTimer: Bool {
+        self == .gan || self == .smartCubeAndGAN
+    }
+
+    var solveInputSource: SolveInputSource {
+        switch self {
+        case .timer: .appTimer
+        case .typing: .manualEntry
+        case .gan: .bluetoothTimer
+        case .smartCube: .smartCube
+        case .smartCubeAndGAN: .smartCubeAndBluetoothTimer
+        }
+    }
 }
 
 struct SessionTimerConfiguration: Equatable, Sendable {

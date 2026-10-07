@@ -200,7 +200,6 @@ struct SettingsTabView: View {
     @State private var appearanceSelectionTarget: AppearanceSelectionTarget?
     @State private var timerCustomizationPath: [TimerCustomizationPage] = []
     @State private var selectedScrambleColorPuzzle: ScrambleColorPuzzle = .cube
-    @State private var showingGANDevicePicker = false
     @State private var showingCompetitionCalculator = false
     @StateObject private var wcaAuth = WCAAuthManager.shared
     @StateObject private var fontDownloadManager = TimerFontDownloadManager.shared
@@ -281,9 +280,6 @@ struct SettingsTabView: View {
             .sheet(item: $appearanceSelectionTarget) { target in
                 appearanceSelectionSheet(for: target)
             }
-            .sheet(isPresented: $showingGANDevicePicker) {
-                ganDevicePickerSheet
-            }
             .sheet(isPresented: $showingCompetitionCalculator) {
                 CompetitionCalculatorSheet(appLanguage: appLanguage)
             }
@@ -291,7 +287,7 @@ struct SettingsTabView: View {
                 restoreTimingMethodFromSelectedSession()
                 migrateTimerArrangementPreferencesIfNeeded()
                 normalizeUnavailableFontSelections()
-                if enteringTimesWith == SessionTimingMethod.gan.rawValue {
+                if (SessionTimingMethod(rawValue: enteringTimesWith) ?? .timer).usesGANTimer {
                     ganTimer.prepareIfNeeded()
                 }
                 timerBackgroundAppearance = AppearanceConfiguration.decode(
@@ -538,14 +534,16 @@ private extension SettingsTabView {
 
             Section {
                 NavigationLink {
-                    SmartCubeLabView()
+                    ConnectedDevicesView()
                 } label: {
-                    settingsNavigationLabel(titleKey: "smart_cube.title")
+                    settingsNavigationLabel(titleKey: "connected_devices.title")
                 }
             } header: {
-                Text("smart_cube.section")
+                Text("connected_devices.section")
             } footer: {
-                Text("smart_cube.settings_footer")
+                if let requirement = hardwareRequirementKey {
+                    Text(requirement)
+                }
             }
 
             Section {
@@ -2080,7 +2078,7 @@ private extension SettingsTabView {
                     ForEach(SessionTimingMethod.allCases) { mode in
                         Button(mode.localizedKey) {
                             enteringTimesWith = mode.rawValue
-                            if mode == .gan {
+                            if mode.usesGANTimer {
                                 ganTimer.prepareIfNeeded()
                             }
                         }
@@ -2098,19 +2096,8 @@ private extension SettingsTabView {
                 }
             }
 
-            if enteringTimesWith == SessionTimingMethod.gan.rawValue {
+            if (SessionTimingMethod(rawValue: enteringTimesWith) ?? .timer).usesGANTimer {
                 Section {
-                    ganTimerConnectionRow
-
-                    if let deviceName = ganTimer.deviceName, !deviceName.isEmpty {
-                        HStack {
-                            Text("settings.gan_device")
-                            Spacer()
-                            Text(deviceName)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
                     Toggle(isOn: $ganInspectionStartsOnPress) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("settings.gan_inspection_on_press")
@@ -2140,23 +2127,32 @@ private extension SettingsTabView {
                 }
             }
 
-            if enteringTimesWith == SessionTimingMethod.smartCube.rawValue {
-                Section {
+            Section {
+                ConnectedDeviceStatusRows(
+                    usesCompactLinks: SessionTimingMethod(rawValue: enteringTimesWith) == .smartCubeAndGAN
+                )
+                if SessionTimingMethod(rawValue: enteringTimesWith) != .smartCubeAndGAN {
                     NavigationLink {
-                        SmartCubeLabView()
+                        ConnectedDevicesView()
                     } label: {
-                        settingsNavigationLabel(titleKey: "smart_cube.title")
+                        Text("connected_devices.title")
                     }
-                } header: {
-                    Text("smart_cube.section")
-                } footer: {
-                    Text("smart_cube.timer_settings_footer")
                 }
+            } header: {
+                Text("connected_devices.section")
             }
         }
         .listStyle(.insetGrouped)
         .navigationTitle(Text(appLocalizedString("settings.entering_times_with", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var hardwareRequirementKey: LocalizedStringKey? {
+        switch SessionTimingMethod(rawValue: enteringTimesWith) ?? .timer {
+        case .smartCube: "connected_devices.requires_cube"
+        case .gan: "connected_devices.requires_timer"
+        case .smartCubeAndGAN, .timer, .typing: nil
+        }
     }
 
     func scrambleColorBinding(for puzzle: ScrambleColorPuzzle, index: Int) -> Binding<Color> {
@@ -2169,38 +2165,6 @@ private extension SettingsTabView {
             guard colors.indices.contains(index) else { return }
             colors[index] = newColor.scrambleHexString()
             scrambleDiagramColorScheme.setColors(colors, for: puzzle)
-        }
-    }
-
-    var ganTimerConnectionRow: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("settings.gan_timer")
-                Text(LocalizedStringKey(ganTimer.statusLocalizedKey))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Button {
-                switch ganTimer.connectionState {
-                case .scanning, .connecting, .connected, .handsOn, .ready, .running, .finished:
-                    ganTimer.performPrimaryAction()
-                default:
-                    ganTimer.startDeviceDiscovery()
-                    showingGANDevicePicker = true
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    if case .scanning = ganTimer.connectionState {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                    Text(LocalizedStringKey(ganTimer.actionLocalizedKey))
-                }
-            }
-            .buttonStyle(.bordered)
         }
     }
 
@@ -2255,78 +2219,6 @@ private extension SettingsTabView {
             }
             .tint(.primary)
         }
-    }
-
-    var ganDevicePickerSheet: some View {
-        CompatibleNavigationContainer {
-            List {
-                if ganTimer.discoveredDevices.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("settings.gan_no_devices")
-                            .font(.system(size: 16, weight: .semibold))
-
-                        Text("settings.gan_scanning_help")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(.vertical, 8)
-                    .listRowBackground(Color.clear)
-                } else {
-                    ForEach(ganTimer.discoveredDevices) { device in
-                        Button {
-                            ganTimer.connect(to: device.id)
-                            showingGANDevicePicker = false
-                        } label: {
-                            HStack(spacing: 12) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(device.name)
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(.primary)
-
-                                    Text("RSSI \(device.rssi)")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Spacer()
-
-                                if device.hasGANService {
-                                    Text("GAN")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(.secondary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(.regularMaterial, in: Capsule())
-                                }
-                            }
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-            .navigationTitle(Text(appLocalizedString("settings.gan_choose_device", languageCode: appLanguage)))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("common.cancel") {
-                        ganTimer.stopScanning()
-                        showingGANDevicePicker = false
-                    }
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(appLocalizedString("common.refresh", languageCode: appLanguage, defaultValue: "Refresh")) {
-                        ganTimer.startDeviceDiscovery()
-                    }
-                }
-            }
-            .onAppear {
-                ganTimer.startDeviceDiscovery()
-            }
-        }
-        .compatibleMediumLargeSheet()
     }
 
     func wcaStatusCard(showsDisclosure: Bool) -> some View {
@@ -3833,6 +3725,7 @@ private extension SessionTimingMethod {
         case .typing: "settings.entering_times_typing"
         case .gan: "settings.entering_times_gan"
         case .smartCube: "settings.entering_times_smart_cube"
+        case .smartCubeAndGAN: "settings.entering_times_smart_cube_and_gan"
         }
     }
 }

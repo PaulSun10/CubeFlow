@@ -288,6 +288,10 @@
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>CubeFlow uses Bluetooth to connect to compatible smart timers and smart cubes.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+	</array>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_cubeflow._tcp</string>

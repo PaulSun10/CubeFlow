@@ -72,7 +72,7 @@ struct VirtualCubeMaterialsTests {
     }
 
     @Test func stickerlessBodiesLeaveDeepRecessesAndBlockLongSightlines() throws {
-        for size in [2, 3] {
+        for size in [3] {
             let pitch = CGFloat(3) / CGFloat(size)
             let resources = VirtualCubeMaterials(appearance: .stickerless, plastic: .black, reflections: false, customColor: .purple)
             let scene = SCNScene()
@@ -173,6 +173,18 @@ struct VirtualCubeMaterialsTests {
         }
     }
 
+    @Test func twoByTwoStickerlessUsesRecessedCornerCores() throws {
+        let pitch: CGFloat = 1.5
+        let resources = VirtualCubeMaterials(appearance: .stickerless, plastic: .black,
+                                             reflections: false, customColor: .purple)
+        for position in Set(CubeSurface.all(size: 2).map(\.position)) {
+            let body = try #require(resources.body(pitch: pitch, position: position, size: 2) as? SCNBox)
+            #expect(abs(body.width - pitch * 0.79) < 0.000001)
+            #expect(abs(body.chamferRadius - pitch * 0.09) < 0.000001)
+            #expect(body === resources.body(pitch: pitch, position: position, size: 2))
+        }
+    }
+
     @Test func stickerlessProfilesDistinguishPieceTypes() throws {
         for size in [2, 3] {
             let pitch = CGFloat(3) / CGFloat(size)
@@ -191,10 +203,17 @@ struct VirtualCubeMaterialsTests {
                     if element.pointee.type == .addQuadCurveToPoint { curves.append(element.pointee.points[0]) }
                     if element.pointee.type == .addLineToPoint { lineEnds.append(element.pointee.points[0]) }
                 }
-                #expect(curves.count == 3)
-                #expect(!curves.contains(innerPoint) && lineEnds.contains(innerPoint))
-                #expect(abs(shape.extrusionDepth - pitch * 0.085) < 0.000001)
-                #expect(abs(shape.chamferRadius - pitch * 0.008) < 0.000001)
+                if size == 2 {
+                    #expect(curves.count == 4)
+                    #expect(!lineEnds.contains(innerPoint))
+                    #expect(abs(shape.extrusionDepth - pitch * 0.12) < 0.000001)
+                    #expect(abs(shape.chamferRadius - pitch * 0.012) < 0.000001)
+                } else {
+                    #expect(curves.count == 3)
+                    #expect(!curves.contains(innerPoint) && lineEnds.contains(innerPoint))
+                    #expect(abs(shape.extrusionDepth - pitch * 0.085) < 0.000001)
+                    #expect(abs(shape.chamferRadius - pitch * 0.008) < 0.000001)
+                }
             }
             if size == 3 {
                 for (index, radius) in [(1, 0.24), (4, 0.40)] {

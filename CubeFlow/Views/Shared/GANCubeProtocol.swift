@@ -28,12 +28,25 @@ enum SmartCubeParsedEvent {
     case continuityLost
     case move(SmartCubeMoveEvent)
     case facelets(String, serial: Int)
+    case weiPo2State(WeiPo2NativeState)
+    case weiPo2Turn(WeiPo2NativeTurn)
     case battery(Int)
     case hardware(String)
     case gyro(SmartCubeGyroState)
     case debug(String, String)
     case holdPendingMove(seconds: TimeInterval)
     case requestMoveHistory(startMoveCount: Int, numberOfMoves: Int)
+}
+
+nonisolated struct WeiPo2NativeState: Equatable {
+    let stickerValues: [UInt8]
+    let turnCounter: UInt8
+}
+
+nonisolated struct WeiPo2NativeTurn: Equatable {
+    let code: UInt8
+    let turnCounter: UInt8
+    let missedTurnCount: Int
 }
 
 private struct GANBufferedMove: Equatable {
@@ -130,6 +143,7 @@ final class GANCubeCipher {
 
 final class GANCubeProtocolParser {
     private let kind: SmartCubeProtocolKind
+    private let puzzleSize: Int
     private var lastSerial: Int?
     private var ganPreviousMoveCount: Int?
     private var ganLatestMoveCount: Int?
@@ -145,8 +159,9 @@ final class GANCubeProtocolParser {
     private var absoluteDeviceClockAnchor: (milliseconds: Int, date: Date)?
     private var hardwareInfo: [Int: String] = [:]
 
-    init(kind: SmartCubeProtocolKind) {
+    init(kind: SmartCubeProtocolKind, puzzleSize: Int = 3) {
         self.kind = kind
+        self.puzzleSize = puzzleSize == 2 ? 2 : 3
     }
 
     func resetMoveTracking() {
@@ -257,6 +272,25 @@ final class GANCubeProtocolParser {
             let hardware = "\(model) HW \(byte(message, 9)).\(byte(message, 10)) SW \(byte(message, 11)).\(byte(message, 12))"
             return [.hardware(hardware)]
         case 0xA3:
+            if puzzleSize == 2 {
+                guard message.count >= 11 else { return [] }
+                let values = readMoYuFaceletValues(
+                    from: Array(message[1...9]), count: 24
+                ).map(UInt8.init)
+                let state = WeiPo2NativeState(
+                    stickerValues: values, turnCounter: message[10]
+                )
+                // A requested A3 may arrive after newer A5 traffic; never rewind the turn cursor.
+                if let previous = moYuPreviousMoveCount {
+                    let advance = (Int(state.turnCounter) - previous) & 0xFF
+                    if advance > 0 && advance < 128 {
+                        moYuPreviousMoveCount = Int(state.turnCounter)
+                    }
+                } else {
+                    moYuPreviousMoveCount = Int(state.turnCounter)
+                }
+                return [.weiPo2State(state)]
+            }
             let values = readMoYuFaceletValues(from: Array(message.dropFirst().prefix(18)))
             guard values.count >= 48 else { return [] }
             let serial = byte(message, 19)
@@ -265,7 +299,9 @@ final class GANCubeProtocolParser {
         case 0xA4:
             return [.battery(min(byte(message, 1), 100))]
         case 0xA5:
-            return moYuMoveEvents(from: message)
+            return puzzleSize == 2
+                ? weiPo2TurnEvents(from: message)
+                : moYuMoveEvents(from: message)
         case 0xAB:
             let values = (0..<4).map { index -> Double in
                 let offset = 1 + index * 4
@@ -278,8 +314,27 @@ final class GANCubeProtocolParser {
         case 0xAC:
             return [.debug("MoYu gyro", "functional \(byte(message, 1)), enabled \(byte(message, 2))")]
         default:
-            return []
+            return [.debug(
+                "MoYu unknown packet",
+                "type 0x\(String(format: "%02X", eventType)), bytes \(message.count), prefix \(message.prefix(8).map { String(format: "%02X", $0) }.joined(separator: " "))"
+            )]
         }
+    }
+
+    private func weiPo2TurnEvents(from message: [UInt8]) -> [SmartCubeParsedEvent] {
+        guard message.count >= 15 else { return [] }
+        let counter = Int(message[13])
+        let previous = moYuPreviousMoveCount
+        moYuPreviousMoveCount = counter
+        guard let previous else { return [] }
+        let difference = (counter - previous) & 0xFF
+        guard difference > 0 else { return [] }
+        let code = UInt8(readBitWord(bytes: message, startBit: 112, bitLength: 3))
+        return [.weiPo2Turn(WeiPo2NativeTurn(
+            code: code,
+            turnCounter: message[13],
+            missedTurnCount: difference - 1
+        ))]
     }
 
     private func moYuMoveEvents(from message: [UInt8]) -> [SmartCubeParsedEvent] {
@@ -297,7 +352,7 @@ final class GANCubeProtocolParser {
 
         var moves: [String] = []
         var intervals: [Int] = []
-        for index in 0..<5 {
+        for index in 0..<moveDiff {
             let moveValue = readBitWord(bytes: message, startBit: 96 + index * 5, bitLength: 5)
             guard let moveName = Self.moYuMoveName(moveValue) else { return [.continuityLost] }
             moves.append(moveName)
@@ -327,9 +382,13 @@ final class GANCubeProtocolParser {
         case 0x01:
             let cubeTimestamp = view.word(16, 32, littleEndian: true)
             let serial = view.word(48, 16, littleEndian: true)
-            let direction = view.word(64, 2)
-            let face = [2, 32, 8, 1, 16, 4].firstIndex(of: view.word(66, 6))
-            guard let face else { return [] }
+            var direction = view.word(64, 2)
+            var face = [2, 32, 8, 1, 16, 4].firstIndex(of: view.word(66, 6))
+            if puzzleSize == 2, face == nil {
+                face = [2, 32, 8, 1, 16, 4].firstIndex(of: view.word(64, 6))
+                direction = view.word(70, 2)
+            }
+            guard let face, direction <= 2 else { return [] }
             let move = moveString(face: face, direction: direction)
             let event = absoluteTimedMoveEvent(
                 move: move,
@@ -342,6 +401,9 @@ final class GANCubeProtocolParser {
             return [.debug("GAN Gen4 0x01", "count \(serial & 0xFF), move \(move), ts \(cubeTimestamp)")]
                 + enqueueGANMove(event, count: serial, requestLostMoves: true)
         case 0xED:
+            if puzzleSize == 2 {
+                return twoByTwoFaceletsEvent(view: view)
+            }
             if ganPreviousMoveCount != nil {
                 let stateMoveCount = view.word(16, 16, littleEndian: true)
                 return handleGANStateCounter(stateMoveCount, label: "GAN Gen4 0xED")
@@ -500,6 +562,45 @@ final class GANCubeProtocolParser {
         return [.facelets(Self.toKociembaFacelets(cp: cp, co: co, ep: ep, eo: eo), serial: serial)]
     }
 
+    private func twoByTwoFaceletsEvent(view: BitWordReader) -> [SmartCubeParsedEvent] {
+        let serial = view.word(16, 16, littleEndian: true)
+        lastSerial = serial
+
+        var cp = (0..<7).map { view.word(32 + $0 * 3, 3) }
+        let missing = Set(0..<8).subtracting(cp).first ?? 7
+        cp.append(missing)
+        var co = (0..<7).map { view.word(53 + $0 * 2, 2) }
+        guard Set(cp) == Set(0..<8) else {
+            return [.debug("GAN 251 state rejected", "invalid corner permutation \(cp)")]
+        }
+        guard co.allSatisfy({ $0 < 3 }) else {
+            return [.debug("GAN 251 state rejected", "invalid corner orientation \(co)")]
+        }
+        co.append((3 - co.reduce(0, +) % 3) % 3)
+
+        var events: [SmartCubeParsedEvent] = []
+        if let previous = ganPreviousMoveCount {
+            let diff = (serial - previous) & 0xFF
+            if diff > 0, diff < 128 {
+                // A 251 state packet is authoritative corner state. It can restore
+                // state after a gap, but the missing move sequence stays incomplete.
+                events.append(.continuityLost)
+                ganMoveBuffer.removeAll()
+                ganRequestedHistoryCounts.removeAll()
+                ganHistoryRequestDates.removeAll()
+                ganHistoryRequestAttempts.removeAll()
+                ganActiveHistoryRequestKey = nil
+                ganPreviousMoveCount = serial & 0xFF
+                ganLatestMoveCount = serial & 0xFF
+            }
+        } else {
+            ganPreviousMoveCount = serial & 0xFF
+            ganLatestMoveCount = serial & 0xFF
+        }
+        events.append(.facelets(Self.toTwoByTwoFacelets(cp: cp, co: co), serial: serial))
+        return events
+    }
+
     private func updateGen4Hardware(view: BitWordReader, eventType: Int, dataLength: Int) -> SmartCubeParsedEvent? {
         switch eventType {
         case 0xFA:
@@ -525,6 +626,9 @@ final class GANCubeProtocolParser {
     }
 
     private func handleGen4MoveHistory(view: BitWordReader, dataLength: Int) -> [SmartCubeParsedEvent] {
+        guard puzzleSize == 3 else {
+            return [.debug("GAN 251 history ignored", "3x3 history axis mapping is not valid for 251")]
+        }
         let startMoveCount = view.word(16, 8)
         let numberOfMoves = max(0, (dataLength - 1) * 2)
         var historyMoves: [String] = []
@@ -701,6 +805,14 @@ final class GANCubeProtocolParser {
                 continue
             }
             if diff > 1 {
+                if puzzleSize == 2 {
+                    // Public 251 implementations do not establish a trustworthy
+                    // mapping for Gen4 history entries. Keep live telemetry moving,
+                    // but explicitly invalidate continuity until a corner snapshot.
+                    ganPreviousMoveCount = (first.count - 1) & 0xFF
+                    canonicalContinuityWasLost = true
+                    continue
+                }
                 let previous = ganPreviousMoveCount ?? previousMoveCount
                 events.append(.debug("GAN move gap waiting", "prev \(previous), next \(first.count), diff \(diff)"))
                 #if DEBUG
@@ -875,15 +987,20 @@ final class GANCubeProtocolParser {
         BitWordReader(bytes).word(startBit, bitLength)
     }
 
-    private func readMoYuFaceletValues(from bytes: [UInt8]) -> [Int] {
+    private func readMoYuFaceletValues(from bytes: [UInt8], count: Int = 48) -> [Int] {
         let bitReader = BitWordReader(bytes)
-        return (0..<48).map { bitReader.word($0 * 3, 3) }
+        return (0..<count).map { bitReader.word($0 * 3, 3) }
     }
 
     private func moveString(face: Int, direction: Int) -> String {
         let faces = Array("URFDLB")
         guard face >= 0, face < faces.count else { return "?" }
-        return String(faces[face]) + (direction == 1 ? "'" : "")
+        let suffix = switch direction {
+        case 1: "'"
+        case 2: "2"
+        default: ""
+        }
+        return String(faces[face]) + suffix
     }
 
     private func signedQuaternionComponent(_ value: Int) -> Double {
@@ -969,6 +1086,23 @@ final class GANCubeProtocolParser {
             guard ep[index] >= 0, ep[index] < edgeFaceletMap.count else { continue }
             for position in 0..<2 {
                 facelets[edgeFaceletMap[index][(position + eo[index]) % 2]] = faces[edgeFaceletMap[ep[index]][position] / 9]
+            }
+        }
+        return String(facelets)
+    }
+
+    private static func toTwoByTwoFacelets(cp: [Int], co: [Int]) -> String {
+        let faces = Array("URFDLB")
+        var facelets = (0..<24).map { faces[$0 / 4] }
+        let cornerFaceletMap = [
+            [3, 4, 9], [2, 8, 17], [0, 16, 21], [1, 20, 5],
+            [13, 11, 6], [12, 19, 10], [14, 23, 18], [15, 7, 22]
+        ]
+        for index in 0..<min(8, cp.count, co.count) {
+            guard cp[index] >= 0, cp[index] < cornerFaceletMap.count else { continue }
+            for position in 0..<3 {
+                facelets[cornerFaceletMap[index][(position + co[index]) % 3]] =
+                    faces[cornerFaceletMap[cp[index]][position] / 4]
             }
         }
         return String(facelets)

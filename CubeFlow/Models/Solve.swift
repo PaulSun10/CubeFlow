@@ -7,6 +7,24 @@ enum SolveResult: String, CaseIterable {
     case dnf
 }
 
+enum SolveInputSource: String, Codable, CaseIterable, Sendable {
+    case appTimer
+    case manualEntry
+    case bluetoothTimer
+    case smartCube
+    case smartCubeAndBluetoothTimer
+
+    nonisolated var localizationKey: String {
+        switch self {
+        case .appTimer: "solve.method.touch"
+        case .manualEntry: "solve.method.typing"
+        case .smartCube: "solve.method.smart_cube"
+        case .bluetoothTimer: "solve.method.smart_timer"
+        case .smartCubeAndBluetoothTimer: "solve.method.combined"
+        }
+    }
+}
+
 final class Solve: NSManagedObject, Identifiable {
     static let entityName = "Solve"
 
@@ -16,6 +34,8 @@ final class Solve: NSManagedObject, Identifiable {
     @NSManaged var scramble: String
     @NSManaged var event: String
     @NSManaged var resultRaw: String
+    @NSManaged var inputSourceRaw: String?
+    @NSManaged var reconstructionData: Data?
     @NSManaged var session: Session?
 
     var result: SolveResult {
@@ -28,6 +48,21 @@ final class Solve: NSManagedObject, Identifiable {
         set { SolveCommentStore.shared.setComment(newValue, for: id) }
     }
 
+    var inputSource: SolveInputSource? {
+        get { inputSourceRaw.flatMap(SolveInputSource.init(rawValue:)) }
+        set { inputSourceRaw = newValue?.rawValue }
+    }
+
+    var reconstruction: SolveReconstruction? {
+        get {
+            guard let reconstructionData else { return nil }
+            return try? JSONDecoder().decode(SolveReconstruction.self, from: reconstructionData)
+        }
+        set {
+            reconstructionData = try? newValue.map { try JSONEncoder().encode($0) }
+        }
+    }
+
     convenience init(
         time: Double,
         date: Date = .now,
@@ -35,6 +70,8 @@ final class Solve: NSManagedObject, Identifiable {
         comment: String = "",
         event: String,
         result: SolveResult = .solved,
+        inputSource: SolveInputSource? = nil,
+        reconstruction: SolveReconstruction? = nil,
         session: Session?,
         context: NSManagedObjectContext? = nil
     ) {
@@ -48,6 +85,8 @@ final class Solve: NSManagedObject, Identifiable {
         }
         self.event = event
         self.resultRaw = result.rawValue
+        self.inputSourceRaw = inputSource?.rawValue
+        self.reconstruction = reconstruction
         self.session = session
     }
 }

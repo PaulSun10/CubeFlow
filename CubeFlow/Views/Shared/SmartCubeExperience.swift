@@ -392,6 +392,20 @@ enum SmartCubeTimerPosition: String, CaseIterable, Identifiable {
     }
 }
 
+enum SmartCubeTimerLayout: String, CaseIterable, Identifiable {
+    case centered
+    case split
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .centered: "settings.smart_cube.timer_layout.centered"
+        case .split: "settings.smart_cube.timer_layout.split"
+        }
+    }
+}
+
 nonisolated struct SmartCubePartialHalfTurnPresentation: Equatable, Sendable {
     let tokenIndex: Int
     let targetMove: String
@@ -428,31 +442,38 @@ struct SmartCubeScrambleProgress: Equatable {
     let tokens: [String]
     let expectedFacelets: [String]
     let targetFacelets: String
+    let puzzleSize: Int
     private(set) var replanGeneration = 0
     private(set) var completedTokenIndices: Set<Int> = []
     private(set) var highestVerifiedMoveCount = 0
     private(set) var isDeviated = false
-    private var lastValidFacelets = SmartCubeBluetoothManager.solvedFacelets
+    private var lastValidFacelets: String
     private var partialCompletionMoves: [Int: String] = [:]
     private var deviationTrail: DeviationTrail?
-    private var validCheckpoints: [String: VerificationState] = [
-        SmartCubeBluetoothManager.solvedFacelets: VerificationState()
-    ]
+    private var validCheckpoints: [String: VerificationState]
 
-    init?(scramble: String) {
+    init?(scramble: String, puzzleSize: Int = 3) {
         let tokens = scramble.split(whereSeparator: \.isWhitespace).map(String.init)
         guard !tokens.isEmpty,
-              let expectedFacelets = SmartCubeBluetoothManager.faceletStates(afterApplying: tokens)
+              let expectedFacelets = SmartCubeBluetoothManager.faceletStates(
+                afterApplying: tokens,
+                puzzleSize: puzzleSize
+              )
         else { return nil }
+        let solvedFacelets = CubeSurface.solved(size: puzzleSize)
         self.tokens = tokens
         self.expectedFacelets = expectedFacelets
         self.targetFacelets = expectedFacelets[expectedFacelets.index(before: expectedFacelets.endIndex)]
+        self.puzzleSize = puzzleSize
+        lastValidFacelets = solvedFacelets
+        validCheckpoints = [solvedFacelets: VerificationState()]
     }
 
     init(replacement: SmartCubeReplacement) {
         tokens = replacement.tokens
         expectedFacelets = replacement.expectedFacelets
         targetFacelets = replacement.targetFacelets
+        puzzleSize = replacement.targetFacelets.count == 24 ? 2 : 3
         replanGeneration = replacement.generation
         lastValidFacelets = replacement.sourceFacelets
         validCheckpoints = [replacement.sourceFacelets: VerificationState()]
@@ -461,7 +482,7 @@ struct SmartCubeScrambleProgress: Equatable {
     var isComplete: Bool {
         completedTokenIndices.count == tokens.count
             && partialCompletionMoves.isEmpty
-            && lastValidFacelets == targetFacelets
+            && CubeStateEquivalence.matches(lastValidFacelets, targetFacelets, puzzleSize: puzzleSize)
             && !isDeviated
     }
 
@@ -470,6 +491,7 @@ struct SmartCubeScrambleProgress: Equatable {
     }
 
     var currentMoveTokenIndex: Int? {
+        if puzzleSize == 2 { return nil } // Native-frame moves cannot verify fixed physical token order.
         guard !isDeviated, !isComplete else { return nil }
         if let partialIndex = partialCompletionMoves.keys.min() {
             return partialIndex
@@ -695,6 +717,20 @@ struct SmartCubeScrambleProgress: Equatable {
     }
 
     private mutating func updateState(with facelets: String) -> SmartCubeScrambleMatch {
+        if puzzleSize == 2 {
+            let wasComplete = isComplete
+            lastValidFacelets = facelets
+            isDeviated = false
+            deviationTrail = nil
+            partialCompletionMoves = [:]
+            if CubeStateEquivalence.matches(facelets, targetFacelets, puzzleSize: 2) {
+                completedTokenIndices = Set(tokens.indices)
+                highestVerifiedMoveCount = tokens.count
+                return wasComplete ? .unchanged : .completed
+            }
+            completedTokenIndices = []
+            return wasComplete ? .returned : .unchanged
+        }
         if let checkpoint = validCheckpoints[facelets] {
             let previous = verificationState
             let wasDeviated = isDeviated
@@ -830,7 +866,21 @@ nonisolated enum SmartCubeSolvePhase: Equatable {
     case scrambling
     case ready
     case inspecting
+    case inspectionExpired
     case timing
+}
+
+nonisolated enum InspectionPenaltyPolicy {
+    static func penalty(for elapsed: TimeInterval) -> SolveResult? {
+        if elapsed >= 17 { return .dnf }
+        if elapsed >= 15 { return .plusTwo }
+        return nil
+    }
+
+    static func result(_ result: SolveResult, inspectionPenalty: SolveResult?) -> SolveResult {
+        if result == .dnf || inspectionPenalty == .dnf { return .dnf }
+        return inspectionPenalty == .plusTwo ? .plusTwo : result
+    }
 }
 
 nonisolated enum SmartCubeSolveAction: Equatable {
@@ -843,9 +893,11 @@ nonisolated enum SmartCubeSolveAction: Equatable {
 nonisolated enum SmartCubeTimerEventPolicy {
     static func effectiveEvent(
         normalEvent: PuzzleEvent,
-        isSmartCubeTiming: Bool
+        isSmartCubeTiming: Bool,
+        smartCubePuzzleSize: Int? = nil
     ) -> PuzzleEvent {
-        isSmartCubeTiming ? .threeByThree : normalEvent
+        guard isSmartCubeTiming else { return normalEvent }
+        return smartCubePuzzleSize == 2 ? .twoByTwo : .threeByThree
     }
 }
 
@@ -953,23 +1005,43 @@ final class SmartCubeTimerPresentationStore {
         let progress: SmartCubeScrambleProgress
         let epoch: SmartCubeScrambleEpoch
         let recoveryState: SmartCubeRecoveryPresentationState
+        var timerSessionID: UUID? = nil
     }
 
     static let shared = SmartCubeTimerPresentationStore()
 
     private(set) var snapshot: Snapshot?
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) { self.defaults = defaults }
+
+    func saveScramble(_ scramble: String, timerSessionID: UUID, puzzleSize: Int) {
+        let key = scrambleKey(timerSessionID: timerSessionID, puzzleSize: puzzleSize)
+        guard defaults.string(forKey: key) != scramble else { return }
+        defaults.set(scramble, forKey: key)
+    }
+
+    func restoredScramble(timerSessionID: UUID, puzzleSize: Int) -> String? {
+        defaults.string(forKey: scrambleKey(timerSessionID: timerSessionID, puzzleSize: puzzleSize))
+    }
+
+    private func scrambleKey(timerSessionID: UUID, puzzleSize: Int) -> String {
+        "smartCubeTimerScramble.\(timerSessionID.uuidString).\(puzzleSize)"
+    }
 
     func save(
         scramble: String,
         progress: SmartCubeScrambleProgress,
         epoch: SmartCubeScrambleEpoch,
-        recoveryState: SmartCubeRecoveryPresentationState
+        recoveryState: SmartCubeRecoveryPresentationState,
+        timerSessionID: UUID? = nil
     ) {
         snapshot = Snapshot(
             scramble: scramble,
             progress: progress,
             epoch: epoch,
-            recoveryState: recoveryState
+            recoveryState: recoveryState,
+            timerSessionID: timerSessionID
         )
     }
 
@@ -1011,12 +1083,17 @@ struct SmartCubeSolveLifecycle: Equatable {
     ) -> SmartCubeSolveAction {
         guard move.id != completingMoveID else { return .none }
         switch phase {
-        case .ready, .inspecting:
+        case .ready, .inspecting, .inspectionExpired:
             phase = .timing
             return .startTiming(move)
         case .scrambling, .timing:
             return .none
         }
+    }
+
+    mutating func inspectionDidAdvance(elapsed: TimeInterval) {
+        guard phase == .inspecting else { return }
+        if InspectionPenaltyPolicy.penalty(for: elapsed) == .dnf { phase = .inspectionExpired }
     }
 
     mutating func solveDidFinish() {

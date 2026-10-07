@@ -33,7 +33,15 @@ final class VirtualCubeMaterials {
         if let cached = geometryCache[key] { return cached }
         let geometry: SCNGeometry
         if appearance == .stickerless {
-            geometry = solidBody(pitch: Float(pitch), position: position, size: size)
+            if size == 2 {
+                // Recessed support stays behind the colored shells and their open center junction.
+                let core = SCNBox(width: pitch * 0.79, height: pitch * 0.79,
+                                  length: pitch * 0.79, chamferRadius: pitch * 0.09)
+                core.chamferSegmentCount = 4
+                geometry = core
+            } else {
+                geometry = solidBody(pitch: Float(pitch), position: position, size: size)
+            }
         } else {
             let width = appearance == .classic ? pitch - 0.06 : pitch - 0.004
             let radius = appearance == .minimal ? 0 : width * 0.045
@@ -145,11 +153,12 @@ final class VirtualCubeMaterials {
             // Flush opaque patches meet without deliberately exposing a seam at rest.
             geometry = SCNPlane(width: pitch, height: pitch)
         case .stickerless:
+            let isTwoByTwo = size == 2
             let path = radii.allSatisfy { $0 == pitch * 0.40 }
                 ? roundedCenter(pitch: pitch)
-                : roundedPatch(width: pitch * 0.98, radii: radii)
-            let shape = SCNShape(path: path, extrusionDepth: pitch * 0.085)
-            shape.chamferRadius = pitch * 0.008
+                : roundedPatch(width: pitch * (isTwoByTwo ? 0.94 : 0.98), radii: radii)
+            let shape = SCNShape(path: path, extrusionDepth: pitch * (isTwoByTwo ? 0.12 : 0.085))
+            shape.chamferRadius = pitch * (isTwoByTwo ? 0.012 : 0.008)
             shape.chamferMode = .both
             geometry = shape
         }
@@ -158,6 +167,9 @@ final class VirtualCubeMaterials {
         if let cached = materialCache[materialKey] { material = cached }
         else {
             material = makeMaterial(color: color, physical: reflections && appearance == .stickerless)
+            if appearance == .stickerless, size == 2, !reflections {
+                material.lightingModel = .lambert
+            }
             // Planes need both sides during turns; closed shells do not.
             material.isDoubleSided = appearance != .stickerless
             materialCache[materialKey] = material
@@ -167,11 +179,11 @@ final class VirtualCubeMaterials {
         return geometry
     }
 
-    func faceDistance(pitch: CGFloat) -> Float {
+    func faceDistance(pitch: CGFloat, size: Int = 3) -> Float {
         switch appearance {
         case .classic: return Float((pitch - 0.06) / 2 + 0.001)
         case .minimal: return Float(pitch / 2)
-        case .stickerless: return Float(pitch * (0.5 - 0.085 / 2))
+        case .stickerless: return Float(pitch * (0.5 - (size == 2 ? 0.12 : 0.085) / 2))
         }
     }
 
@@ -193,6 +205,7 @@ final class VirtualCubeMaterials {
         return [(row + 1, column), (row + 1, column + 1), (row, column + 1), (row, column)].map { r, c in
             let interior = r > 0 && r < size && c > 0 && c < size
             if !interior { return pitch * 0.025 }
+            if size == 2 { return pitch * 0.28 }
             if isCorner { return 0 }
             return pitch * (isCenter ? 0.40 : 0.24)
         }

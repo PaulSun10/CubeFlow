@@ -10,6 +10,14 @@ import CoreData
 
 #if os(iOS)
 final class CubeFlowAppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // Create the app-owned central even when iOS relaunches us for BLE restoration.
+        if !SavedSmartCubeDevices.shared.devices.isEmpty || launchOptions?[.bluetoothCentrals] != nil {
+            SmartCubeBluetoothManager.shared.prepareIfNeeded()
+        }
+        return true
+    }
+
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         AppOrientationManager.supportedOrientations
     }

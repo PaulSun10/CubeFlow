@@ -6,6 +6,14 @@ import Combine
 struct GANTimerCompletedSolve: Equatable {
     let id = UUID()
     let seconds: Double
+    let startedAt: Date?
+    let stoppedAt: Date
+
+    init(seconds: Double, startedAt: Date? = nil, stoppedAt: Date = .now) {
+        self.seconds = seconds
+        self.startedAt = startedAt
+        self.stoppedAt = stoppedAt
+    }
 }
 
 struct GANTimerDiscoveredDevice: Identifiable, Equatable {
@@ -29,6 +37,36 @@ enum GANTimerConnectionState: Equatable {
     case failed(String)
 }
 
+nonisolated struct GANTimerHardwareReadiness: Equatable, Sendable {
+    private(set) var isReadyForStart = false
+
+    mutating func consume(packetState: UInt8) {
+        switch packetState {
+        case 0x01:
+            isReadyForStart = true
+        case 0x02, 0x04, 0x06, 0x07:
+            isReadyForStart = false
+        case 0x03, 0x05:
+            // START and the timer's polled idle echo must not erase the
+            // armed state before the owning view consumes the transition.
+            break
+        default:
+            break
+        }
+    }
+
+    mutating func reset() {
+        self = Self()
+    }
+}
+
+nonisolated enum GANTimerBatteryLevel {
+    static func percentage(from data: Data) -> Int? {
+        guard let value = data.first, value <= 100 else { return nil }
+        return Int(value)
+    }
+}
+
 final class GANTimerBluetoothManager: NSObject, ObservableObject {
     static let shared = GANTimerBluetoothManager()
 
@@ -40,20 +78,27 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
     @Published private(set) var clearButtonEventID: UUID?
     @Published private(set) var inspectionToggleEventID: UUID?
     @Published private(set) var isHandsOn: Bool = false
+    @Published private(set) var isHardwareReadyForStart = false
+    @Published private(set) var batteryLevel: Int?
+    @Published private(set) var activeRunStartedAt: Date?
     private let ganServiceUUID = CBUUID(string: "FFF0")
     private let stateCharacteristicUUID = CBUUID(string: "FFF5")
     private let storedTimesCharacteristicUUID = CBUUID(string: "FFF2")
+    private let batteryLevelCharacteristicUUID = CBUUID(string: "2A19")
     private let lastPeripheralIdentifierKey = "ganSmartTimerPeripheralIdentifier"
 
     private lazy var centralManager = CBCentralManager(delegate: self, queue: nil)
     private var peripheral: CBPeripheral?
     private var stateCharacteristic: CBCharacteristic?
     private var storedTimesCharacteristic: CBCharacteristic?
+    private var batteryLevelCharacteristic: CBCharacteristic?
     private var readableCharacteristics: [CBCharacteristic] = []
     private var pollingTimer: Timer?
+    private var batteryPollCount = 0
     private var runningStartDate: Date?
     private var isPrepared = false
     private var discoveredPeripheralsByID: [UUID: CBPeripheral] = [:]
+    private var hardwareReadiness = GANTimerHardwareReadiness()
     private var ignoreNextZeroIdlePacket = false
     private var lastZeroIdlePacketDate: Date?
     private let clearButtonSignature: [UInt8] = [0xFE, 0x08, 0x01, 0x05, 0x00, 0x00, 0x00, 0x00]
@@ -150,13 +195,17 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
         }
         self.peripheral = nil
         runningStartDate = nil
+        activeRunStartedAt = nil
         stateCharacteristic = nil
         storedTimesCharacteristic = nil
+        batteryLevelCharacteristic = nil
+        batteryLevel = nil
         readableCharacteristics = []
         stopPolling()
         ignoreNextZeroIdlePacket = false
         lastZeroIdlePacketDate = nil
         isHandsOn = false
+        resetHardwareReadiness()
         connectionState = .disconnected
     }
 
@@ -173,6 +222,7 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
 
         stopScanning()
         connectionState = .connecting
+        batteryLevel = nil
         self.peripheral = peripheral
         deviceName = discoveredDevices.first(where: { $0.id == deviceID })?.name ?? peripheral.name
         peripheral.delegate = self
@@ -268,6 +318,8 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
         let stateIndex = usesExtendedPrefix ? 3 : 2
         let timeIndex = usesExtendedPrefix ? 4 : 3
         let state = bytes[stateIndex]
+        hardwareReadiness.consume(packetState: state)
+        isHardwareReadyForStart = hardwareReadiness.isReadyForStart
         let timeValue: Double?
         if (state == 0x04 || state == 0x05), bytes.count >= timeIndex + 4 {
             timeValue = parseTimestamp(bytes[timeIndex...(timeIndex + 3)])
@@ -278,6 +330,7 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
         switch state {
         case 0x01:
             runningStartDate = nil
+            activeRunStartedAt = nil
             displayedSeconds = 0
             isHandsOn = true
             connectionState = .ready
@@ -285,20 +338,30 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
             isHandsOn = false
             connectionState = .connected
         case 0x03:
-            runningStartDate = Date()
+            let startedAt = Date()
+            runningStartDate = startedAt
+            activeRunStartedAt = startedAt
             displayedSeconds = 0
             isHandsOn = false
             connectionState = .running
         case 0x04:
+            let stoppedAt = Date()
+            let startedAt = runningStartDate ?? activeRunStartedAt
             runningStartDate = nil
             isHandsOn = true
             if let timeValue {
                 displayedSeconds = timeValue
-                completedSolve = GANTimerCompletedSolve(seconds: timeValue)
+                completedSolve = GANTimerCompletedSolve(
+                    seconds: timeValue,
+                    startedAt: startedAt,
+                    stoppedAt: stoppedAt
+                )
             }
+            activeRunStartedAt = nil
             connectionState = .finished
         case 0x05:
             runningStartDate = nil
+            activeRunStartedAt = nil
             let wasAlreadyCleared = displayedSeconds == 0
             if let timeValue {
                 displayedSeconds = timeValue
@@ -306,9 +369,10 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
                     handleZeroIdlePacket(wasAlreadyCleared: wasAlreadyCleared)
                 }
             }
-            connectionState = .connected
+            connectionState = hardwareReadiness.isReadyForStart ? .ready : .connected
         case 0x06:
             runningStartDate = nil
+            activeRunStartedAt = nil
             displayedSeconds = 0
             isHandsOn = true
             connectionState = .handsOn
@@ -317,6 +381,7 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
                 displayedSeconds = Date().timeIntervalSince(runningStartDate)
             }
             runningStartDate = nil
+            activeRunStartedAt = nil
             isHandsOn = false
             connectionState = .connected
         default:
@@ -360,6 +425,14 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
             for characteristic in self.readableCharacteristics {
                 peripheral.readValue(for: characteristic)
             }
+            self.batteryPollCount += 1
+            if self.batteryPollCount >= 500 {
+                self.batteryPollCount = 0
+                if let battery = self.batteryLevelCharacteristic,
+                   battery.properties.contains(.read) {
+                    peripheral.readValue(for: battery)
+                }
+            }
         }
         if let pollingTimer {
             RunLoop.main.add(pollingTimer, forMode: .common)
@@ -369,6 +442,12 @@ final class GANTimerBluetoothManager: NSObject, ObservableObject {
     private func stopPolling() {
         pollingTimer?.invalidate()
         pollingTimer = nil
+        batteryPollCount = 0
+    }
+
+    private func resetHardwareReadiness() {
+        hardwareReadiness.reset()
+        isHardwareReadyForStart = false
     }
 }
 
@@ -411,6 +490,8 @@ extension GANTimerBluetoothManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         storePeripheralIdentifier(peripheral.identifier)
         deviceName = peripheral.name ?? deviceName
+        resetHardwareReadiness()
+        batteryLevel = nil
         connectionState = .connected
         ignoreNextZeroIdlePacket = true
         lastZeroIdlePacketDate = nil
@@ -424,14 +505,18 @@ extension GANTimerBluetoothManager: CBCentralManagerDelegate {
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         runningStartDate = nil
+        activeRunStartedAt = nil
         stateCharacteristic = nil
         storedTimesCharacteristic = nil
+        batteryLevelCharacteristic = nil
+        batteryLevel = nil
         readableCharacteristics = []
         stopPolling()
         self.peripheral = nil
         ignoreNextZeroIdlePacket = false
         lastZeroIdlePacketDate = nil
         isHandsOn = false
+        resetHardwareReadiness()
         if let error {
             connectionState = .failed(appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode()))
         } else {
@@ -465,6 +550,8 @@ extension GANTimerBluetoothManager: CBPeripheralDelegate {
                 stateCharacteristic = characteristic
             case storedTimesCharacteristicUUID:
                 storedTimesCharacteristic = characteristic
+            case batteryLevelCharacteristicUUID:
+                batteryLevelCharacteristic = characteristic
             default:
                 break
             }
@@ -474,6 +561,10 @@ extension GANTimerBluetoothManager: CBPeripheralDelegate {
             }
 
             if characteristic.properties.contains(.read) {
+                if characteristic.uuid == batteryLevelCharacteristicUUID {
+                    peripheral.readValue(for: characteristic)
+                    return
+                }
                 if !readableCharacteristics.contains(where: { $0.uuid == characteristic.uuid && $0.service?.uuid == characteristic.service?.uuid }) {
                     readableCharacteristics.append(characteristic)
                 }
@@ -484,6 +575,7 @@ extension GANTimerBluetoothManager: CBPeripheralDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        if characteristic.uuid == batteryLevelCharacteristicUUID { return }
         guard error == nil else {
             connectionState = .failed(error?.localizedDescription ?? "Notification subscription failed")
             return
@@ -491,6 +583,12 @@ extension GANTimerBluetoothManager: CBPeripheralDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        if characteristic.uuid == batteryLevelCharacteristicUUID {
+            if error == nil, let data = characteristic.value {
+                batteryLevel = GANTimerBatteryLevel.percentage(from: data)
+            }
+            return
+        }
         guard error == nil else {
             connectionState = .failed(error?.localizedDescription ?? "Characteristic update failed")
             return

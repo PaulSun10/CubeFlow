@@ -260,7 +260,9 @@ enum DataTransferManager {
                     comment: $0.comment,
                     event: $0.event,
                     resultRaw: $0.resultRaw,
-                    sessionID: $0.session?.id
+                    sessionID: $0.session?.id,
+                    inputSourceRaw: $0.inputSourceRaw,
+                    reconstructionData: $0.reconstructionData
                 )
             }
         )
@@ -486,6 +488,7 @@ enum DataTransferManager {
                 existing.comment = solveItem.comment
                 existing.event = solveItem.event
                 existing.resultRaw = solveItem.resultRaw
+                solveItem.restoreMetadata(to: existing)
                 existing.session = targetSession
                 existingSolveFingerprints.insert(fingerprint)
                 unsavedChanges += 1
@@ -501,6 +504,7 @@ enum DataTransferManager {
                     context: modelContext
                 )
                 newSolve.id = solveItem.id
+                solveItem.restoreMetadata(to: newSolve)
                 solveByID[newSolve.id] = newSolve
                 existingSolveFingerprints.insert(fingerprint)
                 unsavedChanges += 1
@@ -1203,6 +1207,8 @@ struct SolveBackupItem: Sendable, Codable {
     let event: String
     let resultRaw: String
     let sessionID: UUID?
+    let inputSourceRaw: String?
+    let reconstructionData: Data?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -1213,6 +1219,8 @@ struct SolveBackupItem: Sendable, Codable {
         case event
         case resultRaw
         case sessionID
+        case inputSourceRaw
+        case reconstructionData
     }
 
     nonisolated init(
@@ -1223,7 +1231,9 @@ struct SolveBackupItem: Sendable, Codable {
         comment: String,
         event: String,
         resultRaw: String,
-        sessionID: UUID?
+        sessionID: UUID?,
+        inputSourceRaw: String? = nil,
+        reconstructionData: Data? = nil
     ) {
         self.id = id
         self.time = time
@@ -1233,6 +1243,8 @@ struct SolveBackupItem: Sendable, Codable {
         self.event = event
         self.resultRaw = resultRaw
         self.sessionID = sessionID
+        self.inputSourceRaw = inputSourceRaw
+        self.reconstructionData = reconstructionData
     }
 
     nonisolated init(from decoder: Decoder) throws {
@@ -1245,6 +1257,8 @@ struct SolveBackupItem: Sendable, Codable {
         event = try container.decode(String.self, forKey: .event)
         resultRaw = try container.decode(String.self, forKey: .resultRaw)
         sessionID = try container.decodeIfPresent(UUID.self, forKey: .sessionID)
+        inputSourceRaw = try container.decodeIfPresent(String.self, forKey: .inputSourceRaw)
+        reconstructionData = try container.decodeIfPresent(Data.self, forKey: .reconstructionData)
     }
 
     nonisolated func encode(to encoder: Encoder) throws {
@@ -1257,6 +1271,14 @@ struct SolveBackupItem: Sendable, Codable {
         try container.encode(event, forKey: .event)
         try container.encode(resultRaw, forKey: .resultRaw)
         try container.encodeIfPresent(sessionID, forKey: .sessionID)
+        try container.encodeIfPresent(inputSourceRaw, forKey: .inputSourceRaw)
+        try container.encodeIfPresent(reconstructionData, forKey: .reconstructionData)
+    }
+
+    // Call on the owning Core Data executor. Missing legacy fields must not erase local truth.
+    nonisolated func restoreMetadata(to solve: Solve) {
+        if let inputSourceRaw { solve.inputSourceRaw = inputSourceRaw }
+        if let reconstructionData { solve.reconstructionData = reconstructionData }
     }
 }
 

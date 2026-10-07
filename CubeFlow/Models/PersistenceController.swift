@@ -9,6 +9,11 @@ final class PersistenceController: @unchecked Sendable {
     nonisolated init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "CubeFlow", managedObjectModel: Self.managedObjectModel)
 
+        for description in container.persistentStoreDescriptions {
+            description.shouldMigrateStoreAutomatically = true
+            description.shouldInferMappingModelAutomatically = true
+        }
+
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }
@@ -56,6 +61,9 @@ final class PersistenceController: @unchecked Sendable {
         let solveScramble = attribute("scramble", type: .stringAttributeType)
         let solveEvent = attribute("event", type: .stringAttributeType)
         let solveResultRaw = attribute("resultRaw", type: .stringAttributeType)
+        let solveInputSourceRaw = attribute("inputSourceRaw", type: .stringAttributeType, isOptional: true)
+        let solveReconstructionData = attribute("reconstructionData", type: .binaryDataAttributeType, isOptional: true)
+        solveReconstructionData.allowsExternalBinaryDataStorage = true
 
         let sessionSolves = NSRelationshipDescription()
         sessionSolves.name = "solves"
@@ -91,6 +99,8 @@ final class PersistenceController: @unchecked Sendable {
             solveScramble,
             solveEvent,
             solveResultRaw,
+            solveInputSourceRaw,
+            solveReconstructionData,
             solveSession
         ]
 

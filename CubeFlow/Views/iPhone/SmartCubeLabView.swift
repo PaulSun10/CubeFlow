@@ -1,8 +1,10 @@
 #if os(iOS)
 import SwiftUI
+import UIKit
 
 struct SmartCubeLabView: View {
     @StateObject private var manager = SmartCubeBluetoothManager.shared
+    @ObservedObject private var savedDevices = SavedSmartCubeDevices.shared
     @AppStorage("smartCubeFixedView") private var fixedViewRawValue = SmartCubeFixedView.urf.rawValue
     @AppStorage("smartCubeAnimationTPS") private var animationTPS = 10
     @AppStorage("smartCubeAppearance") private var appearanceRawValue = VirtualCubeAppearance.classic.rawValue
@@ -14,19 +16,33 @@ struct SmartCubeLabView: View {
     @AppStorage("smartCubeDebugMode") private var debugMode = false
     @AppStorage("smartCubeShowVirtualCube") private var showVirtualCube = true
     @AppStorage("smartCubeTimerPosition") private var timerPositionRawValue = SmartCubeTimerPosition.right.rawValue
+    @AppStorage("smartCubeTimerLayout") private var timerLayoutRawValue = SmartCubeTimerLayout.centered.rawValue
     @AppStorage("smartCubeCurrentMovePresentation") private var currentMovePresentationRawValue = SmartCubeCurrentMovePresentation.highlight.rawValue
     @AppStorage("smartCubeHighlightColorMode") private var highlightColorModeRawValue = SmartCubeHighlightColorMode.automatic.rawValue
     @AppStorage("smartCubeHighlightTextMode") private var highlightTextModeRawValue = SmartCubeHighlightColorMode.automatic.rawValue
     @AppStorage("smartCubeHighlightColorData") private var highlightColorData: Data?
     @AppStorage("smartCubeHighlightTextColorData") private var highlightTextColorData: Data?
     @AppStorage("smartCubeCompletedMovesBehavior") private var completedMovesBehaviorRawValue = SmartCubeCompletedMovesBehavior.collapse.rawValue
-    @AppStorage("smartCubeScrambleTransition") private var scrambleTransitionRawValue = SmartCubeScrambleTransition.blur.rawValue
-    @AppStorage("smartCubeRecoveryDisplay") private var recoveryDisplayRawValue = SmartCubeRecoveryDisplay.separate.rawValue
-    @AppStorage("smartCubeHighlightAnimation") private var highlightAnimationRawValue = SmartCubeHighlightAnimation.animated.rawValue
+    @AppStorage("smartCubeScrambleTransition") private var scrambleTransitionRawValue = SmartCubeScrambleTransition.instant.rawValue
+    @AppStorage("smartCubeRecoveryDisplay") private var recoveryDisplayRawValue = SmartCubeRecoveryDisplay.inline.rawValue
+    @AppStorage("smartCubeHighlightAnimation") private var highlightAnimationRawValue = SmartCubeHighlightAnimation.instant.rawValue
     @State private var showingResetPrompt = false
+    @State private var policyAttemptID: UUID?
 
     private var fixedView: SmartCubeFixedView {
         SmartCubeFixedView(rawValue: fixedViewRawValue) ?? .urf
+    }
+
+    private var usesWeiPo2NativeVisual: Bool {
+        manager.connectedProtocol == .moyu && manager.puzzleSize == 2
+    }
+
+    private var showsDiscoveryDiagnostics: Bool {
+        #if DEBUG
+        debugMode
+        #else
+        false
+        #endif
     }
 
     private var resetPolicy: SmartCubeResetPolicy {
@@ -96,40 +112,33 @@ struct SmartCubeLabView: View {
         List {
             statusSection
             discoveredDevicesSection
-            liveStateSection
             cube3DSection
             displaySettingsSection
             scrambleProgressSettingsSection
             settingsSection
+            #if DEBUG
             if debugMode {
+                liveStateSection
                 faceletsSection
                 servicesSection
                 protocolLogSection
                 logSection
             }
+            #endif
         }
         .listStyle(.insetGrouped)
         .navigationTitle("smart_cube.title")
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    manager.clearLog()
-                } label: {
-                    Image(systemName: "trash")
-                }
-                .accessibilityLabel("Clear log")
-                .opacity(debugMode ? 1 : 0)
-                .disabled(!debugMode)
-            }
-        }
+        #if DEBUG
+        .modifier(SmartCubeDebugToolbar(enabled: debugMode) { manager.clearLog() })
+        #endif
         .onAppear {
             recoveryDisplayRawValue = SmartCubeRecoveryDisplay.resolved(recoveryDisplayRawValue).rawValue
             manager.prepareIfNeeded()
         }
-        .onChange(of: manager.connectionState) { state in
-            guard state == .connected,
-                  let attemptID = manager.connectionAttemptID else { return }
+        .onChange(of: manager.pendingPolicyAttemptID) { pending in
+            guard let attemptID = pending else { return }
+            policyAttemptID = attemptID
             #if DEBUG
             SmartCubeDiagnostics.shared.trace("policy.pending", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings policy=\(resetPolicy.rawValue)")
             #endif
@@ -138,7 +147,7 @@ struct SmartCubeLabView: View {
                 #if DEBUG
                 SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings action=reset")
                 #endif
-                manager.resetCubeStateToSolved()
+                manager.resetCubeStateToSolved(attemptID: attemptID)
                 manager.resolveConnectionPolicy(for: attemptID)
             case .prompt:
                 #if DEBUG
@@ -155,15 +164,15 @@ struct SmartCubeLabView: View {
         .smartCubeResetConfirmation(
             isPresented: $showingResetPrompt,
             onReset: {
-                guard let attemptID = manager.connectionAttemptID else { return }
+                guard let attemptID = policyAttemptID else { return }
                 #if DEBUG
                 SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings prompt=mark-as-solved")
                 #endif
-                manager.resetCubeStateToSolved()
+                manager.resetCubeStateToSolved(attemptID: attemptID)
                 manager.resolveConnectionPolicy(for: attemptID)
             },
             onContinue: {
-                guard let attemptID = manager.connectionAttemptID else { return }
+                guard let attemptID = policyAttemptID else { return }
                 #if DEBUG
                 SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: attemptID, deviceID: manager.connectionDeviceID, detail: "source=settings prompt=continue")
                 #endif
@@ -173,83 +182,68 @@ struct SmartCubeLabView: View {
     }
 
     private var statusSection: some View {
-        Section {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Image(systemName: manager.isConnected ? "cube.transparent.fill" : "cube.transparent")
-                        .font(.system(size: 26, weight: .semibold))
-                        .foregroundStyle(manager.isConnected ? .green : .secondary)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Group {
-                            if let identity = manager.identity {
-                                Text(identity.displayName)
-                            } else {
-                                Text("smart_cube.no_connected")
-                            }
-                        }
-                        .font(.system(size: 16, weight: .semibold))
-                        Text(connectionStateKey)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                }
-
-                HStack(spacing: 10) {
-                    if manager.connectionState == .scanning {
-                        Button("smart_cube.stop_scanning") { manager.stopScanning() }
-                            .buttonStyle(.borderedProminent)
-                    } else {
-                        Button("smart_cube.scan") { manager.startScanning() }
-                            .buttonStyle(.borderedProminent)
-                    }
-
-                    Button("smart_cube.disconnect") { manager.disconnect() }
-                        .buttonStyle(.bordered)
-                        .disabled(!manager.isConnected)
-                }
-
-                if manager.isConnected {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button {
-                            manager.resetCubeStateToSolved()
-                        } label: {
-                            Label("smart_cube.reset_action", systemImage: "arrow.counterclockwise")
-                        }
-
-                        if debugMode {
-                            HStack(spacing: 10) {
-                                Button("Facelets") { manager.requestFacelets() }
-                                Button("Battery") { manager.requestBattery() }
-                                Button("Hardware") { manager.requestHardware() }
-                            }
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Toggle("Protocol Debug", isOn: $manager.protocolDebugLogging)
-                                Toggle("Coalesce Slice Moves", isOn: $manager.coalesceSliceMoves)
-                                Toggle("Verbose Packets", isOn: $manager.verbosePacketLogging)
-                            }
-                            .font(.system(size: 13, weight: .medium))
-                        }
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .buttonStyle(.bordered)
+        Section("smart_cube.my_devices") {
+            if manager.compatibleConnectedDeviceIDs.count > 1 {
+                HStack { Text("smart_cube.device.active"); Spacer(); SmartCubeActiveDeviceMenu() }
+            }
+            if savedDevices.devices.isEmpty {
+                Text("smart_cube.no_saved_devices")
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(savedDevices.devices) { device in
+                NavigationLink {
+                    SmartCubeDeviceDetailView(deviceID: device.id)
+                } label: {
+                    SmartCubeDeviceLabel(
+                        device: device,
+                        isConnected: manager.session(for: device.id)?.isConnected == true,
+                        isConnecting: manager.session(for: device.id)?.connectionState == .connecting,
+                        battery: manager.session(for: device.id)?.batteryLevel
+                    )
                 }
             }
-            .padding(.vertical, 4)
-        } footer: {
-            Text("smart_cube.reset_footer")
+
+            #if DEBUG
+            if manager.isConnected, debugMode {
+                HStack(spacing: 10) {
+                    Button("Request Facelets") { manager.requestFacelets() }
+                    Button("Battery") { manager.requestBattery() }
+                    Button("Hardware") { manager.requestHardware() }
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Toggle("Protocol Debug", isOn: $manager.protocolDebugLogging)
+                    Toggle("Coalesce Slice Moves", isOn: $manager.coalesceSliceMoves)
+                    Toggle("Verbose Packets", isOn: $manager.verbosePacketLogging)
+                    HStack(spacing: 10) {
+                        Button(manager.isPacketCaptureFinishing ? "Finishing Capture..." : (manager.isPacketCaptureActive ? "Stop Capture" : "Start Capture")) {
+                            if manager.isPacketCaptureActive {
+                                manager.finishPacketCapture()
+                            } else {
+                                manager.startPacketCapture()
+                            }
+                        }
+                        .disabled(manager.isPacketCaptureFinishing)
+                        Button("Copy Capture") {
+                            UIPasteboard.general.string = manager.packetCaptureText
+                        }
+                        .disabled(manager.isPacketCaptureActive)
+                    }
+                }
+                .font(.footnote)
+            }
+            #endif
         }
     }
 
     @ViewBuilder
     private var discoveredDevicesSection: some View {
-        Section("smart_cube.devices") {
-            if manager.discoveredDevices.isEmpty {
+        Section {
+            if manager.discoveredDevices.filter({ savedDevices.device($0.id) == nil }).isEmpty {
                 Text("smart_cube.no_devices")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(manager.discoveredDevices) { device in
+                ForEach(manager.discoveredDevices.filter { savedDevices.device($0.id) == nil }) { device in
                     Button {
                         let attemptID = manager.connect(to: device.id)
                         #if DEBUG
@@ -258,9 +252,25 @@ struct SmartCubeLabView: View {
                         }
                         #endif
                     } label: {
-                        SmartCubeDiscoveredDeviceRow(device: device, showsDiagnostics: true)
+                        SmartCubeDiscoveredDeviceRow(
+                            device: device,
+                            showsDiagnostics: showsDiscoveryDiagnostics
+                        )
                     }
                 }
+            }
+        } header: {
+            HStack {
+                Text("smart_cube.nearby_devices")
+                Spacer()
+                Button(manager.isScanningForDevices ? "smart_cube.stop_scanning" : "smart_cube.scan") {
+                    if manager.isScanningForDevices {
+                        manager.stopScanning()
+                    } else {
+                        manager.startScanning()
+                    }
+                }
+                .font(.subheadline)
             }
         }
     }
@@ -279,7 +289,13 @@ struct SmartCubeLabView: View {
 
     private var liveStateSection: some View {
         Section("smart_cube.live_state") {
-            labeledValue("smart_cube.battery", manager.batteryLevel.map { "\($0)%" } ?? "—")
+            if let battery = manager.batteryLevel {
+                HStack {
+                    Text("smart_cube.battery")
+                    Spacer()
+                    DeviceBatteryIndicator(percentage: battery)
+                }
+            }
             labeledValue("smart_cube.latest_move", manager.latestMove?.move ?? "—")
             labeledValue("smart_cube.move_count", "\(manager.moveHistory.count)")
 
@@ -313,9 +329,10 @@ struct SmartCubeLabView: View {
     private var cube3DSection: some View {
         Section {
             SmartCube3DView(
-                facelets: manager.facelets,
-                stateRevision: manager.cubeStateRevision,
+                facelets: usesWeiPo2NativeVisual ? manager.weiPo2VisualFacelets : manager.facelets,
+                stateRevision: usesWeiPo2NativeVisual ? manager.weiPo2VisualRevision : manager.cubeStateRevision,
                 fixedView: fixedView,
+                cubeSize: manager.puzzleSize,
                 events: manager.canonicalEvents,
                 connectionAttemptID: manager.connectionAttemptID,
                 isStateTrusted: manager.hasTrustedCanonicalState,
@@ -327,8 +344,6 @@ struct SmartCubeLabView: View {
                 .listRowBackground(Color.clear)
         } header: {
             Text("smart_cube.virtual_cube")
-        } footer: {
-            Text("smart_cube.virtual_cube_footer")
         }
     }
 
@@ -368,7 +383,9 @@ struct SmartCubeLabView: View {
             }
 
             Toggle("settings.smart_cube.ready_sound", isOn: $readySound)
+            #if DEBUG
             Toggle("settings.smart_cube.debug_mode", isOn: $debugMode)
+            #endif
         }
     }
 
@@ -377,6 +394,11 @@ struct SmartCubeLabView: View {
             Toggle("settings.smart_cube.show_virtual_cube", isOn: $showVirtualCube)
 
             if showVirtualCube {
+                Picker("settings.smart_cube.timer_layout", selection: $timerLayoutRawValue) {
+                    ForEach(SmartCubeTimerLayout.allCases) { layout in
+                        Text(layout.localizedKey).tag(layout.rawValue)
+                    }
+                }
                 Picker("settings.smart_cube.timer_position", selection: $timerPositionRawValue) {
                     ForEach(SmartCubeTimerPosition.allCases) { position in
                         Text(position.localizedKey).tag(position.rawValue)
@@ -600,6 +622,9 @@ struct SmartCubeDevicePickerView: View {
     @AppStorage("smartCubeResetPolicy") private var resetPolicyRawValue = SmartCubeResetPolicy.prompt.rawValue
     @State private var selectedAttemptID: UUID?
     @State private var showingResetPrompt = false
+    private var selectedSession: SmartCubePeripheralSession? {
+        selectedAttemptID.flatMap { manager.session(attemptID: $0) }
+    }
 
     init(
         manager: SmartCubeBluetoothManager,
@@ -653,18 +678,18 @@ struct SmartCubeDevicePickerView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("common.cancel") {
-                        if selectedAttemptID == manager.connectionAttemptID,
-                           !manager.isReadyForMoveObservation {
-                            manager.disconnect()
+                        if let session = selectedSession, !session.isReadyForMoveObservation,
+                           let id = session.connectionDeviceID {
+                            manager.disconnect(deviceID: id)
                         }
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(manager.connectionState == .scanning
+                    Button(manager.isScanningForDevices
                            ? "smart_cube.stop_scanning"
                            : "smart_cube.scan") {
-                        if manager.connectionState == .scanning {
+                        if manager.isScanningForDevices {
                             manager.stopScanning()
                         } else {
                             manager.startScanning()
@@ -679,10 +704,13 @@ struct SmartCubeDevicePickerView: View {
                 manager.startScanning()
             }
         }
-        .onChange(of: manager.connectionState) { state in
-            guard state == .connected,
-                  let selectedAttemptID,
-                  selectedAttemptID == manager.connectionAttemptID else { return }
+        .onChange(of: selectedSession?.connectionState) { state in
+            guard state == .connected, let selectedAttemptID, let session = selectedSession else { return }
+            if session.connectionPolicyResolvedAttemptID == selectedAttemptID {
+                onConnectionApproved?(selectedAttemptID)
+                dismiss()
+                return
+            }
             #if DEBUG
             let source = onConnectionStarted == nil ? "settings-picker" : "timer"
             SmartCubeDiagnostics.shared.trace("policy.pending", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(source) policy=\(resetPolicy.rawValue)")
@@ -692,7 +720,7 @@ struct SmartCubeDevicePickerView: View {
                 #if DEBUG
                 SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(source) action=reset")
                 #endif
-                manager.resetCubeStateToSolved()
+                manager.resetCubeStateToSolved(attemptID: selectedAttemptID)
                 manager.resolveConnectionPolicy(for: selectedAttemptID)
                 onConnectionApproved?(selectedAttemptID)
                 dismiss()
@@ -714,18 +742,18 @@ struct SmartCubeDevicePickerView: View {
             isPresented: $showingResetPrompt,
             onReset: {
                 guard let selectedAttemptID,
-                      selectedAttemptID == manager.connectionAttemptID else { return }
+                      selectedAttemptID == selectedSession?.connectionAttemptID else { return }
                 #if DEBUG
                 SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(onConnectionStarted == nil ? "settings-picker" : "timer") prompt=mark-as-solved")
                 #endif
-                manager.resetCubeStateToSolved()
+                manager.resetCubeStateToSolved(attemptID: selectedAttemptID)
                 manager.resolveConnectionPolicy(for: selectedAttemptID)
                 onConnectionApproved?(selectedAttemptID)
                 dismiss()
             },
             onContinue: {
                 guard let selectedAttemptID,
-                      selectedAttemptID == manager.connectionAttemptID else { return }
+                      selectedAttemptID == selectedSession?.connectionAttemptID else { return }
                 #if DEBUG
                 SmartCubeDiagnostics.shared.trace("policy.decision", attemptID: selectedAttemptID, deviceID: manager.connectionDeviceID, detail: "source=\(onConnectionStarted == nil ? "settings-picker" : "timer") prompt=continue")
                 #endif
@@ -735,7 +763,7 @@ struct SmartCubeDevicePickerView: View {
             }
         )
         .onDisappear {
-            if manager.connectionState == .scanning {
+            if manager.isScanningForDevices {
                 manager.stopScanning()
             }
         }
@@ -771,43 +799,89 @@ private extension View {
     }
 }
 
+#if DEBUG
+private struct SmartCubeDebugToolbar: ViewModifier {
+    let enabled: Bool
+    let clear: () -> Void
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if enabled {
+            content.toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: clear) {
+                        Image(systemName: "trash")
+                    }
+                    .accessibilityLabel("Clear log")
+                }
+            }
+        } else {
+            content
+        }
+    }
+}
+#endif
+
 private struct SmartCubeDiscoveredDeviceRow: View {
     let device: SmartCubeDiscoveredDevice
     let showsDiagnostics: Bool
 
+    private var detectedIdentity: SmartCubeIdentity {
+        SmartCubeIdentity.resolve(
+            advertisedName: device.name,
+            protocolFamily: device.protocolHint,
+            protocolConfirmed: false,
+            protocolInfo: nil,
+            serviceIdentifiers: device.advertisedServices
+        )
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(device.name)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.primary)
-                Spacer()
-                Text(device.protocolHint.rawValue)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            if let glyph = CompetitionEventIconFont.glyph(
+                for: detectedIdentity.puzzleKind == .twoByTwo ? "222" : "333"
+            ) {
+                CompetitionEventGlyph(
+                    glyph: glyph,
+                    eventName: detectedIdentity.puzzleKind == .twoByTwo ? "2x2" : "3x3",
+                    size: 22,
+                    color: .accentColor
+                )
+                .frame(width: 32)
             }
-            HStack(spacing: 8) {
-                Label("\(device.rssi) dBm", systemImage: "dot.radiowaves.left.and.right")
+            VStack(alignment: .leading, spacing: 4) {
+                Text(device.name)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                Text(detectedIdentity.displayName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            #if DEBUG
+            if showsDiagnostics {
+                Text(device.protocolHint.rawValue)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("RSSI \(device.rssi) dBm")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 if let mac = device.macAddress {
-                    Label(mac, systemImage: "key.horizontal")
-                } else if showsDiagnostics {
-                    Label("No MAC salt", systemImage: "exclamationmark.triangle")
+                    Text(mac)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+                if !device.advertisedServices.isEmpty {
+                    Text("ADV services: \(device.advertisedServices.joined(separator: ", "))")
+                        .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                }
+                if let manufacturerDataHex = device.manufacturerDataHex {
+                    Text("Manufacturer: \(manufacturerDataHex)")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
             }
-            .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(.secondary)
-
-            if showsDiagnostics, !device.advertisedServices.isEmpty {
-                Text("ADV services: \(device.advertisedServices.joined(separator: ", "))")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.secondary)
-            }
-
-            if showsDiagnostics, let manufacturerDataHex = device.manufacturerDataHex {
-                Text("Manufacturer: \(manufacturerDataHex)")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+            #endif
             }
         }
         .padding(.vertical, 3)
