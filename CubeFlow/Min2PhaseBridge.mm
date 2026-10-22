@@ -11,8 +11,15 @@
 #include <mutex>
 #include <cstdlib>
 #include <random>
+#include <chrono>
 
 namespace {
+#if DEBUG
+thread_local double lastSearchTiming[3] = {};
+double millisecondsSince(std::chrono::steady_clock::time_point start) {
+    return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+}
+#endif
 bool cubieCubeFromFacelets(const std::string &facelets, min2phase::CubieCube &cube) {
     if (facelets.length() != min2phase::info::N_PLATES) {
         return false;
@@ -64,6 +71,11 @@ NSString *validatedSolution(const std::string &solution) {
 }
 
 @implementation Min2PhaseBridge
+#if DEBUG
++ (NSArray<NSNumber *> *)debugSearchTiming {
+    return @[@(lastSearchTiming[0]), @(lastSearchTiming[1]), @(lastSearchTiming[2])];
+}
+#endif
 
 + (void)initializeTables {
     static std::once_flag onceToken;
@@ -118,7 +130,32 @@ NSString *validatedSolution(const std::string &solution) {
 }
 
 + (NSString *)movesFromFacelets:(NSString *)sourceFacelets toFacelets:(NSString *)targetFacelets {
+    return [self searchFromFacelets:sourceFacelets toFacelets:targetFacelets maximumDepth:21
+                        probeLimit:1000000 minimumProbes:0 optimal:NO];
+}
+
++ (NSString *)searchFromFacelets:(NSString *)sourceFacelets toFacelets:(NSString *)targetFacelets
+                   maximumDepth:(NSInteger)maximumDepth probeLimit:(NSInteger)probeLimit
+                  minimumProbes:(NSInteger)minimumProbes optimal:(BOOL)optimal {
+    return [self searchFromFacelets:sourceFacelets toFacelets:targetFacelets maximumDepth:maximumDepth
+                        probeLimit:probeLimit minimumProbes:minimumProbes optimal:optimal
+               maximumMilliseconds:0 cancelled:nil];
+}
+
++ (NSString *)searchFromFacelets:(NSString *)sourceFacelets toFacelets:(NSString *)targetFacelets
+                   maximumDepth:(NSInteger)maximumDepth probeLimit:(NSInteger)probeLimit
+                  minimumProbes:(NSInteger)minimumProbes optimal:(BOOL)optimal
+            maximumMilliseconds:(NSInteger)maximumMilliseconds cancelled:(BOOL (NS_NOESCAPE ^)(void))cancelled {
+    if (cancelled && cancelled()) { return @""; }
+    #if DEBUG
+    lastSearchTiming[0] = lastSearchTiming[1] = lastSearchTiming[2] = 0;
+    const auto tablesStart = std::chrono::steady_clock::now();
+    #endif
     [self initializeTables];
+    #if DEBUG
+    lastSearchTiming[0] = millisecondsSince(tablesStart);
+    const auto normalizationStart = std::chrono::steady_clock::now();
+    #endif
     min2phase::CubieCube source;
     min2phase::CubieCube target;
     if (!cubieCubeFromFacelets([sourceFacelets UTF8String], source)
@@ -130,16 +167,32 @@ NSString *validatedSolution(const std::string &solution) {
     min2phase::CubieCube relative;
     min2phase::CubieCube::cornMult(source, target, relative);
     min2phase::CubieCube::edgeMult(source, target, relative);
+    #if DEBUG
+    lastSearchTiming[1] = millisecondsSince(normalizationStart);
+    const auto searchStart = std::chrono::steady_clock::now();
+    #endif
 
+    const int32_t boundedProbes = static_cast<int32_t>(MAX(1, MIN(probeLimit, 1000000)));
     min2phase::Search search;
+    if (maximumMilliseconds > 0 || cancelled) {
+        const auto deadline = std::chrono::steady_clock::now()
+            + std::chrono::milliseconds(MAX(0, maximumMilliseconds));
+        search.setInterruption([deadline, maximumMilliseconds, cancelled] {
+            return (cancelled && cancelled()) || (maximumMilliseconds > 0
+                && std::chrono::steady_clock::now() >= deadline);
+        });
+    }
     std::string solution = search.solve(
         min2phase::CubieCube::toFaceCube(relative),
-        21,
-        1000000,
-        0,
-        min2phase::INVERSE_SOLUTION,
+        static_cast<int8_t>(MAX(0, MIN(maximumDepth, 21))),
+        boundedProbes,
+        static_cast<int32_t>(MAX(0, MIN(minimumProbes, boundedProbes))),
+        min2phase::INVERSE_SOLUTION | (optimal ? min2phase::OPTIMAL_SOLUTION : 0),
         nullptr
     );
+    #if DEBUG
+    lastSearchTiming[2] = millisecondsSince(searchStart);
+    #endif
     return validatedSolution(solution);
 }
 

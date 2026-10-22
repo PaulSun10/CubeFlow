@@ -9,6 +9,7 @@
 #define MIN2PHASE_SEARCH_H 1
 
 #include "coords.h"
+#include <functional>
 
 namespace min2phase {
 
@@ -50,10 +51,21 @@ namespace min2phase {
         int8_t maxPreMoves = 0;
 
         bool allowShorter = false;
+        struct Interrupted {};
+        std::function<bool()> interruption;
+        uint32_t visitedNodes = 0;
+        void checkInterruption() {
+            if (interruption && ((++visitedNodes & 1023) == 0) && interruption()) {
+                throw Interrupted{};
+            }
+        }
 
     public:
 
         Search() = default;
+        // Optional, per-search cooperative interruption. Legacy callers do not
+        // install a hook, retaining their existing search policy.
+        void setInterruption(const std::function<bool()> &callback) { interruption = callback; }
 
         /**
          * This is used to solve the cube. It has many configuration in base of the

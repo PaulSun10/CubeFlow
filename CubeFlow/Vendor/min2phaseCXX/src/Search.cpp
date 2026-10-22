@@ -32,7 +32,11 @@ std::string min2phase::Search::solve(const std::string &facelets, int8_t maxDept
 
     MIN2PHASE_OUTPUT("Search initialized.")
 
-    return  (verbose & OPTIMAL_SOLUTION) == 0 ? search() : searchOpt();
+    try {
+        return (verbose & OPTIMAL_SOLUTION) == 0 ? search() : searchOpt();
+    } catch (const Interrupted &) {
+        return solution.isFound ? solution.toString() : "";
+    }
 }
 
 
@@ -132,6 +136,7 @@ std::string min2phase::Search::search() {
 }
 
 int8_t min2phase::Search::phase1PreMoves(int8_t maxl, int8_t lm, CubieCube* cc, uint16_t ssym) {
+    checkInterruption();
     int8_t m, ret;
     int32_t skipMoves;
 
@@ -185,6 +190,7 @@ int8_t min2phase::Search::phase1PreMoves(int8_t maxl, int8_t lm, CubieCube* cc, 
 }
 
 int8_t min2phase::Search::phase1(coords::CoordCube* node, uint16_t ssym, int8_t maxl, int8_t lm) {
+    checkInterruption();
     int8_t ret, axis, m, power, prun;
 
 #if MIN2PHASE_DEBUG > 1
@@ -236,6 +242,7 @@ int8_t min2phase::Search::phase1(coords::CoordCube* node, uint16_t ssym, int8_t 
 }
 
 int8_t min2phase::Search::initPhase2Pre() {
+    checkInterruption();
     uint16_t p2corn, p2edge, edgei, corni;
     int8_t  p2csym, p2esym, p2mid, lastMove, lastPre, p2switchMax, p2switchMask;
     int8_t p2switch, ret;
@@ -383,6 +390,7 @@ int8_t min2phase::Search::initPhase2(uint16_t p2corn, int8_t p2csym, uint16_t p2
 }
 
 int8_t min2phase::Search::phase2(uint16_t edge, int8_t esym, uint16_t corn, int8_t csym, int8_t mid, int8_t maxl, int8_t depth, int8_t lm) {
+    checkInterruption();
     uint16_t cornx, edgex, edgei, corni;
     int8_t midx, csymx, prun;
     int16_t moveMask;
@@ -487,6 +495,7 @@ std::string min2phase::Search::searchOpt() {
 }
 
 int8_t min2phase::Search::phase1opt(coords::CoordCube ud, coords::CoordCube rl, coords::CoordCube fb, int64_t ssym, int8_t maxl, int8_t lm) {
+    checkInterruption();
     uint8_t axis, power, prun_ud, prun_rl, prun_fb, m;
 
 #if MIN2PHASE_DEBUG > 1
