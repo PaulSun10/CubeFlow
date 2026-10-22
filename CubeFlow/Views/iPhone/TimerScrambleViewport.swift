@@ -5,7 +5,9 @@ import UIKit
 /// content's animated layout proposal. It bounds every descendant drawing layer.
 struct TimerScrambleExclusionLayer<Content: View>: View {
     let timerTop: CGFloat
+    var usesDynamicHitRegions = true
     @ViewBuilder var content: () -> Content
+    @State private var interactiveFrames: [CGRect] = []
 
     var body: some View {
         content().mask(alignment: .top) {
@@ -14,16 +16,52 @@ struct TimerScrambleExclusionLayer<Content: View>: View {
                 .frame(maxHeight: .infinity, alignment: .top)
                 .transaction { $0.animation = nil }
         }
-        .contentShape(TimerScrambleExclusionShape(lowerEdge: max(0, timerTop - 12)))
+        .overlayPreferenceValue(TimerHeaderInteractiveAnchors.self) { anchors in
+            GeometryReader { root in
+                Color.clear.preference(key: TimerHeaderInteractiveFrames.self,
+                    value: anchors.map { root[$0] })
+            }.allowsHitTesting(false)
+        }
+        .contentShape(TimerHeaderInteractiveShape(frames: interactiveFrames, lowerEdge: max(0, timerTop - 12),
+            includesEntireVisibleArea: !usesDynamicHitRegions))
+        .onPreferenceChange(TimerHeaderInteractiveFrames.self) { interactiveFrames = $0 }
     }
 }
 
-private struct TimerScrambleExclusionShape: Shape {
+struct TimerHeaderInteractiveAnchors: PreferenceKey {
+    static var defaultValue: [Anchor<CGRect>] = []
+    static func reduce(value: inout [Anchor<CGRect>], nextValue: () -> [Anchor<CGRect>]) { value += nextValue() }
+}
+
+private struct TimerHeaderInteractiveFrames: PreferenceKey {
+    static var defaultValue: [CGRect] = []
+    static func reduce(value: inout [CGRect], nextValue: () -> [CGRect]) { value += nextValue() }
+}
+
+extension View {
+    func timerHeaderInteractiveRegion() -> some View {
+        anchorPreference(key: TimerHeaderInteractiveAnchors.self, value: .bounds) { [$0] }
+    }
+}
+
+struct TimerHeaderInteractiveShape: Shape {
+    let frames: [CGRect]
     let lowerEdge: CGFloat
+    var includesEntireVisibleArea = false
 
     func path(in rect: CGRect) -> Path {
-        Path(CGRect(x: rect.minX, y: rect.minY, width: rect.width,
-            height: min(rect.height, lowerEdge)))
+        let visible = CGRect(x: rect.minX, y: rect.minY, width: rect.width,
+            height: min(rect.height, lowerEdge))
+        var path = Path()
+        if includesEntireVisibleArea {
+            path.addRect(visible)
+            return path
+        }
+        for frame in frames {
+            let clipped = frame.intersection(visible)
+            if !clipped.isNull && !clipped.isEmpty { path.addRect(clipped) }
+        }
+        return path
     }
 }
 

@@ -6,23 +6,38 @@ nonisolated struct TimerScrambleGenerationContext: Equatable, Sendable {
     let event: PuzzleEvent
     let multiBlindCount: Int
     let unavailableMessage: String
+    let deviceID: UUID?
+    let connectionAttemptID: UUID?
 
     init(
         sessionID: UUID?,
         event: PuzzleEvent,
         multiBlindCount: Int,
-        unavailableMessage: String
+        unavailableMessage: String,
+        deviceID: UUID? = nil,
+        connectionAttemptID: UUID? = nil
     ) {
         self.sessionID = sessionID
         self.event = event
         self.multiBlindCount = event == .threeByThreeMBLD ? max(1, multiBlindCount) : 1
         self.unavailableMessage = unavailableMessage
+        self.deviceID = deviceID
+        self.connectionAttemptID = connectionAttemptID
     }
+}
+
+nonisolated struct TimerSolveAssignment: Equatable {
+    let scramble: String
+    let event: PuzzleEvent
+    let sessionID: UUID
+    let requestID: UUID
+    let inputSource: SolveInputSource
 }
 
 nonisolated struct TimerScrambleGenerationPayload: Equatable, Sendable {
     let context: TimerScrambleGenerationContext
     let scrambles: [String]
+    var diagram: ScrambleDiagramSnapshot? = nil
 
     var primaryScramble: String { scrambles.first ?? "" }
 }

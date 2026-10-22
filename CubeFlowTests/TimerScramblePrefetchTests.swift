@@ -38,6 +38,30 @@ struct TimerScramblePrefetchTests {
         #expect(consumedAgain == nil)
     }
 
+    @Test func deviceAndConnectionAttemptArePartOfPrefetchOwnership() {
+        let device = UUID(), attempt = UUID(), session = UUID()
+        func owner(_ deviceID: UUID, _ attemptID: UUID) -> TimerScrambleGenerationContext {
+            .init(sessionID: session, event: .threeByThree, multiBlindCount: 1,
+                  unavailableMessage: "Unavailable", deviceID: deviceID, connectionAttemptID: attemptID)
+        }
+        let original = owner(device, attempt)
+        var slot = TimerScramblePrefetchSlot()
+        let old = slot.begin(for: original)
+        let reconnected = owner(device, UUID()), otherDevice = owner(UUID(), attempt)
+        let completedOld = slot.complete(payload("R U", context: original), for: old)
+        let fromReconnect = slot.consume(for: reconnected), fromOther = slot.consume(for: otherDevice)
+        #expect(completedOld)
+        #expect(fromReconnect == nil)
+        #expect(fromOther == nil)
+        let new = slot.begin(for: reconnected)
+        let stale = slot.complete(payload("R U", context: original), for: old)
+        let completedNew = slot.complete(payload("L D2", context: reconnected), for: new)
+        let consumed = slot.consume(for: reconnected)
+        #expect(!stale)
+        #expect(completedNew)
+        #expect(consumed?.primaryScramble == "L D2")
+    }
+
     @Test func prefetchedNextIsDistinctFromCurrentAndRefillsRepeatedly() throws {
         let context = context()
         var slot = TimerScramblePrefetchSlot()

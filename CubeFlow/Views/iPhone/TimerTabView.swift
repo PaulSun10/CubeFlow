@@ -84,6 +84,8 @@ struct TimerTabView: View {
     let isActive: Bool
     #if DEBUG
     private let marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>?
+    @Environment(\.smartCubeTimerGuidanceProbe) private var guidanceProbe
+    @Environment(\.smartCubeCardEntryProbe) private var cardEntryProbe
     #endif
     @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
@@ -94,6 +96,7 @@ struct TimerTabView: View {
     @ObservedObject private var smartCube = SmartCubeBluetoothManager.shared
     @StateObject private var nearbyBattleManager = NearbyBattleManager()
     @FocusState private var isTypingFieldFocused: Bool
+    @GestureState private var timerTouchIsActive = false
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
@@ -201,6 +204,8 @@ struct TimerTabView: View {
     @State private var ganResultCommitToken = UUID()
     @State private var ganResultCommitProgress: Double = 0
     @State private var currentScramble: String = ""
+    @State private var displayedScrambleContext: TimerScrambleGenerationContext?
+    @State private var currentCardsDiagram: ScrambleDiagramSnapshot?
     @State private var typedTimeInput: String = ""
     @State private var scrambleRequestToken = UUID()
     @State private var scramblePrefetchSlot = TimerScramblePrefetchSlot()
@@ -256,7 +261,9 @@ struct TimerTabView: View {
     @State private var smartCubeScrambleProgress: SmartCubeScrambleProgress?
     @State private var smartCubeScrambleEpoch = SmartCubeScrambleEpoch()
     @State private var smartCubeRecoveryState = SmartCubeRecoveryPresentationState.inactive
-    @State private var smartCubeRecoveryTask: Task<Void, Never>?
+    @StateObject private var smartCubeGuidance = SmartCubeGuidanceController()
+    @State private var showingSmartCubeManagement = false
+    @State private var managedSmartCubeID: UUID?
     @State private var smartCubeHighlightedTokenIndex: Int?
     @State private var smartCubeSolveLifecycle = SmartCubeSolveLifecycle()
     @State private var smartCubeSolveStartMove: SmartCubeMoveEvent?
@@ -268,6 +275,7 @@ struct TimerTabView: View {
     @State private var pendingSolveInputSource: SolveInputSource?
     @State private var pendingSolveReconstruction: SolveReconstruction?
     @State private var pendingSolveScramble: String?
+    @State private var activeSolveAssignment: TimerSolveAssignment?
 
     private let hiddenTimerVerticalOffset = TimerArrangementLayout.defaultTimerVerticalOffset
     private let manualTimeEntrySpacing: CGFloat = 12
@@ -275,13 +283,15 @@ struct TimerTabView: View {
     private let ganResultAutoCommitDelay: TimeInterval = 1.5
 
     #if DEBUG
-    init(isActive: Bool = true, marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>? = nil) {
+    init(isActive: Bool = true, marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>? = nil,
+         guidanceController: SmartCubeGuidanceController? = nil) {
         self.isActive = isActive
         self.marketingPreviewConfiguration = marketingPreviewConfiguration
         let previewConfiguration = marketingPreviewConfiguration?.wrappedValue
         _selectedEvent = State(initialValue: previewConfiguration?.event ?? .threeByThree)
         _elapsedSeconds = State(initialValue: previewConfiguration?.elapsedSeconds ?? 0)
         _currentScramble = State(initialValue: previewConfiguration?.scramble ?? "")
+        if let guidanceController { _smartCubeGuidance = StateObject(wrappedValue: guidanceController) }
     }
     #else
     init(isActive: Bool = true) {
@@ -314,17 +324,6 @@ struct TimerTabView: View {
 
     private var resolvedScrambleDisplayMode: ScrambleDisplayMode {
         ScrambleDisplayMode(rawValue: scrambleDisplayMode) ?? .shrinkFont
-    }
-
-    private var timerGestureTopReserveHeight: CGFloat {
-        let headerHeight: CGFloat = 146
-        let estimatedHeight = resolvedScrambleDisplayMode == .scroll
-            ? headerHeight + scrambleDisplayMeasuredHeight + 12
-            : headerHeight
-        return max(
-            estimatedHeight,
-            TimerArrangementLayout.nonnegativeFinite(timerScrambleAreaBottom)
-        )
     }
 
     private var selectedSession: Session? {
@@ -453,7 +452,7 @@ struct TimerTabView: View {
                     highlightedTokenIndex: resolvedSmartCubeCurrentMovePresentation == .highlight
                         ? smartCubeHighlightedTokenIndex
                         : nil,
-                    recoveryPlan: smartCubeRecoveryState.plan,
+                    recoveryPlan: smartCubeRecoveryState.plan ?? smartCubeRecoveryState.fallbackPlan,
                     recoveryDisplay: resolvedSmartCubeRecoveryDisplay,
                     highlightAnimation: resolvedSmartCubeHighlightAnimation,
                     behavior: resolvedSmartCubeCompletedMovesBehavior,
@@ -464,7 +463,10 @@ struct TimerTabView: View {
                     foregroundStyle: scrambleTextStyle,
                     highlightBackgroundStyle: smartCubeCurrentMoveHighlightBackgroundStyle,
                     highlightForegroundStyle: smartCubeCurrentMoveHighlightForegroundStyle,
-                    showsLiveProgress: smartCube.puzzleSize == 3 && smartCube.isReadyForMoveObservation && !isRunning && !isInspecting
+                    showsLiveProgress: smartCube.puzzleSize == 3 && smartCube.isReadyForMoveObservation && !isRunning && !isInspecting,
+                    isUpdatingGuidance: smartCubeGuidance.isUpdating && !isRunning && !isInspecting,
+                    isGuidanceUnavailable: smartCubeGuidance.phase == .unavailable && !isRunning && !isInspecting,
+                    diagnosticContext: smartCubeGuidanceDiagnosticContext
                 )
             } else {
                 configuredText(
@@ -1027,9 +1029,12 @@ struct TimerTabView: View {
         ZStack {
             HStack {
                 localBattleModeMenu
+                    .timerHeaderInteractiveRegion()
                     .zIndex(10)
 
                 timerInputModeMenu
+                    .timerHeaderInteractiveRegion()
+                    .accessibilityIdentifier("timer-input-menu")
                     .zIndex(10)
 
                 Spacer()
@@ -1042,9 +1047,12 @@ struct TimerTabView: View {
                     fireRedImageName: "streak_fire_red",
                     fireGrayImageName: "streak_fire_gray"
                 )
+                .timerHeaderInteractiveRegion()
             }
 
             eventMenu
+                .timerHeaderInteractiveRegion()
+                .accessibilityIdentifier("timer-event-menu")
         }
         .padding(.top, TimerArrangementLayout.topControlsTopInset)
     }
@@ -1125,9 +1133,12 @@ struct TimerTabView: View {
 
                 VStack(spacing: TimerArrangementLayout.scrambleAccessoryButtonSpacing) {
                     if showNextScrambleButton {
-                        circularGlassIconButton(systemName: "arrow.clockwise") {
+                        TimerScrambleRefreshButton {
                             generateNewScramble()
                         }
+                        .timerHeaderInteractiveRegion()
+                        .accessibilityIdentifier("timer-next-scramble")
+                        .disabled(isRunning || pendingSolveTime != nil)
                     }
 
                     if effectiveTimerEvent == .threeByThreeMBLD {
@@ -1135,6 +1146,7 @@ struct TimerTabView: View {
                             mblindCountSelection = mblindScrambleCount
                             showingMblindCountPicker = true
                         }
+                        .timerHeaderInteractiveRegion()
                     }
                 }
             }
@@ -1195,6 +1207,8 @@ struct TimerTabView: View {
             } else {
                 ScrollView(.vertical, showsIndicators: resolvedScrambleDisplayMode == .scroll) {
                     scrambleDisplayButton
+                        .timerHeaderInteractiveRegion()
+                        .accessibilityIdentifier("timer-scramble-control")
                         .padding(.vertical, 1)
                         .background {
                             GeometryReader { proxy in
@@ -1229,6 +1243,8 @@ struct TimerTabView: View {
                 .frame(maxWidth: .infinity)
                 .contentShape(Rectangle())
                 .onTapGesture { showingScrambleDetail = true }
+                .timerHeaderInteractiveRegion()
+                .accessibilityIdentifier("timer-scramble-control")
         }
     }
 
@@ -1343,20 +1359,10 @@ struct TimerTabView: View {
                 }
 
                 if localBattleMode == .solo && enteringTimesWith == "timer" {
-                    GeometryReader { _ in
-                        VStack(spacing: 0) {
-                            // Controls and scramble content remain outside the timer hit region.
-                            Color.clear
-                                .frame(height: timerGestureTopReserveHeight)
-                                .allowsHitTesting(false)
-
-                            Color.clear
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .contentShape(Rectangle())
-                                .gesture(startTimerGesture)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    }
+                    Color.clear
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
+                        .gesture(startTimerGesture)
                 }
 
                 if localBattleMode == .solo && !shouldHideNonTimerContent {
@@ -1379,7 +1385,7 @@ struct TimerTabView: View {
                     GeometryReader { root in
                         if let anchor {
                             let top = root[anchor].minY
-                            TimerScrambleExclusionLayer(timerTop: top) {
+                            TimerScrambleExclusionLayer(timerTop: top, usesDynamicHitRegions: enteringTimesWith == "timer") {
                                 soloTimerContent(exclusionTop: top,
                                     shrinkTimerTop: root.frame(in: .named(TimerLayoutCoordinateSpace.name)).minY + top)
                             }
@@ -1405,6 +1411,14 @@ struct TimerTabView: View {
                 }
             }
             .coordinateSpace(name: TimerLayoutCoordinateSpace.name)
+            .background {
+                CompetitionNativePresentation(isPresented: $showingSmartCubeManagement, style: .results) { dismiss in
+                    SmartCubeManagementCard(selectedID: managedSmartCubeID, dismiss: dismiss)
+                }
+            }
+            .onChange(of: isRunning) { running in if running { showingSmartCubeManagement = false } }
+            .onChange(of: isInspecting) { inspecting in if inspecting { showingSmartCubeManagement = false } }
+            .onChange(of: usesSmartCubeInput) { enabled in if !enabled { showingSmartCubeManagement = false } }
             .fullScreenCover(isPresented: $showingScrambleDetail) {
                 if let scrambleDiagramPuzzleKey {
                     ScrambleDiagramSheet(title: "timer.scramble_diagram", puzzleKey: scrambleDiagramPuzzleKey,
@@ -1413,6 +1427,9 @@ struct TimerTabView: View {
             }
             .onPreferenceChange(TimerRenderedFramePreferenceKey.self) { frame in
                 timerRenderedFrame = frame
+            }
+            .onChange(of: timerTouchIsActive) { active in
+                traceTimerTouch(active ? "tracking" : "tracking-ended", location: nil)
             }
             .onPreferenceChange(FloatingScrambleFramePreferenceKey.self) { frame in
                 floatingScrambleFrame = frame
@@ -1440,7 +1457,7 @@ struct TimerTabView: View {
         let restoredEvent = synchronizeSelectedSession(idRawValue: selectedSessionID)
         refreshSolveSnapshots(for: restoredEvent)
         refreshStreakSnapshots()
-        if currentScramble.isEmpty,
+        if !hasAssignedScramble,
            !(usesSmartCubeInput && restoreStoredSmartCubePresentation()) {
             generateNewScramble()
         } else {
@@ -1478,7 +1495,41 @@ struct TimerTabView: View {
         .onChange(of: timerBackgroundImageData) { _ in
             updateTimerBackgroundImage()
         }
+        .onReceive(smartCubeGuidance.$publication) { publication in
+            if let publication { applySmartCubeGuidance(publication) }
+        }
+        #if DEBUG
+        .onAppear {
+            cardEntryProbe?.openTimer = openSmartCubeManagement
+            guidanceProbe?.prepare = { scramble in
+                invalidateScramblePrefetch()
+                scrambleRequestToken = UUID()
+                currentScramble = scramble
+                prepareSmartCubeScrambleTarget()
+            }
+            guidanceProbe?.snapshot = {
+                .init(scramble: currentScramble, sessionID: selectedSession?.id, event: effectiveTimerEvent,
+                      assignment: activeSolveAssignment, progress: smartCubeScrambleProgress, recovery: smartCubeRecoveryState,
+                      request: smartCubeGuidance.currentRequest, identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+                      diagram: currentCardsDiagram, prefetchIsReady: scramblePrefetchSlot.payload != nil)
+            }
+            guidanceProbe?.next = { generateNewScramble() }
+            guidanceProbe?.start = { startTimer() }
+            guidanceProbe?.finish = { seconds in
+                elapsedSeconds = seconds
+                stopTimerAndSave()
+                savePendingSolve(as: .solved)
+            }
+            guidanceProbe?.stop = { seconds in elapsedSeconds = seconds; stopTimerAndSave() }
+            guidanceProbe?.save = { savePendingSolve(as: .solved) }
+            guidanceProbe?.selectEvent = { selectedEvent = $0 }
+            if let progress = smartCubeScrambleProgress, let facelets = smartCube.facelets {
+                recordDisplayedGuidance(progress: progress, recovery: smartCubeRecoveryState, facelets: facelets)
+            }
+        }
+        #endif
         .onDisappear {
+            showingSmartCubeManagement = false
             celebrationID = nil
             invalidateScramblePrefetch()
             scrambleRequestToken = UUID()
@@ -1523,15 +1574,22 @@ struct TimerTabView: View {
             if let snapshot = SmartCubeTimerPresentationStore.shared.snapshot(matching: newScramble),
                snapshot.timerSessionID == selectedSession?.id,
                snapshot.progress == smartCubeScrambleProgress {
-                rehydrateSmartCubePresentation()
                 return
             }
-            prepareSmartCubeScrambleTarget()
+            prepareSmartCubeScrambleTarget(scramble: newScramble)
         }
-        .onChange(of: smartCube.facelets) { facelets in
+        .onChange(of: smartCube.facelets) { _ in
             guard usesSmartCubeInput else { return }
             consumePendingSmartCubeUpdates()
             updateSmartCubeConnectionReadiness()
+            // A pre-target physical event may correctly be ineligible for
+            // timing, but its committed, trusted state is still authoritative
+            // for guidance. Never require a further turn to observe it.
+            if smartCube.puzzleSize == 3, let facelets = smartCube.facelets,
+               smartCube.hasTrustedCanonicalState, !isRunning, !isInspecting,
+               !showingResultPopup, !combinedSolveLifecycle.isActive, pendingWeiPoCombinedStop == nil {
+                handleSmartCubeFacelets(facelets)
+            }
         }
         .onChange(of: smartCube.connectionState) { _ in
             updateSmartCubeConnectionReadiness()
@@ -1545,7 +1603,9 @@ struct TimerTabView: View {
         }
         .onChange(of: smartCube.connectionAttemptID) { _ in
             updateSmartCubeConnectionReadiness()
+            refreshScrambleGenerationDeviceOwner()
         }
+        .onChange(of: smartCube.activeDeviceID) { _ in refreshScrambleGenerationDeviceOwner() }
         .onChange(of: smartCube.connectionPolicyResolvedAttemptID) { _ in
             updateSmartCubeConnectionReadiness()
         }
@@ -1620,8 +1680,9 @@ struct TimerTabView: View {
             celebrationID = nil
             invalidateScramblePrefetch()
             scrambleRequestToken = UUID()
+            let previousEvent = selectedEvent
             _ = synchronizeSelectedSession(idRawValue: newSessionID)
-            scheduleScramblePrefetch(for: scrambleGenerationContext)
+            if selectedEvent == previousEvent { generateNewScramble() }
         }
         .onChange(of: sessions.count) { _ in
             invalidateScramblePrefetch()
@@ -1753,16 +1814,27 @@ struct TimerTabView: View {
 
     private var startTimerGesture: some Gesture {
         DragGesture(minimumDistance: 0)
-            .onChanged { _ in
+            .updating($timerTouchIsActive) { _, active, _ in active = true }
+            .onChanged { value in
+                traceTimerTouch("changed", location: value.location)
                 armForStartIfNeeded()
             }
-            .onEnded { _ in
+            .onEnded { value in
+                traceTimerTouch("ended", location: value.location)
                 if isRunning {
                     stopTimerAndSave()
                 } else {
                     releaseToStartIfReady()
                 }
+                traceTimerTouch("state-updated", location: value.location)
             }
+    }
+
+    private func traceTimerTouch(_ phase: String, location: CGPoint?) {
+        #if DEBUG
+        guard CompetitionDebugStore.shared.enabled, UserDefaults.standard.bool(forKey: "timerTouchDiagnostics") else { return }
+        print("[TimerTouch] \(phase) point=\(String(describing: location)) running=\(isRunning) pressing=\(isPressingToArm) ready=\(isReadyToStart) inspection=\(isInspecting)")
+        #endif
     }
 
     private func armForStartIfNeeded() {
@@ -1804,7 +1876,11 @@ struct TimerTabView: View {
     }
 
     private func startTimer() {
-        guard !usesCombinedInput, !isRunning else { return }
+        guard !usesCombinedInput, !isRunning, pendingSolveTime == nil,
+              let assignment = currentSolveAssignment else { return }
+        activeSolveAssignment = assignment
+        pendingSolveScramble = assignment.scramble
+        scrambleRequestToken = UUID()
 
         if isInspecting {
             currentSolveInspectionPenalty = inspectionPenalty(for: inspectionStartDate.map { max(0, Date().timeIntervalSince($0)) } ?? inspectionElapsed)
@@ -1830,20 +1906,22 @@ struct TimerTabView: View {
 
         guard elapsedSeconds > 0 else { return }
         pendingSolveTime = elapsedSeconds
+        pendingSolveScramble = activeSolveAssignment?.scramble ?? scrambleToSave
         pendingInspectionPenalty = currentSolveInspectionPenalty
         pendingSolveInputSource = .appTimer
         pendingSolveReconstruction = nil
         showingResultPopup = true
     }
 
-    private func prepareSmartCubeScrambleTarget() {
+    private func prepareSmartCubeScrambleTarget(scramble: String? = nil) {
+        let scramble = scramble ?? currentScramble
         smartCubeRecoveryDisplayRawValue = resolvedSmartCubeRecoveryDisplay.rawValue
         if smartCubeReadySound { SmartCubeReadySoundPlayer.shared.prepare() }
         cancelSmartCubeRecovery()
         SmartCubeTimerPresentationStore.shared.clear()
-        guard currentScramble != "…",
+        guard scramble != "…",
               let progress = SmartCubeScrambleProgress(
-                scramble: currentScramble,
+                scramble: scramble,
                 puzzleSize: smartCube.puzzleSize
               )
         else {
@@ -1872,6 +1950,11 @@ struct TimerTabView: View {
             latestMoveID: smartCube.latestMove?.id,
             canonicalSequence: smartCube.canonicalSequence
         )
+        #if DEBUG
+        SmartCubeGuidanceTrace.record("target-assigned", identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+            source: smartCube.facelets ?? "none", target: progress.targetFacelets,
+            detail: SmartCubeGuidanceTrace.assignment(scramble: scramble, requestID: scrambleRequestToken))
+        #endif
         smartCubeSolveLifecycle.reset()
         smartCubeSolveStartMove = nil
         smartCubeIsReady = false
@@ -1976,24 +2059,37 @@ struct TimerTabView: View {
             smartCubeIsReady = false
             return
         }
+        #if DEBUG
+        SmartCubeGuidanceTrace.record("canonical-receipt", identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+            source: facelets, target: progress.targetFacelets, detail: "physical=\(canonicalMove != nil)")
+        #endif
 
-        if progress.isDeviated,
-           smartCubeRecoveryState.sourceFacelets == facelets,
+        if (progress.isDeviated || progress.needsGuidanceSearch),
+           (smartCubeRecoveryState.sourceFacelets == facelets || smartCubeGuidance.currentRequest?.sourceFacelets == facelets),
            canonicalMove == nil {
+            #if DEBUG
+            SmartCubeGuidanceTrace.record("snapshot-already-covered", identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+                source: facelets, target: progress.targetFacelets)
+            #endif
             return
         }
 
-        let previousRecoveryPlan = smartCubeRecoveryState.plan
+        let previousRecoveryPlan = smartCubeRecoveryState.plan ?? smartCubeRecoveryState.fallbackPlan
         let recoveryIdentity: SmartCubeRecoveryPlanIdentity
-        if smartCubeRecoveryState.sourceFacelets != facelets {
+        if let pending = smartCubeGuidance.currentRequest, pending.sourceFacelets == facelets {
+            recoveryIdentity = pending.identity
+        } else if smartCubeRecoveryState.sourceFacelets != facelets {
             recoveryIdentity = smartCubeScrambleEpoch.advanceRecoveryStateVersion()
         } else if let currentIdentity = smartCubeRecoveryState.identity {
             recoveryIdentity = currentIdentity
         } else {
             recoveryIdentity = smartCubeScrambleEpoch.advanceRecoveryStateVersion()
         }
-        cancelSmartCubeRecoveryTask()
         _ = progress.update(with: facelets, canonicalMove: canonicalMove)
+        #if DEBUG
+        SmartCubeGuidanceTrace.record("snapshot-acquired", identity: recoveryIdentity,
+            source: facelets, target: progress.targetFacelets, detail: "complete=\(progress.isComplete)")
+        #endif
         if !progress.isComplete {
             smartCubeIsReady = false
         }
@@ -2031,23 +2127,32 @@ struct TimerTabView: View {
                     sourceFacelets: facelets
                 )
                 publishSmartCubePresentation(progress: progress, recoveryState: recoveryState)
-                if guaranteedPlan.map({
-                    $0.totalCost >= SmartCubeReplacementPlanner.minimumCorrectionCost
-                }) ?? true {
-                    beginSmartCubeGuidanceSearch(
-                        from: facelets,
-                        checkpoints: progress.recoveryCheckpoints,
-                        identity: recoveryIdentity,
-                        guaranteedPlan: guaranteedPlan
-                    )
-                }
+                beginSmartCubeGuidanceSearch(
+                    from: facelets,
+                    identity: recoveryIdentity,
+                    guaranteedPlan: guaranteedPlan
+                )
                 return
             }
         }
 
+        if progress.needsGuidanceSearch, !progress.isComplete {
+            publishSmartCubePresentation(progress: progress, recoveryState: .inactive)
+            beginSmartCubeGuidanceSearch(from: facelets, identity: recoveryIdentity, guaranteedPlan: nil)
+            return
+        }
+
         publishSmartCubePresentation(progress: progress, recoveryState: .inactive)
 
-        guard progress.isComplete else { return }
+        guard progress.isComplete else {
+            if progress.puzzleSize == 3 {
+                // Following a valid, but not globally optimal, route is not a
+                // reason to stop looking for a one-move improvement when idle.
+                beginSmartCubeGuidanceSearch(from: facelets, identity: recoveryIdentity, guaranteedPlan: nil)
+            } else { cancelSmartCubeRecoveryTask() }
+            return
+        }
+        cancelSmartCubeRecoveryTask()
         if usesCombinedInput, smartCubeSolveLifecycle.phase == .ready {
             smartCubeIsReady = true
             return
@@ -2084,9 +2189,22 @@ struct TimerTabView: View {
     }
 
     private func consumeSmartCubeEvent(_ event: SmartCubeCanonicalEvent) {
+        #if DEBUG
+        let isNew = event.sequence > smartCubeScrambleEpoch.consumedCanonicalSequence
+        if isNew {
+            SmartCubeDiagnostics.shared.mark("guidance.event-received", id: smartCubeScrambleEpoch.recoveryScrambleID,
+                detail: "sequence=\(event.sequence) smartMode=\(usesSmartCubeInput) running=\(isRunning) inspecting=\(isInspecting) result=\(showingResultPopup) trusted=\(smartCube.hasTrustedCanonicalState)")
+        }
+        #endif
         guard usesSmartCubeInput else { return }
         switch smartCubeScrambleEpoch.consumeEvent(event) {
         case .ignored:
+            #if DEBUG
+            if isNew {
+                SmartCubeDiagnostics.shared.mark("guidance.event-ineligible-for-epoch", id: smartCubeScrambleEpoch.recoveryScrambleID,
+                    detail: "sequence=\(event.sequence)")
+            }
+            #endif
             return
         case .boundary(let reason, let facelets):
             handleSmartCubeContinuityBreak(reason, facelets: facelets)
@@ -2122,7 +2240,7 @@ struct TimerTabView: View {
         smartCubeIsReady = false
         if var progress = smartCubeScrambleProgress {
             progress.breakContinuity(at: facelets)
-            guard progress.isDeviated,
+            guard (progress.isDeviated || progress.needsGuidanceSearch), !progress.isComplete,
                   let facelets,
                   smartCube.hasTrustedCanonicalState else {
                 publishSmartCubePresentation(progress: progress, recoveryState: .inactive)
@@ -2139,7 +2257,6 @@ struct TimerTabView: View {
             )
             beginSmartCubeGuidanceSearch(
                 from: facelets,
-                checkpoints: progress.recoveryCheckpoints,
                 identity: identity,
                 guaranteedPlan: nil
             )
@@ -2149,6 +2266,9 @@ struct TimerTabView: View {
     private func consumeSmartCubeUpdate(_ update: SmartCubeCanonicalUpdate) {
         #if DEBUG
         SmartCubeDiagnostics.shared.mark("timer.consume", id: update.move.id)
+        SmartCubeGuidanceTrace.record("move-consumed", identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+            source: update.facelets, target: smartCubeScrambleProgress?.targetFacelets ?? "none",
+            detail: "sequence=\(update.sequence) moveID=\(update.move.id.uuidString.prefix(8)) move=\(update.move.move) trusted=\(update.isStateTrusted) phase=\(smartCubeSolveLifecycle.phase)")
         SmartCubeDiagnostics.shared.traceMove(
             "timer.canonical.consumed",
             move: update.move,
@@ -2176,6 +2296,13 @@ struct TimerTabView: View {
     private func handleSmartCubeMove(_ update: SmartCubeCanonicalUpdate) {
         let move = update.move
         let facelets = update.facelets
+        #if DEBUG
+        if isRunning || showingResultPopup {
+            SmartCubeGuidanceTrace.record("move-skipped-for-lifecycle", identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+                source: facelets, target: smartCubeScrambleProgress?.targetFacelets ?? "none",
+                detail: "running=\(isRunning) result=\(showingResultPopup)")
+        }
+        #endif
         guard !isRunning, !showingResultPopup else { return }
         guard smartCubeScrambleEpoch.observePhysicalMove(move) else { return }
         if smartCubeSolveLifecycle.phase == .scrambling {
@@ -2191,6 +2318,10 @@ struct TimerTabView: View {
         guard case .startTiming(let startMove) = smartCubeSolveLifecycle.physicalMoveDidOccur(move) else {
             return
         }
+        guard let assignment = currentSolveAssignment else { smartCubeSolveLifecycle.reset(); return }
+        activeSolveAssignment = assignment
+        pendingSolveScramble = assignment.scramble
+        scrambleRequestToken = UUID()
         #if DEBUG
         SmartCubeDiagnostics.shared.begin(startMove)
         #endif
@@ -2224,6 +2355,11 @@ struct TimerTabView: View {
         progress: SmartCubeScrambleProgress,
         recoveryState: SmartCubeRecoveryPresentationState
     ) {
+        #if DEBUG
+        if let facelets = smartCube.facelets {
+            recordDisplayedGuidance(progress: progress, recovery: recoveryState, facelets: facelets)
+        }
+        #endif
         let highlightedTokenIndex = recoveryState.plan == nil
             ? progress.currentMoveTokenIndex
             : nil
@@ -2260,164 +2396,95 @@ struct TimerTabView: View {
 
     private func beginSmartCubeGuidanceSearch(
         from facelets: String,
-        checkpoints: [SmartCubeRecoveryCheckpoint],
         identity: SmartCubeRecoveryPlanIdentity,
         guaranteedPlan: SmartCubeRecoveryPlan?
     ) {
-        let shortcutRequest = guaranteedPlan.flatMap { plan in
-            SmartCubeRecoveryEngine.shouldSearchForShortcut(to: plan)
-                ? SmartCubeRecoveryRequest(
-                    identity: identity,
-                    sourceFacelets: facelets,
-                    checkpoints: checkpoints,
-                    maximumCost: SmartCubeRecoveryEngine.defaultMaximumCost
-                )
-                : nil
+        guard let progress = smartCubeScrambleProgress,
+              progress.puzzleSize == 3, !progress.isComplete,
+              smartCube.hasTrustedCanonicalState, !isRunning, !isInspecting else {
+            cancelSmartCubeRecoveryTask()
+            return
         }
-        #if DEBUG
-        SmartCubeDiagnostics.shared.guidance(
-            "planning source=authoritative mode=\(guaranteedPlan == nil ? "direct" : "compare") correction=\(guaranteedPlan?.totalCost.description ?? "unavailable") trail=\(smartCubeScrambleProgress?.deviationMoves.count.description ?? "unavailable") trigger=\(smartCubeScrambleProgress?.deviationMoves.last ?? "unavailable") version=\(identity.stateVersion)"
-        )
-        #endif
-        smartCubeRecoveryTask = Task(priority: .userInitiated) {
-            let shortcutPlan: SmartCubeRecoveryPlan? = if let shortcutRequest {
-                await SmartCubeRecoveryEngine.plan(for: shortcutRequest)
-            } else {
-                nil
-            }
-            guard !Task.isCancelled,
-                  smartCubeScrambleEpoch.currentRecoveryIdentity == identity
-            else { return }
-            guard var progress = smartCubeScrambleProgress,
-                  progress.isDeviated,
-                  smartCubeRecoveryState.identity == identity,
-                  smartCubeRecoveryState.sourceFacelets == facelets,
-                  smartCube.facelets == facelets
-            else { return }
-
-            var best = smartCubeRecoveryState.plan
-                ?? smartCubeRecoveryState.fallbackPlan
-                ?? guaranteedPlan
-            if let shortcutPlan,
-               let normalizedShortcut = progress.normalizeRecoveryBoundary(shortcutPlan),
-               let currentPlan = best,
-               SmartCubeRecoveryEngine.prefers(normalizedShortcut, over: currentPlan) {
-                best = normalizedShortcut
-            }
-            let decision = if let best {
-                await SmartCubeReplacementPlanner.decision(
-                    recovery: best,
-                    targetFacelets: progress.targetFacelets,
-                    currentGeneration: progress.replanGeneration,
-                    lastDeviationMove: progress.deviationMoves.last
-                )
-            } else {
-                await SmartCubeReplacementPlanner.restorationDecision(
-                    identity: identity,
-                    sourceFacelets: facelets,
-                    targetFacelets: progress.targetFacelets,
-                    currentGeneration: progress.replanGeneration
-                )
-            }
-            guard !Task.isCancelled else {
-                #if DEBUG
-                SmartCubeDiagnostics.shared.replacementDecision(
-                    "decision=cancelled reason=task-cancelled version=\(identity.stateVersion)"
-                )
-                SmartCubeDiagnostics.shared.guidance("waiting reason=planner-cancelled version=\(identity.stateVersion)")
-                #endif
-                return
-            }
-            guard smartCubeScrambleEpoch.currentRecoveryIdentity == identity,
-                  smartCubeRecoveryState.identity == identity,
-                  smartCube.facelets == facelets,
-                  smartCubeScrambleProgress?.targetFacelets == progress.targetFacelets,
-                  smartCubeScrambleProgress?.replanGeneration == progress.replanGeneration else {
-                #if DEBUG
-                SmartCubeDiagnostics.shared.replacementDecision(
-                    "decision=recovery reason=stale-state-or-version version=\(identity.stateVersion)"
-                )
-                SmartCubeDiagnostics.shared.guidance("ignored reason=planner-stale version=\(identity.stateVersion)")
-                #endif
-                return
-            }
-            guard smartCube.hasTrustedCanonicalState else {
-                #if DEBUG
-                SmartCubeDiagnostics.shared.replacementDecision(
-                    "decision=recovery reason=continuity-not-trustworthy version=\(identity.stateVersion)"
-                )
-                SmartCubeDiagnostics.shared.guidance("waiting reason=continuity-untrusted version=\(identity.stateVersion)")
-                #endif
-                return
-            }
-            guard !isRunning, !isInspecting else {
-                #if DEBUG
-                SmartCubeDiagnostics.shared.replacementDecision(
-                    "decision=recovery reason=lifecycle-not-eligible version=\(identity.stateVersion)"
-                )
-                #endif
-                return
-            }
-            guard smartCubeScrambleProgress?.isDeviated == true else {
-                #if DEBUG
-                SmartCubeDiagnostics.shared.replacementDecision(
-                    "decision=recovery reason=no-longer-deviated version=\(identity.stateVersion)"
-                )
-                #endif
-                return
-            }
-            #if DEBUG
-            SmartCubeDiagnostics.shared.replacementDecision(
-                "correction=\(best?.totalCost.description ?? "unavailable") remaining=\(best?.remainingOriginalWorkload.description ?? "unavailable") recovery=\(decision.recoveryCost?.description ?? "unavailable") candidate=\(decision.candidateCost.map(String.init) ?? "unavailable") inverse_penalty=\(decision.inverseMovePenalty) decision=\(decision.replacement == nil ? "recovery" : "replan") reason=\(decision.reason.rawValue) generation=\(progress.replanGeneration)->\(progress.replanGeneration + (decision.replacement == nil ? 0 : 1)) version=\(identity.stateVersion)",
-                force: decision.replacement != nil
-            )
-            #endif
-            smartCubeRecoveryTask = nil
-            guard let replacement = decision.replacement else {
-                let fallback = SmartCubeReplacementPlanner.fallbackPresentation(
-                    recovery: best,
-                    from: smartCubeRecoveryState
-                )
-                publishSmartCubePresentation(progress: progress, recoveryState: fallback)
-                if let fallbackPlan = fallback.plan {
-                    #if DEBUG
-                    SmartCubeDiagnostics.shared.guidance(
-                        "restored source=recovery-fallback correction=\(fallbackPlan.totalCost) reason=\(decision.reason.rawValue) version=\(identity.stateVersion)",
-                        force: true
-                    )
-                    #endif
-                }
-                return
-            }
-            guard replacement.canAdopt(identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
-                                       facelets: smartCube.facelets ?? "",
-                                       targetFacelets: smartCubeScrambleProgress?.targetFacelets ?? "",
-                                       trusted: smartCube.hasTrustedCanonicalState,
-                                       deviated: smartCubeScrambleProgress?.isDeviated ?? false,
-                                       currentGeneration: smartCubeScrambleProgress?.replanGeneration ?? -1)
-            else {
-                let fallback = SmartCubeReplacementPlanner.fallbackPresentation(
-                    recovery: best,
-                    from: smartCubeRecoveryState
-                )
-                publishSmartCubePresentation(progress: progress, recoveryState: fallback)
-                return
-            }
-            let rebased = SmartCubeScrambleProgress(replacement: replacement)
-            smartCubeScrambleEpoch.establish(at: .now, latestMoveID: smartCube.latestMove?.id,
-                                            canonicalSequence: smartCube.canonicalSequence)
-            smartCubeSolveLifecycle.reset()
-            smartCubeSolveStartMove = nil
-            smartCubeIsReady = false
-            publishSmartCubePresentation(progress: rebased, recoveryState: .inactive)
-            #if DEBUG
-            SmartCubeDiagnostics.shared.guidance(
-                "restored source=authoritative generation=\(replacement.generation) moves=\(replacement.tokens.count)",
-                force: true
-            )
-            #endif
-        }
+        let recovery = smartCubeRecoveryState.plan ?? smartCubeRecoveryState.fallbackPlan ?? guaranteedPlan
+        smartCubeGuidance.submit(.init(identity: identity, sourceFacelets: facelets,
+            targetFacelets: progress.targetFacelets, generation: progress.replanGeneration,
+            knownPath: recovery?.executableMoves(originalTokens: progress.tokens)
+                ?? (progress.isDeviated ? nil : progress.remainingGuidanceMoves),
+            continuationOnly: !progress.isDeviated && !progress.needsGuidanceSearch,
+            keepsEqualPath: true, deviceID: smartCube.activeDeviceID,
+            canonicalSequence: smartCube.canonicalSequence))
     }
+
+    private func applySmartCubeGuidance(_ publication: SmartCubeGuidanceController.Publication) {
+        consumePendingSmartCubeUpdates()
+        let improvesContinuation = publication.request.continuationOnly
+            && (publication.decision.replacement?.tokens.count ?? .max)
+                < (smartCubeScrambleProgress?.remainingGuidanceMoves.count ?? 0)
+        #if DEBUG
+        SmartCubeGuidanceTrace.record("adoption-check", identity: publication.request.identity,
+            source: publication.request.sourceFacelets, target: publication.request.targetFacelets,
+            detail: "epochMatch=\(publication.request.identity == smartCubeScrambleEpoch.currentRecoveryIdentity) deviceMatch=\(publication.request.deviceID == smartCube.activeDeviceID) sourceMatch=\(publication.request.sourceFacelets == smartCube.facelets) targetMatch=\(publication.request.targetFacelets == smartCubeScrambleProgress?.targetFacelets) generationMatch=\(publication.request.generation == smartCubeScrambleProgress?.replanGeneration) trusted=\(smartCube.hasTrustedCanonicalState) eligible=\(usesSmartCubeInput && !isRunning && !isInspecting)")
+        #endif
+        guard let current = smartCubeScrambleProgress,
+              publication.request.deviceID == smartCube.activeDeviceID,
+              publication.request.identity == smartCubeScrambleEpoch.currentRecoveryIdentity,
+              publication.request.sourceFacelets == smartCube.facelets,
+              publication.request.targetFacelets == current.targetFacelets,
+              publication.request.generation == current.replanGeneration,
+              usesSmartCubeInput, smartCube.hasTrustedCanonicalState, !isRunning, !isInspecting,
+              current.isDeviated || current.needsGuidanceSearch || improvesContinuation else { return }
+        if publication.decision.replacement == nil {
+            publishSmartCubePresentation(progress: current, recoveryState:
+                SmartCubeReplacementPlanner.fallbackPresentation(from: smartCubeRecoveryState))
+            return
+        }
+        guard let rebased = publication.progress(identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+                facelets: smartCube.facelets ?? "", target: current.targetFacelets,
+                generation: current.replanGeneration, trusted: smartCube.hasTrustedCanonicalState,
+                eligible: current.isDeviated || current.needsGuidanceSearch || improvesContinuation,
+                deviceID: smartCube.activeDeviceID)
+        else { return }
+        smartCubeScrambleEpoch.rebaseGuidance(latestMoveID: smartCube.latestMove?.id,
+                                             canonicalSequence: smartCube.canonicalSequence)
+        smartCubeSolveLifecycle.reset()
+        smartCubeSolveStartMove = nil
+        smartCubeIsReady = false
+        publishSmartCubePresentation(progress: rebased, recoveryState: .inactive)
+        #if DEBUG
+        SmartCubeGuidanceTrace.record("adoption-accepted", identity: publication.request.identity,
+            source: publication.request.sourceFacelets, target: publication.request.targetFacelets,
+            detail: "count=\(rebased.tokens.count) generation=\(rebased.replanGeneration)")
+        #endif
+    }
+
+    private var smartCubeGuidanceDiagnosticContext: String? {
+        #if DEBUG
+        guard SmartCubeDiagnostics.shared.enabled, let progress = smartCubeScrambleProgress else { return nil }
+        let plan = smartCubeRecoveryState.plan ?? smartCubeRecoveryState.fallbackPlan
+        let moves = plan?.executableMoves(originalTokens: progress.tokens) ?? progress.remainingGuidanceMoves
+        let end = moves.reduce(smartCube.facelets) { state, move in
+            state.flatMap { SmartCubeBluetoothManager.facelets($0, applying: move) }
+        }
+        return "epoch=\(smartCubeScrambleEpoch.currentRecoveryIdentity.scrambleEpochID.uuidString.prefix(8)) revision=\(smartCubeScrambleEpoch.currentRecoveryIdentity.stateVersion) source=\(smartCube.facelets.map(SmartCubeGuidanceTrace.digest) ?? "none") target=\(SmartCubeGuidanceTrace.digest(progress.targetFacelets)) generation=\(progress.replanGeneration) count=\(moves.count) valid=\(end == progress.targetFacelets) path=\(SmartCubeGuidanceTrace.digest(moves.joined(separator: " "))) sequence=\(smartCubeScrambleEpoch.consumedCanonicalSequence) \(SmartCubeGuidanceTrace.assignment(scramble: currentScramble, requestID: scrambleRequestToken)) recovery=\(plan != nil)"
+        #else
+        return nil
+        #endif
+    }
+
+    #if DEBUG
+    private func recordDisplayedGuidance(progress: SmartCubeScrambleProgress,
+                                         recovery: SmartCubeRecoveryPresentationState, facelets: String) {
+        guard SmartCubeDiagnostics.shared.enabled else { return }
+        let plan = recovery.plan ?? recovery.fallbackPlan
+        let moves = plan?.executableMoves(originalTokens: progress.tokens) ?? progress.remainingGuidanceMoves
+        let end = moves.reduce(Optional(facelets)) { state, move in
+            state.flatMap { SmartCubeBluetoothManager.facelets($0, applying: move) }
+        }
+        SmartCubeGuidanceTrace.record("display-path", identity: smartCubeScrambleEpoch.currentRecoveryIdentity,
+            source: facelets, target: progress.targetFacelets,
+            detail: "sequence=\(smartCube.canonicalSequence) valid=\(end == progress.targetFacelets) recovery=\(plan != nil) count=\(moves.count) path=\(SmartCubeGuidanceTrace.digest(moves.joined(separator: " "))) deviated=\(progress.isDeviated) needsSearch=\(progress.needsGuidanceSearch) \(SmartCubeGuidanceTrace.assignment(scramble: currentScramble, requestID: scrambleRequestToken))")
+    }
+    #endif
 
     private func publishSmartCubeRecoveryPlan(_ plan: SmartCubeRecoveryPlan) {
         if resolvedSmartCubeHighlightAnimation == .animated {
@@ -2435,8 +2502,7 @@ struct TimerTabView: View {
     }
 
     private func cancelSmartCubeRecoveryTask() {
-        smartCubeRecoveryTask?.cancel()
-        smartCubeRecoveryTask = nil
+        smartCubeGuidance.cancel()
     }
 
     private func cancelSmartCubeRecovery() {
@@ -2450,13 +2516,13 @@ struct TimerTabView: View {
               !currentScramble.isEmpty,
               let progress = smartCubeScrambleProgress
         else { return }
-        SmartCubeTimerPresentationStore.shared.save(
+        guard SmartCubeTimerPresentationStore.shared.save(
             scramble: currentScramble,
             progress: progress,
             epoch: smartCubeScrambleEpoch,
             recoveryState: smartCubeRecoveryState,
             timerSessionID: selectedSession?.id
-        )
+        ) else { return }
         if let timerSessionID = selectedSession?.id {
             SmartCubeTimerPresentationStore.shared.saveScramble(
                 currentScramble, timerSessionID: timerSessionID, puzzleSize: progress.puzzleSize
@@ -2517,7 +2583,7 @@ struct TimerTabView: View {
 
         _ = progress.update(with: facelets)
         let identity = smartCubeScrambleEpoch.advanceRecoveryStateVersion()
-        if progress.isDeviated {
+        if progress.isDeviated || progress.needsGuidanceSearch {
             let guaranteedPlan = progress.guaranteedRecoveryPlan(
                 identity: identity,
                 sourceFacelets: facelets
@@ -2528,16 +2594,11 @@ struct TimerTabView: View {
                 sourceFacelets: facelets
             )
             publishSmartCubePresentation(progress: progress, recoveryState: state)
-            if guaranteedPlan.map({
-                $0.totalCost >= SmartCubeReplacementPlanner.minimumCorrectionCost
-            }) ?? true {
-                beginSmartCubeGuidanceSearch(
-                    from: facelets,
-                    checkpoints: progress.recoveryCheckpoints,
-                    identity: identity,
-                    guaranteedPlan: guaranteedPlan
-                )
-            }
+            beginSmartCubeGuidanceSearch(
+                from: facelets,
+                identity: identity,
+                guaranteedPlan: guaranteedPlan
+            )
         } else {
             publishSmartCubePresentation(progress: progress, recoveryState: .inactive)
         }
@@ -2583,12 +2644,13 @@ struct TimerTabView: View {
         timerStartDate = nil
         showingResultPopup = false
 
-        guard let selectedSession else { return }
+        guard let assignment = activeSolveAssignment,
+              let selectedSession = try? modelContext.fetchSession(with: assignment.sessionID) else { return }
         let solve = Solve(
             time: duration,
             date: finishDate,
-            scramble: scrambleToSave,
-            event: effectiveTimerEvent.rawValue,
+            scramble: assignment.scramble,
+            event: assignment.event.rawValue,
             result: result,
             inputSource: .smartCube,
             reconstruction: reconstructionCapture.reconstruction(),
@@ -2603,6 +2665,8 @@ struct TimerTabView: View {
         #endif
         persistSolveChangesAndRefresh(completedSolveID: solve.id)
         reconstructionCapture.reset()
+        activeSolveAssignment = nil
+        pendingSolveScramble = nil
         generateNewScramble()
     }
 
@@ -2612,6 +2676,7 @@ struct TimerTabView: View {
         smartCubeScrambleProgress = nil
         smartCubeScrambleEpoch.reset()
         smartCubeSolveLifecycle.reset()
+        if pendingSolveTime == nil { activeSolveAssignment = nil }
         smartCubeSolveStartMove = nil
         smartCubeIsReady = false
         reconstructionCapture.reset()
@@ -2649,6 +2714,11 @@ struct TimerTabView: View {
                 isReadyToStart = true
             }
         case .running:
+            if !isRunning {
+                activeSolveAssignment = currentSolveAssignment
+                pendingSolveScramble = activeSolveAssignment?.scramble
+                scrambleRequestToken = UUID()
+            }
             if isInspecting {
                 currentSolveInspectionPenalty = inspectionPenalty(for: inspectionStartDate.map { max(0, Date().timeIntervalSince($0)) } ?? inspectionElapsed)
                 isInspecting = false
@@ -2680,6 +2750,8 @@ struct TimerTabView: View {
         isReadyToStart = false
 
         guard seconds > 0 else { return }
+        if activeSolveAssignment == nil { activeSolveAssignment = currentSolveAssignment }
+        pendingSolveScramble = activeSolveAssignment?.scramble ?? scrambleToSave
         pendingSolveTime = seconds
         pendingInspectionPenalty = nil
         pendingSolveInputSource = .bluetoothTimer
@@ -2748,7 +2820,9 @@ struct TimerTabView: View {
             return
         }
         reconstructionCapture.start(initialFacelets: initialFacelets, at: startedAt)
-        pendingSolveScramble = scrambleToSave
+        activeSolveAssignment = currentSolveAssignment
+        pendingSolveScramble = activeSolveAssignment?.scramble ?? scrambleToSave
+        scrambleRequestToken = UUID()
 
         if isInspecting {
             currentSolveInspectionPenalty = inspectionPenalty(for: inspectionStartDate.map { max(0, startedAt.timeIntervalSince($0)) } ?? inspectionElapsed)
@@ -2896,7 +2970,9 @@ struct TimerTabView: View {
     }
 
     private func savePendingSolve(as result: SolveResult) {
-        guard let selectedSession, let pendingSolveTime, pendingSolveTime > 0 else {
+        guard let assignment = activeSolveAssignment ?? currentSolveAssignment,
+              let selectedSession = try? modelContext.fetchSession(with: assignment.sessionID),
+              let pendingSolveTime, pendingSolveTime > 0 else {
             discardPendingSolve()
             return
         }
@@ -2906,17 +2982,17 @@ struct TimerTabView: View {
         let solve = Solve(
             time: pendingSolveTime,
             date: .now,
-            scramble: pendingSolveScramble ?? scrambleToSave,
-            event: effectiveTimerEvent.rawValue,
+            scramble: pendingSolveScramble ?? assignment.scramble,
+            event: assignment.event.rawValue,
             result: finalResult,
-            inputSource: pendingSolveInputSource ?? selectedTimingMethod.solveInputSource,
+            inputSource: pendingSolveInputSource ?? assignment.inputSource,
             reconstruction: pendingSolveReconstruction,
             session: selectedSession,
             context: modelContext
         )
         persistSolveChangesAndRefresh(completedSolveID: solve.id)
-        generateNewScramble()
         discardPendingSolve()
+        generateNewScramble()
     }
 
     private func discardPendingSolve() {
@@ -2931,6 +3007,7 @@ struct TimerTabView: View {
         pendingSolveInputSource = nil
         pendingSolveReconstruction = nil
         pendingSolveScramble = nil
+        activeSolveAssignment = nil
         reconstructionCapture.reset()
         combinedSolveLifecycle.reset()
     }
@@ -3479,6 +3556,7 @@ struct TimerTabView: View {
                 .monospacedDigit()
                 .foregroundStyle(timerTextStyle)
                 .contentShape(Rectangle())
+                .accessibilityIdentifier("timer-time-display")
         }
     }
 
@@ -3575,25 +3653,26 @@ struct TimerTabView: View {
                     events: smartCube.canonicalEvents,
                     connectionAttemptID: smartCube.connectionAttemptID,
                     isStateTrusted: smartCube.hasTrustedCanonicalState,
-                    diagnosticOwner: "timer"
+                    diagnosticOwner: "timer",
+                    canonicalSequence: smartCube.canonicalSequence,
+                    onTap: smartCubeManagementTapAction,
+                    renderingEnabled: !showingSmartCubeManagement
                 )
                 .frame(width: cubeSize, height: cubeSize)
                 .position(center)
             }
 
             if !shouldHideNonTimerContent {
-                ConnectedDeviceStatusRows(
-                    usesCompactLinks: true,
-                    showsSmartTimer: usesCombinedInput
-                )
-                .buttonStyle(.plain)
-                .frame(width: isCentered ? min(size.width * 0.6, 220) : columnWidth)
-                .position(
-                    x: center.x,
-                    y: smartCubeShowVirtualCube
-                        ? center.y + cubeSize / 2 + identityHeight / 2 + 4
-                        : center.y
-                )
+                let identityWidth = isCentered ? min(size.width * 0.6, 220) : columnWidth
+                let identityRows = ConnectedDeviceStatusRows(usesCompactLinks: true, showsSmartTimer: usesCombinedInput,
+                    cubeRowHorizontalInset: min(12, identityWidth * 0.06), manageCube: openSmartCubeManagement)
+                    .buttonStyle(.plain)
+                if smartCubeShowVirtualCube {
+                    SmartCubeIdentityAnchor(width: identityWidth,
+                        origin: CGPoint(x: center.x, y: center.y + cubeSize / 2 + 4)) { identityRows }
+                } else {
+                    identityRows.frame(width: identityWidth).position(center)
+                }
             }
 
             smartCubeSideTimer(width: timeWidth)
@@ -3601,6 +3680,19 @@ struct TimerTabView: View {
                 .position(sideCenter)
 
         }
+    }
+
+    private func openSmartCubeManagement() {
+        guard isActive, usesSmartCubeInput,
+              !isRunning, !isInspecting, !showingResultPopup else { return }
+        let connected = smartCube.managementConnectedDeviceIDs
+        managedSmartCubeID = smartCube.activeDeviceID.flatMap { connected.contains($0) ? $0 : nil } ?? connected.first
+        showingSmartCubeManagement = true
+    }
+
+    private var smartCubeManagementTapAction: (() -> Void)? {
+        guard !isRunning, !isInspecting, !showingResultPopup else { return nil }
+        return { openSmartCubeManagement() }
     }
 
     private func smartCubeSideTimer(width: CGFloat) -> some View {
@@ -3720,6 +3812,7 @@ struct TimerTabView: View {
         return ZStack {
             if effectiveTimerPresentation.showsStatistics {
                 splitStatistics(width: statisticsFrame.width, height: statisticsFrame.height)
+                    .allowsHitTesting(enteringTimesWith != "timer")
                     .position(x: statisticsFrame.midX, y: statisticsFrame.midY)
             }
 
@@ -3754,6 +3847,8 @@ struct TimerTabView: View {
                 .padding(TimerArrangementLayout.cardContentInset)
                 .frame(width: statisticsFrame.width, height: statisticsFrame.height)
                 .compatibleGlassFromIOS16(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                // Read-only statistics (including their glass) must not consume Timer touches.
+                .allowsHitTesting(enteringTimesWith != "timer")
                 .position(x: statisticsFrame.midX, y: statisticsFrame.midY)
             }
 
@@ -3874,14 +3969,15 @@ struct TimerTabView: View {
 
     private func saveTypedTime() {
         guard let parsed = parseTypedTime(typedTimeInput),
-              let selectedSession,
+              let assignment = currentSolveAssignment,
+              let selectedSession = try? modelContext.fetchSession(with: assignment.sessionID),
               parsed > 0 else { return }
 
         let solve = Solve(
             time: parsed,
             date: .now,
-            scramble: scrambleToSave,
-            event: selectedEvent.rawValue,
+            scramble: assignment.scramble,
+            event: assignment.event.rawValue,
             result: .solved,
             inputSource: .manualEntry,
             session: selectedSession,
@@ -4045,11 +4141,14 @@ struct TimerTabView: View {
             unavailableMessage: appLocalizedString(
                 "timer.scramble_unavailable",
                 languageCode: appLanguage
-            )
+            ),
+            deviceID: usesSmartCubeInput ? smartCube.activeDeviceID : nil,
+            connectionAttemptID: usesSmartCubeInput ? smartCube.connectionAttemptID : nil
         )
     }
 
     private func generateNewScramble() {
+        guard !isRunning, pendingSolveTime == nil else { return }
         #if DEBUG
         if advanceMarketingPreviewScramble() {
             return
@@ -4106,6 +4205,10 @@ struct TimerTabView: View {
     #endif
 
     private func presentScrambleLoading(for context: TimerScrambleGenerationContext) {
+        // A pending Next is not a new presentation. Keep the complete Cards
+        // snapshot until its replacement (including the diagram) is ready.
+        if resolvedTimerArrangement == .cards, displayedScrambleContext == context,
+           hasAssignedScramble { return }
         currentScramble = "…"
         if context.event == .threeByThreeMBLD {
             mblindScrambles = []
@@ -4118,7 +4221,7 @@ struct TimerTabView: View {
         requestedAt: TimeInterval,
         reason: String
     ) {
-        TimerScrambleGenerator.generate(for: context, reason: reason) { payload in
+        generateTimerScramble(for: context, reason: reason) { payload in
             guard scrambleRequestToken == requestToken,
                   scrambleGenerationContext == context else {
                 #if DEBUG
@@ -4139,16 +4242,35 @@ struct TimerTabView: View {
         _ payload: TimerScrambleGenerationPayload,
         requestToken: UUID,
         requestedAt: TimeInterval,
-        source: String
+        source: String,
+        attemptedDiagramPreparation: Bool = false
     ) {
         guard scrambleRequestToken == requestToken,
-              payload.context == scrambleGenerationContext else { return }
+              payload.context == scrambleGenerationContext,
+              !isRunning, pendingSolveTime == nil else { return }
+
+        if !preparedCardsDiagramIsCurrent(payload), !attemptedDiagramPreparation {
+            // A slot filled in another arrangement may not have a diagram yet.
+            prepareScramblePresentation(payload) { prepared in
+                activateGeneratedScramble(prepared, requestToken: requestToken,
+                    requestedAt: requestedAt, source: source, attemptedDiagramPreparation: true)
+            }
+            return
+        }
+        // A diagram failure must not destroy an already valid presentation.
+        // Initial loading retains the original renderer's error/fallback path.
+        if !preparedCardsDiagramIsCurrent(payload), hasAssignedScramble { return }
 
         withAnimation(.snappy(duration: 0.22, extraBounce: 0)) {
             if payload.context.event == .threeByThreeMBLD {
                 mblindScrambles = payload.scrambles
             }
             currentScramble = payload.primaryScramble
+            displayedScrambleContext = payload.context
+            currentCardsDiagram = payload.diagram
+            // Commit the text and its original target in the same owner turn.
+            // A BLE event can arrive before SwiftUI's later onChange callback.
+            if usesSmartCubeInput { prepareSmartCubeScrambleTarget(scramble: payload.primaryScramble) }
         }
 
         #if DEBUG
@@ -4166,6 +4288,29 @@ struct TimerTabView: View {
         scheduleScramblePrefetch(for: payload.context)
     }
 
+    private var hasAssignedScramble: Bool {
+        !currentScramble.isEmpty && currentScramble != "…"
+            && !currentScramble.hasPrefix(appLocalizedString("timer.scramble_unavailable", languageCode: appLanguage))
+    }
+
+    private var currentSolveAssignment: TimerSolveAssignment? {
+        guard hasAssignedScramble, let selectedSession else { return nil }
+        if usesSmartCubeInput {
+            guard let progress = smartCubeScrambleProgress,
+                  SmartCubeBluetoothManager.facelets(afterApplying: currentScramble, puzzleSize: progress.puzzleSize) == progress.targetFacelets else { return nil }
+        }
+        return .init(scramble: scrambleToSave, event: effectiveTimerEvent, sessionID: selectedSession.id,
+                     requestID: scrambleRequestToken, inputSource: selectedTimingMethod.solveInputSource)
+    }
+
+    private func refreshScrambleGenerationDeviceOwner() {
+        guard usesSmartCubeInput else { return }
+        invalidateScramblePrefetch()
+        scrambleRequestToken = UUID()
+        if hasAssignedScramble { scheduleScramblePrefetch(for: scrambleGenerationContext) }
+        else { generateNewScramble() }
+    }
+
     private func scheduleScramblePrefetch(for context: TimerScrambleGenerationContext) {
         guard !isMarketingPreviewTimer,
               scrambleGenerationContext == context,
@@ -4173,7 +4318,7 @@ struct TimerTabView: View {
               !scramblePrefetchSlot.hasPendingRequest(for: context) else { return }
 
         let request = scramblePrefetchSlot.begin(for: context)
-        TimerScrambleGenerator.generate(for: context, reason: "prefetch") { payload in
+        generateTimerScramble(for: context, reason: "prefetch") { payload in
             guard scramblePrefetchSlot.complete(payload, for: request) else {
                 #if DEBUG
                 print("[ScramblePerf] discarded stale prefetch event=\(context.event.rawValue)")
@@ -4205,6 +4350,59 @@ struct TimerTabView: View {
         scramblePrefetchSlot.invalidate()
         scramblePrefetchConsumptionToken = nil
         scramblePrefetchConsumptionRequestedAt = nil
+    }
+
+    private func generateTimerScramble(for context: TimerScrambleGenerationContext, reason: String,
+                                      completion: @escaping @MainActor (TimerScrambleGenerationPayload) -> Void) {
+        let deliver: @MainActor (TimerScrambleGenerationPayload) -> Void = { payload in
+            prepareScramblePresentation(payload, completion: completion)
+        }
+        #if DEBUG
+        if let generate = guidanceProbe?.generate {
+            generate(context, reason, deliver)
+            return
+        }
+        #endif
+        TimerScrambleGenerator.generate(for: context, reason: reason, completion: deliver)
+    }
+
+    private func prepareScramblePresentation(_ payload: TimerScrambleGenerationPayload,
+        completion: @escaping @MainActor (TimerScrambleGenerationPayload) -> Void) {
+        guard !preparedCardsDiagramIsCurrent(payload),
+              let puzzleKey = payload.context.event.scrambleDiagramPuzzleKey else {
+            completion(payload)
+            return
+        }
+        let colors = ScrambleColorConfiguration.decode(
+            from: UserDefaults.standard.data(forKey: "scrambleDiagramColorSchemeData")
+        ).schemeString(for: puzzleKey)
+        let stroke = (DiagramStrokeStyle(rawValue: UserDefaults.standard.string(
+            forKey: "scrambleDiagramStrokeStyle") ?? "thin") ?? .thin).scale
+        Task { @MainActor in
+            var prepared = payload
+            if let image = try? await ScrambleDiagramImageRenderer.render(
+                puzzleKey: puzzleKey, scramble: payload.primaryScramble, colorScheme: colors,
+                strokeScale: stroke
+            ), let data = image.pngData() {
+                prepared.diagram = .init(puzzleKey: puzzleKey, scramble: payload.primaryScramble,
+                    pngData: data, colorScheme: colors, strokeScale: stroke)
+            }
+            completion(prepared)
+        }
+    }
+
+    private func preparedCardsDiagramIsCurrent(_ payload: TimerScrambleGenerationPayload) -> Bool {
+        guard resolvedTimerArrangement == .cards,
+              let puzzleKey = payload.context.event.scrambleDiagramPuzzleKey,
+              !payload.primaryScramble.isEmpty,
+              !payload.primaryScramble.hasPrefix(payload.context.unavailableMessage) else { return true }
+        let colors = ScrambleColorConfiguration.decode(
+            from: UserDefaults.standard.data(forKey: "scrambleDiagramColorSchemeData")
+        ).schemeString(for: puzzleKey)
+        let stroke = (DiagramStrokeStyle(rawValue: UserDefaults.standard.string(
+            forKey: "scrambleDiagramStrokeStyle") ?? "thin") ?? .thin).scale
+        return payload.diagram?.puzzleKey == puzzleKey && payload.diagram?.scramble == payload.primaryScramble
+            && payload.diagram?.colorScheme == colors && payload.diagram?.strokeScale == stroke
     }
 
     private var isMarketingPreviewTimer: Bool {
@@ -4378,7 +4576,8 @@ struct TimerTabView: View {
                 ScrambleDiagramView(
                     puzzleKey: scrambleDiagramPuzzleKey,
                     scramble: currentScramble,
-                    exportAppearance: timerScrambleExportAppearance
+                    exportAppearance: timerScrambleExportAppearance,
+                    preparedDiagram: resolvedTimerArrangement == .cards ? currentCardsDiagram : nil
                 )
                     .frame(width: safeWidth, height: height)
                     .background {

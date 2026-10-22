@@ -2,11 +2,20 @@
 import SwiftUI
 import WebKit
 
+nonisolated struct ScrambleDiagramSnapshot: Equatable, Sendable {
+    let puzzleKey: String
+    let scramble: String
+    let pngData: Data
+    let colorScheme: String
+    let strokeScale: Double
+}
+
 struct ScrambleDiagramView: View {
     let puzzleKey: String
     let scramble: String
     let isInteractive: Bool
     let exportAppearance: ScrambleExportAppearance
+    var preparedDiagram: ScrambleDiagramSnapshot? = nil
     @AppStorage("scrambleDiagramStrokeStyle") private var strokeRaw = DiagramStrokeStyle.thin.rawValue
 
     @AppStorage("scrambleDiagramColorSchemeData") private var colorSchemeData: Data?
@@ -15,24 +24,35 @@ struct ScrambleDiagramView: View {
         puzzleKey: String,
         scramble: String,
         isInteractive: Bool = true,
-        exportAppearance: ScrambleExportAppearance = .solveDetail(.light)
+        exportAppearance: ScrambleExportAppearance = .solveDetail(.light),
+        preparedDiagram: ScrambleDiagramSnapshot? = nil
     ) {
         self.puzzleKey = puzzleKey
         self.scramble = scramble
         self.isInteractive = isInteractive
         self.exportAppearance = exportAppearance
+        self.preparedDiagram = preparedDiagram
     }
 
     @ViewBuilder
     var body: some View {
         let colorScheme = ScrambleColorConfiguration.decode(from: colorSchemeData)
             .schemeString(for: puzzleKey)
-        let diagram = ScrambleDiagramWebView(
-            puzzleKey: puzzleKey,
-            scramble: scramble,
-            colorScheme: colorScheme,
-            strokeScale: (DiagramStrokeStyle(rawValue: strokeRaw) ?? .thin).scale
-        )
+        let diagram = Group {
+            if let preparedDiagram, preparedDiagram.puzzleKey == puzzleKey,
+               preparedDiagram.scramble == scramble, preparedDiagram.colorScheme == colorScheme,
+               preparedDiagram.strokeScale == (DiagramStrokeStyle(rawValue: strokeRaw) ?? .thin).scale,
+               let preparedImage = UIImage(data: preparedDiagram.pngData) {
+                Image(uiImage: preparedImage).resizable().scaledToFit()
+            } else {
+                ScrambleDiagramWebView(
+                    puzzleKey: puzzleKey,
+                    scramble: scramble,
+                    colorScheme: colorScheme,
+                    strokeScale: (DiagramStrokeStyle(rawValue: strokeRaw) ?? .thin).scale
+                )
+            }
+        }
         .background(Color.clear)
 
         if isInteractive {
@@ -975,7 +995,7 @@ private extension SolveShareBackground {
 }
 
 @MainActor
-private final class ScrambleDiagramImageRenderer: NSObject, WKNavigationDelegate {
+final class ScrambleDiagramImageRenderer: NSObject, WKNavigationDelegate {
     private static var activeRenderers: [UUID: ScrambleDiagramImageRenderer] = [:]
 
     private let id = UUID()
@@ -992,7 +1012,8 @@ private final class ScrambleDiagramImageRenderer: NSObject, WKNavigationDelegate
         webView.scrollView.backgroundColor = .clear
     }
 
-    static func render(puzzleKey: String, scramble: String, colorScheme: String) async throws -> UIImage {
+    static func render(puzzleKey: String, scramble: String, colorScheme: String,
+                       strokeScale: Double? = nil) async throws -> UIImage {
         let renderer = ScrambleDiagramImageRenderer()
         activeRenderers[renderer.id] = renderer
         return try await withCheckedThrowingContinuation { continuation in
@@ -1002,7 +1023,7 @@ private final class ScrambleDiagramImageRenderer: NSObject, WKNavigationDelegate
                     puzzleKey: puzzleKey,
                     scramble: scramble,
                     colorScheme: colorScheme,
-                    strokeScale: (DiagramStrokeStyle(rawValue: UserDefaults.standard.string(forKey: "scrambleDiagramStrokeStyle") ?? "thin") ?? .thin).scale
+                    strokeScale: strokeScale ?? (DiagramStrokeStyle(rawValue: UserDefaults.standard.string(forKey: "scrambleDiagramStrokeStyle") ?? "thin") ?? .thin).scale
                 ),
                 baseURL: Bundle.main.resourceURL
             )
