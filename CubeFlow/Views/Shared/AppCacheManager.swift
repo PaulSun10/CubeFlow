@@ -40,19 +40,24 @@ enum AppCacheManager {
     nonisolated static func currentReport() -> AppCacheReport {
         AppCacheReport(
             competitionListBytes: fileSize(for: cacheFileURL("competition-query-cache-v2.json"))
-                + ExploreCompetitionCache.diskBytes,
+                + ExploreCompetitionCache.diskBytes
+                + PublicDataSnapshotStore.diskBytes(at: WCAExplorePublicDataCache.directory),
             competitionDetailBytes:
                 fileSize(for: cacheFileURL("competition-detail-cache-v2.json"))
-                + fileSize(for: cacheFileURL("competition-detail-cache-v1.json")),
+                + fileSize(for: cacheFileURL("competition-detail-cache-v1.json"))
+                + directorySize(for: CompetitionSnapshotCache.directory),
             competitionLocalizedNamesBytes: fileSize(for: cacheFileURL("competition-localized-names-v6.json")),
-            competitionTopCubersBytes: fileSize(for: cacheFileURL("competition-top-cubers-cache-v1.json")),
+            competitionTopCubersBytes: fileSize(for: cacheFileURL("competition-top-cubers-cache-v1.json"))
+                + fileSize(for: cacheFileURL("competition-top-cubers-cache-v2.json")),
             recognizedCountriesBytes: fileSize(for: cacheFileURL("competition-recognized-countries.json")),
             wcaResultsBytes: fileSize(for: cacheFileURL("wca-person-results-cache-v1.json"))
+                + PublicDataSnapshotStore.diskBytes(at: WCAPublicProfileCache.directory)
         )
     }
 
     static func clearCompetitionListCache() async {
         await ExploreCompetitionCache.shared.clear()
+        await WCAExplorePublicDataCache.shared.clear()
         await CompetitionService.clearCompetitionListCache()
         URLCache.shared.removeAllCachedResponses()
     }
@@ -77,6 +82,7 @@ enum AppCacheManager {
 
     static func clearAllCaches() async {
         await ExploreCompetitionCache.shared.clear()
+        await WCAExplorePublicDataCache.shared.clear()
         await CompetitionService.clearAllCompetitionCaches()
         await WCAResultsService.clearAllCaches()
         URLCache.shared.removeAllCachedResponses()
@@ -96,5 +102,10 @@ enum AppCacheManager {
             return 0
         }
         return size.int64Value
+    }
+
+    nonisolated private static func directorySize(for url: URL) -> Int64 {
+        ((try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey])) ?? [])
+            .reduce(0) { $0 + Int64((try? $1.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) }
     }
 }

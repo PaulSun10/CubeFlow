@@ -2339,6 +2339,16 @@ private struct RecordHistorySheet: View {
     }
 }
 
+#if DEBUG
+enum SolveDetailAcceptance {
+    static func view(for solve: Solve) -> some View {
+        SolveDetailSheet(sample: SessionSolveSample(id: solve.id, date: solve.date, time: solve.time,
+            resultRaw: solve.resultRaw, scramble: solve.scramble, comment: solve.comment,
+            eventRawValue: solve.event, inputSourceRaw: solve.inputSourceRaw), position: nil, fallbackPuzzleKey: nil)
+    }
+}
+#endif
+
 private struct SolveDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var modelContext
@@ -3058,12 +3068,7 @@ private struct SessionManagementToolbarConfigurator: UIViewControllerRepresentab
                 target: self,
                 action: configuration.isEditing ? #selector(doneTapped) : #selector(editTapped)
             )
-            primaryItem.tintColor = .systemBlue
-            if #available(iOS 26.0, *) {
-                primaryItem.style = .prominent
-            } else {
-                primaryItem.style = .done
-            }
+            SessionNativeActionStyle.apply(to: primaryItem, tint: .systemBlue)
 
             navigationItem.setRightBarButtonItems([primaryItem, secondaryItem], animated: shouldAnimate)
         }

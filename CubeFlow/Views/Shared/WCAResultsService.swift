@@ -1,6 +1,6 @@
 import Foundation
 
-struct WCAPersonResultsPage: Sendable, Codable {
+nonisolated struct WCAPersonResultsPage: Sendable, Codable {
     let contentLanguage: String
     let summary: WCAPersonResultsSummary
     let previousIdentityText: String?
@@ -10,7 +10,7 @@ struct WCAPersonResultsPage: Sendable, Codable {
     let resultsSections: [WCAEventResultsSection]
 }
 
-struct WCAPersonProfileIdentity: Sendable, Codable {
+nonisolated struct WCAPersonProfileIdentity: Sendable, Codable {
     let wcaId: String
     let name: String
     let avatarURL: String?
@@ -21,7 +21,7 @@ struct WCAPersonProfileIdentity: Sendable, Codable {
     let roles: [WCAPersonRoleMembership]
 }
 
-struct WCAMedalCollection: Hashable, Sendable, Codable {
+nonisolated struct WCAMedalCollection: Hashable, Sendable, Codable {
     let title: String
     let goldLabel: String
     let goldCount: Int
@@ -49,7 +49,7 @@ struct WCAMedalCollection: Hashable, Sendable, Codable {
     }
 }
 
-struct WCARecordCollection: Hashable, Sendable, Codable {
+nonisolated struct WCARecordCollection: Hashable, Sendable, Codable {
     let title: String
     let worldLabel: String
     let worldCount: Int?
@@ -61,14 +61,14 @@ struct WCARecordCollection: Hashable, Sendable, Codable {
     nonisolated var total: Int { (worldCount ?? 0) + (continentCount ?? 0) + (nationalCount ?? 0) }
 }
 
-struct WCAPersonTeamMembership: Hashable, Sendable, Codable {
+nonisolated struct WCAPersonTeamMembership: Hashable, Sendable, Codable {
     let friendlyID: String
     let name: String?
     let isLeader: Bool
     let isSeniorMember: Bool
 }
 
-struct WCAPersonRoleMembership: Hashable, Sendable, Codable {
+nonisolated struct WCAPersonRoleMembership: Hashable, Sendable, Codable {
     let id: Int
     let groupType: String
     let groupName: String
@@ -76,7 +76,7 @@ struct WCAPersonRoleMembership: Hashable, Sendable, Codable {
     let status: String?
 }
 
-struct WCAPersonResultsSummary: Sendable, Codable {
+nonisolated struct WCAPersonResultsSummary: Sendable, Codable {
     let region: String
     let wcaId: String
     let gender: String
@@ -84,13 +84,13 @@ struct WCAPersonResultsSummary: Sendable, Codable {
     let completedSolves: String
 }
 
-struct WCAEventDescriptor: Identifiable, Hashable, Sendable, Codable {
+nonisolated struct WCAEventDescriptor: Identifiable, Hashable, Sendable, Codable {
     let code: String
     let name: String
 
     var id: String { code }
 
-    var shortLabel: String {
+    @MainActor var shortLabel: String {
         CompetitionEventPresentation.normalizedName(
             for: code,
             fallback: name,
@@ -98,7 +98,7 @@ struct WCAEventDescriptor: Identifiable, Hashable, Sendable, Codable {
         )
     }
 
-    func localizedShortLabel(languageCode: String) -> String {
+    @MainActor func localizedShortLabel(languageCode: String) -> String {
         CompetitionEventPresentation.normalizedName(
             for: code,
             fallback: name,
@@ -107,7 +107,7 @@ struct WCAEventDescriptor: Identifiable, Hashable, Sendable, Codable {
     }
 }
 
-struct WCAPersonalRecord: Identifiable, Hashable, Sendable, Codable {
+nonisolated struct WCAPersonalRecord: Identifiable, Hashable, Sendable, Codable {
     let event: WCAEventDescriptor
     let singleNationalRank: String?
     let singleContinentRank: String?
@@ -122,7 +122,7 @@ struct WCAPersonalRecord: Identifiable, Hashable, Sendable, Codable {
     var id: String { event.code }
 }
 
-struct WCACompetitionResult: Identifiable, Hashable, Sendable, Codable {
+nonisolated struct WCACompetitionResult: Identifiable, Hashable, Sendable, Codable {
     let id: String
     let competitionName: String
     let competitionPath: String?
@@ -137,13 +137,13 @@ struct WCACompetitionResult: Identifiable, Hashable, Sendable, Codable {
     let solves: [WCAAttemptResult]
 }
 
-struct WCAAttemptResult: Identifiable, Hashable, Sendable, Codable {
+nonisolated struct WCAAttemptResult: Identifiable, Hashable, Sendable, Codable {
     let id: String
     let value: String
     let isTrimmed: Bool
 }
 
-struct WCAEventResultsSection: Identifiable, Hashable, Sendable, Codable {
+nonisolated struct WCAEventResultsSection: Identifiable, Hashable, Sendable, Codable {
     let event: WCAEventDescriptor
     let results: [WCACompetitionResult]
 
@@ -171,7 +171,7 @@ enum WCAResultsFetchError: LocalizedError {
 }
 
 enum WCAResultsService {
-    private struct UserProfileEnvelope: Decodable {
+    nonisolated private struct UserProfileEnvelope: Decodable {
         struct User: Decodable {
             struct Avatar: Decodable {
                 let thumbUrl: String?
@@ -197,7 +197,7 @@ enum WCAResultsService {
         let user: User
     }
 
-    private struct PersonProfileEnvelope: Decodable {
+    nonisolated private struct PersonProfileEnvelope: Decodable {
         struct Person: Decodable {
             struct Avatar: Decodable {
                 let thumbUrl: String?
@@ -222,7 +222,7 @@ enum WCAResultsService {
         let person: Person
     }
 
-    private struct PublicUserRole: Decodable {
+    nonisolated private struct PublicUserRole: Decodable {
         struct Group: Decodable {
             struct Metadata: Decodable {
                 let friendlyId: String?
@@ -248,6 +248,10 @@ enum WCAResultsService {
     }
 
     static func fetchPersonIdentity(wcaId: String) async throws -> WCAPersonProfileIdentity {
+        try await WCAPublicProfileCache.shared.identity(wcaId)
+    }
+
+    nonisolated static func loadPublicIdentity(wcaId: String, session: URLSession) async throws -> WCAPublicIdentityResponse {
         let trimmedWCAID = wcaId.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedWCAID.isEmpty else {
             throw WCAResultsFetchError.missingWCAID
@@ -262,13 +266,13 @@ enum WCAResultsService {
 
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        if let (data, response) = try? await URLSession.shared.data(for: request),
+        if let (data, response) = try? await session.data(for: request),
            let httpResponse = response as? HTTPURLResponse,
            200 ..< 300 ~= httpResponse.statusCode,
            let payload = try? decoder.decode(UserProfileEnvelope.self, from: data) {
-            let publicRoles = (try? await fetchPublicRoles(userID: payload.user.id)) ?? []
+            let publicRoles = try? await fetchPublicRoles(userID: payload.user.id, session: session)
 
-            return WCAPersonProfileIdentity(
+            let identity = WCAPersonProfileIdentity(
                 wcaId: trimmedWCAID,
                 name: payload.user.name,
                 avatarURL: payload.user.avatar?.url ?? payload.user.avatar?.thumbUrl,
@@ -283,7 +287,7 @@ enum WCAResultsService {
                         isSeniorMember: $0.seniorMember
                     )
                 },
-                roles: publicRoles.map {
+                roles: (publicRoles ?? []).map {
                     WCAPersonRoleMembership(
                         id: $0.id,
                         groupType: $0.group.groupType,
@@ -293,17 +297,18 @@ enum WCAResultsService {
                     )
                 }
             )
+            return WCAPublicIdentityResponse(identity: identity, complete: publicRoles != nil)
         }
 
-        return try await fetchPersonIdentityWithoutUserRoles(
+        return WCAPublicIdentityResponse(identity: try await fetchPersonIdentityWithoutUserRoles(
             wcaId: trimmedWCAID,
-            decoder: decoder
-        )
+            decoder: decoder, session: session
+        ), complete: false)
     }
 
-    private static func fetchPersonIdentityWithoutUserRoles(
+    private nonisolated static func fetchPersonIdentityWithoutUserRoles(
         wcaId: String,
-        decoder: JSONDecoder
+        decoder: JSONDecoder, session: URLSession
     ) async throws -> WCAPersonProfileIdentity {
         guard let url = URL(string: "https://www.worldcubeassociation.org/api/v0/persons/\(wcaId)") else {
             throw WCAResultsFetchError.invalidPersonURL
@@ -313,7 +318,7 @@ enum WCAResultsService {
         request.timeoutInterval = 15
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
               200 ..< 300 ~= httpResponse.statusCode else {
             throw WCAResultsFetchError.requestFailed
@@ -341,7 +346,7 @@ enum WCAResultsService {
         )
     }
 
-    private static func fetchPublicRoles(userID: Int) async throws -> [PublicUserRole] {
+    private nonisolated static func fetchPublicRoles(userID: Int, session: URLSession) async throws -> [PublicUserRole] {
         var components = URLComponents(string: "https://www.worldcubeassociation.org/api/v0/user_roles")
         components?.queryItems = [
             URLQueryItem(name: "userId", value: String(userID)),
@@ -361,7 +366,7 @@ enum WCAResultsService {
         request.timeoutInterval = 15
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
               200 ..< 300 ~= httpResponse.statusCode else {
             throw WCAResultsFetchError.requestFailed
@@ -377,53 +382,17 @@ enum WCAResultsService {
         appLanguageCode: String,
         useCache: Bool = true
     ) async throws -> WCAPersonResultsPage {
-        let trimmedWCAID = wcaId.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedWCAID.isEmpty else {
-            throw WCAResultsFetchError.missingWCAID
-        }
-
-        let cacheKey = personResultsCacheKey(wcaId: trimmedWCAID, languageCode: appLanguageCode)
-        if useCache, let cachedSnapshot = await WCAResultsPageCacheStore.shared.snapshot(for: cacheKey) {
-            return cachedSnapshot.page
-        }
-
-        guard let url = URL(string: "https://www.worldcubeassociation.org/persons/\(trimmedWCAID)") else {
-            throw WCAResultsFetchError.invalidPersonURL
-        }
-
-        var request = URLRequest(url: url)
-        request.setValue(acceptLanguageHeader(for: appLanguageCode), forHTTPHeaderField: "Accept-Language")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, 200 ..< 300 ~= httpResponse.statusCode,
-              let html = String(data: data, encoding: .utf8) else {
-            throw WCAResultsFetchError.requestFailed
-        }
-
-        let parsedPage = try parsePersonResultsHTML(html, requestedLanguageCode: appLanguageCode)
-        await WCAResultsPageCacheStore.shared.store(parsedPage, for: cacheKey, lastUpdated: Date())
-        return parsedPage
+        try await WCAPublicProfileCache.shared.page(wcaId, language: appLanguageCode, force: !useCache)
     }
 
-    static func cachedPersonResults(
-        wcaId: String,
-        appLanguageCode: String
-    ) async -> CachedPersonResultsSnapshot? {
-        let trimmedWCAID = wcaId.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedWCAID.isEmpty else { return nil }
-
-        let cacheKey = personResultsCacheKey(wcaId: trimmedWCAID, languageCode: appLanguageCode)
-        guard let snapshot = await WCAResultsPageCacheStore.shared.snapshot(for: cacheKey) else { return nil }
-        return CachedPersonResultsSnapshot(page: snapshot.page, lastUpdated: snapshot.lastUpdated)
+    static func cachedPersonResults(wcaId: String, appLanguageCode: String) async -> CachedPersonResultsSnapshot? {
+        await WCAPublicProfileCache.shared.cachedPage(wcaId, language: appLanguageCode)
     }
 
-    static func clearPersonResultsCache() async {
-        await WCAResultsPageCacheStore.shared.clear()
-    }
-
+    static func clearPersonResultsCache() async { await WCAPublicProfileCache.shared.clear() }
     static func clearAllCaches() async {
         await WCAResultsSupplementalStore.shared.clear()
-        await WCAResultsPageCacheStore.shared.clear()
+        await WCAPublicProfileCache.shared.clear()
     }
 
     nonisolated static func parsePersonResultsHTML(
@@ -438,14 +407,6 @@ enum WCAResultsService {
         appLanguageCode: String
     ) async -> WCAPersonResultsPage {
         await localizedCompetitionNamesIfNeeded(for: page, appLanguageCode: appLanguageCode)
-    }
-
-    private static func acceptLanguageHeader(for appLanguageCode: String) -> String {
-        appAcceptLanguageHeader(for: appLanguageCode)
-    }
-
-    private static func personResultsCacheKey(wcaId: String, languageCode: String) -> String {
-        "\(wcaId)|\(languageCode)"
     }
 
     private static func localizedCompetitionNamesIfNeeded(
@@ -604,111 +565,57 @@ private struct WCACompetitionCountryPayload: Decodable {
     let countryIso2: String
 }
 
-private actor WCAResultsSupplementalStore {
+actor WCAResultsSupplementalStore {
     static let shared = WCAResultsSupplementalStore()
+    private struct Country { let value: String; let date: Date }
+    private var countries: [String: Country] = [:]
+    private var names: (values: [String: String], date: Date)?
+    private let requests = CompetitionRequestPool<[String: String]>()
+    private var generation = UUID()
 
-    private var cachedCompetitionCountryCodes: [String: String] = [:]
-    private var cachedLocalizedCompetitionNames: [String: String]?
-
-    func countryCodes(
-        for competitionIDs: Set<String>,
-        loader: @escaping (Set<String>) async -> [String: String]
-    ) async -> [String: String] {
-        let missingIDs = competitionIDs.filter { cachedCompetitionCountryCodes[$0] == nil }
-        if !missingIDs.isEmpty {
-            let loaded = await loader(missingIDs)
-            for (competitionID, countryCode) in loaded {
-                cachedCompetitionCountryCodes[competitionID] = countryCode
-            }
+    func countryCodes(for competitionIDs: Set<String>,
+                      loader: @escaping @Sendable (Set<String>) async -> [String: String]) async -> [String: String] {
+        guard !competitionIDs.isEmpty else { return [:] }
+        let epoch = generation
+        let existing = countries.mapValues(\.value)
+        let missing = competitionIDs.filter { id in
+            guard let cached = countries[id] else { return true }
+            return Date().timeIntervalSince(cached.date) >= 86400
         }
-
-        return competitionIDs.reduce(into: [:]) { partialResult, competitionID in
-            if let countryCode = cachedCompetitionCountryCodes[competitionID] {
-                partialResult[competitionID] = countryCode
-            }
+        if missing.isEmpty {
+            return existing.filter { competitionIDs.contains($0.key) }
         }
+        let key = PublicDataSnapshotStore.key(["countries"] + competitionIDs.sorted())
+        let loaded = (try? await requests.value(key: key) { await loader(competitionIDs) }) ?? [:]
+        guard generation == epoch, !Task.isCancelled else { return [:] }
+        for (id, value) in loaded { countries[id] = Country(value: value, date: Date()) }
+        let retained = bounded(countries.mapValues(\.value), preferred: competitionIDs)
+        countries = countries.filter { retained[$0.key] != nil }
+        let merged = existing.merging(loaded) { _, new in new }
+        return merged.filter { competitionIDs.contains($0.key) }
     }
-
-    func localizedCompetitionNames(
-        loader: @escaping () async -> [String: String]
-    ) async -> [String: String] {
-        if let cachedLocalizedCompetitionNames {
-            return cachedLocalizedCompetitionNames
+    func localizedCompetitionNames(loader: @escaping @Sendable () async -> [String: String]) async -> [String: String] {
+        if let names, Date().timeIntervalSince(names.date) < 6 * 3600 { return names.values }
+        let epoch = generation
+        let loaded = (try? await requests.value(key: "localized-names") { await loader() }) ?? [:]
+        guard generation == epoch, !Task.isCancelled else { return [:] }
+        if !loaded.isEmpty { names = (bounded(loaded), Date()) }
+        return names?.values ?? [:]
+    }
+    private func bounded(_ values: [String: String], preferred: Set<String> = []) -> [String: String] {
+        let keys = values.keys.sorted { preferred.contains($0) == preferred.contains($1) ? $0 < $1 : preferred.contains($0) }
+        var result: [String: String] = [:], bytes = 0
+        for key in keys {
+            guard let value = values[key], result.count < 4096, bytes + key.utf8.count + value.utf8.count <= 1024 * 1024 else { continue }
+            result[key] = value; bytes += key.utf8.count + value.utf8.count
         }
-
-        let loaded = await loader()
-        cachedLocalizedCompetitionNames = loaded
-        return loaded
+        return result
     }
-
-    func clear() {
-        cachedCompetitionCountryCodes.removeAll()
-        cachedLocalizedCompetitionNames = nil
+    func clear() async {
+        generation = UUID()
+        await requests.cancelAll()
+        countries = [:]; names = nil
     }
-}
-
-private actor WCAResultsPageCacheStore {
-    static let shared = WCAResultsPageCacheStore()
-
-    private var inMemorySnapshots: [String: StoredWCAResultsPageSnapshot] = [:]
-    private var hasLoadedFromDisk = false
-
-    func snapshot(for key: String) -> StoredWCAResultsPageSnapshot? {
-        loadFromDiskIfNeeded()
-        return inMemorySnapshots[key]
-    }
-
-    func store(_ page: WCAPersonResultsPage, for key: String, lastUpdated: Date) {
-        loadFromDiskIfNeeded()
-        inMemorySnapshots[key] = StoredWCAResultsPageSnapshot(page: page, lastUpdated: lastUpdated)
-        saveToDisk()
-    }
-
-    private func cacheFileURL() -> URL {
-        let baseDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        return baseDirectory
-            .appendingPathComponent("CubeFlow", isDirectory: true)
-            .appendingPathComponent("wca-person-results-cache-v1.json")
-    }
-
-    private func loadFromDiskIfNeeded() {
-        guard !hasLoadedFromDisk else { return }
-        hasLoadedFromDisk = true
-
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-
-        guard let data = try? Data(contentsOf: cacheFileURL()),
-              let stored = try? decoder.decode([String: StoredWCAResultsPageSnapshot].self, from: data) else {
-            return
-        }
-
-        inMemorySnapshots = stored
-    }
-
-    private func saveToDisk() {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        guard let data = try? encoder.encode(inMemorySnapshots) else { return }
-        let fileURL = cacheFileURL()
-        try? FileManager.default.createDirectory(
-            at: fileURL.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-        try? data.write(to: fileURL, options: [.atomic])
-    }
-
-    func clear() {
-        inMemorySnapshots.removeAll()
-        hasLoadedFromDisk = false
-        try? FileManager.default.removeItem(at: cacheFileURL())
-    }
-}
-
-private struct StoredWCAResultsPageSnapshot: Codable, Sendable {
-    let page: WCAPersonResultsPage
-    let lastUpdated: Date
 }
 
 private enum WCAResultsHTMLParser {

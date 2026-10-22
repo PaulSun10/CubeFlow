@@ -166,7 +166,7 @@ final class CompetitionDetailNavigationBarConfiguratorController: UIViewControll
 
             let navigationBar = navigationController.navigationBar
             let largeTitleBase = UIFont.preferredFont(forTextStyle: .largeTitle)
-            let detailLargeTitleSize = self.fittedLargeTitleSize(for: title, baseSize: largeTitleBase.pointSize)
+            let detailLargeTitleSize = Self.fittedLargeTitleSize(for: title, baseSize: largeTitleBase.pointSize)
             let largeTitleFont = UIFont.systemFont(ofSize: detailLargeTitleSize, weight: .bold)
             let inlineTitleFont = UIFont.systemFont(ofSize: 15, weight: .semibold)
             let inlineSubtitleFont = UIFont.systemFont(ofSize: 13, weight: .medium)
@@ -205,7 +205,7 @@ final class CompetitionDetailNavigationBarConfiguratorController: UIViewControll
         }
     }
 
-    private func fittedLargeTitleSize(for title: String, baseSize: CGFloat) -> CGFloat {
+    static func fittedLargeTitleSize(for title: String, baseSize: CGFloat) -> CGFloat {
         let maximumSize = min(baseSize, 30)
         let minimumSize: CGFloat = 22
         let availableWidth = max(UIScreen.main.bounds.width - 56, 220)

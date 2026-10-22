@@ -13,92 +13,82 @@ final class WCAMyResultsViewModel: ObservableObject {
 
     private var loadedWCAID: String?
     private var loadedLanguageCode: String?
-    private var loadedIdentityWCAID: String?
+    private var requestID = UUID()
+    private var identityRequestID = UUID()
+    private let cache: WCAPublicProfileCache
+    private let now: @Sendable () -> Date
 
-    func loadIdentity(wcaId: String) async {
-        guard loadedIdentityWCAID != wcaId else { return }
+    init(cache: WCAPublicProfileCache = .shared, now: @escaping @Sendable () -> Date = { Date() }) {
+        self.cache = cache; self.now = now
+    }
 
+    func loadIdentity(wcaId: String, force: Bool = false) async {
+        let token = UUID()
+        identityRequestID = token
+        if personIdentity?.wcaId != WCAPublicProfileCache.canonicalID(wcaId) { personIdentity = nil }
         do {
-            personIdentity = try await WCAResultsService.fetchPersonIdentity(wcaId: wcaId)
-            loadedIdentityWCAID = wcaId
+            let identity = try await cache.identity(wcaId, force: force)
+            guard identityRequestID == token, !Task.isCancelled else { return }
+            personIdentity = identity
         } catch {
-            // Results remain usable when the optional public profile request fails.
+            // Results remain usable when the optional public identity is unavailable.
         }
     }
 
     func load(wcaId: String, appLanguageCode: String, forceRefresh: Bool = false) async {
-        if !forceRefresh, loadedWCAID == wcaId, loadedLanguageCode == appLanguageCode, page != nil {
-            return
+        let token = UUID(), id = WCAPublicProfileCache.canonicalID(wcaId) ?? wcaId
+        requestID = token
+        if loadedWCAID != id || loadedLanguageCode != appLanguageCode {
+            page = nil; cachedResultsLastUpdated = nil; errorMessage = nil
         }
-
+        loadedWCAID = id; loadedLanguageCode = appLanguageCode
         isLoading = true
-        if page == nil {
-            errorMessage = nil
-        }
-
-        let cachedSnapshot: WCAResultsService.CachedPersonResultsSnapshot?
+        defer { if requestID == token { isLoading = false } }
         if forceRefresh {
-            cachedSnapshot = nil
-        } else {
-            cachedSnapshot = await WCAResultsService.cachedPersonResults(
-                wcaId: wcaId,
-                appLanguageCode: appLanguageCode
-            )
-        }
-
-        if let cachedSnapshot {
-            page = cachedSnapshot.page
-            cachedResultsLastUpdated = cachedSnapshot.lastUpdated
-            loadedWCAID = wcaId
-            loadedLanguageCode = appLanguageCode
-            if !cachedSnapshot.page.resultsSections.contains(where: { $0.event.code == selectedEventCode }) {
-                selectedEventCode = cachedSnapshot.page.resultsSections.first?.event.code ?? ""
-            }
-            errorMessage = nil
-        }
-
-        do {
-            let fetchedPage = try await WCAResultsService.fetchPersonResults(
-                wcaId: wcaId,
-                appLanguageCode: appLanguageCode,
-                useCache: false
-            )
-            page = fetchedPage
-            cachedResultsLastUpdated = nil
-            loadedWCAID = wcaId
-            loadedLanguageCode = appLanguageCode
-            if !fetchedPage.resultsSections.contains(where: { $0.event.code == selectedEventCode }) {
-                selectedEventCode = fetchedPage.resultsSections.first?.event.code ?? ""
-            }
-            errorMessage = nil
-
-            let loadedKeyWCAID = wcaId
-            let loadedKeyLanguageCode = appLanguageCode
             Task { [weak self] in
-                guard let self else { return }
-                let enrichedPage = await WCAResultsService.enrichPersonResults(
-                    fetchedPage,
-                    appLanguageCode: loadedKeyLanguageCode
-                )
-                await MainActor.run {
-                    guard self.loadedWCAID == loadedKeyWCAID,
-                          self.loadedLanguageCode == loadedKeyLanguageCode else { return }
-                    self.page = enrichedPage
-                    if !enrichedPage.resultsSections.contains(where: { $0.event.code == self.selectedEventCode }) {
-                        self.selectedEventCode = enrichedPage.resultsSections.first?.event.code ?? ""
-                    }
-                }
-            }
-        } catch {
-            if cachedSnapshot == nil {
-                errorMessage = appUserFacingErrorMessage(error, languageCode: appLanguageCode)
-                cachedResultsLastUpdated = nil
-            } else {
-                errorMessage = nil
+                guard let self, self.requestID == token else { return }
+                await self.loadIdentity(wcaId: id, force: true)
             }
         }
+        let cached = await cache.cachedPage(id, language: appLanguageCode)
+        guard requestID == token, !Task.isCancelled else { return }
+        if let cached {
+            page = cached.page; cachedResultsLastUpdated = cached.lastUpdated
+            selectValidEvent()
+            if !forceRefresh, now().timeIntervalSince(cached.lastUpdated) < WCAPublicProfileCache.pageFreshness {
+                errorMessage = nil
+                enrich(cached.page, language: appLanguageCode, token: token)
+                return
+            }
+        }
+        do {
+            let fetched = try await cache.page(id, language: appLanguageCode, force: true)
+            guard requestID == token, !Task.isCancelled else { return }
+            page = fetched; cachedResultsLastUpdated = nil; errorMessage = nil
+            selectValidEvent()
+            enrich(fetched, language: appLanguageCode, token: token)
+        } catch is CancellationError { return }
+        catch {
+            guard requestID == token else { return }
+            // Force refresh failure must not erase either the page or its saved timestamp.
+            errorMessage = page == nil ? appUserFacingErrorMessage(error, languageCode: appLanguageCode) : nil
+        }
+    }
 
-        isLoading = false
+    private func selectValidEvent() {
+        guard let page else { return }
+        if !page.resultsSections.contains(where: { $0.event.code == selectedEventCode }) {
+            selectedEventCode = page.resultsSections.first?.event.code ?? ""
+        }
+    }
+    private func enrich(_ page: WCAPersonResultsPage, language: String, token: UUID) {
+        guard !page.resultsSections.isEmpty else { return }
+        Task { [weak self] in
+            let enriched = await WCAResultsService.enrichPersonResults(page, appLanguageCode: language)
+            guard let self, self.requestID == token, !Task.isCancelled else { return }
+            self.page = enriched
+            self.selectValidEvent()
+        }
     }
 }
 

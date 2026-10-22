@@ -71,6 +71,20 @@ nonisolated struct CompetitionWCALiveResultDeepLink: Hashable, Sendable {
     let roundID: String
     let personID: String?
     let personWCAID: String?
+    var eventID: String? = nil
+    var roundNumber: Int? = nil
+    var finalRoundNumber: Int? = nil
+
+    func cubingChinaRound(in options: [CompetitionLiveRoundOption]) -> CompetitionLiveRoundOption? {
+        guard let eventID, let roundNumber, let finalRoundNumber,
+              roundNumber > 0, roundNumber <= finalRoundNumber else { return nil }
+        var types = roundNumber == finalRoundNumber ? ["f", "c"] :
+            [1: ["1", "d"], 2: ["2", "e"], 3: ["3", "g"]][roundNumber] ?? []
+        if roundNumber > 1, roundNumber == finalRoundNumber - 1 { types += ["3", "g"] }
+        let matches = options.filter { $0.eventID == eventID && types.contains($0.roundID) }
+        // Provider IDs are not interchangeable. Match only verified event/round semantics.
+        return matches.count == 1 ? matches[0] : nil
+    }
 
     func result(in round: CompetitionWCALiveRound) -> CompetitionWCALiveResultPreview? {
         guard round.id == roundID else { return nil }

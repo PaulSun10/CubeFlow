@@ -1,7 +1,141 @@
 import SwiftUI
 
 #if os(iOS)
+#if DEBUG
+private struct CompetitionFilterIsolationKey: EnvironmentKey {
+    static let defaultValue: Set<String> = []
+}
+extension EnvironmentValues {
+    var competitionFilterIsolation: Set<String> {
+        get { self[CompetitionFilterIsolationKey.self] }
+        set { self[CompetitionFilterIsolationKey.self] = newValue }
+    }
+}
+#endif
+struct CompetitionFiltersMenu: View {
+    @Binding var selectedRegion: CompetitionRegionFilter
+    @Binding var selectedEvents: Set<CompetitionEventFilter>
+    @Binding var selectedYear: CompetitionYearFilter
+    @Binding var selectedStatus: CompetitionStatusFilter
+    let availablePastYears: [Int]
+    @Binding var showsTopCubers: Bool
+    let appLanguage: String
+    @State private var showsRegionPicker = false
+    @State private var showsTopCubersInfo = false
+    @State private var areEventIconsReady = CompetitionEventIconFont.isAvailable
+
+    var body: some View {
+        Menu {
+            Button {
+                showsRegionPicker = true
+            } label: {
+                Text("\(text("competitions.filter.region_country")): \(selectedRegion.localizedTitle(languageCode: appLanguage))")
+            }
+
+            Menu(text("competitions.filter.event")) {
+                Button {
+                    selectedEvents = CompetitionEventFilter.selection(afterToggling: .all, in: selectedEvents)
+                } label: {
+                    CompetitionFilterOptionLabel(
+                        title: CompetitionEventFilter.all.localizedTitle(languageCode: appLanguage),
+                        isSelected: selectedEvents == Set(CompetitionEventFilter.selectableCases)
+                    )
+                }
+                Divider()
+                ForEach(CompetitionEventFilter.selectableCases) { event in
+                    Button {
+                        selectedEvents = CompetitionEventFilter.selection(afterToggling: event, in: selectedEvents)
+                    } label: {
+                        CompetitionFilterOptionLabel(
+                            title: event.localizedTitle(languageCode: appLanguage),
+                            isSelected: selectedEvents.contains(event),
+                            eventID: event.wcaEventID,
+                            areEventIconsReady: areEventIconsReady
+                        )
+                    }
+                }
+            }
+            .compatibleMenuActionDismissBehaviorDisabled()
+
+            Menu(text("competitions.filter.status")) {
+                Picker(text("competitions.filter.status"), selection: $selectedStatus) {
+                    ForEach(CompetitionStatusFilter.selectableCases) { status in
+                        Text(status.localizedTitle(languageCode: appLanguage)).tag(status)
+                    }
+                }
+            }
+            if selectedStatus == .past {
+                Menu(text("competitions.filter.year")) {
+                    Picker(text("competitions.filter.year"), selection: $selectedYear) {
+                        Text(CompetitionYearFilter.all.localizedTitle(languageCode: appLanguage))
+                            .tag(CompetitionYearFilter.all)
+                        ForEach(pastYearOptions, id: \.self) { year in
+                            Text(String(year)).tag(CompetitionYearFilter.year(year))
+                        }
+                    }
+                }
+            }
+            Divider()
+            Toggle(text("competitions.filter.show_top_cubers"), isOn: $showsTopCubers)
+                .accessibilityIdentifier("competition-filter-top-cubers")
+            Button {
+                showsTopCubersInfo = true
+            } label: {
+                Label(text("competitions.filter.show_top_cubers"), systemImage: "info.circle")
+            }
+            .accessibilityIdentifier("competition-filter-top-cubers-info")
+        } label: {
+            Image(systemName: "line.3.horizontal.decrease")
+        }
+        .accessibilityLabel(text("competitions.filter"))
+        .accessibilityIdentifier("competition-filter")
+        .sheet(isPresented: $showsRegionPicker) {
+            CompetitionRegionPickerView(selectedRegion: $selectedRegion, appLanguage: appLanguage)
+        }
+        .alert(text("competitions.filter.show_top_cubers"), isPresented: $showsTopCubersInfo) {
+            Button(text("common.done"), role: .cancel) { }
+        } message: {
+            Text(text("competitions.filter.top_cubers_info"))
+        }
+        .task {
+            areEventIconsReady = CompetitionEventIconFont.ensureRegistered()
+            await CompetitionService.warmRecognizedCountriesCache()
+        }
+    }
+
+    private var pastYearOptions: [Int] {
+        var years = Set(availablePastYears)
+        if case .year(let year) = selectedYear { years.insert(year) }
+        return years.sorted(by: >)
+    }
+
+    private func text(_ key: String) -> String {
+        localizedCompetitionStringInView(key: key, languageCode: appLanguage)
+    }
+}
+
+extension CompetitionEventFilter {
+    // Preserve the original nonempty multi-selection and All semantics.
+    static func selection(afterToggling event: Self, in selected: Set<Self>) -> Set<Self> {
+        let all = Set(selectableCases)
+        if event == .all { return all }
+        if selected == all { return [event] }
+        var result = selected
+        if result.contains(event) { result.remove(event) } else { result.insert(event) }
+        return result.isEmpty ? all : result
+    }
+}
+
 struct CompetitionFiltersPopover: View {
+    #if DEBUG
+    @Environment(\.competitionFilterIsolation) private var isolation
+    #endif
+    private var contentAnimation: Animation? {
+        #if DEBUG
+        if isolation.contains("supplementary-animation") { return nil }
+        #endif
+        return .easeInOut(duration: 0.22)
+    }
     @Binding var selectedRegion: CompetitionRegionFilter
     @Binding var selectedEvents: Set<CompetitionEventFilter>
     @Binding var selectedYear: CompetitionYearFilter
@@ -30,6 +164,7 @@ struct CompetitionFiltersPopover: View {
                         .background(.secondary.opacity(0.12), in: Circle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("competition-filter-close")
             }
 
             CompetitionFilterButtonRow(
@@ -116,7 +251,7 @@ struct CompetitionFiltersPopover: View {
         .padding(.horizontal, 18)
         .padding(.vertical, 18)
         .frame(width: 290)
-        .animation(.easeInOut(duration: 0.22), value: selectedStatus)
+        .animation(contentAnimation, value: selectedStatus)
         .task {
             areEventIconsReady = CompetitionEventIconFont.ensureRegistered()
             await CompetitionService.warmRecognizedCountriesCache()
@@ -174,6 +309,7 @@ private struct CompetitionStatusFilterControl: View {
                             }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(selection == status ? .isSelected : [])
                 }
             }
             .padding(3)
@@ -310,25 +446,7 @@ private struct CompetitionEventMultiSelectSection: View {
     }
 
     private func toggle(_ event: CompetitionEventFilter) {
-        if event == .all {
-            selectedEvents = allSelectableEvents
-            return
-        }
-
-        if allEventsSelected {
-            selectedEvents = [event]
-            return
-        }
-
-        if selectedEvents.contains(event) {
-            if selectedEvents.count == 1 {
-                selectedEvents = allSelectableEvents
-            } else {
-                selectedEvents.remove(event)
-            }
-        } else {
-            selectedEvents.insert(event)
-        }
+        selectedEvents = CompetitionEventFilter.selection(afterToggling: event, in: selectedEvents)
     }
 }
 
@@ -398,7 +516,24 @@ private struct CompetitionFilterMenuRow<MenuContent: View>: View {
 
 private extension View {
     func competitionFilterControlSurface() -> some View {
-        background(
+        modifier(CompetitionFilterControlSurface())
+    }
+}
+
+private struct CompetitionFilterControlSurface: ViewModifier {
+    #if DEBUG
+    @Environment(\.competitionFilterIsolation) private var isolation
+    #endif
+    @ViewBuilder func body(content: Content) -> some View {
+        #if DEBUG
+        if isolation.contains("visual-layers") { content }
+        else { decorated(content) }
+        #else
+        decorated(content)
+        #endif
+    }
+    private func decorated(_ content: Content) -> some View {
+        content.background(
             Color(uiColor: .secondarySystemFill).opacity(0.48),
             in: RoundedRectangle(cornerRadius: 12, style: .continuous)
         )

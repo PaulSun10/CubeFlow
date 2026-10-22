@@ -202,6 +202,7 @@ struct CompetitionCalendarImportSheet: View {
     @State private var selectedEvent: CompetitionCalendarEvent?
     @State private var layout = CompetitionCalendarLayoutValues()
 #if DEBUG
+    @ObservedObject private var debugStore = CompetitionDebugStore.shared
     @State private var showsLayoutDebugger = false
 #endif
 
@@ -276,6 +277,7 @@ struct CompetitionCalendarImportSheet: View {
             CompetitionCalendarShareSheet(activityItems: [calendarImport.fileURL])
         }
 #if DEBUG
+        .onChange(of: debugStore.enabled) { if !$0 { showsLayoutDebugger = false } }
         .sheet(isPresented: $showsLayoutDebugger) {
             CompetitionCalendarLayoutDebugger(values: $layout)
         }
@@ -905,7 +907,7 @@ private struct CompetitionCalendarToolbarConfigurator: UIViewControllerRepresent
             )
             debugItem.tintColor = .systemOrange
             debugItem.accessibilityLabel = "Calendar layout debugger"
-            leftItems.append(debugItem)
+            if CompetitionDebugStore.shared.enabled { leftItems.append(debugItem) }
 #endif
 
             navigationItem.setLeftBarButtonItems(leftItems, animated: false)

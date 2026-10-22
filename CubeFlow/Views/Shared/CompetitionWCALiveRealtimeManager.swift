@@ -22,6 +22,11 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     @Published private(set) var round: CompetitionWCALiveRound
     @Published private(set) var state: CompetitionWCALiveRealtimeState = .idle
     @Published private(set) var roundContentState: CompetitionWCALiveRoundContentState
+    @Published private(set) var hasCurrentSnapshot = false
+    private let snapshotLoader: @Sendable (CompetitionWCALiveRound, String) async -> CompetitionWCALiveRound?
+    private let socketFactory: @Sendable (URLRequest) -> any CompetitionWCALiveSocket
+    private let monitorsNetwork: Bool
+    private let snapshotSink: ((CompetitionWCALiveRound) -> Void)?
 
     private static let socketURL = URL(
         string: "wss://live.worldcubeassociation.org/socket/websocket?vsn=2.0.0"
@@ -50,15 +55,26 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     private var pollingTask: Task<Void, Never>?
     private var resyncTask: Task<Void, Never>?
     private var handshakeTimeoutTask: Task<Void, Never>?
-    private var webSocketTask: URLSessionWebSocketTask?
+    private var webSocketTask: (any CompetitionWCALiveSocket)?
 
     private var pathMonitor: NWPathMonitor?
     private let pathMonitorQueue = DispatchQueue(label: "com.cubeflow.wca-live-network")
 
-    init(round: CompetitionWCALiveRound, languageCode: String) {
+    private var hasKnownSnapshot: Bool
+    init(round: CompetitionWCALiveRound, languageCode: String, hasCachedSnapshot: Bool = false,
+         monitorsNetwork: Bool = true,
+         snapshotLoader: @escaping @Sendable (CompetitionWCALiveRound, String) async -> CompetitionWCALiveRound? = {
+             await CompetitionService.fetchCompetitionWCALiveRoundSnapshot(round: $0, languageCode: $1)
+         },
+         socketFactory: @escaping @Sendable (URLRequest) -> any CompetitionWCALiveSocket = {
+             URLSession.shared.webSocketTask(with: $0)
+         }, snapshotSink: ((CompetitionWCALiveRound) -> Void)? = nil) {
+        self.monitorsNetwork = monitorsNetwork; self.snapshotLoader = snapshotLoader
+        self.socketFactory = socketFactory; self.snapshotSink = snapshotSink
         self.round = round
         self.languageCode = languageCode
-        roundContentState = round.results.isEmpty ? .loading : .loaded
+        hasKnownSnapshot = hasCachedSnapshot || !round.results.isEmpty
+        roundContentState = hasKnownSnapshot ? .loaded : .loading
     }
 
     deinit {
@@ -78,6 +94,8 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
         if changedRound {
             stopTransport(resetState: false)
             self.round = round
+            hasCurrentSnapshot = false
+            hasKnownSnapshot = !round.results.isEmpty
             roundContentState = round.results.isEmpty ? .loading : .loaded
             reconnectFailureCount = 0
             updateRevision = 0
@@ -96,7 +114,8 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     func start() {
         guard !isRunning else { return }
         isRunning = true
-        startPathMonitor()
+        hasCurrentSnapshot = false
+        if monitorsNetwork { startPathMonitor() }
         loadCurrentRoundSnapshot()
 
         guard shouldSubscribe else {
@@ -109,6 +128,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     func stop() {
         guard isRunning else { return }
         isRunning = false
+        hasCurrentSnapshot = false
         stopTransport(resetState: true)
         pathMonitor?.cancel()
         pathMonitor = nil
@@ -117,6 +137,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     func suspend() {
         guard isForeground else { return }
         isForeground = false
+        hasCurrentSnapshot = false
         stopTransport(resetState: true)
     }
 
@@ -173,7 +194,9 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
                 state = .idle
             }
         } else {
+            hasCurrentSnapshot = false
             state = .offline
+            snapshotRequestID = UUID()
             closeSocket()
             connectionTask?.cancel()
             connectionTask = nil
@@ -217,6 +240,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
                 return
             } catch {
                 guard isCurrentRun(runID) else { return }
+                hasCurrentSnapshot = false
                 closeSocket()
                 reconnectFailureCount += 1
 
@@ -242,7 +266,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
             "https://live.worldcubeassociation.org",
             forHTTPHeaderField: "Origin"
         )
-        let socket = URLSession.shared.webSocketTask(with: request)
+        let socket = socketFactory(request)
         webSocketTask = socket
         nextReference = 1
         joinReference = nil
@@ -312,11 +336,12 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
 
     private func waitForSuccessfulReply(
         reference: String,
-        socket: URLSessionWebSocketTask,
+        socket: any CompetitionWCALiveSocket,
         runID: UUID
     ) async throws -> [String: Any] {
         while isCurrentRun(runID) {
             let message = try await receive(over: socket)
+            guard isCurrentRun(runID) else { throw CancellationError() }
             if message.event == "phx_reply", message.reference == reference {
                 guard message.payload["status"] as? String == "ok" else {
                     throw RealtimeError.serverRejectedRequest
@@ -329,6 +354,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     }
 
     private func handle(_ message: PhoenixMessage, runID: UUID) throws {
+        guard isCurrentRun(runID) else { return }
         if message.topic == "phoenix",
            message.event == "phx_reply",
            message.reference == pendingHeartbeatReference {
@@ -355,7 +381,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
         }
     }
 
-    private func startHeartbeat(socket: URLSessionWebSocketTask, runID: UUID) {
+    private func startHeartbeat(socket: any CompetitionWCALiveSocket, runID: UUID) {
         heartbeatTask?.cancel()
         heartbeatTask = Task { [weak self, weak socket] in
             while !Task.isCancelled {
@@ -398,13 +424,13 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
         let currentLanguageCode = languageCode
         let requestID = UUID()
         snapshotRequestID = requestID
-        if currentRound.results.isEmpty {
+        if !hasKnownSnapshot {
             roundContentState = .loading
         }
+        let loader = snapshotLoader
         resyncTask = Task { [weak self] in
-            let snapshot = await CompetitionService.fetchCompetitionWCALiveRoundSnapshot(
-                round: currentRound,
-                languageCode: currentLanguageCode
+            let snapshot = await loader(
+                currentRound, currentLanguageCode
             )
             guard let self,
                   self.isRunning,
@@ -418,7 +444,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
             }
             guard self.updateRevision == revisionBeforeRequest else { return }
             guard let snapshot else {
-                if self.round.results.isEmpty {
+                if !self.hasKnownSnapshot {
                     self.roundContentState = .failed
                 }
                 return
@@ -436,10 +462,10 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
                 if self.isNetworkAvailable {
                     let currentRound = self.round
                     let currentLanguageCode = self.languageCode
-                    if let snapshot = await CompetitionService.fetchCompetitionWCALiveRoundSnapshot(
-                        round: currentRound,
-                        languageCode: currentLanguageCode
-                    ), self.isCurrentRun(runID), self.state != .connected {
+                    let revision = self.updateRevision, request = self.snapshotRequestID
+                    if let snapshot = await self.snapshotLoader(currentRound, currentLanguageCode),
+                       !Task.isCancelled, self.isCurrentRun(runID), self.state != .connected,
+                       self.updateRevision == revision, self.snapshotRequestID == request {
                         self.apply(snapshot)
                         self.state = .pollingFallback
                     }
@@ -462,17 +488,29 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     }
 
     private func apply(_ updatedRound: CompetitionWCALiveRound) {
-        guard updatedRound.id == round.id else { return }
-        roundContentState = .loaded
-        guard updatedRound != round else { return }
-        round = updatedRound
+        guard updatedRound.id == round.id, updatedRound.eventID == round.eventID,
+              updatedRound.results.count <= 20_000,
+              Set(updatedRound.results.map(\.id)).count == updatedRound.results.count else { return }
+        // Even an identical authoritative update invalidates older in-flight HTTP.
         updateRevision += 1
+        hasKnownSnapshot = true
+        if roundContentState != .loaded { roundContentState = .loaded }
+        if !hasCurrentSnapshot { hasCurrentSnapshot = true }
+        if updatedRound != round { round = updatedRound }
+        snapshotSink?(updatedRound)
         if !shouldSubscribe {
             stopTransport(resetState: true)
         }
     }
 
+    func refresh() {
+        guard isRunning, isForeground else { return }
+        hasCurrentSnapshot = false
+        loadCurrentRoundSnapshot()
+    }
+
     private func stopTransport(resetState: Bool) {
+        snapshotRequestID = UUID()
         runID = UUID()
         connectionTask?.cancel()
         connectionTask = nil
@@ -503,7 +541,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
     }
 
     private func isCurrentRun(_ candidate: UUID) -> Bool {
-        isRunning && isForeground && candidate == runID && shouldSubscribe
+        isRunning && isForeground && isNetworkAvailable && candidate == runID && shouldSubscribe
     }
 
     private func makeReference() -> String {
@@ -513,7 +551,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
 
     private func send(
         _ message: PhoenixMessage,
-        over socket: URLSessionWebSocketTask
+        over socket: any CompetitionWCALiveSocket
     ) async throws {
         let data = try message.encoded()
         guard let text = String(data: data, encoding: .utf8) else {
@@ -522,7 +560,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
         try await socket.send(.string(text))
     }
 
-    private func receive(over socket: URLSessionWebSocketTask) async throws -> PhoenixMessage {
+    private func receive(over socket: any CompetitionWCALiveSocket) async throws -> PhoenixMessage {
         let message = try await socket.receive()
         let data: Data
         switch message {
@@ -598,6 +636,7 @@ final class CompetitionWCALiveRealtimeManager: ObservableObject {
           average
           person {
             id
+            wcaId
             name
             country { iso2 name }
           }
