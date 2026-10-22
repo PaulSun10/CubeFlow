@@ -477,6 +477,7 @@
 "timer.typing_save" = "保存";
 "timer.scramble_diagram" = "打乱图示";
 "timer.scramble_unavailable" = "TNoodle 不可用";
+"timer.next_scramble" = "下一条打乱";
 "inspection.speech.eight_seconds" = "八秒";
 "inspection.speech.twelve_seconds" = "十二秒";
 "inspection.speech.plus_two" = "+2";
@@ -2102,6 +2103,7 @@
 "smart_cube.my_devices" = "我的设备";
 "smart_cube.no_saved_devices" = "没有已保存的智能魔方";
 "smart_cube.nearby_devices" = "附近设备";
+"smart_cube.other_devices" = "其他设备";
 "smart_cube.device.model" = "型号";
 "smart_cube.device.original_name" = "原始设备名称";
 "smart_cube.device.rename" = "重命名";
@@ -2176,3 +2178,18 @@
 "algs.execution_alignment" = "对位";
 "algs.direction" = "方向";
 "settings.font_downloading" = "正在下载";
+
+
+"smart_cube.manage.title" = "管理智能魔方";
+
+"smart_cube.manage.reset" = "重置魔方状态";
+
+"smart_cube.manage.disconnect" = "断开连接";
+
+"smart_cube.manage.forget" = "忘记设备";
+
+"smart_cube.manage.forget_title" = "忘记此设备？";
+
+"smart_cube.manage.forget_message" = "从 CubeFlow 移除此设备及其偏好设置，历史成绩会保留。";
+
+"smart_cube.manage.disconnected" = "未连接";

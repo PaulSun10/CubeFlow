@@ -477,6 +477,7 @@
 "timer.typing_save" = "Save";
 "timer.scramble_diagram" = "Scramble Diagram";
 "timer.scramble_unavailable" = "TNoodle unavailable";
+"timer.next_scramble" = "Next Scramble";
 "inspection.speech.eight_seconds" = "8 seconds";
 "inspection.speech.twelve_seconds" = "12 seconds";
 "inspection.speech.plus_two" = "+2";
@@ -2141,6 +2142,7 @@
 "smart_cube.my_devices" = "My Devices";
 "smart_cube.no_saved_devices" = "No saved Smart Cubes";
 "smart_cube.nearby_devices" = "Nearby Devices";
+"smart_cube.other_devices" = "Other Devices";
 "smart_cube.device.model" = "Model";
 "smart_cube.device.original_name" = "Original Device Name";
 "smart_cube.device.rename" = "Rename";
@@ -2215,3 +2217,18 @@
 "algs.execution_alignment" = "Alignment";
 "algs.direction" = "Direction";
 "settings.font_downloading" = "Downloading";
+
+
+"smart_cube.manage.title" = "Manage Smart Cube";
+
+"smart_cube.manage.reset" = "Reset Cube State";
+
+"smart_cube.manage.disconnect" = "Disconnect";
+
+"smart_cube.manage.forget" = "Forget Device";
+
+"smart_cube.manage.forget_title" = "Forget this device?";
+
+"smart_cube.manage.forget_message" = "Remove this device and its preferences from CubeFlow. Historical solves are kept.";
+
+"smart_cube.manage.disconnected" = "Not connected";
