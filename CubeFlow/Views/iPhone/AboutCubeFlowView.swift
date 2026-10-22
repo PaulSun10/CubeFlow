@@ -203,16 +203,16 @@ private struct CubeFlowOpenSourceView: View {
 
             openSourceSection(
                 title: "CubeFlow",
-                license: "MIT",
+                license: "GPL-3.0-only",
                 detailKey: "about.open_source_cubeflow",
                 url: "https://github.com/PaulSun10/CubeFlow"
             )
 
             openSourceSection(
-                title: "TNoodle",
-                license: "AGPL-3.0",
+                title: "TNoodle-lib native (CubeLabsNZ / WCA)",
+                license: "GPLv3",
                 detailKey: "about.open_source_tnoodle",
-                url: "https://github.com/thewca/tnoodle"
+                url: "https://github.com/CubeLabsNZ/tnoodle-lib-native-v1/tree/e50c528feb8220b99eb66575a748e88391300f1f"
             )
 
             openSourceSection(

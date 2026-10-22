@@ -3,6 +3,26 @@
 CubeFlow is a speedcubing companion app built with SwiftUI and SwiftData.
 It combines a competition-style timer, training resources, analytics, and WCA-connected tools in one iOS app.
 
+## License and Third-Party Materials
+
+Copyright (C) 2026 Paul Sun
+
+CubeFlow's first-party source code and documentation in this and future versions
+are licensed under **GPL-3.0-only**. See [LICENSE](LICENSE) for the complete GNU
+General Public License version 3 and [NOTICE.md](NOTICE.md) for scope and notices.
+This is version 3 only, not a grant to use later GPL versions.
+
+Third-party code, fonts, images, data, and other materials retain their respective
+licenses; the root license does not relicense them or resolve unknown permissions.
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Previously distributed
+MIT-licensed versions retain their existing grants; the original notice is
+preserved in [LICENSES/CubeFlow-MIT-historical.txt](LICENSES/CubeFlow-MIT-historical.txt).
+
+The embedded TNoodle native runtime's source inventory and delivery limitations
+are documented in [docs/TNOODLE-SOURCE.md](docs/TNOODLE-SOURCE.md). This migration
+does **not** by itself clear binary or resource redistribution. Outstanding public
+distribution gates are recorded in [docs/licensing-release-gate.md](docs/licensing-release-gate.md).
+
 ## What CubeFlow Does
 
 CubeFlow helps cubers practice, track improvement, and stay connected to official competition data.
