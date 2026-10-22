@@ -1,0 +1,71 @@
+TNoodle native runtime: verified release provenance and license inventory
+
+Vendor image SHA-256:
+35ca5611930688d63e6e43b9e2a5d49d6c9dec08ca54a98a136645ce454b4103
+
+Native binary origin:
+  https://github.com/CubeLabsNZ/tnoodle-lib-native-v1/releases/tag/v1.0
+  Release published: 2023-02-24
+  Source revision: e50c528feb8220b99eb66575a748e88391300f1f
+  Source archive:
+  https://github.com/CubeLabsNZ/tnoodle-lib-native-v1/archive/e50c528feb8220b99eb66575a748e88391300f1f.zip
+  Asset: TNoodleLibNative.xcframework.tar.zst, ios-arm64/lib-scrambles.dylib
+  Upstream image SHA-256:
+  8072a49418150b0516ed829a03820544dd6b5568d840754c2a9e1f7f56db7fff
+
+The vendor image matches that release after removing its local ad-hoc
+signature and normalizing only the residual __LINKEDIT segment vmsize.
+Without the signature, the only differing bytes are at offsets 0x6c1/0x6c2:
+__LINKEDIT.vmsize is 147456 rather than the release's 49152. Normalizing
+that field on an ANALYSIS COPY produces exactly the upstream SHA-256.
+Loaded section bytes and exported symbols/addresses match. The original
+vendor image is not modified. This establishes release lineage, not a
+reproducible-build attestation or identification of the original signer.
+
+The image embeds Maven metadata identifying these components:
+  org.worldcubeassociation.tnoodle:scrambler-min2phase:0.18.1
+  org.worldcubeassociation.tnoodle:scrambler-threephase:0.18.1
+  org.worldcubeassociation.tnoodle:scrambler-sq12phase:0.18.1
+  org.worldcubeassociation.tnoodle:lib-svglite:0.18.1
+Each embedded POM declares GPL-v3.0 and identifies the WCA Software Team.
+The four embedded POMs exactly match the native fork's source, including its
+parent/compiler changes relative to Maven Central. The native wrapper Main
+is in scrambles/src/main/java/org/worldcubeassociation/tnoodle/scrambles/
+PuzzleRegistry.java, not a separate Main.java. The fork supplies its Maven
+POMs, native-image/linker flags, C entry points and puzzle implementation.
+Its license is GPLv3; see TNoodle-GPL-3.0.txt. Original TNoodle/WCA and
+Shuang Chen copyright/license notices in the source must also be retained
+in any corresponding-source delivery. The earlier WCA v0.18.1 tag alone
+is not a substitute for this native fork's wrapper and build changes.
+
+The native fork pins gluonfx-maven-plugin 1.0.16, which depends on Substrate
+0.0.56. Its default Java static SDK is 18-ea+prep18-8 (overridable). An
+original build log or checksummed static-SDK inventory has not been found;
+the default must not be asserted to be the exact input used by the builder.
+
+Embedded runtime metadata identifies GraalVM 22.1.0.1 Java 17 CE, Java 17.0.3,
+and IOS_AARCH64. It matches Gluon's published iOS toolchain family:
+https://github.com/gluonhq/graal/releases/tag/gluon-22.1.0.1-Final
+Source tag commit: 08e1c57bc6b6de932b0faed2f49b21a1a54a39fe
+Graal SubstrateVM's source license is GPLv2 with Classpath Exception;
+Graal SDK's source license is UPL 1.0. The corresponding source license texts
+are included as Graal-SubstrateVM-GPL-2-Classpath.txt and Graal-SDK-UPL-1.0.txt.
+OpenJDK runtime source carries GPLv2 with Classpath Exception notices.
+These references do not authenticate all linked JDK static libraries or their
+exact patches. Build-time compiler components and linked runtime portions
+must be distinguished in a complete corresponding-source inventory.
+
+Other embedded resources identify shaded JavaCPP 1.5.2, LLVM metadata and
+jcodings 1.0.56-SNAPSHOT (MIT metadata). Resource presence does not prove which
+of their classes execute or establish their complete redistribution materials.
+
+This notice preserves verified attribution and license evidence. It is NOT a
+complete corresponding-source offer, supply-chain attestation, permission to
+relicense upstream code, or clearance for App Store/TestFlight distribution.
+CubeFlow's own LICENSE is not changed by this notice. Before distribution,
+complete the linked static-SDK source/license inventory and an applicable
+corresponding-source delivery mechanism. Obtain licensor/legal review of
+GPLv3 obligations for the combined application and Apple distribution terms;
+availability of this fork does not itself grant an exception. If the missing
+static build inputs cannot be recovered, a separately authorized reproducible
+build and algorithm-equivalence validation can establish a complete baseline.

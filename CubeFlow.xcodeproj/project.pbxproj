@@ -250,29 +250,13 @@
 			alwaysOutOfDate = 1;
 			inputPaths = (
 				"$(PROJECT_DIR)/Vendor/TNoodleLibNative.xcframework/ios-arm64/lib-scrambles.dylib",
+				"$(PROJECT_DIR)/Config/TNoodleRuntime/Info.plist",
+				"$(PROJECT_DIR)/Scripts/package-tnoodle-framework.sh",
 			);
 			name = "Sign TNoodle Runtime";
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/lib-scrambles.dylib",
-			);
 			shellPath = /bin/sh;
 			shellScript = (
-				"set -eu",
-				"if [ $PLATFORM_NAME != iphoneos ]; then",
-				"  exit 0",
-				"fi",
-				"APP_DYLIB_PATH=${TARGET_BUILD_DIR}/${WRAPPER_NAME}/lib-scrambles.dylib",
-				"SOURCE_DYLIB=${PROJECT_DIR}/Vendor/TNoodleLibNative.xcframework/ios-arm64/lib-scrambles.dylib",
-				"if [ ! -f $SOURCE_DYLIB ]; then",
-				"  echo Missing TNoodle runtime: $SOURCE_DYLIB >&2",
-				"  exit 1",
-				"fi",
-				"mkdir -p ${TARGET_BUILD_DIR}/${WRAPPER_NAME}",
-				"/bin/cp -f $SOURCE_DYLIB $APP_DYLIB_PATH",
-				"if [ -z ${EXPANDED_CODE_SIGN_IDENTITY:-} ] || [ ${CODE_SIGNING_ALLOWED:-NO} = NO ]; then",
-				"  exit 0",
-				"fi",
-				"/usr/bin/codesign --force --sign $EXPANDED_CODE_SIGN_IDENTITY --preserve-metadata=identifier,entitlements $APP_DYLIB_PATH",
+				"/bin/sh \"${PROJECT_DIR}/Scripts/package-tnoodle-framework.sh\"",
 				"",
 			);
 		};

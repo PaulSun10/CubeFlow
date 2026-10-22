@@ -8,4 +8,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)prewarm;
 @end
 
+@interface TNoodleNativeBridge (FrameworkLocation)
++ (nullable NSURL *)runtimeLibraryURLInBundle:(NSBundle *)bundle NS_SWIFT_NAME(runtimeLibraryURL(in:));
+@end
+
 NS_ASSUME_NONNULL_END

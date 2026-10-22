@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-22",
+  "scope": "Read-only binary/source provenance and privacy analysis; no runtime execution claim",
+  "binary": {
+    "path": "Vendor/TNoodleLibNative.xcframework/ios-arm64/lib-scrambles.dylib",
+    "sha256": "35ca5611930688d63e6e43b9e2a5d49d6c9dec08ca54a98a136645ce454b4103",
+    "architecture": "arm64 MH_DYLIB",
+    "uuid": "D2D6B149-54E0-319A-BAFA-6A8A55C0AA73",
+    "minimum_ios": "11.0",
+    "recorded_sdk": "16.2",
+    "graal_metadata": "GraalVM 22.1.0.1 Java 17 CE; Java 17.0.3; IOS_AARCH64",
+    "release_product": "CubeFlow.app/Frameworks/TNoodleRuntime.framework/TNoodleRuntime",
+    "vendor_modified": false
+  },
+  "origin": {
+    "release": "https://github.com/CubeLabsNZ/tnoodle-lib-native-v1/releases/tag/v1.0",
+    "release_date": "2023-02-24T02:15:55Z",
+    "revision": "e50c528feb8220b99eb66575a748e88391300f1f",
+    "asset": "TNoodleLibNative.xcframework.tar.zst",
+    "release_image_sha256": "8072a49418150b0516ed829a03820544dd6b5568d840754c2a9e1f7f56db7fff",
+    "comparison": "On an analysis copy only: remove local ad-hoc signature; normalize __LINKEDIT.vmsize at 0x6c0 from 147456 to 49152; then the entire image is byte-identical to the release image",
+    "remaining_byte_differences_after_signature_removal": ["0x6c1", "0x6c2"],
+    "loaded_sections_and_exports_identical": true,
+    "source": "https://github.com/CubeLabsNZ/tnoodle-lib-native-v1/tree/e50c528feb8220b99eb66575a748e88391300f1f",
+    "archived_head": "a5e01fc570494bbe10adffb37f29c1f51d15777b",
+    "tag_to_head_changes": ["README.md only"],
+    "main": "scrambles/src/main/java/org/worldcubeassociation/tnoodle/scrambles/PuzzleRegistry.java: class Main",
+    "embedded_poms_byte_match": ["min2phase", "threephase", "sq12phase", "svglite"],
+    "gluon_plugin": "1.0.16",
+    "substrate": "0.0.56",
+    "default_static_jdk": "18-ea+prep18-8; overridable via gluonfx.javaStaticSdkVersion; actual original input not attested",
+    "graal_source": "https://github.com/gluonhq/graal/tree/08e1c57bc6b6de932b0faed2f49b21a1a54a39fe",
+    "limits": "Release lineage is verified. Original CI logs, static-SDK archive checksum, complete linked-source inventory and a reproducible-build attestation were not recovered."
+  },
+  "privacy_apis": [
+    {
+      "api": "lstat",
+      "origin": "OpenJDK/Gluon static JNI timezone support",
+      "callsite": "0x5ca11c",
+      "evidence": "Argument is /etc/localtime; reads st_mode and follows symlink via readlink; matches TimeZone_md.c getPlatformTimeZoneID",
+      "category": "FileTimestamp",
+      "reason_status": "C617.1 cannot be assigned to this system path; no currently listed reason established",
+      "runtime_phase_observed": false
+    },
+    {
+      "api": "stat",
+      "origin": "OpenJDK/Gluon timezone and UnixFileSystem native support",
+      "callsites": ["0x5ca704", "0x5ca9e8"],
+      "evidence": "Timezone file matching reads type/size; UnixFileSystem boolean-attribute path tests S_IFDIR/S_IFREG. Timestamp-field access is not demonstrated by these sites.",
+      "category": "FileTimestamp",
+      "reason_status": "General file-type/size use does not prove app-container scope; C617.1 not assigned to the SDK",
+      "runtime_phase_observed": false
+    },
+    {
+      "api": "fstat",
+      "origin": "OpenJDK/Gluon timezone and NIO FileDispatcherImpl support",
+      "callsites": ["0x5ca270", "0x5ce254", "0x5cb5b8", "0x5cb9f8", "0x5cbb34"],
+      "evidence": "Timezone path reads file size; 0x5ce254 reads st_size and matches FileDispatcherImpl.size0. All callers/path scopes are not proven.",
+      "category": "FileTimestamp",
+      "reason_status": "C617.1 only if actual callers are within approved app-owned containers; timezone system-file path is not covered",
+      "runtime_phase_observed": false
+    },
+    {
+      "api": "fstatvfs",
+      "origin": "OpenJDK/Gluon NIO FileDispatcherImpl.setDirect0",
+      "callsite": "0x5ce2f8",
+      "evidence": "Follows fcntl F_NOCACHE; reads only f_frsize at +8 for direct-I/O alignment; error text DirectIO setup failed. No free-capacity comparison is shown.",
+      "category": "DiskSpace",
+      "reason_status": "E174.1 is not supported by block-alignment purpose; remove unused native path in an authorized source rebuild or obtain Apple guidance/new-reason approval",
+      "runtime_phase_observed": false
+    },
+    {
+      "api": "mach_absolute_time",
+      "origin": "Gluon/Graal Darwin java.lang.System.nanoTime substitution",
+      "entry": "0x1e0b90",
+      "indirect_calls": ["0x1e0bc0", "0x1e0bf4"],
+      "bind_slot": "0x23f8a18",
+      "evidence": "fastTime branch, mach_timebase_info and scale conversion match pinned DarwinSubstitutions.java. TNoodle Puzzle.java uses new Random(); JDK17 Random() invokes nanoTime for seeding, not elapsed timing. Actual compiled higher callers and initialization phase remain unobserved.",
+      "category": "SystemBootTime",
+      "reason_status": "35F9.1 cannot be assigned to all uses merely because the app has a timer; seed purpose has no established approved reason",
+      "runtime_phase_observed": false
+    }
+  ],
+  "privacy_sources": {
+    "apple_categories_and_reasons": "https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype",
+    "apple_manifest_scope": "https://developer.apple.com/documentation/bundleresources/adding-a-privacy-manifest-to-your-app-or-third-party-sdk",
+    "apple_listed_sdks": "https://developer.apple.com/support/third-party-SDK-requirements/",
+    "jdk_function_reference": "https://github.com/openjdk/jdk17u/tree/jdk-17.0.3-ga/src/java.base",
+    "exact_static_jdk_revision_limit": "Matching function behavior is supported by disassembly; the Java static SDK version is distinct from the Graal host Java version and is not authenticated by it",
+    "app_manifest_change": "None; existing CA92.1, C617.1, 35F9.1/3D61.1 preserved",
+    "sdk_manifest": "Not added: no speculative reasons. Packager still warns and supports an audited future Config/TNoodleRuntime/PrivacyInfo.xcprivacy.",
+    "sdk_signature": "TNoodle/Graal not named on Apple's listed-SDK producer-signature requirement; ordinary embedded-framework/app signing still required",
+    "next_evidence": "Separate authorization for cold signed runtime tracing of known module-relative callsites, with sanitized caller/path-class/phase evidence. Alternatively obtain builder reachability/symbol and static-SDK inputs. If incompatible purposes remain reachable, pursue Apple reason guidance or an authorized source rebuild, not blanket declarations."
+  },
+  "licenses": {
+    "native_fork_and_tnoodle": "GPLv3; preserve source copyright notices; full license copied verbatim",
+    "graal_substratevm_and_openjdk": "GPLv2 with Classpath Exception for inspected runtime sources",
+    "graal_sdk": "UPL 1.0",
+    "embedded_metadata_only": ["shaded JavaCPP 1.5.2", "LLVM 9.0 metadata", "jcodings 1.0.56-SNAPSHOT MIT metadata"],
+    "metadata_limit": "Embedded Maven resources do not prove all classes execute or that build-time compiler dependencies are redistributed executable runtime components",
+    "decision": "Binary provenance resolved; distribution not cleared. Complete linked static-SDK source/license inventory and corresponding-source delivery. Obtain GPLv3 combined-work/Apple-terms review or applicable permission from the relevant rights holders; no licensing exception inferred.",
+    "source_offer": "Not represented as complete by the bundled notice"
+  },
+  "evidence_artifacts": "build/ui-release-blockers-oct22/research/ (binary match JSON, original release, pinned source ZIPs, POMs, runtime source, disassembly and Apple/WCA metadata)",
+  "post_build_change": "Only this evidence file and TNoodle-native-provenance.txt were changed after the single successful Release build; built notice therefore predates the user's origin clarification. No second build was run."
+}

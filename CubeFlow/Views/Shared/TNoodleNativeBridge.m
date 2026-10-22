@@ -2,6 +2,18 @@
 
 #import <TargetConditionals.h>
 
+@implementation TNoodleNativeBridge (FrameworkLocation)
++ (nullable NSURL *)runtimeLibraryURLInBundle:(NSBundle *)bundle {
+    NSURL *frameworks = bundle.privateFrameworksURL;
+    if (frameworks == nil) { return nil; }
+    NSURL *url = [frameworks URLByAppendingPathComponent:@"TNoodleRuntime.framework" isDirectory:YES];
+    NSBundle *framework = [NSBundle bundleWithURL:url];
+    NSURL *executable = framework.executableURL;
+    if (executable == nil || ![[NSFileManager defaultManager] fileExistsAtPath:executable.path]) { return nil; }
+    return executable;
+}
+@end
+
 #if TARGET_OS_SIMULATOR
 
 @implementation TNoodleNativeBridge
@@ -89,36 +101,17 @@ static NSString *tnoodleInitializationError = nil;
 + (BOOL)ensureInitialized {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSURL *bundleURL = NSBundle.mainBundle.bundleURL;
-        NSURL *frameworksURL = NSBundle.mainBundle.privateFrameworksURL;
-        NSURL *resourceURL = NSBundle.mainBundle.resourceURL;
-        NSArray<NSURL *> *candidateURLs = @[
-            [bundleURL URLByAppendingPathComponent:@"Frameworks/lib-scrambles.dylib"],
-            [frameworksURL URLByAppendingPathComponent:@"lib-scrambles.dylib"],
-            [resourceURL URLByAppendingPathComponent:@"lib-scrambles.dylib"],
-        ];
-
-        NSURL *libraryURL = nil;
-        for (NSURL *candidateURL in candidateURLs) {
-            if (candidateURL != nil && [[NSFileManager defaultManager] fileExistsAtPath:candidateURL.path]) {
-                libraryURL = candidateURL;
-                break;
-            }
-        }
-
+        NSURL *libraryURL = [self runtimeLibraryURLInBundle:NSBundle.mainBundle];
         if (libraryURL == nil) {
-            tnoodleInitializationError = @"TNoodle dylib was not embedded in the app bundle.";
+            tnoodleInitializationError = @"TNoodleRuntime.framework was not embedded correctly in the app bundle.";
             return;
         }
 
         tnoodleLibraryHandle = dlopen(libraryURL.fileSystemRepresentation, RTLD_NOW | RTLD_GLOBAL);
         if (tnoodleLibraryHandle == NULL) {
-            tnoodleLibraryHandle = dlopen("lib-scrambles.dylib", RTLD_NOW | RTLD_GLOBAL);
-            if (tnoodleLibraryHandle == NULL) {
-                const char *errorMessage = dlerror();
-                tnoodleInitializationError = errorMessage != NULL ? [NSString stringWithUTF8String:errorMessage] : @"Failed to load TNoodle dylib.";
-                return;
-            }
+            const char *errorMessage = dlerror();
+            tnoodleInitializationError = errorMessage != NULL ? [NSString stringWithUTF8String:errorMessage] : @"Failed to load TNoodle framework.";
+            return;
         }
 
         tnoodleCreateIsolate = (TNoodleCreateIsolateFunction)dlsym(tnoodleLibraryHandle, "graal_create_isolate");
