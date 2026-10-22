@@ -23,6 +23,9 @@ final class WCAAuthManager: NSObject, ObservableObject {
     private var authSession: WCAStoredAuthSession?
     private var webAuthenticationSession: ASWebAuthenticationSession?
     private var refreshTask: Task<WCAStoredAuthSession, Error>?
+    private var sessionRevision = UUID()
+    private var signInID: UUID?
+    private var pendingAuthorization: (attempt: WCAOAuthAttempt, continuation: CheckedContinuation<String, Error>)?
 
     private override init() {
         super.init()
@@ -31,33 +34,42 @@ final class WCAAuthManager: NSObject, ObservableObject {
     }
 
     func signIn() async throws {
+        guard !isSigningIn else { throw WCAAuthError.invalidAuthorizationURL }
+        let operationID = UUID()
+        signInID = operationID
         isSigningIn = true
-        defer { isSigningIn = false }
+        defer { if signInID == operationID { signInID = nil; isSigningIn = false } }
 
         let authorizationCode = try await requestAuthorizationCode(clientID: Self.clientID)
+        guard signInID == operationID, !Task.isCancelled else { throw WCAAuthError.cancelled }
         let session = try await exchangeAuthorizationCode(
             authorizationCode,
             clientID: Self.clientID,
             clientSecret: Self.clientSecret
         )
+        guard signInID == operationID, !Task.isCancelled else { throw WCAAuthError.cancelled }
         let fetchedProfile = try await fetchProfile(using: session.accessToken)
-
+        guard signInID == operationID, !Task.isCancelled else { throw WCAAuthError.cancelled }
+        try Self.storeAuthSession(session)
+        sessionRevision = UUID()
         authSession = session
         profile = fetchedProfile
 
-        try Self.storeAuthSession(session)
         Self.storeProfile(fetchedProfile)
     }
 
     func refreshProfile() async throws {
+        let revision = sessionRevision
         let authSession = try await validAuthSession()
 
         let fetchedProfile = try await fetchProfile(using: authSession.accessToken)
+        guard sessionRevision == revision, !Task.isCancelled else { throw WCAAuthError.cancelled }
         profile = fetchedProfile
         Self.storeProfile(fetchedProfile)
     }
 
     func authorizedRequest(for url: URL) async throws -> URLRequest {
+        guard WCAOAuthAttempt.permitsBearerToken(to: url) else { throw WCAAuthError.invalidProfileURL }
         let authSession = try await validAuthSession()
         var request = URLRequest(url: url)
         request.setValue("Bearer \(authSession.accessToken)", forHTTPHeaderField: "Authorization")
@@ -65,57 +77,82 @@ final class WCAAuthManager: NSObject, ObservableObject {
     }
 
     func signOut() {
+        invalidateAuthorizationWork()
         authSession = nil
         profile = nil
         Self.deleteAuthSession()
         Self.deleteProfile()
     }
+
+    private func invalidateAuthorizationWork() {
+        sessionRevision = UUID()
+        signInID = nil
+        isSigningIn = false
+        if let id = pendingAuthorization?.attempt.id { cancelAuthorization(id) }
+        refreshTask?.cancel()
+        refreshTask = nil
+    }
     private func requestAuthorizationCode(clientID: String) async throws -> String {
+        let attempt = try WCAOAuthAttempt()
         var components = URLComponents(string: "https://www.worldcubeassociation.org/oauth/authorize")
         components?.queryItems = [
             URLQueryItem(name: "client_id", value: clientID),
             URLQueryItem(name: "redirect_uri", value: Self.redirectURI),
             URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: "public")
+            URLQueryItem(name: "scope", value: "public"),
+            URLQueryItem(name: "state", value: attempt.state)
         ]
 
         guard let authorizationURL = components?.url else {
             throw WCAAuthError.invalidAuthorizationURL
         }
 
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+            guard !Task.isCancelled else { continuation.resume(throwing: WCAAuthError.cancelled); return }
+            pendingAuthorization = (attempt, continuation)
             let session = ASWebAuthenticationSession(
                 url: authorizationURL,
                 callbackURLScheme: Self.callbackScheme
-            ) { callbackURL, error in
-                if let authError = error as? ASWebAuthenticationSessionError,
-                   authError.code == .canceledLogin {
-                    continuation.resume(throwing: WCAAuthError.cancelled)
-                    return
-                }
-
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                guard
-                    let callbackURL,
-                    let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false),
-                    let code = components.queryItems?.first(where: { $0.name == "code" })?.value,
-                    !code.isEmpty
-                else {
-                    continuation.resume(throwing: WCAAuthError.missingAuthorizationCode)
-                    return
-                }
-
-                continuation.resume(returning: code)
+            ) { [weak self] callbackURL, error in
+                Task { @MainActor in self?.finishAuthorization(attempt.id, callback: callbackURL, error: error) }
             }
 
             session.presentationContextProvider = self
             session.prefersEphemeralWebBrowserSession = false
             webAuthenticationSession = session
-            session.start()
+            if !session.start() { finishAuthorization(attempt.id, callback: nil, error: WCAAuthError.invalidAuthorizationURL) }
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in self?.cancelAuthorization(attempt.id) }
+        }
+    }
+
+    private func cancelAuthorization(_ id: UUID) {
+        guard pendingAuthorization?.attempt.id == id else { return }
+        webAuthenticationSession?.cancel()
+        finishAuthorization(id, callback: nil, error: WCAAuthError.cancelled)
+    }
+
+    private func finishAuthorization(_ id: UUID, callback: URL?, error: Error?) {
+        guard var pending = pendingAuthorization, pending.attempt.id == id else { return }
+        pendingAuthorization = nil
+        webAuthenticationSession = nil
+        do {
+            if let error {
+                if (error as? ASWebAuthenticationSessionError)?.code == .canceledLogin {
+                    throw WCAAuthError.cancelled
+                }
+                if let authError = error as? WCAAuthError, case .cancelled = authError { throw WCAAuthError.cancelled }
+                throw WCAAuthError.invalidAuthorizationURL
+            }
+            guard let callback else { throw WCAAuthError.invalidAuthorizationURL }
+            let code = try pending.attempt.consume(callback, redirectURI: Self.redirectURI)
+            pending.continuation.resume(returning: code)
+        } catch WCAOAuthAttempt.Failure.denied {
+            pending.continuation.resume(throwing: WCAAuthError.cancelled)
+        } catch {
+            pending.continuation.resume(throwing: error as? WCAAuthError ?? WCAAuthError.invalidAuthorizationURL)
         }
     }
 
@@ -159,6 +196,7 @@ final class WCAAuthManager: NSObject, ObservableObject {
     }
 
     private func validAuthSession() async throws -> WCAStoredAuthSession {
+        let revision = sessionRevision
         guard var authSession else {
             throw WCAAuthError.notSignedIn
         }
@@ -172,9 +210,11 @@ final class WCAAuthManager: NSObject, ObservableObject {
                     refreshToken,
                     fallbackRefreshToken: authSession.refreshToken
                 )
-                self.authSession = authSession
+                guard sessionRevision == revision, !Task.isCancelled else { throw WCAAuthError.cancelled }
                 try Self.storeAuthSession(authSession)
+                self.authSession = authSession
             } catch let error as WCAAuthError where error.invalidatesStoredSession {
+                guard sessionRevision == revision else { throw WCAAuthError.cancelled }
                 signOut()
                 throw error
             }
@@ -198,7 +238,8 @@ final class WCAAuthManager: NSObject, ObservableObject {
             )
         }
         refreshTask = task
-        defer { refreshTask = nil }
+        let revision = sessionRevision
+        defer { if sessionRevision == revision { refreshTask = nil } }
         return try await task.value
     }
 
@@ -206,6 +247,12 @@ final class WCAAuthManager: NSObject, ObservableObject {
         _ refreshToken: String,
         fallbackRefreshToken: String?
     ) async throws -> WCAStoredAuthSession {
+        #if DEBUG
+        if let debugRefreshBarrier {
+            try await debugRefreshBarrier()
+            return WCAStoredAuthSession(accessToken: "fixture-access", refreshToken: "fixture-refresh", expiresAt: Date().addingTimeInterval(3600))
+        }
+        #endif
         guard let tokenURL = URL(string: "https://www.worldcubeassociation.org/oauth/token") else {
             throw WCAAuthError.invalidTokenURL
         }
@@ -326,16 +373,10 @@ final class WCAAuthManager: NSObject, ObservableObject {
     ) -> WCAAuthError {
         let httpStatus = (response as? HTTPURLResponse)?.statusCode
         let payload = try? JSONDecoder().decode(WCAOAuthErrorResponse.self, from: data)
-        let serverMessage = [payload?.error, payload?.errorDescription]
-            .compactMap { value in
-                guard let value, !value.isEmpty else { return nil }
-                return value
-            }
-            .joined(separator: ": ")
-
-        let detail = serverMessage.isEmpty
-            ? httpStatus.map { "HTTP \($0)" }
-            : serverMessage
+        // Provider descriptions may echo request fields; never surface tokens or credentials.
+        let safeCodes = ["invalid_grant", "invalid_client", "invalid_request", "unsupported_grant_type", "invalid_scope"]
+        let detail = (payload?.error).flatMap { safeCodes.contains($0) ? $0 : nil }
+            ?? httpStatus.map { "HTTP \($0)" }
 
         if invalidatesSession,
            let errorCode = payload?.error,
@@ -344,6 +385,20 @@ final class WCAAuthManager: NSObject, ObservableObject {
         }
         return .tokenExchangeFailed(detail)
     }
+
+    #if DEBUG
+    var debugRefreshBarrier: (() async throws -> Void)?
+    static func debugAuthorizationManager() -> WCAAuthManager { WCAAuthManager() }
+    func debugUseExpiredFixtureSession() {
+        authSession = WCAStoredAuthSession(accessToken: "fixture-expired", refreshToken: "fixture-refresh", expiresAt: .distantPast)
+    }
+    func debugCancelAuthorizationWork() { invalidateAuthorizationWork() }
+    func debugWaitForAuthorization(_ attempt: WCAOAuthAttempt) async throws -> String {
+        try await withCheckedThrowingContinuation { pendingAuthorization = (attempt, $0) }
+    }
+    func debugDeliverAuthorization(_ id: UUID, callback: URL?) { finishAuthorization(id, callback: callback, error: nil) }
+    var debugPendingAuthorizationID: UUID? { pendingAuthorization?.attempt.id }
+    #endif
 }
 
 extension WCAAuthManager: ASWebAuthenticationPresentationContextProviding {
