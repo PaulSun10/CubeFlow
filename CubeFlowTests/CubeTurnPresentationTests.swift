@@ -53,19 +53,59 @@ struct CubeTurnPresentationTests {
         #expect(engine.current?.move.target == second)
     }
 
-    @Test func recoveredBurstSkipsOlderPresentationAndConverges() throws {
+    @Test func recoveredBurstAnimatesEveryTurnAndConverges() throws {
         var engine = CubeTurnPresentation(facelets: solved)
         engine.tps = 1
+        var targets: [String] = []
         for (index, move) in ["R", "U", "F", "L", "D", "B", "R2", "U2", "F2", "L2", "D2", "B2"].enumerated() {
             let target = try #require(CubeLayerTurn(move)?.applying(to: engine.canonical, size: 3))
+            targets.append(target)
             engine.enqueue(move, target: target, timestamp: 0, now: Double(index) * 0.001)
-            #expect(engine.pending.count < CubeTurnPresentation.Policy.severeBacklog)
         }
-        #expect(engine.settled != solved)
-        for time in 1...8 { engine.advance(at: Double(time)) }
+        #expect(engine.settled == solved)
+        var rendered: [String] = []
+        while let animation = engine.current {
+            rendered.append(animation.move.target)
+            engine.advance(at: animation.startedAt + animation.duration + 0.001)
+        }
+        #expect(rendered == targets)
         #expect(engine.settled == engine.canonical)
         #expect(engine.pending.isEmpty)
         #expect(engine.current == nil)
+    }
+
+    @Test func sustainedFastInputDrainsWithoutDroppingAtTheOldSixTurnLimit() throws {
+        var engine = CubeTurnPresentation(facelets: solved)
+        var expected: [String] = [], rendered: [String] = []
+        for frame in 0..<360 {
+            let now = Double(frame) / 60
+            if frame < 180, frame % 3 == 0 {
+                let move = ["R", "U", "F'", "D2"][expected.count % 4]
+                let target = try #require(CubeLayerTurn(move)?.applying(to: engine.canonical, size: 3))
+                expected.append(target)
+                engine.enqueue(move, target: target, timestamp: now, now: now)
+            }
+            let previous = engine.current
+            engine.advance(at: now)
+            if let previous, previous.id != engine.current?.id { rendered.append(previous.move.target) }
+        }
+        #expect(rendered == expected)
+        #expect(engine.pending.isEmpty && engine.current == nil)
+        #expect(engine.settled == engine.canonical)
+    }
+
+    @Test func exceptionalFloodRemainsBoundedAndSubsequentMoveCanAnimate() throws {
+        var engine = CubeTurnPresentation(facelets: solved)
+        for index in 0...CubeTurnPresentation.Policy.maximumPendingTurns + 1 {
+            let move = index % 2 == 0 ? "R" : "U"
+            let target = try #require(CubeLayerTurn(move)?.applying(to: engine.canonical, size: 3))
+            engine.enqueue(move, target: target, timestamp: 0, now: 0)
+            #expect(engine.pending.count <= CubeTurnPresentation.Policy.maximumPendingTurns)
+        }
+        let target = try #require(CubeLayerTurn("F")?.applying(to: engine.canonical, size: 3))
+        engine.enqueue("F", target: target, timestamp: 1, now: 1)
+        #expect(engine.canonical == target)
+        #expect(engine.current != nil)
     }
 
     @Test func unlimitedAndResyncDiscardAnimation() throws {

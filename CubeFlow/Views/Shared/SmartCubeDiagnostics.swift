@@ -14,8 +14,38 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
     }
 
     private let lock = NSLock()
+    private var recordingEnabled = false
+    private var guidanceRecording = false
+    func setEnabled(_ value: Bool) {
+        lock.lock(); recordingEnabled = value
+        if !value { activeStart = nil }
+        lock.unlock()
+    }
+    var enabled: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return recordingEnabled || guidanceRecording
+    }
+    func recordGuidance(_ value: Bool) {
+        if !value { mark("guidance.capture-stop") }
+        lock.lock(); guidanceRecording = value; lock.unlock()
+        if value { mark("guidance.capture-start") }
+    }
+    var guidanceCount: Int {
+        lock.lock(); defer { lock.unlock() }; return guidanceEntries.count
+    }
+    func clearGuidance() {
+        lock.lock(); guidanceEntries.removeAll(keepingCapacity: true); transportCounts.removeAll(); lock.unlock()
+    }
     private let output = DispatchQueue(label: "CubeFlow.smart-cube-diagnostics", qos: .utility)
     private var entries: [Entry] = []
+    private var guidanceEntries: [Entry] = []
+    private var transportCounts: [String: UInt64] = [:]
+    private static let countedStages: Set<String> = [
+        "ble.rx", "parser.begin", "parser.end", "main.apply", "protocol.move", "canonical.publish", "timer.consume"
+    ]
+    private static let guidanceMoveStages: Set<String> = [
+        "protocol.move", "canonical.publish", "timer.consume", "coalesce.pending", "coalesce.flush", "coalesce.merge"
+    ]
     private var activeStart: TimeInterval?
     private var liveWaitPrintedAt: TimeInterval = 0
     private var lastReplacementLog: TimeInterval = 0
@@ -30,6 +60,7 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
         detail: String = "",
         deduplicationKey: String? = nil
     ) {
+        guard enabled else { return }
         let attempt = Self.shortID(attemptID)
         let device = Self.shortID(deviceID)
         let signature = "\(attempt)|\(device)|\(event)|\(detail)"
@@ -54,6 +85,7 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
         accepted: Bool,
         detail: String
     ) {
+        guard enabled else { return }
         let key = "\(event)|\(Self.shortID(attemptID))"
         lock.lock()
         let nextCount = (successfulMoveCounts[key] ?? 0) + 1
@@ -76,6 +108,7 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
     }
 
     func replacementDecision(_ detail: String, force: Bool = false) {
+        guard enabled else { return }
         let now = ProcessInfo.processInfo.systemUptime
         lock.lock()
         let shouldPrint = force || now - lastReplacementLog >= 0.5
@@ -85,6 +118,7 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
     }
 
     func guidance(_ detail: String, force: Bool = false) {
+        guard enabled else { return }
         let now = ProcessInfo.processInfo.systemUptime
         lock.lock()
         let shouldPrint = force || now - lastGuidanceLog >= 0.5
@@ -94,10 +128,19 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
     }
 
     func mark(_ stage: String, id: UUID? = nil, detail: String = "") {
+        guard enabled else { return }
         let now = ProcessInfo.processInfo.systemUptime
         lock.lock()
-        entries.append(Entry(uptime: now, stage: stage, id: id, detail: detail))
+        let entry = Entry(uptime: now, stage: stage, id: id, detail: detail)
+        if Self.countedStages.contains(stage) { transportCounts[stage, default: 0] &+= 1 }
+        entries.append(entry)
         if entries.count > 2048 { entries.removeFirst(entries.count - 2048) }
+        // Continuous gyro/packet traffic must not erase the move-to-guidance
+        // evidence before the user can navigate back and copy it.
+        if stage.hasPrefix("guidance.") || Self.guidanceMoveStages.contains(stage) {
+            guidanceEntries.append(entry)
+            if guidanceEntries.count > 2048 { guidanceEntries.removeFirst(guidanceEntries.count - 2048) }
+        }
         let shouldPrintWait = activeStart != nil
             && (stage == "history.gap" || stage == "history.retryExhausted")
             && now - liveWaitPrintedAt > 0.5
@@ -108,7 +151,37 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
         }
     }
 
+    func guidanceExport() -> String {
+        lock.lock()
+        let snapshot = guidanceEntries
+        let counts = transportCounts
+        lock.unlock()
+        // Correlate on export, not on the BLE/UI path. Source/target digests also
+        // survive the expected logical revision change when guidance is rebased.
+        var received: [String: TimeInterval] = [:]
+        let header = "# First column: monotonic system-uptime seconds (time since device boot); optional user-shared bug report. Transport counts since Clear Guidance Capture: "
+            + counts.keys.sorted().map { "\($0)=\(counts[$0]!)" }.joined(separator: " ")
+        let lines = snapshot.sorted { $0.uptime < $1.uptime }.suffix(2047).map { entry in
+            let fields = Dictionary(entry.detail.split(separator: " ").compactMap { field -> (String, String)? in
+                let pair = field.split(separator: "=", maxSplits: 1)
+                return pair.count == 2 ? (String(pair[0]), String(pair[1])) : nil
+            }, uniquingKeysWith: { _, latest in latest })
+            let epoch = entry.id.map { String($0.uuidString.prefix(8)) } ?? fields["epoch"] ?? "none"
+            var detail = entry.detail
+            if let source = fields["source"], let target = fields["target"] {
+                let key = "\(epoch)|\(source)|\(target)"
+                if entry.stage == "guidance.canonical-receipt" { received[key] = entry.uptime }
+                else if let start = received[key], ["guidance.candidate-arrived", "guidance.swiftui-update"].contains(entry.stage) {
+                    detail += " receiptElapsedMS=\((entry.uptime - start) * 1000)"
+                }
+            }
+            return "\(entry.uptime)\t\(epoch)\t\(entry.stage)\t\(detail)"
+        }
+        return ([header] + lines).joined(separator: "\n")
+    }
+
     func begin(_ move: SmartCubeMoveEvent) {
+        guard enabled else { return }
         lock.lock()
         activeStart = ProcessInfo.processInfo.systemUptime
         lock.unlock()
@@ -118,6 +191,7 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
     }
 
     func interrupted(_ reason: SmartCubeContinuityReason) {
+        guard enabled else { return }
         lock.lock()
         let wasActive = activeStart != nil
         activeStart = nil
@@ -129,6 +203,7 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
     }
 
     func finish(start: SmartCubeMoveEvent, end: SmartCubeMoveEvent?, recognizedAt: Date, storedSeconds: Double, displayedSeconds: Double) {
+        guard enabled else { return }
         lock.lock()
         let cutoff = (activeStart ?? ProcessInfo.processInfo.systemUptime) - 0.1
         let trace = entries.filter { $0.uptime >= cutoff }

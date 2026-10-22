@@ -447,6 +447,7 @@ struct SmartCubeScrambleProgress: Equatable {
     private(set) var completedTokenIndices: Set<Int> = []
     private(set) var highestVerifiedMoveCount = 0
     private(set) var isDeviated = false
+    private(set) var needsGuidanceSearch = false
     private var lastValidFacelets: String
     private var partialCompletionMoves: [Int: String] = [:]
     private var deviationTrail: DeviationTrail?
@@ -644,9 +645,25 @@ struct SmartCubeScrambleProgress: Equatable {
         deviationTrail?.moves ?? []
     }
 
+    var remainingGuidanceMoves: [String] {
+        tokens.indices.filter { !completedTokenIndices.contains($0) }
+            .map { partialCompletionMoves[$0] ?? tokens[$0] }
+    }
+
+    private func followsDisplayedGuidance(to facelets: String) -> Bool {
+        let current = deviationTrail?.faceletStates.last ?? lastValidFacelets
+        if current == facelets { return true }
+        guard !isDeviated, let move = remainingGuidanceMoves.first else { return false }
+        if SmartCubeBluetoothManager.facelets(current, applying: move) == facelets { return true }
+        return halfTurnQuarterTurns(for: move)?.contains {
+            SmartCubeBluetoothManager.facelets(current, applying: $0) == facelets
+        } ?? false
+    }
+
     mutating func breakContinuity(at facelets: String?) {
         deviationTrail = nil
         isDeviated = true
+        needsGuidanceSearch = puzzleSize == 3
         if let facelets {
             // A known checkpoint may establish a new starting state, never a
             // fictitious path through the missing moves.
@@ -660,7 +677,11 @@ struct SmartCubeScrambleProgress: Equatable {
     ) -> SmartCubeScrambleMatch {
         let previousFacelets = deviationTrail?.faceletStates.last ?? lastValidFacelets
         let previousWasDeviated = isDeviated
+        // A historical checkpoint or commuting token can still verify progress,
+        // but cannot certify the quality of the displayed route from this state.
+        if puzzleSize == 3, !followsDisplayedGuidance(to: facelets) { needsGuidanceSearch = true }
         let match = updateState(with: facelets)
+        if isComplete { needsGuidanceSearch = false }
 
         guard isDeviated else {
             deviationTrail = nil
@@ -730,6 +751,13 @@ struct SmartCubeScrambleProgress: Equatable {
             }
             completedTokenIndices = []
             return wasComplete ? .returned : .unchanged
+        }
+        if facelets == targetFacelets {
+            completedTokenIndices = Set(tokens.indices)
+            partialCompletionMoves = [:]
+            highestVerifiedMoveCount = tokens.count
+            recordCheckpoint(facelets)
+            return .completed
         }
         if let checkpoint = validCheckpoints[facelets] {
             let previous = verificationState
@@ -931,6 +959,14 @@ struct SmartCubeScrambleEpoch: Equatable {
         consumedCanonicalSequence = canonicalSequence
     }
 
+    mutating func rebaseGuidance(latestMoveID: UUID?, canonicalSequence: UInt64) {
+        guard let establishedAt else { return }
+        // A new route is not a new target/input epoch. A pending parsed or
+        // coalesced move may have been received before publication, but still
+        // follows the adopted source in canonical sequence order.
+        establish(at: establishedAt, latestMoveID: latestMoveID, canonicalSequence: canonicalSequence)
+    }
+
     mutating func reset() {
         consumedCanonicalSequence = 0
         establishedAt = nil
@@ -1012,6 +1048,7 @@ final class SmartCubeTimerPresentationStore {
 
     private(set) var snapshot: Snapshot?
     private let defaults: UserDefaults
+    private var validatedTarget: (scramble: String, facelets: String)?
 
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
@@ -1029,13 +1066,19 @@ final class SmartCubeTimerPresentationStore {
         "smartCubeTimerScramble.\(timerSessionID.uuidString).\(puzzleSize)"
     }
 
-    func save(
+    @discardableResult func save(
         scramble: String,
         progress: SmartCubeScrambleProgress,
         epoch: SmartCubeScrambleEpoch,
         recoveryState: SmartCubeRecoveryPresentationState,
         timerSessionID: UUID? = nil
-    ) {
+    ) -> Bool {
+        if validatedTarget?.scramble != scramble || validatedTarget?.facelets != progress.targetFacelets {
+            guard SmartCubeBluetoothManager.facelets(afterApplying: scramble, puzzleSize: progress.puzzleSize) == progress.targetFacelets else {
+                return false
+            }
+            validatedTarget = (scramble, progress.targetFacelets)
+        }
         snapshot = Snapshot(
             scramble: scramble,
             progress: progress,
@@ -1043,6 +1086,7 @@ final class SmartCubeTimerPresentationStore {
             recoveryState: recoveryState,
             timerSessionID: timerSessionID
         )
+        return true
     }
 
     func snapshot(matching scramble: String) -> Snapshot? {

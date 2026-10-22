@@ -127,6 +127,30 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
         super.init()
     }
 
+    #if DEBUG
+    func debugEmitPhysicalMove(_ notation: String) {
+        emitMove(SmartCubeMoveEvent(move: notation, serial: nil, face: nil, direction: nil,
+            localTimestamp: .now, cubeTimestampMilliseconds: nil))
+    }
+    func debugSeedConnectedState(deviceID: UUID, attemptID: UUID, facelets: String,
+                                 name: String = "Fixture Cube", battery: Int? = nil) {
+        connectionDeviceID = deviceID
+        connectionAttemptID = attemptID
+        connectedDeviceName = name
+        batteryLevel = battery
+        connectionPolicyResolvedAttemptID = attemptID
+        connectionState = .connected
+        self.facelets = facelets
+        cubeStateRevision += 1
+        canonicalFeed.acceptAuthoritativeSnapshot(facelets, stateChanged: true)
+    }
+    func debugSeedConnectionPhase(_ state: SmartCubeConnectionState, deviceID: UUID, attemptID: UUID) {
+        connectionDeviceID = deviceID
+        connectionAttemptID = attemptID
+        connectionState = state
+    }
+    #endif
+
     func configure(peripheral: CBPeripheral, discovery: SmartCubeDiscoveredDevice, salt: [UInt8]?) {
         discoveredPeripheralsByID[peripheral.identifier] = peripheral
         discoveredDevices = [discovery]
@@ -196,7 +220,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
             serviceIdentifiers: selectedDevice?.advertisedServices ?? []
         )
         #if DEBUG
-        if pendingProtocolHint == .moyu,
+        if CompetitionDebugStore.shared.enabled, protocolDebugLogging, pendingProtocolHint == .moyu,
            SmartCubePuzzleKind.resolve(advertisedName: connectedDeviceName, protocolModelIdentifier: nil) == .twoByTwo {
             weiPo2ConnectionCaptureStartedAt = Date()
             weiPo2ConnectionCaptureLines = []
@@ -358,7 +382,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
             return
         }
         #if DEBUG
-        guard let started = weiPo2ConnectionCaptureStartedAt,
+        guard CompetitionDebugStore.shared.enabled, protocolDebugLogging, let started = weiPo2ConnectionCaptureStartedAt,
               weiPo2ConnectionCaptureLines.count < 1200 else { return }
         let elapsed = Date().timeIntervalSince(started)
         weiPo2ConnectionCaptureLines.append(String(format: "pre+%.3f %@", elapsed, detail))
@@ -942,9 +966,13 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
         let shouldTraceWCU2 = protocolDebugLogging
             && identity?.protocolModelIdentifier == "WCU_MY22"
         let sourceCharacteristicID = characteristic.uuid.uuidString
+        #if DEBUG
+        let receivedUptime = ProcessInfo.processInfo.systemUptime
+        #endif
 
         parserQueue.async { [weak self, parser, cipher] in
             #if DEBUG
+            let parserUptime = ProcessInfo.processInfo.systemUptime
             SmartCubeDiagnostics.shared.mark("parser.begin", id: packetID)
             #endif
             guard let decrypted = cipher.decrypt(raw) else {
@@ -969,7 +997,8 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
             SmartCubeDiagnostics.shared.mark("parser.end", id: packetID)
             for event in parsedEvents {
                 if case .move(let move) = event {
-                    SmartCubeDiagnostics.shared.mark("protocol.move", id: move.id, detail: "\(move.move) source=\(move.timestampSource)")
+                    SmartCubeDiagnostics.shared.mark("protocol.move", id: move.id,
+                        detail: "\(move.move) source=\(move.timestampSource) packet=\(packetID.uuidString.prefix(8)) received=\(receivedUptime) queueMS=\((parserUptime - receivedUptime) * 1000) parserMS=\((ProcessInfo.processInfo.systemUptime - parserUptime) * 1000)")
                     SmartCubeDiagnostics.shared.traceMove("move.protocol.received", move: move, attemptID: attemptID, deviceID: deviceID, accepted: true, detail: "generation=\(generation)")
                 }
             }
@@ -1333,7 +1362,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
 
         if let sliceMove = coalescedSliceMove(first: previousMove, second: move) {
             #if DEBUG
-            SmartCubeDiagnostics.shared.mark("coalesce.merge", id: sliceMove.id, detail: "\(previousMove.move)+\(move.move)->\(sliceMove.move) parents=\(previousMove.id),\(move.id)")
+            SmartCubeDiagnostics.shared.mark("coalesce.merge", id: sliceMove.id, detail: "\(previousMove.move)+\(move.move)->\(sliceMove.move) parents=\(previousMove.id.uuidString.prefix(8)),\(move.id.uuidString.prefix(8))")
             #endif
             pendingMoveEvent = nil
             emitMove(sliceMove, logTitle: "Slice", logDetail: "\(sliceMove.move) from paired outer moves")

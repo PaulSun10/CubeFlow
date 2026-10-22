@@ -1,16 +1,34 @@
 #if os(iOS)
 import SwiftUI
 
+/// Anchor the first identity line to the cube edge, not the centre of an
+/// estimated 44/88-point row. Natural height remains free to follow Dynamic Type.
+struct SmartCubeIdentityAnchor<Content: View>: View {
+    let width: CGFloat
+    let origin: CGPoint
+    @ViewBuilder let content: () -> Content
+    var body: some View {
+        Color.clear.frame(width: width, height: 0)
+            .overlay(alignment: .top) { content().fixedSize(horizontal: false, vertical: true) }
+            .position(origin)
+    }
+}
+
 struct ConnectedDeviceStatusRows: View {
     @ObservedObject private var smartCube = SmartCubeBluetoothManager.shared
     @ObservedObject private var smartTimer = GANTimerBluetoothManager.shared
     @ObservedObject private var savedCubes = SavedSmartCubeDevices.shared
     let usesCompactLinks: Bool
     let showsSmartTimer: Bool
+    var cubeRowHorizontalInset: CGFloat = 0
+    var manageCube: (() -> Void)?
 
-    init(usesCompactLinks: Bool = false, showsSmartTimer: Bool = true) {
+    init(usesCompactLinks: Bool = false, showsSmartTimer: Bool = true, cubeRowHorizontalInset: CGFloat = 0,
+         manageCube: (() -> Void)? = nil) {
         self.usesCompactLinks = usesCompactLinks
         self.showsSmartTimer = showsSmartTimer
+        self.cubeRowHorizontalInset = cubeRowHorizontalInset
+        self.manageCube = manageCube
     }
 
     var body: some View {
@@ -39,12 +57,9 @@ struct ConnectedDeviceStatusRows: View {
         HStack(alignment: .firstTextBaseline, spacing: 4) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 2) {
-                    NavigationLink { SmartCubeLabView() } label: {
-                        if let name = connectedCubeName, smartCube.isConnected {
-                            Text(name).lineLimit(1)
-                        } else {
-                            Text("smart_cube.title")
-                        }
+                    Group {
+                        if let manageCube { Button(action: manageCube) { compactCubeName } }
+                        else { NavigationLink { SmartCubeLabView() } label: { compactCubeName } }
                     }
                     .font(.subheadline.weight(.medium))
                     if smartCube.compatibleConnectedDeviceIDs.count > 1 {
@@ -62,9 +77,11 @@ struct ConnectedDeviceStatusRows: View {
             }
             Spacer(minLength: 4)
             if smartCube.isConnected, let battery = smartCube.batteryLevel {
-                DeviceBatteryIndicator(percentage: battery)
+                DeviceBatteryIndicator(percentage: battery, isProminent: true,
+                    font: .subheadline.weight(.medium).monospacedDigit())
             }
         }
+        .padding(.horizontal, cubeRowHorizontalInset)
         if showsSmartTimer {
             NavigationLink {
                 SmartTimerDeviceView()
@@ -84,6 +101,10 @@ struct ConnectedDeviceStatusRows: View {
     private var connectedCubeName: String? {
         guard let id = smartCube.connectionDeviceID else { return nil }
         return savedCubes.device(id)?.displayName ?? smartCube.connectedDeviceName
+    }
+    @ViewBuilder private var compactCubeName: some View {
+        if let name = connectedCubeName, smartCube.isConnected { Text(name).lineLimit(1) }
+        else { Text("smart_cube.title") }
     }
 
     private var connectedCubeModel: String? {

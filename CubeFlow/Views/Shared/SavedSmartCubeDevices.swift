@@ -61,6 +61,18 @@ final class SavedSmartCubeDevices: ObservableObject {
         devices.first { $0.id == id }
     }
 
+    func forget(_ id: UUID) {
+        devices.removeAll { $0.id == id }
+        if lastActiveDeviceID == id {
+            lastActiveDeviceID = nil
+            defaults.removeObject(forKey: "savedSmartCubeDevices.lastActive")
+        }
+        for size in [2, 3] where lastActiveID(puzzleSize: size) == id {
+            defaults.removeObject(forKey: "savedSmartCubeDevices.lastActive.\(size)")
+        }
+        persist()
+    }
+
     func remember(id: UUID, identity: SmartCubeIdentity, fallbackName: String?) {
         let name = [identity.advertisedName, fallbackName, device(id)?.originalName]
             .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }

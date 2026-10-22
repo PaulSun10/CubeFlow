@@ -30,6 +30,12 @@ struct SmartCubeScrambleProgressView: View {
     let highlightBackgroundStyle: AnyShapeStyle
     let highlightForegroundStyle: AnyShapeStyle
     var showsLiveProgress = false
+    var isUpdatingGuidance = false
+    var isGuidanceUnavailable = false
+    var diagnosticContext: String? = nil
+    #if DEBUG
+    @Environment(\.smartCubeTimerGuidanceProbe) private var guidanceProbe
+    #endif
 
     var body: some View {
         VStack(spacing: 6) {
@@ -87,6 +93,12 @@ struct SmartCubeScrambleProgressView: View {
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .id(scramble)
+        #if DEBUG
+        .onAppear { recordGuidanceUpdate(diagnosticContext) }
+        .onChange(of: diagnosticContext) { context in recordGuidanceUpdate(context) }
+        .onAppear { guidanceProbe?.displayedPathText = fallbackText }
+        .onChange(of: fallbackText) { guidanceProbe?.displayedPathText = $0 }
+        #endif
     }
 
     @ViewBuilder
@@ -103,6 +115,14 @@ struct SmartCubeScrambleProgressView: View {
             }
         }
     }
+
+    #if DEBUG
+    private func recordGuidanceUpdate(_ diagnosticContext: String?) {
+        guard let diagnosticContext else { return }
+        // A SwiftUI update boundary, not a claim that Metal has presented a frame.
+        SmartCubeDiagnostics.shared.mark("guidance.swiftui-update", detail: diagnosticContext)
+    }
+    #endif
 
     @available(iOS 16.0, *)
     private func originalToken(at index: Int, allowsHighlight: Bool) -> some View {

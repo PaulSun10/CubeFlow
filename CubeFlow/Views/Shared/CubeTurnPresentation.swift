@@ -95,9 +95,8 @@ nonisolated struct CubeTurnPresentation {
     struct Policy {
         static let halfTurnMultiplier = 1.3
         static let interruptedRemaining = 0.055
-        static let severeBacklog = 6
-        static let retainedLiveEdge = 2
-        static let maximumVisualLag = 0.35
+        static let minimumTurnDuration = 1.0 / 30
+        static let maximumPendingTurns = 128
     }
 
     struct Pending: Equatable {
@@ -159,20 +158,24 @@ nonisolated struct CubeTurnPresentation {
         guard tps > 0 else { resync(target, trusted: true); return }
         if current != nil { isCatchingUp = true }
         pending.append(Pending(turn: turn, target: target, timestamp: timestamp))
-        if pending.count >= Policy.severeBacklog ||
-            (pending.count > Policy.retainedLiveEdge && now - pending[0].timestamp > Policy.maximumVisualLag) {
-            if let current { settled = current.move.target }
-            current = nil
-            while pending.count > Policy.retainedLiveEdge { settled = pending.removeFirst().target }
+        if pending.count > Policy.maximumPendingTurns {
+            // An exceptional unrenderable flood remains bounded. Ordinary live
+            // catch-up preserves every turn rather than dropping at six moves.
+            resync(target, trusted: true)
+            #if os(iOS) && DEBUG
+            SmartCubeDiagnostics.shared.mark("animation.overflow-resync", detail: "limit=\(Policy.maximumPendingTurns)")
+            #endif
+            return
         } else if var animation = current {
             let progress = animation.progress(at: now)
             let remaining = animation.duration * (1 - progress) / max(0.001, 1 - animation.startProgress)
             animation.startedAt = now
             animation.startProgress = progress
-            animation.duration = min(remaining, Policy.interruptedRemaining / Double(max(1, pending.count)))
+            animation.duration = min(remaining, Policy.interruptedRemaining)
             current = animation
         }
-        advance(at: now)
+        // Completion belongs to a render tick, not to another BLE enqueue.
+        if current == nil { advance(at: now) }
     }
 
     mutating func advance(at now: TimeInterval) {
@@ -194,7 +197,9 @@ nonisolated struct CubeTurnPresentation {
                 / Double(min(20, max(1, tps))) / Double(max(1, backlog))
             current = Animation(
                 id: generation, move: move, startedAt: now,
-                duration: isCatchingUp ? min(nominalDuration, Policy.interruptedRemaining) : nominalDuration
+                duration: isCatchingUp
+                    ? max(Policy.minimumTurnDuration, min(nominalDuration, Policy.interruptedRemaining))
+                    : nominalDuration
             )
         }
         if current == nil && pending.isEmpty { isCatchingUp = false }

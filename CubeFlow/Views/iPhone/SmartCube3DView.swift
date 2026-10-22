@@ -3,7 +3,21 @@ import SceneKit
 import SwiftUI
 import Combine
 
+private final class SmartCubeSceneView: SCNView {
+    #if DEBUG
+    weak var debugOwner: SmartCube3DView.Coordinator?
+    #endif
+    var windowChanged: ((Bool) -> Void)?
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        windowChanged?(window != nil)
+    }
+}
+
 struct SmartCube3DView: UIViewRepresentable {
+    #if DEBUG
+    static func debugCoordinator(of view: SCNView) -> Coordinator? { (view as? SmartCubeSceneView)?.debugOwner }
+    #endif
     let facelets: String?
     let stateRevision: Int
     let fixedView: SmartCubeFixedView
@@ -13,7 +27,10 @@ struct SmartCube3DView: UIViewRepresentable {
     var isStateTrusted: Bool = true
     var diagnosticOwner = "unspecified"
     var animationTPSOverride: Int?
+    var canonicalSequence: UInt64? = nil
     var temporaryVerticalPeek = false
+    var onTap: (() -> Void)?
+    var renderingEnabled = true
     @AppStorage("smartCubeAnimationTPS") private var animationTPS = 10
     @AppStorage("smartCubeAppearance") private var appearanceRawValue = VirtualCubeAppearance.classic.rawValue
     @AppStorage("smartCubeInternalPlastic") private var plasticRawValue = VirtualCubePlastic.black.rawValue
@@ -29,6 +46,9 @@ struct SmartCube3DView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
+        context.coordinator.setRenderingEnabled(renderingEnabled)
+        context.coordinator.onTap = onTap
+        context.coordinator.managementTap?.isEnabled = onTap != nil
         context.coordinator.update(
             facelets: facelets ?? CubeSurface.solved(size: cubeSize == 2 ? 2 : 3),
             stateRevision: stateRevision,
@@ -42,7 +62,8 @@ struct SmartCube3DView: UIViewRepresentable {
             appearance: VirtualCubeAppearance(rawValue: appearanceRawValue) ?? .classic,
             plastic: VirtualCubePlastic(rawValue: plasticRawValue) ?? .black,
             reflections: reflections,
-            customColor: UIColor(StoredColorData.decode(from: plasticColorData, fallback: StoredColorData(r: 0.5, g: 0, b: 0.5)).color)
+            customColor: UIColor(StoredColorData.decode(from: plasticColorData, fallback: StoredColorData(r: 0.5, g: 0, b: 0.5)).color),
+            canonicalSequence: canonicalSequence
         )
     }
 
@@ -53,6 +74,8 @@ struct SmartCube3DView: UIViewRepresentable {
     private static let solvedFacelets = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 
     final class Coordinator: NSObject {
+        var onTap: (() -> Void)?
+        private(set) var managementTap: UITapGestureRecognizer?
         private let scene = SCNScene()
         private let interactionNode = SCNNode()
         private let cubeNode = SCNNode()
@@ -65,9 +88,15 @@ struct SmartCube3DView: UIViewRepresentable {
         private var presentation = CubeTurnPresentation(facelets: SmartCube3DView.solvedFacelets)
         private var subscription: AnyCancellable?
         private var clock: Timer?
+        private var wantsRendering = true
+        private var isInWindow = false
+        private var hasBeenInWindow = false
+        private var renderingWasSuspended = false
         private var attemptID: UUID?
         private var bindingGeneration = 0
         private var lastSequence: UInt64?
+        private var pendingSnapshot: (facelets: String, trusted: Bool, sequence: UInt64)?
+        private var snapshotReconciliation: DispatchWorkItem?
         private var hasBound = false
         private var renderedState: String?
         private var renderedAnimationID: UInt64?
@@ -86,13 +115,27 @@ struct SmartCube3DView: UIViewRepresentable {
         private var perfInterrupted = 0
         private var perfResetPending = false
 
+        #if DEBUG
+        var debugPresentation: CubeTurnPresentation { presentation }
+        func debugRender(at time: TimeInterval) { tick(at: time) }
+        var debugPivotAngle: Float? { pivot?.rotation.w }
+        var debugClockIsActive: Bool { clock != nil }
+        var debugLifecycle: String {
+            "window=\(isInWindow) enabled=\(wantsRendering) suspended=\(renderingWasSuspended) clock=\(clock != nil) sequence=\(lastSequence ?? 0) trust=\(presentation.isTrusted) tps=\(presentation.tps) generation=\(presentation.generation)"
+        }
+        #endif
+
         override init() {
             super.init()
+            #if DEBUG
             print("[VirtualCubeLifecycle] event=coordinator_init coordinator=\(ObjectIdentifier(self))")
+            #endif
         }
 
         deinit {
+            #if DEBUG
             print("[VirtualCubeLifecycle] owner=\(perfOwner) event=coordinator_deinit coordinator=\(ObjectIdentifier(self)) view=\(perfView.map { String(describing: ObjectIdentifier($0)) } ?? "nil")")
+            #endif
         }
 
         private func observeTransition(from previous: CubeTurnPresentation.Animation?) {
@@ -109,6 +152,7 @@ struct SmartCube3DView: UIViewRepresentable {
         private var perfSnapshotPending = false
 
         private func logPerformance(_ event: String) {
+            #if DEBUG
             var nodes = 1, actionNodes = scene.rootNode.hasActions ? 1 : 0
             scene.rootNode.enumerateChildNodes { node, _ in
                 nodes += 1
@@ -117,28 +161,75 @@ struct SmartCube3DView: UIViewRepresentable {
             let pivots = cubeNode.childNodes.filter { $0.geometry == nil }.count
             let cache = resources.diagnosticCacheCounts
             print("[VirtualCubePerf] owner=\(perfOwner) renderer=\(ObjectIdentifier(self)) view=\(perfView.map { String(describing: ObjectIdentifier($0)) } ?? "nil") event=\(event) completed=\(perfCompleted) interrupted=\(perfInterrupted) nodes=\(nodes) actionNodes=\(actionNodes) pivots=\(pivots) pivotRef=\(pivot != nil) pending=\(presentation.pending.count) current=\(presentation.current != nil) cubies=\(cubies.count) faces=\(faceNodes.count) geometryCache=\(cache.geometry) materialCache=\(cache.material)")
+            #endif
         }
 
         func stop() {
+            onTap = nil
+            #if DEBUG
             print("[VirtualCubeLifecycle] owner=\(perfOwner) event=stop coordinator=\(ObjectIdentifier(self)) view=\(perfView.map { String(describing: ObjectIdentifier($0)) } ?? "nil") subscribed=\(subscription != nil) timer=\(clock != nil)")
+            #endif
             bindingGeneration += 1
+            snapshotReconciliation?.cancel(); snapshotReconciliation = nil; pendingSnapshot = nil
             subscription = nil
             clock?.invalidate()
             clock = nil
+            (perfView as? SmartCubeSceneView)?.windowChanged = nil
+            perfView?.isPlaying = false
+            perfView?.rendersContinuously = false
+        }
+
+        func setRenderingEnabled(_ enabled: Bool) {
+            guard wantsRendering != enabled else { return }
+            wantsRendering = enabled
+            updateRenderActivity()
+        }
+
+        private func updateRenderActivity() {
+            let active = wantsRendering && isInWindow
+            perfView?.rendersContinuously = active
+            perfView?.isPlaying = active
+            guard active else {
+                if clock != nil { renderingWasSuspended = true }
+                clock?.invalidate(); clock = nil
+                return
+            }
+            guard clock == nil else { return }
+            if renderingWasSuspended {
+                presentation.resync(presentation.canonical, trusted: presentation.isTrusted)
+                renderedState = nil
+                renderingWasSuspended = false
+            }
+            let timer = Timer(timeInterval: 1.0 / 120, repeats: true) { [weak self] _ in
+                MainActor.assumeIsolated { self?.tick() }
+            }
+            clock = timer
+            RunLoop.main.add(timer, forMode: .common)
         }
 
         func makeView(owner: String = "test") -> SCNView {
             perfOwner = owner
-            let view = SCNView(frame: .zero)
+            let view = SmartCubeSceneView(frame: .zero)
+            #if DEBUG
+            view.debugOwner = self
+            #endif
             perfView = view
+            view.windowChanged = { [weak self] visible in
+                guard let self else { return }
+                self.isInWindow = visible
+                self.hasBeenInWindow = self.hasBeenInWindow || visible
+                self.updateRenderActivity()
+            }
+            #if DEBUG
             print("[VirtualCubeLifecycle] owner=\(perfOwner) event=make_view coordinator=\(ObjectIdentifier(self)) view=\(ObjectIdentifier(view))")
+            #endif
             view.scene = scene
             view.backgroundColor = .clear
             view.allowsCameraControl = false
             view.autoenablesDefaultLighting = false
             view.isJitteringEnabled = false
             view.antialiasingMode = .multisampling2X
-            view.rendersContinuously = true
+            view.rendersContinuously = false
             view.preferredFramesPerSecond = UIScreen.main.maximumFramesPerSecond
 
             scene.rootNode.addChildNode(interactionNode)
@@ -150,10 +241,6 @@ struct SmartCube3DView: UIViewRepresentable {
             buildCube(facelets: SmartCube3DView.solvedFacelets)
             logPerformance("initial")
             installGestures(on: view)
-            clock = Timer.scheduledTimer(withTimeInterval: 1.0 / 120, repeats: true) { [weak self] _ in
-                MainActor.assumeIsolated { self?.tick() }
-            }
-            if let clock { RunLoop.main.add(clock, forMode: .common) }
             return view
         }
 
@@ -170,7 +257,8 @@ struct SmartCube3DView: UIViewRepresentable {
             appearance: VirtualCubeAppearance,
             plastic: VirtualCubePlastic,
             reflections: Bool,
-            customColor: UIColor
+            customColor: UIColor,
+            canonicalSequence: UInt64? = nil
         ) {
             self.temporaryVerticalPeek = temporaryVerticalPeek
             if fixedView != selectedFixedView {
@@ -186,11 +274,12 @@ struct SmartCube3DView: UIViewRepresentable {
             let size = size == 2 ? 2 : 3
             if !hasBound || self.attemptID != attemptID || presentation.size != size {
                 bindingGeneration += 1
+                snapshotReconciliation?.cancel(); snapshotReconciliation = nil; pendingSnapshot = nil
                 let binding = bindingGeneration
                 subscription = nil
                 self.attemptID = attemptID
                 hasBound = true
-                lastSequence = nil
+                lastSequence = canonicalSequence
                 presentation = CubeTurnPresentation(size: size, facelets: CubeSurface.solved(size: size))
                 presentation.resync(facelets, trusted: trusted)
                 renderedState = nil
@@ -201,7 +290,9 @@ struct SmartCube3DView: UIViewRepresentable {
                         self.receive(event)
                     }
                 }
+                #if DEBUG
                 print("[VirtualCubeLifecycle] owner=\(perfOwner) event=subscription_attach coordinator=\(ObjectIdentifier(self)) view=\(perfView.map { String(describing: ObjectIdentifier($0)) } ?? "nil") attached=\(subscription != nil)")
+                #endif
             }
             presentation.tps = min(20, max(0, tps))
             if self.appearance != appearance || resources.plastic != plastic ||
@@ -210,18 +301,30 @@ struct SmartCube3DView: UIViewRepresentable {
                 resources = VirtualCubeMaterials(appearance: appearance, plastic: plastic, reflections: reflections, customColor: customColor)
                 renderedState = nil
             }
-            if trusted != presentation.isTrusted || facelets != presentation.canonical || stateRevision != lastStateRevision {
-                // A state correction without an executable event chain is a snap, never an invented turn.
-                if facelets != presentation.canonical || trusted != presentation.isTrusted {
+            // SwiftUI may deliver a body snapshot after newer synchronous BLE
+            // events. That older snapshot is not an authoritative correction.
+            let isOlderSnapshot = canonicalSequence.flatMap { snapshot in lastSequence.map { snapshot < $0 } } ?? false
+            if !isOlderSnapshot {
+                if subscription != nil, let sequence = canonicalSequence,
+                   sequence > (lastSequence ?? sequence) || facelets != presentation.canonical || trusted != presentation.isTrusted {
+                    // A model subscriber can render this event's new snapshot
+                    // before our later subscriber receives its executable turn.
+                    // Reconcile only after synchronous event delivery completes.
+                    stageSnapshot(facelets, trusted: trusted, sequence: sequence)
+                } else if facelets != presentation.canonical || trusted != presentation.isTrusted {
                     presentation.resync(trusted ? facelets : nil, trusted: trusted)
+                    if let canonicalSequence { lastSequence = canonicalSequence }
+                } else if let canonicalSequence {
+                    lastSequence = canonicalSequence
                 }
+                lastStateRevision = stateRevision
             }
-            lastStateRevision = stateRevision
-            tick()
+            if wantsRendering && (isInWindow || !hasBeenInWindow) { tick() }
         }
 
         private func receive(_ event: SmartCubeCanonicalEvent) {
             if let lastSequence, event.sequence <= lastSequence { return }
+            if let pendingSnapshot, pendingSnapshot.sequence <= event.sequence { self.pendingSnapshot = nil }
             let hasGap = lastSequence.map { event.sequence != $0 + 1 } ?? false
             lastSequence = event.sequence
             let perfPrevious = presentation.current
@@ -238,7 +341,7 @@ struct SmartCube3DView: UIViewRepresentable {
                     logPerformance("boundary_\(boundary.reason.rawValue)")
                 }
             case .move(let update):
-                if hasGap || !update.isStateTrusted {
+                if hasGap || !update.isStateTrusted || !wantsRendering || (hasBeenInWindow && !isInWindow) {
                     presentation.resync(update.isStateTrusted ? update.facelets : nil, trusted: update.isStateTrusted)
                 } else {
                     let now = ProcessInfo.processInfo.systemUptime
@@ -248,14 +351,33 @@ struct SmartCube3DView: UIViewRepresentable {
             if case .move = event { observeTransition(from: perfPrevious) }
         }
 
-        private func tick() {
+        private func stageSnapshot(_ facelets: String, trusted: Bool, sequence: UInt64) {
+            pendingSnapshot = (facelets, trusted, sequence)
+            guard snapshotReconciliation == nil else { return }
+            let binding = bindingGeneration
+            let work = DispatchWorkItem { [weak self] in
+                guard let self, self.bindingGeneration == binding else { return }
+                self.snapshotReconciliation = nil
+                guard let snapshot = self.pendingSnapshot else { return }
+                self.pendingSnapshot = nil
+                guard snapshot.sequence >= (self.lastSequence ?? 0) else { return }
+                // A snapshot with no corresponding event chain remains an
+                // authoritative correction, never a fabricated animation.
+                self.presentation.resync(snapshot.trusted ? snapshot.facelets : nil, trusted: snapshot.trusted)
+                self.lastSequence = snapshot.sequence
+                if self.wantsRendering && self.isInWindow { self.tick() }
+            }
+            snapshotReconciliation = work
+            DispatchQueue.main.async(execute: work)
+        }
+
+        private func tick(at now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
             if perfResetPending && renderedState == presentation.settled && renderedAnimationID == nil {
                 logPerformance("reset_settled")
                 perfResetPending = false
             }
             guard presentation.current != nil || !presentation.pending.isEmpty ||
                 renderedState != presentation.settled || renderedAnimationID != nil else { return }
-            let now = ProcessInfo.processInfo.systemUptime
             let perfPrevious = presentation.current
             presentation.advance(at: now)
             observeTransition(from: perfPrevious)
@@ -300,9 +422,17 @@ struct SmartCube3DView: UIViewRepresentable {
 
         private func installGestures(on view: SCNView) {
             let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+            pan.name = "CubeFlow.SmartCube.Drag"
             pan.maximumNumberOfTouches = 1
             view.addGestureRecognizer(pan)
+            let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+            tap.require(toFail: pan)
+            tap.isEnabled = false
+            view.addGestureRecognizer(tap)
+            managementTap = tap
         }
+
+        @objc private func handleTap() { onTap?() }
 
         @objc private func handlePan(_ recognizer: UIPanGestureRecognizer) {
             let translation = recognizer.translation(in: recognizer.view)

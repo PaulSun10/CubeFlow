@@ -103,6 +103,7 @@ struct SettingsTabView: View {
     @Environment(\.colorScheme) private var currentColorScheme
     #if DEBUG
     @Environment(\.isMarketingPreview) private var isMarketingPreview
+    @ObservedObject private var debugStore = CompetitionDebugStore.shared
     #endif
     @ObservedObject private var ganTimer = GANTimerBluetoothManager.shared
     @FetchRequest(
@@ -558,10 +559,17 @@ private extension SettingsTabView {
             #if DEBUG
             if !isMarketingPreview {
                 Section {
-                    NavigationLink {
-                        MarketingPreviewCatalogView()
-                    } label: {
-                        Label("Marketing Preview", systemImage: "camera.viewfinder")
+                    Toggle("Debug Mode", isOn: debugStore.binding)
+                        .accessibilityIdentifier("debug-mode")
+                    NavigationLink("Guidance Capture") { SmartCubeGuidanceCaptureView() }
+                        .accessibilityIdentifier("guidance-capture-navigation")
+                    if debugStore.enabled {
+                        NavigationLink("Filter Capture") { CompetitionDebugCaptureView(kind: .filter) }
+                        NavigationLink("Separator Capture") { CompetitionDebugCaptureView(kind: .separator) }
+                        NavigationLink("Scroll Capture") { CompetitionScrollDiagnosticsView() }
+                        NavigationLink {
+                            MarketingPreviewCatalogView()
+                        } label: { Label("Marketing Preview", systemImage: "camera.viewfinder") }
                     }
                 } header: {
                     Text("Development")

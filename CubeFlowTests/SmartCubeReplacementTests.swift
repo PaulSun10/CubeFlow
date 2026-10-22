@@ -440,7 +440,7 @@ struct SmartCubeReplacementTests {
         #expect(SmartCubeReplacementPlanner.fallbackPresentation(from: secondPending).plan == second)
     }
 
-    @Test func normalCommutingAndSmallMistakesKeepRecovery() throws {
+    @Test func normalCommutingStaysValidButSmallCorrectionDoesNotGateReplanning() throws {
         var progress = try #require(SmartCubeScrambleProgress(scramble: scramble))
         let u = try #require(SmartCubeBluetoothManager.facelets(afterApplying: "U"))
         #expect(progress.update(with: u, canonicalMove: "U") == .partial)
@@ -453,7 +453,7 @@ struct SmartCubeReplacementTests {
             #expect(SmartCubeReplacementPlanner.costDecision(
                 correction: correction, remaining: 20, candidateCost: 10,
                 lastDeviationMove: nil, firstCandidateMove: nil
-            ) == .correctionBelowThreshold)
+            ) == .adopted)
         }
     }
 
@@ -468,11 +468,11 @@ struct SmartCubeReplacementTests {
         ) == .candidateNotShorter)
     }
 
-    @Test func inverseHysteresisOnlyRejectsMarginalUndo() {
+    @Test func immediateInverseCannotRejectAValidShorterPath() {
         #expect(SmartCubeReplacementPlanner.costDecision(
             correction: 3, remaining: 8, candidateCost: 10,
             lastDeviationMove: "B'", firstCandidateMove: "B"
-        ) == .inverseMoveHysteresis)
+        ) == .adopted)
         #expect(SmartCubeReplacementPlanner.costDecision(
             correction: 3, remaining: 8, candidateCost: 9,
             lastDeviationMove: "B'", firstCandidateMove: "B"

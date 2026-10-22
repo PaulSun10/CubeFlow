@@ -9,6 +9,8 @@ nonisolated enum DeviceBatteryLevel {
 
 struct DeviceBatteryIndicator: View {
     let percentage: Int
+    var isProminent = false
+    var font: Font? = nil
 
     private var level: Int { DeviceBatteryLevel.clamped(percentage) }
     private var batteryColor: Color {
@@ -17,7 +19,7 @@ struct DeviceBatteryIndicator: View {
 
     var body: some View {
         Text("\(level)%")
-        .font(.subheadline.monospacedDigit())
+        .font(font ?? (isProminent ? .body.weight(.medium).monospacedDigit() : .subheadline.monospacedDigit()))
         .foregroundStyle(batteryColor)
         .fixedSize()
         .accessibilityElement(children: .ignore)
