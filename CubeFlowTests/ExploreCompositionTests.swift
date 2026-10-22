@@ -61,7 +61,7 @@ struct ExploreCompositionTests {
         #expect(ids.count == Set(ids).count)
     }
 
-    @Test func homePreviewIsBoundedAndDoesNotRepeatTheHero() {
+    @Test func homeScrollableRecordsRetainAllItemsAndDoNotRepeatTheHero() {
         let items = (0..<22).map { index in
             ExploreItem(
                 id: "recent-record.\(index)",
@@ -78,12 +78,12 @@ struct ExploreCompositionTests {
 
         let modules = ExploreComposer.compose([list, hero], context: ExploreCompositionContext(now: now))
         #expect(modules.first?.id == "records.recent-world")
-        #expect(modules.first(where: { $0.id == "records.recent" })?.items.map(\.id) == Array(items.prefix(3)).map(\.id))
+        #expect(modules.first(where: { $0.id == "records.recent" })?.items.map(\.id) == items.filter { $0.id != items[10].id }.map(\.id))
         #expect(Set(modules.flatMap(\.items).map(\.id)).count == modules.flatMap(\.items).count)
         let leadingHero = ExploreCandidate(id: hero.id, titleKey: hero.titleKey, items: [items[0]],
             presentation: .hero, heroEligibility: .worldRecord, importance: 85)
         let leading = ExploreComposer.compose([list, leadingHero], context: ExploreCompositionContext(now: now))
-        #expect(leading.first(where: { $0.id == "records.recent" })?.items.map(\.id) == Array(items[1...3]).map(\.id))
+        #expect(leading.first(where: { $0.id == "records.recent" })?.items.map(\.id) == Array(items.dropFirst()).map(\.id))
     }
 
     @Test func weeklyContentUsesExistingPresentations() {
@@ -122,6 +122,18 @@ struct ExploreCompositionTests {
         let foreign = competition("foreign", date: now.addingTimeInterval(86400), country: "ES")
         let input = ExploreCompetitionCandidates.make([foreign, local], now: now, wcaRegionCode: "HK")
         #expect(input.flatMap(\.items).map(\.id) == ["competition.local"])
+    }
+
+    @Test func comingUpPreservesCanonicalEventsRatherThanTurningSeventeenIntoAnEventID() {
+        let events = ["333", "222", "444", "555", "666", "777", "333bf", "333fm", "333oh",
+                      "clock", "minx", "pyram", "skewb", "sq1", "444bf", "555bf", "333mbf"]
+        let peru = competition("PeruNationals2026", date: now.addingTimeInterval(86400), country: "PE", events: events)
+        let item = ExploreCompetitionCandidates.make([peru], now: now).first?.items.first
+        #expect(item?.content == .competition(id: "PeruNationals2026"))
+        #expect(item?.competition?.eventCount == 17)
+        #expect(item?.competition?.eventIDs == events)
+        #expect(events.allSatisfy { CompetitionEventIconFont.glyph(for: $0) != nil })
+        #expect(CompetitionEventIconFont.glyph(for: "17") == nil)
     }
 
     @Test func publicRegionChangesRecomposeAndUseRegionScopedCache() async {
@@ -220,12 +232,12 @@ struct ExploreCompositionTests {
                          presentation: presentation, heroEligibility: hero ? .editorialHighlight : nil, importance: 40)
     }
 
-    private func competition(_ id: String, date: Date, registrationOpen: Date? = nil, registrationClose: Date? = nil, country: String = "CN") -> CompetitionSummary {
+    private func competition(_ id: String, date: Date, registrationOpen: Date? = nil, registrationClose: Date? = nil, country: String = "CN", events: [String] = ["333"]) -> CompetitionSummary {
         CompetitionSummary(id: id, name: id, shortDisplayName: nil, startDate: date, endDate: date,
             registrationOpen: registrationOpen, registrationClose: registrationClose, competitorLimit: nil,
             venue: "", venueAddress: "", venueDetails: nil, city: "Test city", countryISO2: country,
             latitude: nil, longitude: nil, url: "https://www.worldcubeassociation.org/competitions/\(id)",
-            website: nil, dateRange: "", eventIDs: ["333"], championshipTypes: nil,
+            website: nil, dateRange: "", eventIDs: events, championshipTypes: nil,
             localizedRegionLineOverride: nil, localizedAddressLineOverride: nil, localizedStatusOverride: nil,
             localizedRegistrationStartOverride: nil, localizedWaitlistStartOverride: nil)
     }

@@ -25,10 +25,10 @@ struct ExploreCompetitionProvider: ExploreCompetitionProviding {
     }
 
     func refresh(language: String, regionCode: String?) async throws -> ExploreCompetitionSnapshot {
-        let page = try await CompetitionService.fetchCompetitionsPage(query: query(language, regionCode: regionCode), page: 1)
-        let snapshot = ExploreCompetitionSnapshot(competitions: page.competitions, fetchedAt: Date())
-        await ExploreCompetitionCache.shared.save(snapshot, language: language, regionCode: regionCode)
-        return snapshot
+        let query = query(language, regionCode: regionCode)
+        return try await ExploreCompetitionCache.shared.refresh(language: language, regionCode: regionCode) {
+            try await CompetitionService.fetchCompetitionsPage(query: query, page: 1).competitions
+        }
     }
 
     func query(_ language: String, regionCode: String?) -> CompetitionQuery {
@@ -43,36 +43,80 @@ actor ExploreCompetitionCache {
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("CubeFlowExplore", isDirectory: true)
     }
-    nonisolated static var diskBytes: Int64 {
-        let files = (try? FileManager.default.contentsOfDirectory(at: directory,
-            includingPropertiesForKeys: [.fileSizeKey])) ?? []
-        return files.reduce(0) { total, url in
-            total + Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+    nonisolated static var diskBytes: Int64 { PublicDataSnapshotStore.diskBytes(at: directory) }
+    private let storage: PublicDataSnapshotStore
+    private let root: URL
+    private let now: @Sendable () -> Date
+    private let requests = CompetitionRequestPool<ExploreCompetitionSnapshot>()
+    private var generation = UUID()
+    init(directory: URL = ExploreCompetitionCache.directory, now: @escaping @Sendable () -> Date = { Date() }) {
+        root = directory; self.now = now
+        storage = PublicDataSnapshotStore(directory: directory, countLimit: 24, diskLimit: 8 * 1024 * 1024,
+            entryLimit: 2 * 1024 * 1024, memoryLimit: 4 * 1024 * 1024, retention: 30 * 86400, now: now)
+    }
+    nonisolated static func key(language: String, regionCode: String?) -> String {
+        PublicDataSnapshotStore.key(["wca", "home-competitions-v3", language, regionCode ?? "all",
+            "present", "all-events", "all-years", "page-1"])
+    }
+    func clear() async {
+        generation = UUID()
+        await requests.cancelAll(); await storage.clear()
+    }
+    func refresh(language: String, regionCode: String?,
+                 loader: @escaping @Sendable () async throws -> [CompetitionSummary]) async throws -> ExploreCompetitionSnapshot {
+        let epoch = generation
+        return try await requests.value(key: Self.key(language: language, regionCode: regionCode)) { [self] in
+            let rows = try await loader()
+            return try await commit(rows, language: language, regionCode: regionCode, epoch: epoch)
         }
     }
-    func clear() {
-        try? FileManager.default.removeItem(at: Self.directory)
+    private func commit(_ rows: [CompetitionSummary], language: String, regionCode: String?, epoch: UUID) async throws -> ExploreCompetitionSnapshot {
+        try Task.checkCancellation()
+        guard generation == epoch else { throw CancellationError() }
+        let value = ExploreCompetitionSnapshot(competitions: rows, fetchedAt: now())
+        await save(value, language: language, regionCode: regionCode)
+        try Task.checkCancellation()
+        guard generation == epoch else { throw CancellationError() }
+        return value
     }
-    private func url(language: String, regionCode: String?) -> URL {
-        let safeLanguage = language.filter { $0.isLetter || $0 == "-" }
-        let region = regionCode ?? "all"
-        return Self.directory.appendingPathComponent("competitions-v2-\(safeLanguage)-\(region).json")
+    func load(language: String, regionCode: String?) async -> ExploreCompetitionSnapshot? {
+        let epoch = generation
+        let key = Self.key(language: language, regionCode: regionCode)
+        await storage.maintain()
+        if let entry = await storage.load(key), let value = try? JSONDecoder().decode(ExploreCompetitionSnapshot.self, from: entry.body) {
+            return generation == epoch ? value : nil
+        }
+        // Only the app's finite language + ISO region domain has a provably exact old path.
+        guard ["en", "zh-Hans", "zh-Hant"].contains(language),
+              regionCode == nil || (regionCode?.count == 2 && Locale.isoRegionCodes.contains(regionCode!)) else { return nil }
+        let legacy = root.appendingPathComponent("competitions-v2-\(language)-\(regionCode ?? "all").json")
+        guard let size = try? legacy.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= 2 * 1024 * 1024,
+              let body = try? Data(contentsOf: legacy),
+              let value = try? JSONDecoder().decode(ExploreCompetitionSnapshot.self, from: body) else { return nil }
+        guard generation == epoch else { return nil }
+        if await storage.save(body, key: key, fetchedAt: value.fetchedAt) {
+            try? FileManager.default.removeItem(at: legacy)
+            return value
+        }
+        return nil
     }
-    func load(language: String, regionCode: String?) -> ExploreCompetitionSnapshot? {
-        guard let data = try? Data(contentsOf: url(language: language, regionCode: regionCode)) else { return nil }
-        return try? JSONDecoder().decode(ExploreCompetitionSnapshot.self, from: data)
-    }
-    func save(_ snapshot: ExploreCompetitionSnapshot, language: String, regionCode: String?) {
-        let destination = url(language: language, regionCode: regionCode)
-        try? FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
-        guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        try? data.write(to: destination, options: .atomic)
+    func save(_ snapshot: ExploreCompetitionSnapshot, language: String, regionCode: String?) async {
+        guard let body = try? JSONEncoder().encode(snapshot) else { return }
+        await storage.save(body, key: Self.key(language: language, regionCode: regionCode), fetchedAt: snapshot.fetchedAt)
+        let legacy = root.appendingPathComponent("competitions-v2-\(language)-\(regionCode ?? "all").json")
+        // Retire only the exact known legacy identity after a successful v3 write.
+        if ["en", "zh-Hans", "zh-Hant"].contains(language),
+           regionCode == nil || (regionCode?.count == 2 && Locale.isoRegionCodes.contains(regionCode!)),
+           await storage.load(Self.key(language: language, regionCode: regionCode)) != nil {
+            try? FileManager.default.removeItem(at: legacy)
+        }
     }
 }
 
 nonisolated struct ExploreRecentRecordsSnapshot: Codable, Sendable {
     let records: [WCARecentRecord]
     let fetchedAt: Date
+    var hasPartialFailure: Bool? = nil
 }
 
 @MainActor
@@ -82,7 +126,7 @@ protocol ExploreRecentRecordsProviding {
 }
 
 struct ExploreRecentRecordsProvider: ExploreRecentRecordsProviding {
-    private let cacheKey = "wca-live-recent-records-v1"
+    private let cacheKey = "wca-recent-records-v2"
 
     func cached() async -> ExploreRecentRecordsSnapshot? {
         guard let cached = await WCAExplorePublicDataCache.shared.load([WCARecentRecord].self, key: cacheKey) else {
@@ -92,10 +136,25 @@ struct ExploreRecentRecordsProvider: ExploreRecentRecordsProviding {
     }
 
     func refresh() async throws -> ExploreRecentRecordsSnapshot {
-        let records = try await WCAExplorePublicDataService.fetchRecentRecords()
+        try await WCAExplorePublicDataCache.shared.recentRecords(key: cacheKey) {
+            try await loadSources()
+        }
+    }
+
+    private func loadSources() async throws -> ExploreRecentRecordsSnapshot {
+        async let live = WCAExplorePublicDataService.fetchRecentRecords()
+        async let official = WCAExplorePublicDataService.fetchRecords(
+            WCARecordsQuery(region: .all, gender: .all, show: .history), force: true)
+        let liveRows = try? await live
+        let officialRows = try? await official
+        try Task.checkCancellation()
+        guard liveRows != nil || officialRows != nil else { throw URLError(.cannotLoadFromNetwork) }
+        let partialFailure = liveRows == nil || officialRows == nil
+        let previous = partialFailure ? await cached() : nil
+        let records = ExploreRecentRecordMerge.merge(live: liveRows ?? previous?.records.filter { $0.officialResult == nil } ?? [],
+            official: officialRows?.records.values.flatMap { $0 } ?? previous?.records.compactMap(\.officialResult) ?? [])
         let fetchedAt = Date()
-        await WCAExplorePublicDataCache.shared.save(records, key: cacheKey, now: fetchedAt)
-        return ExploreRecentRecordsSnapshot(records: records, fetchedAt: fetchedAt)
+        return ExploreRecentRecordsSnapshot(records: records, fetchedAt: fetchedAt, hasPartialFailure: partialFailure)
     }
 }
 
@@ -219,7 +278,7 @@ final class ExploreStore: ObservableObject {
             recentRecordCandidates = WCAExplorePublicDataService.recentRecordsCandidate(recentRecords, language: language)
             compose(now: now)
         }
-        if !force, let recentRecordsFetchedAt, now.timeIntervalSince(recentRecordsFetchedAt) < 15 * 60 {
+        if !force, recordsState != .failedWithCache, let recentRecordsFetchedAt, now.timeIntervalSince(recentRecordsFetchedAt) < 15 * 60 {
             return
         }
         guard !isLoadingRecords else { return }
@@ -229,29 +288,33 @@ final class ExploreStore: ObservableObject {
         defer { if recordsLoadID == requestID { isLoadingRecords = false } }
         if recentRecords.isEmpty { recordsState = .loading }
         if recentRecordsFetchedAt == nil, let cached = await recentRecordsProvider.cached() {
+            guard recordsLoadID == requestID, !Task.isCancelled else { return }
             recentRecordsFetchedAt = cached.fetchedAt
             recentRecords = cached.records
             recentRecordCandidates = WCAExplorePublicDataService.recentRecordsCandidate(recentRecords,
                 language: recentRecordsLanguage ?? language)
             compose(now: now)
-            recordsState = recentRecords.isEmpty ? .empty : .loaded
+            recordsState = now.timeIntervalSince(cached.fetchedAt) >= 900 ? .stale : (recentRecords.isEmpty ? .empty : .loaded)
         }
-        if !force, let recentRecordsFetchedAt, now.timeIntervalSince(recentRecordsFetchedAt) < 15 * 60 {
+        if !force, recordsState != .failedWithCache, let recentRecordsFetchedAt, now.timeIntervalSince(recentRecordsFetchedAt) < 15 * 60 {
             return
         }
         do {
             let snapshot = try await recentRecordsProvider.refresh()
             try Task.checkCancellation()
+            guard recordsLoadID == requestID else { return }
             recentRecordsFetchedAt = snapshot.fetchedAt
             recentRecords = snapshot.records
             recentRecordCandidates = WCAExplorePublicDataService.recentRecordsCandidate(recentRecords,
                 language: recentRecordsLanguage ?? language)
             compose(now: now)
-            recordsState = recentRecords.isEmpty ? .empty : .loaded
+            recordsState = snapshot.hasPartialFailure == true ? .failedWithCache : (recentRecords.isEmpty ? .empty : .loaded)
         } catch is CancellationError {
+            guard recordsLoadID == requestID else { return }
             recordsState = recentRecords.isEmpty ? .empty : .stale
             return
         } catch {
+            guard recordsLoadID == requestID else { return }
             recordsState = recentRecords.isEmpty ? .failed : .failedWithCache
         }
     }
@@ -310,6 +373,7 @@ nonisolated enum ExploreCompetitionCandidates {
         return ExploreItem(id: "competition.\(competition.id)", content: .competition(id: competition.id),
             title: competition.name, subtitle: competition.locationLine, date: competition.startDate,
             competition: ExploreCompetitionPresentation(start: competition.startDate, end: competition.endDate,
-                eventCount: competition.eventIDs.count, registrationOpen: registrationOpen))
+                eventCount: competition.eventIDs.count, registrationOpen: registrationOpen,
+                eventIDs: competition.eventIDs))
     }
 }

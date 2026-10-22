@@ -129,6 +129,7 @@ nonisolated struct WCARecentRecord: Identifiable, Hashable, Codable, Sendable {
     let type: String
     let attemptResult: Int
     let result: ResultPayload
+    var officialResult: WCAPublicResult? = nil
 
     struct ResultPayload: Hashable, Codable, Sendable {
         let id: String
@@ -148,10 +149,16 @@ nonisolated struct WCARecentRecord: Identifiable, Hashable, Codable, Sendable {
     struct Round: Hashable, Codable, Sendable {
         let id: String
         let competitionEvent: CompetitionEvent
+        var number: Int? = nil
     }
     struct CompetitionEvent: Hashable, Codable, Sendable {
         let event: Event
         let competition: Competition
+        var rounds: [RoundNumber]? = nil
+    }
+    struct RoundNumber: Hashable, Codable, Sendable {
+        let id: String
+        let number: Int
     }
     struct Event: Hashable, Codable, Sendable {
         let id: String
@@ -187,12 +194,21 @@ enum WCAExplorePublicDataService {
         }
     }
 
-    static func fetchRankings(_ query: WCARankingsQuery) async throws -> WCARankingsResponse {
-        let data = try await request(rankingsURL(query))
-        return try JSONDecoder().decode(WCARankingsResponse.self, from: data)
+    nonisolated static func fetchRankings(_ query: WCARankingsQuery, force: Bool = false) async throws -> WCARankingsResponse {
+        try await WCAExplorePublicDataCache.shared.fetch(key: rankingsKey(query), force: force) {
+            let data = try await request(rankingsURL(query))
+            return try JSONDecoder().decode(WCARankingsResponse.self, from: data)
+        }.value
     }
 
-    static func rankingsURL(_ query: WCARankingsQuery) -> URL? {
+    nonisolated static func rankingsKey(_ query: WCARankingsQuery) -> String {
+        PublicDataSnapshotStore.key(["wca-official", "rankings-v2", rankingsURL(query)?.absoluteString ?? "invalid"])
+    }
+    nonisolated static func recordsKey(_ query: WCARecordsQuery) -> String {
+        PublicDataSnapshotStore.key(["wca-official", "records-v2", recordsURL(query)?.absoluteString ?? "invalid"])
+    }
+
+    nonisolated static func rankingsURL(_ query: WCARankingsQuery) -> URL? {
         guard var components = URLComponents(string:
             "https://www.worldcubeassociation.org/api/v0/results/rankings/\(query.eventID)/\(query.type.rawValue)") else {
             return nil
@@ -205,12 +221,14 @@ enum WCAExplorePublicDataService {
         return components.url
     }
 
-    static func fetchRecords(_ query: WCARecordsQuery) async throws -> WCARecordsResponse {
-        let data = try await request(recordsURL(query))
-        return try JSONDecoder().decode(WCARecordsResponse.self, from: data)
+    nonisolated static func fetchRecords(_ query: WCARecordsQuery, force: Bool = false) async throws -> WCARecordsResponse {
+        try await WCAExplorePublicDataCache.shared.fetch(key: recordsKey(query), force: force) {
+            let data = try await request(recordsURL(query))
+            return try JSONDecoder().decode(WCARecordsResponse.self, from: data)
+        }.value
     }
 
-    static func recordsURL(_ query: WCARecordsQuery) -> URL? {
+    nonisolated static func recordsURL(_ query: WCARecordsQuery) -> URL? {
         guard var components = URLComponents(string: "https://www.worldcubeassociation.org/api/v0/results/records") else {
             return nil
         }
@@ -233,7 +251,7 @@ enum WCAExplorePublicDataService {
         return components.url
     }
 
-    static func fetchRecentRecords() async throws -> [WCARecentRecord] {
+    nonisolated static func fetchRecentRecords() async throws -> [WCARecentRecord] {
         let query = """
         query RecentRecords {
           recentRecords {
@@ -242,8 +260,9 @@ enum WCAExplorePublicDataService {
               id
               person { id wcaId name country { iso2 name } }
               round {
-                id
+                id number
                 competitionEvent {
+                  rounds { id number }
                   event { id name }
                   competition { id wcaId name }
                 }
@@ -337,14 +356,14 @@ enum WCAExplorePublicDataService {
     static func recentRecordsCandidate(_ records: [WCARecentRecord], language: String) -> [ExploreCandidate] {
         guard !records.isEmpty else { return [] }
         let items = records.map { record -> ExploreItem in
-            let level = ExploreResultPresentation.Level(rawValue: record.tag)
+            let level = PublishedCompetitionResult.recordBadge(record.tag).flatMap(ExploreResultPresentation.Level.init(rawValue:))
             let event = record.result.round.competitionEvent.event
             let eventName = CompetitionEventPresentation.localizedFullName(
                 for: event.id,
                 languageCode: language,
                 fallback: event.name
             )
-            let result = formatResult(record.attemptResult, eventID: event.id)
+            let result = WCAResultFormatter.string(from: record.attemptResult, eventID: event.id, resultType: record.type)
             let type = appLocalizedString("explore.public.sentence_\(record.type)", languageCode: language,
                                           defaultValue: record.type, tableName: "ExplorePublicData")
             let titleFormat = appLocalizedString("explore.public.recent_record_title", languageCode: language,
@@ -353,7 +372,8 @@ enum WCAExplorePublicDataService {
                                                     defaultValue: "%@ from %@", tableName: "ExplorePublicData")
             return ExploreItem(
                 id: "recent-record.\(record.id)",
-                content: .recentRecord(id: record.id,
+                content: record.officialResult.map { .publishedRecord(id: record.id, competitionID: $0.competitionId) }
+                    ?? .recentRecord(id: record.id,
                     competitionID: record.result.round.competitionEvent.competition.wcaId,
                     roundID: record.result.round.id,
                     personID: record.result.person.id,
@@ -379,7 +399,17 @@ enum WCAExplorePublicDataService {
                     personName: record.result.person.name,
                     countryName: CompetitionService.localizedRegionName(for: record.result.person.country.iso2,
                         languageCode: language) ?? record.result.person.country.name,
-                    competitionName: record.result.round.competitionEvent.competition.name)
+                    competitionName: record.result.round.competitionEvent.competition.name,
+                    sourceLabel: appLocalizedString(record.officialResult == nil ? "explore.live_provisional" : "explore.record_official",
+                        languageCode: language, tableName: "ExploreHome")),
+                publishedResultDeepLink: record.officialResult.map {
+                    PublishedCompetitionResultDeepLink(competitionID: $0.competitionId, resultID: $0.id, eventID: $0.eventId)
+                },
+                liveResultDeepLink: record.officialResult == nil ? CompetitionWCALiveResultDeepLink(
+                    roundID: record.result.round.id, personID: record.result.person.id,
+                    personWCAID: record.result.person.wcaId, eventID: event.id,
+                    roundNumber: record.result.round.number,
+                    finalRoundNumber: record.result.round.competitionEvent.rounds?.map(\.number).max()) : nil
             )
         }
         guard !items.isEmpty else { return [] }
@@ -395,7 +425,7 @@ enum WCAExplorePublicDataService {
         return candidates
     }
 
-    private static func request(_ url: URL?) async throws -> Data {
+    private nonisolated static func request(_ url: URL?) async throws -> Data {
         guard let url else { throw WCAExplorePublicDataError.invalidURL }
         var request = URLRequest(url: url)
         request.timeoutInterval = 25
@@ -404,18 +434,29 @@ enum WCAExplorePublicDataService {
         return try await requestData(request)
     }
 
-    private static func requestData(_ request: URLRequest) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(for: request)
+    nonisolated private static let publicSession: URLSession = {
+        let config = URLSessionConfiguration.ephemeral
+        config.httpCookieStorage = nil; config.urlCredentialStorage = nil; config.urlCache = nil
+        return URLSession(configuration: config)
+    }()
+    nonisolated private static let requests = CompetitionRequestPool<Data>()
+    private nonisolated static func requestData(_ request: URLRequest) async throws -> Data {
+        let key = PublicDataSnapshotStore.key([request.httpMethod ?? "GET", request.url?.absoluteString ?? "",
+            request.httpBody?.base64EncodedString() ?? ""])
+        return try await requests.value(key: key) { try await rawRequestData(request) }
+    }
+    private nonisolated static func rawRequestData(_ request: URLRequest) async throws -> Data {
+        let (data, response) = try await publicSession.data(for: request)
         try validateResponse(response)
         return data
     }
 
-    static func validateResponse(_ response: URLResponse) throws {
+    nonisolated static func validateResponse(_ response: URLResponse) throws {
         guard let response = response as? HTTPURLResponse else { throw WCAExplorePublicDataError.invalidResponse }
         guard 200 ..< 300 ~= response.statusCode else { throw WCAExplorePublicDataError.httpStatus(response.statusCode) }
     }
 
-    private static func resultsRegionID(_ region: CompetitionRegionFilter) -> String {
+    private nonisolated static func resultsRegionID(_ region: CompetitionRegionFilter) -> String {
         switch region {
         case .all: "world"
         case .continent(let continent): continent.wcaAPIID
@@ -444,28 +485,76 @@ enum WCAExplorePublicDataService {
 
 actor WCAExplorePublicDataCache {
     static let shared = WCAExplorePublicDataCache()
-
-    struct Cached<Value: Codable & Sendable>: Codable, Sendable {
+    nonisolated static var directory: URL {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("CubeFlowExplorePublicData", isDirectory: true)
+    }
+    nonisolated struct Cached<Value: Codable & Sendable>: Codable, Sendable {
         let value: Value
         let fetchedAt: Date
     }
+    private let storage: PublicDataSnapshotStore
+    private let requests = CompetitionRequestPool<Data>()
+    private let recentRequests = CompetitionRequestPool<ExploreRecentRecordsSnapshot>()
+    private let now: @Sendable () -> Date
+    private var generation = UUID()
 
-    func load<Value: Codable & Sendable>(_ type: Value.Type, key: String) -> Cached<Value>? {
-        guard let data = try? Data(contentsOf: url(for: key)) else { return nil }
-        return try? JSONDecoder().decode(Cached<Value>.self, from: data)
+    init(directory: URL = WCAExplorePublicDataCache.directory, now: @escaping @Sendable () -> Date = { Date() }) {
+        storage = PublicDataSnapshotStore(directory: directory, countLimit: 96, diskLimit: 32 * 1024 * 1024,
+            retention: 7 * 86400, now: now)
+        self.now = now
     }
-
-    func save<Value: Codable & Sendable>(_ value: Value, key: String, now: Date = Date()) {
-        let destination = url(for: key)
-        try? FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
-        guard let data = try? JSONEncoder().encode(Cached(value: value, fetchedAt: now)) else { return }
-        try? data.write(to: destination, options: .atomic)
+    func load<Value: Codable & Sendable>(_ type: Value.Type, key: String) async -> Cached<Value>? {
+        // Old lossy filenames cannot validate their original identity. They are safely
+        // invalidated, never guessed/migrated, and included in normal bounded eviction.
+        await storage.maintain()
+        guard let entry = await storage.load(key), let value = try? JSONDecoder().decode(Value.self, from: entry.body) else { return nil }
+        return Cached(value: value, fetchedAt: entry.fetchedAt)
     }
-
-    private func url(for key: String) -> URL {
-        let safe = key.map { $0.isLetter || $0.isNumber ? $0 : "-" }
-        let directory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("CubeFlowExplorePublicData", isDirectory: true)
-        return directory.appendingPathComponent(String(safe) + ".json")
+    func save<Value: Codable & Sendable>(_ value: Value, key: String, now: Date = Date()) async {
+        guard let body = try? JSONEncoder().encode(value) else { return }
+        await storage.save(body, key: key, fetchedAt: now)
+    }
+    func fetch<Value: Codable & Sendable>(key: String, force: Bool = false,
+        loader: @escaping @Sendable () async throws -> Value) async throws -> Cached<Value> {
+        let epoch = generation
+        if !force, let cached = await load(Value.self, key: key), generation == epoch,
+           now().timeIntervalSince(cached.fetchedAt) < 900 { return cached }
+        guard generation == epoch else { throw CancellationError() }
+        let body = try await requests.value(key: key) { [self] in
+            let value = try await loader()
+            return try await commit(value, key: key, epoch: epoch)
+        }
+        return try JSONDecoder().decode(Cached<Value>.self, from: body)
+    }
+    private func commit<Value: Codable & Sendable>(_ value: Value, key: String, epoch: UUID) async throws -> Data {
+        try Task.checkCancellation()
+        guard generation == epoch else { throw CancellationError() }
+        let date = now()
+        await save(value, key: key, now: date)
+        try Task.checkCancellation()
+        guard generation == epoch else { throw CancellationError() }
+        return try JSONEncoder().encode(Cached(value: value, fetchedAt: date))
+    }
+    func recentRecords(key: String, loader: @escaping @Sendable () async throws -> ExploreRecentRecordsSnapshot) async throws -> ExploreRecentRecordsSnapshot {
+        let epoch = generation
+        return try await recentRequests.value(key: key) { [self] in
+            let snapshot = try await loader()
+            return try await commitRecent(snapshot, key: key, epoch: epoch)
+        }
+    }
+    private func commitRecent(_ snapshot: ExploreRecentRecordsSnapshot, key: String, epoch: UUID) async throws -> ExploreRecentRecordsSnapshot {
+        try Task.checkCancellation()
+        guard generation == epoch else { throw CancellationError() }
+        // A partial refresh may be displayed with a warning, never persisted as a
+        // newly verified combination of both authoritative sources.
+        if snapshot.hasPartialFailure != true { await save(snapshot.records, key: key, now: snapshot.fetchedAt) }
+        try Task.checkCancellation()
+        guard generation == epoch else { throw CancellationError() }
+        return snapshot
+    }
+    func clear() async {
+        generation = UUID()
+        await requests.cancelAll(); await recentRequests.cancelAll(); await storage.clear()
     }
 }

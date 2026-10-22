@@ -111,6 +111,9 @@ struct IPhoneContentView: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, appUsesRightToLeftLayout(for: appLanguage) ? .rightToLeft : .leftToRight)
         .onAppear(perform: handleRequestedTab)
+        #if DEBUG
+        .onAppear { _ = CompetitionDebugStore.shared }
+        #endif
         .onChange(of: requestedIPhoneTab) { _ in
             handleRequestedTab()
         }

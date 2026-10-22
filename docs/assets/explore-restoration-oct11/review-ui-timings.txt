@@ -1,0 +1,6 @@
+1039:[CompetitionFinalReview] Guangzhou Grand Open fresh useful=5842.906333346036ms whole=6910.765708336839ms tail=1067.8593749908032ms
+1062:[CompetitionFinalReview] Guangzhou Grand Open reopen useful=1908.681583328871ms whole=2999.455500001204ms tail=1090.7739166723331ms
+1138:[CompetitionFinalReview] Beijing Autumn Rivalry fresh useful=5185.083416668931ms whole=9258.569833327783ms tail=4073.4864166588522ms
+1161:[CompetitionFinalReview] Beijing Autumn Rivalry reopen useful=1927.2717500134604ms whole=3002.080541671603ms tail=1074.8087916581426ms
+1218:[CompetitionFinalReview] Toronto Weeknights I fresh useful=1729.2794583190698ms whole=2814.0325416607084ms tail=1084.7530833416386ms
+1241:[CompetitionFinalReview] Toronto Weeknights I reopen useful=1895.6648750026943ms whole=2979.3805416702526ms tail=1083.7156666675583ms

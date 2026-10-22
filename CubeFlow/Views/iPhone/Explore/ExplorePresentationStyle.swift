@@ -24,14 +24,16 @@ struct ExploreSurface<Content: View>: View {
 struct ExploreHeading: View {
     let title: String
     var body: some View {
-        Text(title).font(.title3.weight(.semibold)).foregroundStyle(.primary)
+        Text(title).font(.title2.weight(.bold)).foregroundStyle(.primary)
             .accessibilityAddTraits(.isHeader)
     }
 }
 
 struct ExploreChevron: View {
+    var isSectionHeading = false
     var body: some View {
-        Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+        Image(systemName: "chevron.right")
+            .font((isSectionHeading ? Font.subheadline : Font.caption).weight(.semibold))
             .foregroundStyle(.secondary).accessibilityHidden(true)
     }
 }

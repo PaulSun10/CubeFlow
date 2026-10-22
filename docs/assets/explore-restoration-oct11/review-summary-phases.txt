@@ -1,0 +1,58 @@
+[CompetitionPublished] results GuangzhouGrandOpen2026 HTTP=200 bytes=977060 network=1478.27ms decode=21.31ms model=40.84ms cache=miss
+[CompetitionPublished] scrambles GuangzhouGrandOpen2026 HTTP=200 bytes=127375 network=707.45ms decode=3.77ms model=0.66ms cache=miss
+[CompetitionNetwork] https://cubing.com/competition/Guangzhou-Grand-Open-2026/travel?lang=en protocol=http/1.1 reused=no dns=1.00ms connect=910.00ms tls=427.00ms server=1085.91ms transfer=1409.89ms wire=30891 decoded=214996
+[CompetitionLoad] china-section-parse 23.28ms main=no travel
+[CompetitionLoad] section-travel 3466.30ms main=yes GuangzhouGrandOpen2026
+[CompetitionNetwork] https://cubing.com/competition/Guangzhou-Grand-Open-2026/registration?lang=en protocol=http/1.1 reused=no dns=1.00ms connect=934.00ms tls=514.00ms server=1115.60ms transfer=516.39ms wire=30228 decoded=208258
+[CompetitionLoad] china-section-parse 11.97ms main=no registration
+[CompetitionLoad] section-registration 3547.39ms main=yes GuangzhouGrandOpen2026
+[CompetitionNetwork] https://cubing.com/competition/Guangzhou-Grand-Open-2026?lang=en protocol=http/1.1 reused=no dns=2.00ms connect=932.00ms tls=514.00ms server=1119.26ms transfer=1485.61ms wire=37819 decoded=257079
+[CompetitionNetwork] https://cubing.com/competition/Guangzhou-Grand-Open-2026/regulations?lang=en protocol=http/1.1 reused=no dns=3.00ms connect=929.00ms tls=509.00ms server=1134.08ms transfer=1477.31ms wire=31327 decoded=190652
+[CompetitionLoad] china-section-parse 16.44ms main=no about
+[CompetitionLoad] section-info 4513.58ms main=yes GuangzhouGrandOpen2026
+[CompetitionLoad] china-section-parse 12.66ms main=no regulations
+[CompetitionLoad] section-regulations 4508.84ms main=yes GuangzhouGrandOpen2026
+[CompetitionLoad] detail-first-useful 4663.94ms main=yes GuangzhouGrandOpen2026
+[CompetitionNetwork] https://cubing.com/competition/Guangzhou-Grand-Open-2026/schedule?lang=en protocol=http/1.1 reused=no dns=4.00ms connect=931.00ms tls=513.00ms server=1148.37ms transfer=1540.33ms wire=38598 decoded=304605
+[CompetitionLoad] section-schedule 4630.03ms main=yes GuangzhouGrandOpen2026
+[CompetitionNetwork] https://cubing.com/competition/Guangzhou-Grand-Open-2026/competitors?lang=en protocol=http/1.1 reused=no dns=1.00ms connect=933.00ms tls=514.00ms server=1342.31ms transfer=2185.01ms wire=122614 decoded=2155279
+[CompetitionLoad] section-competitors 5496.38ms main=yes GuangzhouGrandOpen2026
+[CompetitionLoad] detail-all-sections 5681.81ms main=yes GuangzhouGrandOpen2026
+[CompetitionPublished] results GuangzhouGrandOpen2026 HTTP=- bytes=0 network=0.00ms decode=0.00ms model=0.00ms cache=hit
+[CompetitionLoad] detail-first-useful 79.35ms main=yes GuangzhouGrandOpen2026
+[CompetitionLoad] detail-all-sections 192.91ms main=yes GuangzhouGrandOpen2026
+                      [CompetitionPublished] results BeijingAutumnRivalry2026 HTTP=200 bytes=709842 network=1049.96ms decode=14.47ms model=23.26ms cache=miss      Other, 0x167f49900 <AX element pid: 40848, elementOrHash.elementID: 4380220928.67>
+[CompetitionPublished] scrambles BeijingAutumnRivalry2026 HTTP=200 bytes=166903 network=660.35ms decode=8.90ms model=1.54ms cache=miss
+[CompetitionNetwork] https://cubing.com/competition/Beijing-Autumn-Rivalry-2026/regulations?lang=en protocol=http/1.1 reused=yes dns=0.00ms connect=0.00ms tls=0.00ms server=1206.14ms transfer=1275.61ms wire=25824 decoded=107647
+[CompetitionLoad] china-section-parse 10.01ms main=no regulations
+[CompetitionLoad] section-regulations 2504.37ms main=yes BeijingAutumnRivalry2026
+[CompetitionNetwork] https://cubing.com/competition/Beijing-Autumn-Rivalry-2026/registration?lang=en protocol=http/1.1 reused=no dns=1.00ms connect=938.00ms tls=443.00ms server=1060.54ms transfer=511.80ms wire=25783 decoded=131875
+[CompetitionLoad] china-section-parse 8.50ms main=no registration
+[CompetitionLoad] section-registration 2554.75ms main=yes BeijingAutumnRivalry2026
+[CompetitionNetwork] https://cubing.com/competition/Beijing-Autumn-Rivalry-2026/travel?lang=en protocol=http/1.1 reused=no dns=1.00ms connect=937.00ms tls=440.00ms server=1125.34ms transfer=1286.09ms wire=23680 decoded=101655
+[CompetitionLoad] china-section-parse 6.75ms main=no travel
+[CompetitionLoad] section-travel 3384.34ms main=yes BeijingAutumnRivalry2026
+[CompetitionNetwork] https://cubing.com/competition/Beijing-Autumn-Rivalry-2026/schedule?lang=en protocol=http/1.1 reused=no dns=2.00ms connect=933.00ms tls=437.00ms server=1106.54ms transfer=1517.96ms wire=40016 decoded=289133
+[CompetitionLoad] section-schedule 3663.18ms main=yes BeijingAutumnRivalry2026
+[CompetitionNetwork] https://cubing.com/competition/Beijing-Autumn-Rivalry-2026?lang=en protocol=http/1.1 reused=no dns=5.00ms connect=937.00ms tls=442.00ms server=1243.38ms transfer=1571.26ms wire=37776 decoded=210306
+[CompetitionLoad] china-section-parse 18.27ms main=no about
+[CompetitionLoad] section-info 3801.39ms main=yes BeijingAutumnRivalry2026
+[CompetitionLoad] detail-first-useful 3958.97ms main=yes BeijingAutumnRivalry2026
+[CompetitionNetwork] https://cubing.com/competition/Beijing-Autumn-Rivalry-2026/competitors?lang=en protocol=http/1.1 reused=no dns=4.00ms connect=934.00ms tls=439.00ms server=1491.73ms transfer=1926.32ms wire=109590 decoded=2676082
+[CompetitionLoad] section-competitors 4433.15ms main=yes BeijingAutumnRivalry2026
+[CompetitionNetwork] https://cubing.com/competition/Beijing-Autumn-Rivalry-2026/ticket?lang=en protocol=http/1.1 reused=yes dns=0.00ms connect=0.00ms tls=0.00ms server=1109.06ms transfer=1273.04ms wire=23769 decoded=105841
+[CompetitionLoad] section-tickets 2579.74ms main=yes BeijingAutumnRivalry2026
+[CompetitionLoad] detail-all-sections 6631.00ms main=yes BeijingAutumnRivalry2026
+[CompetitionPublished] results BeijingAutumnRivalry2026 HTTP=- bytes=0 network=0.00ms decode=0.00ms model=0.00ms cache=hit
+[CompetitionLoad] detail-first-useful 79.59ms main=yes BeijingAutumnRivalry2026
+[CompetitionLoad] detail-all-sections 251.62ms main=yes BeijingAutumnRivalry2026
+[CompetitionPublished] results TorontoWeeknightsI2026 HTTP=200 bytes=37745 network=647.57ms decode=1.98ms model=1.13ms cache=miss
+[CompetitionNetwork] https://www.worldcubeassociation.org/competitions/TorontoWeeknightsI2026 protocol=h2 reused=yes dns=0.00ms connect=0.00ms tls=0.00ms server=710.95ms transfer=9.75ms wire=102659 decoded=102533
+[CompetitionLoad] section-schedule 747.34ms main=yes TorontoWeeknightsI2026
+[CompetitionLoad] section-info 792.18ms main=yes TorontoWeeknightsI2026
+[CompetitionLoad] detail-first-useful 917.37ms main=yes TorontoWeeknightsI2026
+[CompetitionPublished] scrambles TorontoWeeknightsI2026 HTTP=200 bytes=16968 network=617.33ms decode=1.99ms model=0.18ms cache=miss
+[CompetitionLoad] detail-all-sections 1430.88ms main=yes TorontoWeeknightsI2026
+[CompetitionPublished] results TorontoWeeknightsI2026 HTTP=- bytes=0 network=0.00ms decode=0.00ms model=0.00ms cache=hit
+[CompetitionLoad] detail-first-useful 80.24ms main=yes TorontoWeeknightsI2026
+[CompetitionLoad] detail-all-sections 219.92ms main=yes TorontoWeeknightsI2026

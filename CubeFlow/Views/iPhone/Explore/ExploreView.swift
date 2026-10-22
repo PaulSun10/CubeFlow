@@ -30,9 +30,9 @@ struct ExploreView: View {
     @State private var resolvedWCAID: String?
     @State private var showsRequestedCompetitions = false
     @State private var showsSearch = false
+    @State private var showsRecentRecords = false
     @State private var homeDestination: ExploreBrowseDestination?
     @State private var handledCompetitionRequestID = 0
-    @ScaledMetric(relativeTo: .body) private var browseIconWidth = 22
 
     private var signedInWCAID: String? {
         wcaAuth.isSignedIn ? wcaAuth.profile?.wcaId : nil
@@ -47,20 +47,24 @@ struct ExploreView: View {
                         .modifier(ExploreHomeRow())
                 }
                 if !store.modules.contains(where: { $0.id == "records.recent" }) {
-                    ExploreSurface {
-                        NavigationLink { ExploreRecentRecordsView(store: store, language: language) } label: {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("explore.public.recent_records", tableName: "ExplorePublicData").font(.headline)
-                                if store.recordsState == .loading { ProgressView() }
-                                else {
-                                    Text(store.recordsState == .failed
-                                        ? appLocalizedString("explore.unavailable", languageCode: language)
-                                        : store.recentRecords.isEmpty
-                                            ? appLocalizedString("explore.public.empty", languageCode: language, tableName: "ExplorePublicData")
-                                            : exploreHomeString("live_provisional", language: language))
-                                        .font(.subheadline).foregroundStyle(.secondary)
-                                }
-                            }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Button { showsRecentRecords = true } label: {
+                            HStack(spacing: 4) {
+                                ExploreHeading(title: appLocalizedString("explore.public.recent_records",
+                                    languageCode: language, tableName: "ExplorePublicData"))
+                                ExploreChevron(isSectionHeading: true)
+                            }.frame(minHeight: 44).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("explore-see-all-records.recent")
+                        if store.recordsState == .loading { ProgressView() }
+                        else {
+                            Text(store.recordsState == .failed
+                                ? appLocalizedString("explore.unavailable", languageCode: language)
+                                : store.recentRecords.isEmpty
+                                    ? appLocalizedString("explore.public.empty", languageCode: language, tableName: "ExplorePublicData")
+                                    : appLocalizedString("explore.see_all", languageCode: language))
+                                .font(.subheadline).foregroundStyle(.secondary)
                         }
                     }.modifier(ExploreHomeRow())
                 }
@@ -68,31 +72,9 @@ struct ExploreView: View {
                     discovery(history).modifier(ExploreHomeRow())
                     statistics(history).modifier(ExploreHomeRow())
                 }
-                VStack(alignment: .leading, spacing: 8) {
-                    ExploreHeading(title: appLocalizedString("explore.browse", languageCode: language))
-                    ExploreSurface {
-                        VStack(spacing: 0) {
-                            ForEach(ExploreBrowseDestination.allCases) { destination in
-                                if destination != ExploreBrowseDestination.allCases.first { Divider().padding(.leading, browseIconWidth + 14) }
-                                Button { homeDestination = destination } label: {
-                                    HStack(spacing: 14) {
-                                        Image(systemName: browseSymbol(destination)).font(.body)
-                                            .foregroundStyle(.secondary).frame(width: browseIconWidth)
-                                            .accessibilityHidden(true)
-                                        if destination == .highlights { Text(exploreHomeString("interesting", language: language)) }
-                                        else { Text(LocalizedStringKey(destination.titleKey)) }
-                                        Spacer(minLength: 8)
-                                        ExploreChevron()
-                                    }
-                                    .font(.subheadline.weight(.medium)).foregroundStyle(.primary)
-                                    .frame(minHeight: 44).padding(.vertical, 2).contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityIdentifier("explore-browse-\(destination.rawValue)")
-                            }
-                        }
-                    }
-                }.modifier(ExploreHomeRow())
+                ExploreBrowseSection(language: language) { homeDestination = $0 }
+                    .modifier(ExploreHomeRow())
+                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
             }
             .modifier(ExploreHomeListStyle())
             .background {
@@ -148,6 +130,9 @@ struct ExploreView: View {
             .compatibleNavigationDestination(isPresented: $showsSearch) {
                 ExploreSearchView(store: store, language: language)
             }
+            .compatibleNavigationDestination(isPresented: $showsRecentRecords) {
+                ExploreRecentRecordsView(store: store, language: language)
+            }
         }
         .environment(\.exploreCompetitionSearchContext, ExploreCompetitionSearchContext(
             usesSystemBottomAccessory: usesSystemBottomAccessory,
@@ -158,15 +143,18 @@ struct ExploreView: View {
 
     private func discovery(_ history: ExploreHistory) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            ExploreHeading(title: exploreHomeString("discover", language: language))
+            Button { homeDestination = .highlights } label: {
+                HStack(spacing: 4) {
+                    ExploreHeading(title: exploreHomeString("discover", language: language))
+                    ExploreChevron(isSectionHeading: true)
+                }.frame(minHeight: 44).contentShape(Rectangle())
+            }.buttonStyle(.plain)
             Button { homeDestination = .highlights } label: {
                 ExploreSurface {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             Text(exploreHomeString("northernmost", language: language))
                                 .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                            Spacer()
-                            ExploreChevron()
                         }
                         if let place = history.northernmost.first {
                             if let latitude = place.latitude, let longitude = place.longitude {
@@ -187,7 +175,12 @@ struct ExploreView: View {
 
     private func statistics(_ history: ExploreHistory) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            ExploreHeading(title: appLocalizedString("explore.stats", languageCode: language))
+            Button { homeDestination = .stats } label: {
+                HStack(spacing: 4) {
+                    ExploreHeading(title: appLocalizedString("explore.stats", languageCode: language))
+                    ExploreChevron(isSectionHeading: true)
+                }.frame(minHeight: 44).contentShape(Rectangle())
+            }.buttonStyle(.plain)
             Button { homeDestination = .stats } label: {
                 ExploreSurface {
                     HStack(alignment: .center, spacing: 12) {
@@ -198,20 +191,9 @@ struct ExploreView: View {
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                         Spacer(minLength: 8)
-                        ExploreChevron()
                     }
                 }.foregroundStyle(.primary)
             }.buttonStyle(.plain)
-        }
-    }
-
-    private func browseSymbol(_ destination: ExploreBrowseDestination) -> String {
-        switch destination {
-        case .competitions: "calendar"
-        case .rankings: "chart.bar"
-        case .records: "trophy"
-        case .stats: "chart.xyaxis.line"
-        case .highlights: "globe"
         }
     }
 
@@ -255,6 +237,38 @@ struct ExploreView: View {
         }
         .font(.subheadline)
         .frame(minHeight: 44)
+    }
+}
+
+struct ExploreBrowseSection: View {
+    let language: String
+    let select: (ExploreBrowseDestination) -> Void
+    @ScaledMetric(relativeTo: .body) private var rowHeight = 66
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            ExploreHeading(title: appLocalizedString("explore.browse", languageCode: language))
+            VStack(spacing: 0) {
+                ForEach(ExploreBrowseDestination.allCases) { destination in
+                    if destination != ExploreBrowseDestination.allCases.first { Divider() }
+                    Button { select(destination) } label: {
+                        HStack {
+                            Group {
+                                if destination == .highlights { Text(exploreHomeString("interesting", language: language)) }
+                                else { Text(LocalizedStringKey(destination.titleKey)) }
+                            }
+                            Spacer(minLength: 8)
+                            ExploreChevron()
+                        }
+                        .font(.body).foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, minHeight: rowHeight, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("explore-browse-\(destination.rawValue)")
+                }
+            }
+        }
     }
 }
 

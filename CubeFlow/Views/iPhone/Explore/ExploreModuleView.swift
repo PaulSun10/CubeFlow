@@ -11,20 +11,24 @@ struct ExploreModuleView: View {
     @State private var route: Route?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: module.presentation == .compactList ? 5 : 8) {
             if module.presentation != .hero {
-                HStack(alignment: .firstTextBaseline) {
-                    ExploreHeading(title: appLocalizedString(module.titleKey, languageCode: language, tableName: module.titleTable))
-                    Spacer(minLength: 8)
+                HStack(alignment: .center, spacing: 6) {
                     if module.seeAll != nil {
                         Button { route = .all } label: {
-                            ExploreChevron().frame(minWidth: 44, minHeight: 36)
+                            HStack(alignment: .center, spacing: 4) {
+                                ExploreHeading(title: appLocalizedString(module.titleKey, languageCode: language, tableName: module.titleTable))
+                                ExploreChevron(isSectionHeading: true)
+                            }.frame(minHeight: 44).contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("explore-see-all-\(module.id)")
                         .accessibilityLabel(Text("explore.see_all") + Text(" ") + Text(appLocalizedString(
                             module.titleKey, languageCode: language, tableName: module.titleTable)))
+                    } else {
+                        ExploreHeading(title: appLocalizedString(module.titleKey, languageCode: language, tableName: module.titleTable))
                     }
+                    Spacer(minLength: 0)
                 }
             }
             switch module.presentation {
@@ -62,26 +66,41 @@ struct ExploreModuleView: View {
                 }
             case .carousel:
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(alignment: .top, spacing: 12) {
-                        ForEach(module.items) { item in
-                            itemButton(item) {
-                                ExploreSurface {
-                                    competition(item)
-                                        .frame(minHeight: dynamicTypeSize.isAccessibilitySize ? 0 : 120, alignment: .topLeading)
+                    if module.titleKey == "explore.in_region" {
+                        // Regional composition is bounded to eight cards. A real
+                        // HStack sizes the family together, including wrapped names
+                        // and Dynamic Type, without late height publication.
+                        HStack(alignment: .top, spacing: 12) {
+                            ForEach(module.items) { item in
+                                itemButton(item) {
+                                    ExploreSurface {
+                                        competition(item).frame(maxHeight: .infinity, alignment: .topLeading)
+                                    }
+                                    .frame(width: dynamicTypeSize.isAccessibilitySize ? 310 : 280)
+                                    .frame(maxHeight: .infinity)
+                                    .accessibilityIdentifier("explore-region-card-\(item.id)")
+                                    .modifier(ExploreRegionalMeasurement(id: "card-\(item.id)"))
                                 }
-                                .frame(width: dynamicTypeSize.isAccessibilitySize ? 310 : 280, alignment: .leading)
+                            }
+                        }.fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        LazyHStack(alignment: .top, spacing: 12) {
+                            ForEach(module.items) { item in
+                                itemButton(item) {
+                                    ExploreSurface {
+                                        competition(item)
+                                            .frame(minHeight: dynamicTypeSize.isAccessibilitySize ? 0 : 120, alignment: .topLeading)
+                                    }
+                                    .frame(width: dynamicTypeSize.isAccessibilitySize ? 310 : 280, alignment: .leading)
+                                }
                             }
                         }
                     }
                 }
+
             case .compactList:
-                ExploreSurface {
-                    VStack(spacing: 0) {
-                        ForEach(module.items) { item in
-                            if item.id != module.items.first?.id { Divider() }
-                            itemButton(item) { ExploreRecordRow(item: item) }
-                        }
-                    }
+                ExploreRecentRecordsViewport(items: module.items) { item in
+                    itemButton(item) { ExploreRecordRow(item: item) }
                 }
             case .feature:
                 if let item = module.items.first {
@@ -133,10 +152,25 @@ struct ExploreModuleView: View {
                 .font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
             }
             Text(item.title).font(.headline).fixedSize(horizontal: false, vertical: true)
-            Text(item.subtitle).font(.subheadline).foregroundStyle(.secondary)
+            if module.titleKey == "explore.in_region" {
+                Text(item.subtitle).font(.subheadline).foregroundStyle(.secondary)
+                    .frame(maxHeight: .infinity, alignment: .topLeading)
+            } else {
+                Text(item.subtitle).font(.subheadline).foregroundStyle(.secondary)
+            }
             if let detail = item.competition {
-                Text(String(format: appLocalizedString("explore.event_count", languageCode: language,
-                    tableName: "ExploreHome"), detail.eventCount)).font(.footnote).foregroundStyle(.secondary)
+                if detail.eventIDs.isEmpty {
+                    Text(String(format: appLocalizedString("explore.event_count", languageCode: language,
+                        tableName: "ExploreHome"), detail.eventCount)).font(.footnote).foregroundStyle(.secondary)
+                } else {
+                    if module.titleKey == "explore.in_region" {
+                        ExploreCompetitionEventStrip(eventIDs: detail.eventIDs, language: language,
+                            availableWidth: dynamicTypeSize.isAccessibilitySize ? 278 : 248)
+                            .modifier(ExploreRegionalMeasurement(id: "event-area-\(item.id)"))
+                    } else {
+                        ExploreCompetitionEvents(eventIDs: detail.eventIDs, language: language)
+                    }
+                }
             }
         }
     }
@@ -152,29 +186,107 @@ struct ExploreModuleView: View {
     }
 }
 
-struct ExploreRecordRow: View {
-    let item: ExploreItem
+/// The first four actual rows define the viewport, including wrapping and Dynamic Type.
+struct ExploreRecentRecordsViewport<Row: View>: View {
+    let items: [ExploreItem]
+    @ViewBuilder let row: (ExploreItem) -> Row
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            if let result = item.result {
-                HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Text(result.value).font(.title3.weight(.semibold)).monospacedDigit()
-                    CompetitionWCARecordTagView(tag: result.level.rawValue, variant: .standard)
-                    if let rank = result.currentRank { Text("#\(rank)").font(.subheadline).foregroundStyle(.secondary) }
+        VStack(spacing: 0) {
+            ForEach(Array(items.prefix(4))) { item in
+                if item.id != items.first?.id { Divider() }
+                ExploreRecordRow(item: item)
+            }
+        }
+        .hidden()
+        .accessibilityHidden(true)
+        .overlay {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    ForEach(items) { item in
+                        if item.id != items.first?.id { Divider() }
+                        row(item)
+                    }
                 }
             }
-            if let context = item.recordContext {
-                Text(context.personName).font(.headline)
-                Text(context.eventName + " · " + context.resultType).font(.subheadline).foregroundStyle(.secondary)
-                Text(context.competitionName).font(.caption).foregroundStyle(.secondary)
-            } else {
-                Text(item.title).font(.headline)
-                Text(item.subtitle).font(.subheadline).foregroundStyle(.secondary)
+            .modifier(ExploreRecentRecordsEdgeEffect())
+            .accessibilityIdentifier("explore-recent-records-scroll")
+        }
+        .clipped()
+    }
+}
+
+private struct ExploreRecentRecordsEdgeEffect: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.scrollEdgeEffectStyle(.soft, for: .bottom)
+                .scrollEdgeEffectHidden(true, for: [.top, .leading, .trailing])
+        } else {
+            content
+        }
+    }
+}
+
+struct ExploreCompetitionEvents: View {
+    let eventIDs: [String]
+    let language: String
+    @ScaledMetric(relativeTo: .footnote) private var iconSize = 18
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: iconSize + 6), spacing: 6)],
+                      alignment: .leading, spacing: 6) {
+                ForEach(eventIDs.filter { CompetitionEventIconFont.glyph(for: $0) != nil }, id: \.self) { eventID in
+                    if let glyph = CompetitionEventIconFont.glyph(for: eventID) {
+                        CompetitionEventGlyph(glyph: glyph,
+                            eventName: CompetitionEventPresentation.localizedFullName(for: eventID, languageCode: language),
+                            size: iconSize, color: .primary)
+                            // ScaledMetric already scales both the glyph and its grid cell.
+                            .environment(\.dynamicTypeSize, .large)
+                            .accessibilityIdentifier("explore-competition-event-\(eventID)")
+                    }
+                }
+            }
+            ForEach(eventIDs.filter { CompetitionEventIconFont.glyph(for: $0) == nil }, id: \.self) { eventID in
+                Text(CompetitionEventPresentation.localizedFullName(for: eventID, languageCode: language))
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+struct ExploreRecordRow: View {
+    let item: ExploreItem
+    var showsContext = false
+
+    private var summary: AttributedString {
+        var text = AttributedString(item.title)
+        text.font = .subheadline
+        if let value = item.result?.value, !value.isEmpty,
+           let range = text.range(of: value, options: .backwards) {
+            text[range].font = .subheadline.weight(.bold)
+        }
+        return text
+    }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 10) {
+            if let result = item.result {
+                CompetitionWCARecordTagView(tag: result.level.rawValue, variant: .standard)
+                    .frame(width: 36, alignment: .leading)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(summary)
+                Text(item.subtitle).font(.footnote).foregroundStyle(.secondary)
+                if showsContext, let context = item.recordContext {
+                    Text(context.competitionName).font(.caption).foregroundStyle(.secondary)
+                    if let source = context.sourceLabel { Text(source).font(.caption2).foregroundStyle(.secondary) }
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 12)
+        .padding(.vertical, 15)
         .foregroundStyle(.primary)
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .combine)
@@ -188,9 +300,12 @@ struct ExploreItemDestination: View {
     @ViewBuilder var body: some View {
         if case .competition(let id) = item.content, let competition = store.competition(id: id) {
             CompetitionDetailView(competition: competition, appLanguage: language)
+        } else if case .publishedRecord(_, let competitionID) = item.content {
+            ExploreCompetitionLookupDestination(competitionID: competitionID, roundID: nil, language: language,
+                publishedResultDeepLink: item.publishedResultDeepLink)
         } else if case .recentRecord(_, let competitionID, let roundID, let personID, let personWCAID) = item.content {
             ExploreCompetitionLookupDestination(competitionID: competitionID,
-                resultDeepLink: CompetitionWCALiveResultDeepLink(roundID: roundID, personID: personID, personWCAID: personWCAID),
+                resultDeepLink: item.liveResultDeepLink ?? CompetitionWCALiveResultDeepLink(roundID: roundID, personID: personID, personWCAID: personWCAID),
                 language: language)
         } else { ExploreBrowseView(destination: item.content.destination) }
     }
@@ -212,7 +327,7 @@ struct ExploreRecentRecordsView: View {
                 .pickerStyle(.segmented)
                 if let date = store.recentRecordsFetchedAt {
                     HStack {
-                        Text(exploreHomeString("live_provisional", language: language))
+                        Text(exploreHomeString("record_sources", language: language))
                         Spacer(minLength: 8)
                         Text(date, style: .time)
                     }.font(.footnote).foregroundStyle(.secondary)
@@ -229,7 +344,7 @@ struct ExploreRecentRecordsView: View {
             Section {
                 ForEach(items) { item in
                     NavigationLink { ExploreItemDestination(item: item, store: store, language: language) }
-                    label: { ExploreRecordRow(item: item) }
+                    label: { ExploreRecordRow(item: item, showsContext: true) }
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                 }
                 if items.isEmpty && store.recordsState != .loading && store.recordsState != .failed {
@@ -276,7 +391,10 @@ enum ExplorePreviewFixtures {
             items = (0..<3).map { index in
                 ExploreItem(id: "preview.result.\(index)", content: .record(id: "preview"),
                     title: "Sample competitor", subtitle: "Preview event · Sample only", date: nil,
-                    result: ExploreResultPresentation(value: "12.34", level: [.world, .continental, .national][index]))
+                    result: ExploreResultPresentation(value: "12.34", level: [.world, .continental, .national][index]),
+                    recordContext: ExploreRecordContext(eventName: "3\u{d7}3\u{d7}3", resultType: "Single",
+                        personName: "Sample competitor", countryName: "Sample country", competitionName: "Preview competition",
+                        sourceLabel: "Sample only"))
             }
         }
         return ExploreModule(id: presentation.rawValue, titleKey: "explore.preview",

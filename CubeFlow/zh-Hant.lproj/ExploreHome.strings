@@ -30,6 +30,8 @@
 "explore.source_refused" = "WCA 目前拒絕了此資料請求。篩選條件已保留，你可以在 WCA 網站查看相同選擇。";
 "explore.open_wca" = "在 WCA 查看";
 "explore.live_provisional" = "WCA Live · 暫定成績";
+"explore.record_sources" = "WCA 官方紀錄 + WCA Live 暫定紀錄";
+"explore.record_official" = "WCA · 官方";
 "explore.about_live" = "關於近期紀錄";
 "explore.events_tied" = "%d 個項目 · %d 場比賽";
 "explore.earlier_years" = "更早年份";

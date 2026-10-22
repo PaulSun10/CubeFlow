@@ -30,6 +30,8 @@
 "explore.source_refused" = "WCA is currently refusing this data request. Your filters are retained; you can view the same selection on the WCA website.";
 "explore.open_wca" = "View on WCA";
 "explore.live_provisional" = "WCA Live · Provisional";
+"explore.record_sources" = "Official WCA records + provisional WCA Live";
+"explore.record_official" = "WCA · Official";
 "explore.about_live" = "About Recent Records";
 "explore.events_tied" = "%d events · %d competitions";
 "explore.earlier_years" = "Earlier Years";

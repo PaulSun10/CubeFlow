@@ -3,7 +3,7 @@ import SwiftUI
 import Combine
 
 @MainActor
-private final class ExploreRankingsViewModel: ObservableObject {
+final class ExploreRankingsViewModel: ObservableObject {
     @Published private(set) var rows: [WCAPublicResult] = []
     @Published private(set) var isLoading = false
     @Published private(set) var failed = false
@@ -12,8 +12,16 @@ private final class ExploreRankingsViewModel: ObservableObject {
     private var currentRequest = UUID()
     private var currentKey = ""
 
+    private let cache: WCAExplorePublicDataCache
+    private let fetch: (WCARankingsQuery, Bool) async throws -> WCARankingsResponse
+    init(cache: WCAExplorePublicDataCache = .shared,
+         fetch: ((WCARankingsQuery, Bool) async throws -> WCARankingsResponse)? = nil) {
+        self.cache = cache
+        self.fetch = fetch ?? { try await WCAExplorePublicDataService.fetchRankings($0, force: $1) }
+    }
+
     func load(_ query: WCARankingsQuery, force: Bool = false) async {
-        let key = "rankings-v1-\(query.eventID)-\(query.type.rawValue)-\(query.region.id)-\(query.gender.rawValue)-\(query.show.rawValue)"
+        let key = WCAExplorePublicDataService.rankingsKey(query)
         if currentKey != key {
             currentKey = key
             rows = []
@@ -26,21 +34,23 @@ private final class ExploreRankingsViewModel: ObservableObject {
         currentRequest = requestID
         defer { if currentRequest == requestID { isLoading = false } }
         isLoading = rows.isEmpty
-        if rows.isEmpty, let cached = await WCAExplorePublicDataCache.shared.load(WCARankingsResponse.self, key: key) {
+        if rows.isEmpty, let cached = await cache.load(WCARankingsResponse.self, key: key) {
             guard currentKey == key, currentRequest == requestID else { return }
             rows = cached.value.rankings
             fetchedAt = cached.fetchedAt
             isLoading = false
         }
+        if !force, let fetchedAt, Date().timeIntervalSince(fetchedAt) < 900 { return }
         do {
-            let response = try await WCAExplorePublicDataService.fetchRankings(query)
+            let response = try await fetch(query, force)
             try Task.checkCancellation()
             guard currentKey == key, currentRequest == requestID else { return }
+            let saved = await cache.load(WCARankingsResponse.self, key: key)
+            guard currentKey == key, currentRequest == requestID, !Task.isCancelled else { return }
             rows = response.rankings
-            fetchedAt = Date()
+            fetchedAt = saved?.fetchedAt ?? Date()
             failed = false
             statusCode = nil
-            if let fetchedAt { await WCAExplorePublicDataCache.shared.save(response, key: key, now: fetchedAt) }
         } catch is CancellationError {
             return
         } catch {
@@ -53,7 +63,7 @@ private final class ExploreRankingsViewModel: ObservableObject {
 }
 
 @MainActor
-private final class ExploreRecordsViewModel: ObservableObject {
+final class ExploreRecordsViewModel: ObservableObject {
     @Published private(set) var records: [String: [WCAPublicResult]] = [:]
     @Published private(set) var isLoading = false
     @Published private(set) var failed = false
@@ -62,8 +72,16 @@ private final class ExploreRecordsViewModel: ObservableObject {
     private var currentRequest = UUID()
     private var currentKey = ""
 
+    private let cache: WCAExplorePublicDataCache
+    private let fetch: (WCARecordsQuery, Bool) async throws -> WCARecordsResponse
+    init(cache: WCAExplorePublicDataCache = .shared,
+         fetch: ((WCARecordsQuery, Bool) async throws -> WCARecordsResponse)? = nil) {
+        self.cache = cache
+        self.fetch = fetch ?? { try await WCAExplorePublicDataService.fetchRecords($0, force: $1) }
+    }
+
     func load(_ query: WCARecordsQuery, force: Bool = false) async {
-        let key = "records-v1-\(query.region.id)-\(query.gender.rawValue)-\(query.show.rawValue)"
+        let key = WCAExplorePublicDataService.recordsKey(query)
         if currentKey != key {
             currentKey = key
             records = [:]
@@ -76,21 +94,23 @@ private final class ExploreRecordsViewModel: ObservableObject {
         currentRequest = requestID
         defer { if currentRequest == requestID { isLoading = false } }
         isLoading = records.isEmpty
-        if records.isEmpty, let cached = await WCAExplorePublicDataCache.shared.load(WCARecordsResponse.self, key: key) {
+        if records.isEmpty, let cached = await cache.load(WCARecordsResponse.self, key: key) {
             guard currentKey == key, currentRequest == requestID else { return }
             records = cached.value.records
             fetchedAt = cached.fetchedAt
             isLoading = false
         }
+        if !force, let fetchedAt, Date().timeIntervalSince(fetchedAt) < 900 { return }
         do {
-            let response = try await WCAExplorePublicDataService.fetchRecords(query)
+            let response = try await fetch(query, force)
             try Task.checkCancellation()
             guard currentKey == key, currentRequest == requestID else { return }
+            let saved = await cache.load(WCARecordsResponse.self, key: key)
+            guard currentKey == key, currentRequest == requestID, !Task.isCancelled else { return }
             records = response.records
-            fetchedAt = Date()
+            fetchedAt = saved?.fetchedAt ?? Date()
             failed = false
             statusCode = nil
-            if let fetchedAt { await WCAExplorePublicDataCache.shared.save(response, key: key, now: fetchedAt) }
         } catch is CancellationError {
             return
         } catch {
@@ -214,7 +234,7 @@ struct ExploreRankingsView: View {
             Section { ProgressView(explorePublicString("loading", defaultValue: "Loading...", language: language)) }
         } else if model.failed && model.rows.isEmpty {
             ExplorePublicErrorSection(language: language, statusCode: model.statusCode, officialURL: officialURL) { Task { await model.load(query, force: true) } }
-        } else if model.failed {
+        } else if model.failed || model.fetchedAt.map({ Date().timeIntervalSince($0) >= 900 }) == true {
             ExplorePublicSavedDataSection(date: model.fetchedAt, language: language)
             Button(explorePublicString("retry", defaultValue: "Retry", language: language)) {
                 Task { await model.load(query, force: true) }
@@ -348,7 +368,7 @@ struct ExploreRecordsView: View {
             Section { ProgressView(explorePublicString("loading", defaultValue: "Loading...", language: language)) }
         } else if model.failed && model.records.isEmpty {
             ExplorePublicErrorSection(language: language, statusCode: model.statusCode, officialURL: officialURL) { Task { await model.load(query, force: true) } }
-        } else if model.failed {
+        } else if model.failed || model.fetchedAt.map({ Date().timeIntervalSince($0) >= 900 }) == true {
             ExplorePublicSavedDataSection(date: model.fetchedAt, language: language)
             Button(explorePublicString("retry", defaultValue: "Retry", language: language)) {
                 Task { await model.load(query, force: true) }
@@ -466,14 +486,17 @@ private struct ExploreSlimRecordRows: View {
 struct ExploreCompetitionLookupDestination: View {
     let competitionID: String
     let resultDeepLink: CompetitionWCALiveResultDeepLink?
+    let publishedResultDeepLink: PublishedCompetitionResultDeepLink?
     let language: String
     @State private var competition: CompetitionSummary?
     @State private var isLoading = true
     @State private var failed = false
     @State private var requestID = 0
 
-    init(competitionID: String, roundID: String?, language: String) {
+    init(competitionID: String, roundID: String?, language: String,
+         publishedResultDeepLink: PublishedCompetitionResultDeepLink? = nil) {
         self.competitionID = competitionID
+        self.publishedResultDeepLink = publishedResultDeepLink
         resultDeepLink = roundID.map {
             CompetitionWCALiveResultDeepLink(roundID: $0, personID: nil, personWCAID: nil)
         }
@@ -487,6 +510,7 @@ struct ExploreCompetitionLookupDestination: View {
     ) {
         self.competitionID = competitionID
         self.resultDeepLink = resultDeepLink
+        publishedResultDeepLink = nil
         self.language = language
     }
 
@@ -497,7 +521,8 @@ struct ExploreCompetitionLookupDestination: View {
                     competition: competition,
                     appLanguage: language,
                     initialWCALiveRoundID: resultDeepLink?.roundID,
-                    initialWCALiveResultDeepLink: resultDeepLink
+                    initialWCALiveResultDeepLink: resultDeepLink,
+                    initialPublishedResultDeepLink: publishedResultDeepLink
                 )
             } else if isLoading {
                 ProgressView(explorePublicString("loading_competition", defaultValue: "Loading competition...", language: language))

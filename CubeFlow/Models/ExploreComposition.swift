@@ -9,6 +9,7 @@ nonisolated enum ExploreBrowseDestination: String, CaseIterable, Identifiable, H
 nonisolated enum ExploreContent: Hashable, Sendable {
     case competition(id: String)
     case record(id: String)
+    case publishedRecord(id: String, competitionID: String)
     case recentRecord(
         id: String,
         competitionID: String,
@@ -23,7 +24,7 @@ nonisolated enum ExploreContent: Hashable, Sendable {
     var destination: ExploreBrowseDestination {
         switch self {
         case .competition, .weeklyCompetition: .competitions
-        case .record, .recentRecord: .records
+        case .record, .recentRecord, .publishedRecord: .records
         case .statistic: .stats
         case .highlight: .highlights
         }
@@ -39,6 +40,8 @@ nonisolated struct ExploreItem: Identifiable, Hashable, Sendable {
     var competition: ExploreCompetitionPresentation? = nil
     var result: ExploreResultPresentation? = nil
     var recordContext: ExploreRecordContext? = nil
+    var publishedResultDeepLink: PublishedCompetitionResultDeepLink? = nil
+    var liveResultDeepLink: CompetitionWCALiveResultDeepLink? = nil
 }
 
 nonisolated struct ExploreRecordContext: Hashable, Sendable {
@@ -47,6 +50,7 @@ nonisolated struct ExploreRecordContext: Hashable, Sendable {
     let personName: String
     let countryName: String
     let competitionName: String
+    var sourceLabel: String? = nil
 }
 
 nonisolated struct ExploreCompetitionPresentation: Hashable, Sendable {
@@ -54,6 +58,7 @@ nonisolated struct ExploreCompetitionPresentation: Hashable, Sendable {
     let end: Date
     let eventCount: Int
     let registrationOpen: Bool
+    var eventIDs: [String] = []
 }
 
 nonisolated struct ExploreResultPresentation: Hashable, Sendable {
@@ -72,7 +77,7 @@ nonisolated enum ExploreHeroEligibility: Sendable {
 
     func accepts(_ content: ExploreContent) -> Bool {
         switch (self, content) {
-        case (.worldRecord, .record), (.worldRecord, .recentRecord), (.majorCompetition, .competition),
+        case (.worldRecord, .record), (.worldRecord, .recentRecord), (.worldRecord, .publishedRecord), (.majorCompetition, .competition),
              (.editorialHighlight, .highlight), (.weekly, .weeklyCompetition): true
         default: false
         }
@@ -158,7 +163,7 @@ nonisolated enum ExploreComposer {
             let items = candidate.items.filter { itemIDs.insert($0.id).inserted }
             guard !items.isEmpty else { continue }
             let presentation = effectivePresentation(candidate)
-            let selected = Array(items.prefix(candidate.id == "records.recent" ? 3 : (presentation == .feature ? 1 : 8)))
+            let selected = candidate.id == "records.recent" ? items : Array(items.prefix(presentation == .feature ? 1 : 8))
             usedItems.formUnion(selected.map(\.id))
             modules.append(module(candidate, presentation: presentation, items: selected))
         }
