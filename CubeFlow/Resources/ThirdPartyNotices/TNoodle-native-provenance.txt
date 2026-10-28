@@ -69,3 +69,22 @@ GPLv3 obligations for the combined application and Apple distribution terms;
 availability of this fork does not itself grant an exception. If the missing
 static build inputs cannot be recovered, a separately authorized reproducible
 build and algorithm-equivalence validation can establish a complete baseline.
+
+2026-10-23 focused source-delivery follow-up (no binary/runtime change):
+  ThirdPartySources/TNoodle/ now supplies the pinned Graal source-family archive,
+  Gluon Substrate 0.0.56 source (cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5),
+  and GluonFX 1.0.16 source (54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5),
+  alongside the existing TNoodle native-fork source ZIP. Each new archive's file
+  blobs match the full official Git tree. Original licenses remain in archives.
+  Gluon Substrate's native/ios/dummy.c (Copyright (c) 2022, Gluon,
+  GPLv3-or-later file grant) corresponds to the ARM feature initialization and
+  three JDK17 empty JNI functions in the image. That project is not SubstrateVM;
+  its GPLv2 root LICENSE and differing file grants are preserved separately.
+  Mapped SVM metadata names liblibchelper.a, libdarwin.a, libjvm.a, but is not a
+  complete subsequent-link inventory. No original static-SDK/cross-CLIB source
+  identity or all platform patches have been authenticated. Default candidate
+  SDK/CLIB binary downloads are research only, not supplied as source.
+  See docs/TNOODLE-SOURCE.md, ThirdPartySources/TNoodle/source-manifest.json and
+  Scripts/verify_tnoodle_source_delivery.py for exact hashes, source mappings,
+  recipient access, validation and remaining G1-G4 gaps. Verdict: INCOMPLETE.
+  This supplements, and does not replace or broaden, the original upstream grants.

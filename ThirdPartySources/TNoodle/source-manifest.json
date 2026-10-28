@@ -1,0 +1,513 @@
+{
+  "schema_version": 1,
+  "evidence_date": "2026-10-23",
+  "baseline_commit": "2e5d933dbe94752eca58af5c7cbd942110292172",
+  "delivery_verdict": "INCOMPLETE",
+  "scope": "Static source inventory, not build equivalence or legal certification.",
+  "binary": {
+    "path": "Vendor/TNoodleLibNative.xcframework/ios-arm64/lib-scrambles.dylib",
+    "sha256": "35ca5611930688d63e6e43b9e2a5d49d6c9dec08ca54a98a136645ce454b4103",
+    "uuid": "D2D6B149-54E0-319A-BAFA-6A8A55C0AA73",
+    "defined_symbol_count": 78,
+    "has_dwarf_sections": false,
+    "svm_strings": [
+      {
+        "symbol": "___svm_version_info",
+        "address": "0x23f82e8",
+        "value": "com.oracle.svm.core.VM=GraalVM 22.1.0.1 Java 17 CE"
+      },
+      {
+        "symbol": "___svm_vm_java_version",
+        "address": "0x23f8788",
+        "value": "com.oracle.svm.core.VM.Java.Version=17.0.3"
+      },
+      {
+        "symbol": "___svm_vm_target_libc",
+        "address": "0x23f8568",
+        "value": "com.oracle.svm.core.VM.Target.LibC=com.oracle.svm.core.c.libc.NoLibC"
+      },
+      {
+        "symbol": "___svm_vm_target_libraries",
+        "address": "0x23f8008",
+        "value": "com.oracle.svm.core.VM.Target.Libraries=z|pthread|-framework Foundation|dl"
+      },
+      {
+        "symbol": "___svm_vm_target_platform",
+        "address": "0x23f87f8",
+        "value": "com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$IOS_AARCH64"
+      },
+      {
+        "symbol": "___svm_vm_target_staticlibraries",
+        "address": "0x23f81d0",
+        "value": "com.oracle.svm.core.VM.Target.StaticLibraries=liblibchelper.a|libdarwin.a|libjvm.a"
+      }
+    ],
+    "dynamic_dependencies": [
+      "/usr/lib/libz.1.dylib",
+      "/usr/lib/libSystem.B.dylib",
+      "/usr/lib/libc++.1.dylib",
+      "/System/Library/Frameworks/Foundation.framework/Foundation",
+      "/System/Library/Frameworks/UIKit.framework/UIKit",
+      "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+      "/System/Library/Frameworks/MobileCoreServices.framework/MobileCoreServices",
+      "/System/Library/Frameworks/OpenGLES.framework/OpenGLES",
+      "/System/Library/Frameworks/CoreText.framework/CoreText",
+      "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+      "/System/Library/Frameworks/ImageIO.framework/ImageIO",
+      "/System/Library/Frameworks/CoreBluetooth.framework/CoreBluetooth",
+      "/System/Library/Frameworks/CoreImage.framework/CoreImage",
+      "/System/Library/Frameworks/CoreLocation.framework/CoreLocation",
+      "/System/Library/Frameworks/CoreMedia.framework/CoreMedia",
+      "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+      "/System/Library/Frameworks/CoreVideo.framework/CoreVideo",
+      "/System/Library/Frameworks/Accelerate.framework/Accelerate",
+      "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+      "/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox",
+      "/System/Library/Frameworks/MediaPlayer.framework/MediaPlayer",
+      "/System/Library/Frameworks/UserNotifications.framework/UserNotifications",
+      "/System/Library/Frameworks/ARKit.framework/ARKit",
+      "/System/Library/Frameworks/AVKit.framework/AVKit",
+      "/System/Library/Frameworks/SceneKit.framework/SceneKit",
+      "/System/Library/Frameworks/StoreKit.framework/StoreKit",
+      "/System/Library/Frameworks/ModelIO.framework/ModelIO",
+      "/System/Library/Frameworks/WebKit.framework/WebKit",
+      "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+      "/usr/lib/libobjc.A.dylib"
+    ]
+  },
+  "archives": [
+    {
+      "path": "ThirdPartySources/TNoodle/gluonfx-maven-plugin-54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5.tar.gz",
+      "sha256": "9a8d2f5e24a848eb3e88a561406e13219ef2e0514703882da85dda94398f2c5a",
+      "bytes": 18893,
+      "root": "gluonfx-maven-plugin-54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5",
+      "revision": "54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5",
+      "source_url": "https://codeload.github.com/gluonhq/gluonfx-maven-plugin/tar.gz/54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5",
+      "verified_upstream_git_blobs": 28,
+      "verification_limit": "Pinned upstream source, not authentication of unrecorded original native build inputs/patches.",
+      "required_members": [
+        {
+          "path": "LICENSE",
+          "sha256": "7acbfe0cd37a5963adab4632bf265b065c7376a092d620bbb4ffdd4d2e052b5c"
+        },
+        {
+          "path": "pom.xml",
+          "sha256": "f87a3ad70d658e8886f60082b3de887cceb00e046b983ac44dc99e1be62d309a"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/NativeSharedLibMojo.java",
+          "sha256": "02dc9d5cd0030cb6357efd9cf9c7d0a642a139918161d463c59a555d5340362a"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/NativeBuildMojo.java",
+          "sha256": "a939088c5e415fa7db624e0b1ad5170aed83d41b611313f4227b2df258388ac9"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/NativeBaseMojo.java",
+          "sha256": "22744eafbd8cd398df0f105f7db6982b7eba868d4c30314b1e69951672102967"
+        }
+      ]
+    },
+    {
+      "path": "ThirdPartySources/TNoodle/substrate-cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5.tar.gz",
+      "sha256": "ed3a33489bbcca8cf71671b14cf88b924a8176702c0b5f8dd58f818977babe69",
+      "bytes": 1572695,
+      "root": "substrate-cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5",
+      "revision": "cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5",
+      "source_url": "https://codeload.github.com/gluonhq/substrate/tar.gz/cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5",
+      "verified_upstream_git_blobs": 235,
+      "verification_limit": "Pinned upstream source, not authentication of unrecorded original native build inputs/patches.",
+      "required_members": [
+        {
+          "path": "LICENSE",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+        },
+        {
+          "path": "external-licenses.md",
+          "sha256": "7aa64ff5924e75fab270556402e31f429421311833da1179bec18edeb09ee171"
+        },
+        {
+          "path": "build.gradle",
+          "sha256": "292ac240c2d3c7c966ac874dd5e9928cee3003310914fde856fdfe4a930a7381"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/substrate/SubstrateDispatcher.java",
+          "sha256": "53d81fe8aa9f0426200478a366398e3e8743b3ebc04cd11777512baa9a45ce4d"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/substrate/target/AbstractTargetConfiguration.java",
+          "sha256": "a32c3ada9016a2ffbba042b94ff56b1c7fdc781c5c9c70909a743ce2d19171a7"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/substrate/target/IosTargetConfiguration.java",
+          "sha256": "e981563130826edfb1b39e7ef4dd9e2ea75a377a1216ba8694a3bdcb29243343"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/substrate/target/DarwinTargetConfiguration.java",
+          "sha256": "7c0c2ef34de03346f5762de23deca1f31f2281ceb95a78f939aebbe0235ef6ab"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/substrate/Constants.java",
+          "sha256": "29659ae975ec54ca2cfa92b5ea73a7b4581ca8daf035899013a93772f6ebe6dc"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/substrate/util/FileDeps.java",
+          "sha256": "ce49fbb54a52122422627b778e65bdfa7aa330a33cc448e95bc8fec423b9f2fd"
+        },
+        {
+          "path": "src/main/java/com/gluonhq/substrate/model/Triplet.java",
+          "sha256": "0153a8c3cd340202089935437fe59b19f11c88a96410e942c69bfd22a7066bb0"
+        },
+        {
+          "path": "src/main/resources/native/ios/dummy.c",
+          "sha256": "0eaa8b8b45d44d58477836b725e9d36413d42b392c545ae82bd634cec07b12bf"
+        },
+        {
+          "path": "src/main/resources/config/reflectionconfig-java.json",
+          "sha256": "cad42161ca1d7631a90a3cacec7fa0c95129801de420705ce46c83df8bccd721"
+        },
+        {
+          "path": "src/main/resources/config/jniconfig-java.json",
+          "sha256": "a05e707b517698356b97011629f87052662a1aadcb9c5e7d5fdb107c3c9de4c0"
+        }
+      ]
+    },
+    {
+      "path": "ThirdPartySources/TNoodle/tnoodle-lib-native-v1-e50c528feb8220b99eb66575a748e88391300f1f.zip",
+      "sha256": "30354467a70845c1b97c201c2f90aa9dc2ed5cadadb602c677d7bfed83712eef",
+      "bytes": 335390,
+      "root": "CubeLabsNZ-tnoodle-lib-native-v1-e50c528",
+      "revision": "e50c528feb8220b99eb66575a748e88391300f1f",
+      "source_url": "https://api.github.com/repos/CubeLabsNZ/tnoodle-lib-native-v1/zipball/e50c528feb8220b99eb66575a748e88391300f1f",
+      "verified_upstream_git_blobs": null,
+      "verification_limit": "Pinned upstream source, not authentication of unrecorded original native build inputs/patches.",
+      "required_members": [
+        {
+          "path": "LICENSE",
+          "sha256": "e1c0ad728983d8a57335e52cf1064f1affd1d454173d8cebd3ed8b4a72b48704"
+        },
+        {
+          "path": "pom.xml",
+          "sha256": "0295703723333177d7dac57110e2b0b0cdf2f498d5a013fce63e652f1b8ebdf6"
+        },
+        {
+          "path": "scrambles/pom.xml",
+          "sha256": "460ba1007148da943d6e9a6c1fc716fbc2a05229909614c83886e2f37045b5ea"
+        },
+        {
+          "path": "scrambles/src/main/java/org/worldcubeassociation/tnoodle/scrambles/PuzzleRegistry.java",
+          "sha256": "96f3f7f80da7cd1e6a76f912c51f717033517123e50b85666a6ca86a767976ee"
+        },
+        {
+          "path": "min2phase/pom.xml",
+          "sha256": "beee0b3c7310cbb95dca3dcbf1c4b56c86bd55f55845b3c4b7043d02912ddd1f"
+        },
+        {
+          "path": "threephase/pom.xml",
+          "sha256": "038173ede1e370b6b7512c8f8f7976ba4908b6d200614fbed6e1794f7a7c6869"
+        },
+        {
+          "path": "sq12phase/pom.xml",
+          "sha256": "d6349ecba4fc600f50c0ba5da1b5408c762ed2a81cdb06ab05d747128e7adb8d"
+        },
+        {
+          "path": "svglite/pom.xml",
+          "sha256": "3cf99314f206c451e71d9b16b8b32afcc58a7ffa78182ab294f2571c531c987b"
+        }
+      ]
+    },
+    {
+      "path": "ThirdPartySources/TNoodle/gluon-graal-08e1c57bc6b6de932b0faed2f49b21a1a54a39fe.tar.gz",
+      "sha256": "8f5ab43e9c73fffccda59fc59821f71748f01d8bdfd8e48459a16ea44f4395fe",
+      "bytes": 33686473,
+      "root": "graal-08e1c57bc6b6de932b0faed2f49b21a1a54a39fe",
+      "revision": "08e1c57bc6b6de932b0faed2f49b21a1a54a39fe",
+      "source_url": "https://codeload.github.com/gluonhq/graal/tar.gz/08e1c57bc6b6de932b0faed2f49b21a1a54a39fe",
+      "verified_upstream_git_blobs": 13591,
+      "verification_limit": "Pinned upstream source, not authentication of unrecorded original native build inputs/patches.",
+      "required_members": [
+        {
+          "path": "LICENSE",
+          "sha256": "fbacd7adc43496ce1bffca08d41bbaaa562b91234cae568069a7c957a4aa7fff"
+        },
+        {
+          "path": "THIRD_PARTY_LICENSE.txt",
+          "sha256": "3e4fdaaa3a09b27d0b147eae32d8e097214e3295f98c7f85f52f37eea8df9f1e"
+        },
+        {
+          "path": "substratevm/LICENSE",
+          "sha256": "11a8fe0c63dcff8bd8674b89a5895dfbcf5f7e5453cf0a33566c4b3fb64e404c"
+        },
+        {
+          "path": "sdk/LICENSE.md",
+          "sha256": "7d2369d11c040d7937191c1222d4910071fddf7413b1b4f743eee982e8ab63fd"
+        },
+        {
+          "path": ".github/workflows/gluon_release.yml",
+          "sha256": "581554db82264d398348898b5f1ca002b415da8d66952727c16cf004a2ab32af"
+        },
+        {
+          "path": "substratevm/mx.substratevm/suite.py",
+          "sha256": "8d5546f9bf8065ad13fb3755fcdafdd346424fcee4617283c8ad1231b10529fc"
+        },
+        {
+          "path": "substratevm/src/com.oracle.svm.native.libchelper/src/timeZone.c",
+          "sha256": "55626e88053c71933ff7ccca5e5945e168d6459d17b455badad39e6250d113e6"
+        },
+        {
+          "path": "substratevm/src/com.oracle.svm.native.jvm.posix/src/JvmFuncs.c",
+          "sha256": "125fa77aeecae80ca8c164a80186fd34d71ca896270d6f84b9bc2721de61b686"
+        },
+        {
+          "path": "substratevm/src/com.oracle.svm.native.darwin/src/foundation.c",
+          "sha256": "3b83a441167cfab5593e2b64b2569a7d2abf50576ef05a63c9ddc99917d054a9"
+        }
+      ]
+    }
+  ],
+  "repository_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "ThirdPartySources/TNoodle/Gradle-Wrapper-Apache-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "CubeFlow/Resources/ThirdPartyNotices/TNoodle-GPL-3.0.txt",
+      "sha256": "e1c0ad728983d8a57335e52cf1064f1affd1d454173d8cebd3ed8b4a72b48704"
+    },
+    {
+      "path": "CubeFlow/Resources/ThirdPartyNotices/Graal-SDK-UPL-1.0.txt",
+      "sha256": "7d2369d11c040d7937191c1222d4910071fddf7413b1b4f743eee982e8ab63fd"
+    },
+    {
+      "path": "CubeFlow/Resources/ThirdPartyNotices/Graal-SubstrateVM-GPL-2-Classpath.txt",
+      "sha256": "398670db30dae1b4b712dc6b9474c3cafce4c718386403fef781f516ff726967"
+    },
+    {
+      "path": "Vendor/TNoodleLibNative.xcframework/ios-arm64/lib-scrambles.dylib",
+      "sha256": "35ca5611930688d63e6e43b9e2a5d49d6c9dec08ca54a98a136645ce454b4103"
+    },
+    {
+      "path": "CubeFlow/Views/Shared/TNoodleNativeBridge.h",
+      "sha256": "1c41cf2aae908e9aefacaa5b0be93cf6a7b0808ddb35a73e0e64fc5db6b819b8"
+    },
+    {
+      "path": "CubeFlow/Views/Shared/TNoodleNativeBridge.m",
+      "sha256": "eab341a11ac42a9596a1d4be43ca36e8bc18018b57ce6134d822f63cc771600c"
+    },
+    {
+      "path": "CubeFlow/Views/Shared/TNoodleScrambler.swift",
+      "sha256": "fc0fc734db71d5a47b1b6aa332403569ac35c1913f74dd92627580f02d66846b"
+    },
+    {
+      "path": "Scripts/package-tnoodle-framework.sh",
+      "sha256": "168b1336b8ff5092e6729ce3108c9edeec0ecfc6a6e5b4ed002f16fa11971e1d"
+    },
+    {
+      "path": "Config/TNoodleRuntime/Info.plist",
+      "sha256": "ef2149af48132e75c793587f168b43b5afec16d8f88769225dc358c5976527a8"
+    },
+    {
+      "path": "Config/TNoodleRuntime/README.md",
+      "sha256": "7106ed037a49d467264e8bede1778d6e2b61d2d574d8f126ff53cf3a9f34e85b"
+    },
+    {
+      "path": "CubeFlow.xcodeproj/project.pbxproj",
+      "sha256": "5f238d22af340c7a38005d1c7311cf97ad29a68486969caafa27ba881d1ee721"
+    },
+    {
+      "path": "Vendor/TNoodleLibNative.xcframework/ios-arm64/Headers/graal_isolate.h",
+      "sha256": "e757434e96b754068a72b9e191d798bd35b55175c5775804e3fb0eddb6ca00c3"
+    },
+    {
+      "path": "Vendor/TNoodleLibNative.xcframework/ios-arm64/Headers/graal_isolate_dynamic.h",
+      "sha256": "54e351240e24d37fbce11427779530704aceaaeb43ef4d6504257565e67eb029"
+    },
+    {
+      "path": "Vendor/TNoodleLibNative.xcframework/ios-arm64/Headers/org.worldcubeassociation.tnoodle.scrambles.main.h",
+      "sha256": "d4f441c41565ef32d9a1e9a73570352f4036898166e15fa32aa8fc87c97e2c45"
+    },
+    {
+      "path": "Vendor/TNoodleLibNative.xcframework/ios-arm64/Headers/org.worldcubeassociation.tnoodle.scrambles.main_dynamic.h",
+      "sha256": "27045c6b7c73319aeaa6f86e1dce59e2b91ac3bc0dabf93f2f5a10b2a940f6ca"
+    }
+  ],
+  "components": [
+    {
+      "id": "tnoodle-java",
+      "version": "0.18.1 / native fork v1.0",
+      "source_status": "included_pinned_project_source",
+      "license": "GPLv3; individual solver later-version grants retained",
+      "evidence": [
+        "Four embedded POMs match fork; two Main C exports present. Exact per-file retention unavailable in stripped image."
+      ],
+      "source_archives": [
+        "ThirdPartySources/TNoodle/tnoodle-lib-native-v1-e50c528feb8220b99eb66575a748e88391300f1f.zip"
+      ]
+    },
+    {
+      "id": "graal-runtime",
+      "version": "22.1.0.1 Java 17 CE",
+      "source_status": "included_matching_release_source_family",
+      "license": "SubstrateVM GPLv2+Classpath; SDK UPL 1.0; individual third-party notices retained",
+      "evidence": [
+        "SVM version/platform/library strings; release tag pins 08e1c57. All 13591 source archive blobs match complete upstream Git tree; no full build attestation."
+      ],
+      "source_archives": [
+        "ThirdPartySources/TNoodle/gluon-graal-08e1c57bc6b6de932b0faed2f49b21a1a54a39fe.tar.gz"
+      ]
+    },
+    {
+      "id": "gluon-substrate-ios",
+      "version": "0.0.56 / cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5",
+      "source_status": "included_native_support_and_build_source",
+      "license": "dummy.c/inspected Java headers GPLv3-or-later; root LICENSE GPLv2, preserve distinct notices",
+      "evidence": [
+        "48 Java files match official Maven source JAR. dummy.c CPU initialization and three empty JDK17 JNI functions correspond to image at 0x4000/0x4048/0x404c/0x4050."
+      ],
+      "source_archives": [
+        "ThirdPartySources/TNoodle/substrate-cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5.tar.gz"
+      ]
+    },
+    {
+      "id": "gluonfx-plugin",
+      "version": "1.0.16 / 54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5",
+      "source_status": "included_build_tool_source_not_proven_app_runtime",
+      "license": "BSD-3-Clause, Gluon",
+      "evidence": [
+        "TNoodle POM pin; all 15 Java files match official Maven source JAR. NativeSharedLibMojo does not itself run compile/link."
+      ],
+      "source_archives": [
+        "ThirdPartySources/TNoodle/gluonfx-maven-plugin-54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5.tar.gz"
+      ]
+    },
+    {
+      "id": "openjdk",
+      "version": "Java metadata 17.0.3; native static SDK revision unknown",
+      "source_status": "missing_authenticated_native_source_patch_mapping",
+      "license": "Inspected sources GPLv2+Classpath; complete exact inventory unavailable",
+      "evidence": [
+        "Native JDK support and JVM/JNI exports incorporated. Default 18-ea+prep18-8 is configurable, not authenticated input."
+      ],
+      "source_archives": [
+
+      ]
+    },
+    {
+      "id": "external-system-libraries",
+      "version": "Mach-O LC_LOAD_DYLIB list",
+      "source_status": "system_dependencies_not_redistributed_sdk",
+      "license": "System/SDK components separately licensed",
+      "evidence": [
+        "Direct load commands identify libz/libSystem/libc++/Apple frameworks; do not imply all framework APIs execute."
+      ],
+      "source_archives": [
+
+      ]
+    },
+    {
+      "id": "metadata-resources",
+      "version": "JavaCPP 1.5.2 / LLVM 9.0 / jcodings 1.0.56-SNAPSHOT",
+      "source_status": "resources_present_executable_incorporation_unproven",
+      "license": "Actual Graal THIRD_PARTY_LICENSE.txt and source-file notices retained",
+      "evidence": [
+        "Maven/plugin text is not evidence every implementation or an LLVM compiler is embedded executable code."
+      ],
+      "source_archives": [
+        "ThirdPartySources/TNoodle/gluon-graal-08e1c57bc6b6de932b0faed2f49b21a1a54a39fe.tar.gz"
+      ]
+    }
+  ],
+  "external_pinned_references": [
+    {
+      "component": "Labs JDK source reference, NOT authenticated original iOS static SDK",
+      "revision": "05e32d91e144823314b0eda9560de949ef6d40ae",
+      "url": "https://github.com/graalvm/labs-openjdk-17/tree/05e32d91e144823314b0eda9560de949ef6d40ae",
+      "source_archive_url": "https://codeload.github.com/graalvm/labs-openjdk-17/tar.gz/05e32d91e144823314b0eda9560de949ef6d40ae",
+      "evidence": "Official jvmci-22.1-b06 tag, referenced by Graal release workflow Linux static build, merges jdk-17.0.3-ga. Darwin uses mx fetch-jdk with mx master; exact host selection is not established.",
+      "status": "Pinned reference only; archive digest and correspondence not authenticated."
+    }
+  ],
+  "candidate_binary_inputs_not_delivered": [
+    {
+      "name": "staticjdk-ios-arm64-gvm-18-ea+prep18-8.zip",
+      "url": "https://download2.gluonhq.com/substrate/staticjdk/staticjdk-ios-arm64-gvm-18-ea+prep18-8.zip",
+      "sha256": "ea2907cca03f7c64cacc24bb24c351be141442da6d4864a394b7fe69cb3f1cd7",
+      "status": "Public candidate, binary only, kept in ignored research; not attested original input."
+    },
+    {
+      "name": "ios-arm64-ea+27.zip",
+      "url": "https://download2.gluonhq.com/substrate/clibs/ios-arm64-ea+27.zip",
+      "sha256": "9fdf9203f99286a0fa88916da9dfffb4b7019c55a048fe077dac0d220b6ca7ad",
+      "status": "Public candidate, binary only, kept in ignored research; not attested original input."
+    }
+  ],
+  "maven_source_checks": [
+    {
+      "version": "GluonFX 1.0.16",
+      "sha256": "d48aaa44fb7298bb04fed44abcb848786952c5740b3395f8ade3ae08340c18ea",
+      "java_entries_matched": 15
+    },
+    {
+      "version": "Substrate 0.0.56",
+      "sha256": "09dbf08c3aae7420f1506bc521e62be8894d746975a59d006d0056c2185324dc",
+      "java_entries_matched": 48
+    }
+  ],
+  "remaining_gaps": [
+    {
+      "id": "G1-static-jdk",
+      "missing": "Actual linked iOS static JDK revision/source, platform patches and input identity.",
+      "expected_version": "Unknown; 18-ea+prep18-8 is only a configurable default.",
+      "attempts": [
+        "Original ~/.gluon and ~/.m2 inputs absent.",
+        "Official candidate SDK retrieved; 30 static libraries, no sources or license files.",
+        "gluonhq/mobile prep18-8 tag HTTP 404; prep18-2/3/4 do not establish prep18-8."
+      ],
+      "why_required": "Covered native JDK source is absent from Graal and TNoodle archives.",
+      "next_action": "Obtain builder static-SDK identity and supplier source commit/patch set; generic jdk17u is not a substitute."
+    },
+    {
+      "id": "G2-cross-clibs",
+      "missing": "Authenticated source/patch/build mapping for actual iOS helper/JVM libraries and any retained libffi.",
+      "expected_version": "Default ios-arm64-ea+27 candidate, not proven original input.",
+      "attempts": [
+        "Correct official default archive retrieved: liblibchelper.a, libdarwin.a, libjvm.a, libffi.a; binaries only.",
+        "Matching Graal release-family native support source recovered; actual platform archive/patch provenance not authenticated."
+      ],
+      "why_required": "SVM confirms three named native libraries; link flag ffi alone does not prove retained code.",
+      "next_action": "Obtain builder clibraries/27/ios-arm64 identity, supplier patches/build definitions and retained-member inventory."
+    },
+    {
+      "id": "G3-original-build",
+      "missing": "Sufficient original shared-library build recipe/overrides and external/generated input provenance.",
+      "expected_version": "Project POMs, plugin 1.0.16 and Substrate 0.0.56 definitions now included.",
+      "attempts": [
+        "Pinned/post-release README and full plugin/target implementations inspected.",
+        "sharedlib goal sets state and adjusts identity, but does not compile/link on its own."
+      ],
+      "why_required": "Recipient needs actual necessary configuration, not a guessed invocation; historical logs or byte identity are not mandatory in themselves.",
+      "next_action": "Recover builder recipe with overrides/reachability/native inputs and any modified tools, or attest stock definitions plus identified inputs."
+    },
+    {
+      "id": "G4-linked-inventory",
+      "missing": "Final incorporated dependency/source/notice inventory and complete binary-adjacent source delivery.",
+      "expected_version": "Resource labels known; exact retained implementations not fully established.",
+      "attempts": [
+        "78 defined exports, no DWARF, full load commands and mapped SVM metadata inspected.",
+        "Upstream third-party licenses and suite definitions included."
+      ],
+      "why_required": "Do not omit incorporated source/notices or treat every metadata dependency as redistributed code.",
+      "next_action": "Obtain builder link/reachability inventory sufficient to settle retained libraries, then supply remaining source/notices beside binary."
+    }
+  ],
+  "documentation": [
+    "docs/TNOODLE-SOURCE.md",
+    "THIRD_PARTY_NOTICES.md",
+    "docs/licensing-release-gate.md",
+    "CubeFlow/Resources/ThirdPartyNotices/TNoodle-native-provenance.txt"
+  ]
+}

@@ -30,7 +30,9 @@ headers have been preserved. Source archives retain their upstream notices.
   source ZIP. Its original formatting is retained independently of root LICENSE.
 - **Source:** pinned upstream source ZIP is now supplied in `ThirdPartySources/TNoodle/`.
   This supplies the wrapper, puzzles, module source and build definitions, **not**
-  a complete source delivery for every linked runtime portion. Exact binary
+  a complete source delivery for every linked runtime portion. The focused follow-up
+  also supplies pinned Graal, Gluon Substrate and GluonFX source archives, checksums
+  and a machine-readable inventory. Exact binary
   hashes, native-image flags, dependencies and remaining gaps:
   [TNOODLE-SOURCE.md](docs/TNOODLE-SOURCE.md).
 
@@ -44,6 +46,11 @@ headers have been preserved. Source archives retain their upstream notices.
   other contributors; retain their own years and notices, rather than assigning
   one blanket copyright to all runtime material.
 - **Local text:** `Graal-SubstrateVM-GPL-2-Classpath.txt` (existing text retained).
+- **Recovered source:** complete Gluon Graal archive at the pinned revision is
+  included in `ThirdPartySources/TNoodle/`, with its original SubstrateVM/SDK
+  licenses and `THIRD_PARTY_LICENSE.txt`. All 13,591 source blobs matched the
+  complete official Git tree. This is the matching release source family, not
+  authentication of any unrecorded builder patches or static-JDK inputs.
 - **Limit:** the actual linked Java static SDK and its exact patches are not
   authenticated by the Graal host Java version. No runtime source modification
   by CubeFlow is identified; the builder's complete modifications are unknown.
@@ -65,9 +72,12 @@ presence is not proof that every class is linked executable runtime code or that
 a whole compiler is redistributed. Exact linked portions, authors/notices and
 source delivery remain to be inventoried. No blanket license is assigned here.
 
-The native build pins GluonFX Maven plugin `1.0.16`, whose POM depends on Substrate
-`0.0.56`. Their source artifacts are referenced in [TNOODLE-SOURCE.md](docs/TNOODLE-SOURCE.md);
-they are build tools, not additional app frameworks. Inclusion of the upstream
+The native build pins GluonFX Maven plugin `1.0.16`, whose POM depends on Gluon
+Substrate `0.0.56`. Full fixed-revision source archives for both are now included;
+they additionally match all 15 / 48 Java files in the official Maven source JARs.
+They are not additional app frameworks. GluonFX is established as a build tool;
+Substrate also supplies native iOS support actually present in this image.
+Inclusion of the upstream
 Gradle wrapper JAR in the source ZIP preserves a required build bootstrap, not a
 new CubeFlow runtime dependency. Its source is [Gradle](https://github.com/gradle/gradle)
 (Apache-2.0); `gradle-wrapper.properties` inside the unchanged ZIP requests Gradle
@@ -76,6 +86,32 @@ new CubeFlow runtime dependency. Its source is [Gradle](https://github.com/gradl
 JAR SHA-256 is `778e7f46bd67eaea2de5bcbdbb40878c6614656014ba59a72ce8648eaf43a925`;
 it does not match Gradle's published 7.5.1 wrapper checksum. Its precise wrapper
 revision is therefore not established by the requested distribution version.
+
+### Gluon Substrate Native Support and GluonFX
+
+These are distinct from Graal **SubstrateVM**. Source archive origins, license
+member hashes, version limits and verification commands are in
+[TNOODLE-SOURCE.md](docs/TNOODLE-SOURCE.md) and
+[`source-manifest.json`](ThirdPartySources/TNoodle/source-manifest.json).
+
+- **Gluon Substrate 0.0.56:** revision
+  `cb0447fc6d448f31fc28945ffbf3c2c7845d8ca5`; all 235 upstream blobs verified.
+  `src/main/resources/native/ios/dummy.c` grants GPLv3-or-later,
+  Copyright (c) 2022, Gluon. Its ARM feature initialization and three empty
+  JDK17 JNI functions correspond to code/exports in the shipped image. Inspected
+  Java build files also grant GPLv3-or-later with their own years. The root
+  LICENSE is GPLv2 and the POM's license name/URL is inconsistent; retain all
+  original texts and use the actual file notices rather than flattening them
+  into a new blanket grant. The complete archive includes native support,
+  reflection/JNI configs, Gradle build definitions and `external-licenses.md`.
+- **GluonFX 1.0.16:** revision
+  `54f979b8f8ad7bd962f283f4e9c2e4c9f45641d5`; all 28 upstream blobs verified.
+  BSD-3-Clause, Copyright (c) 2019, Gluon in root LICENSE, with later years in
+  individual files preserved. No evidence that Maven plugin implementation
+  code executes in the app. Its sharedlib/compile/link implementations are
+  included as build source, not a reconstructed successful build script.
+- No local modifications to these upstream archives. Whether the original
+  native builder used unrecorded target/tool patches remains unverified.
 
 ## min2phaseCXX
 

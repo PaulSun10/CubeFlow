@@ -15,7 +15,7 @@ No public push, tag, release, signing, archive or deployment is performed.
 | Gate | Finding | Required action |
 | --- | --- | --- |
 | A: credential exposure | `WCAAuthManager.swift` still contains a literal OAuth client secret. Compared without printing the value: it is identical at `origin/main` and the feature tip. Its original exposure predates the ten commits; they did not introduce it. Active/revoked status is not established. | Obtain confirmation from the credential owner that the exposed value is revoked or otherwise safe for publication; remediate an active secret in a separately authorized task. Do not infer inactivity, test the credential, rotate it, or rewrite history in this migration. |
-| B: native Corresponding Source | Verified native-fork Java source is now included. Exact linked static JDK/runtime source/patch mapping and necessary original shared-library build inputs are still not supplied as a complete set. | Complete the enumerated inventory and recipient delivery in [TNOODLE-SOURCE.md](TNOODLE-SOURCE.md), or separately authorize a known-source rebuild if recovery is impossible. An upstream link or GPL license text is not the missing source. |
+| B: native Corresponding Source | TNoodle, matching-release Graal, Gluon Substrate native-support/build source and GluonFX source archives are now included, with checksums and a static verifier. G1-G4 remain: actual static JDK and cross-CLIB source/patch mapping, sufficient original shared-library recipe, and complete incorporated-dependency delivery. Verdict remains INCOMPLETE, not a cleared gate. | Complete the specific builder/supplier requests in [TNOODLE-SOURCE.md](TNOODLE-SOURCE.md) and its source manifest. Do not substitute default candidate SDK binaries or an integrity pass for corresponding source. No native rebuild is performed or implied. |
 | C: bundled resource rights | Actual inherited SpeedCubeDB-attributed data, thousands of algorithm PNGs, and the `adj_parity` seed lack a verified per-family permission record. DrawScramble's intermediate origin and local font derivation also remain unresolved. | Recover permissions/licenses and source-to-artifact records for the included materials. If replacement/removal is necessary, request separate authorization; do not relabel unknown resources under GPL. |
 | D: consistent notices | Root official GPL text; explicit first-party GPL-3.0-only grant; historical MIT grant preserved; existing third-party texts unchanged; About corrected; source limitations stated. | Passed for this migration's declarations, without asserting that unresolved components are cleared. |
 | E: new sensitive material | Migration adds notices/docs and a verified upstream source ZIP; only license/source-attribution literals change in app source. No credentials, private keys, provisioning profiles or signed products added. | Passed focused migration review; this is not a claim of an exhaustive historical secret audit. Existing exposed OAuth material is tracked separately under A. |
@@ -41,6 +41,37 @@ would not remove earlier exposure, and has not been attempted.
   Icons and GPL csTimer texts added without changing their source/assets.
 - Pinned TNoodle project source ZIP plus checksum file; source-delivery inventory
   differentiates provided Java code from missing linked-runtime/build materials.
+
+## OAuth Retirement and Publication Update (2026-10-28)
+
+The owner confirmed permanent destruction of the exposed **old native OAuth application**.
+The separate production Broker application remains active and was not changed. The obsolete
+credential constants, native grant/refresh implementation and fallback are removed from the
+current app source. Historical copies remain revoked; no history rewriting or credential
+rotation is performed. Gate A's unknown-active-status finding above is historical, not the
+current credential status. This does not clear unrelated native-source, privacy or asset-rights
+uncertainties. The owner now authorizes normal commits and fast-forward publication of the
+completed work; older no-push statements below describe their original investigation scope.
+
+## Focused TNoodle Recovery Follow-Up
+
+The uncommitted source-delivery follow-up adds three original pinned source
+archives (about 35 MB total, no compiler installation), a machine-readable
+manifest and read-only static verifier. It recovers native support and build
+definitions previously represented only by links/research source JARs. The
+Graal export metadata names three native helper/JVM libraries; Gluon Substrate's
+native iOS dummy support is also identified in the binary. These observations
+improve the mapping but do not authenticate unknown static-JDK/platform patches.
+
+The correct official default SDK and cross-CLIB packages were inspected only as
+candidate research inputs. They contain binaries, not the missing source, and
+are not part of the delivery set. G1-G4 remain concrete source-delivery gaps.
+All other publication-gate findings remain unchanged; this follow-up does not
+re-audit historical assets, OAuth, Apple distribution or privacy matters.
+
+No commit or push is authorized for this follow-up. The existing eleven local
+commits, including the licensing migration, are preserved. Integrity validation
+does not update the gate to COMPLETE.
 
 ## Validation and Scope
 
