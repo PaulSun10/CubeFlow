@@ -305,6 +305,7 @@
 "settings.app_icon_light_gray" = "Light Gray";
 "settings.section.timer" = "Timing";
 "settings.wca_title" = "WCA";
+"settings.wca_loading_profile" = "Loading WCA Profile…";
 "settings.wca_signed_out" = "Not signed in";
 "settings.wca_connected" = "Connected";
 "settings.wca_not_connected" = "Not Connected";

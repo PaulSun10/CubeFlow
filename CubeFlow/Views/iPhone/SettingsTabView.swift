@@ -595,7 +595,12 @@ private extension SettingsTabView {
     @ViewBuilder
     var wcaSettingsSection: some View {
         Section {
-            if wcaAuth.isSignedIn {
+            if wcaAuth.profile != nil, let notice = wcaAuth.brokerPresentation?.notice {
+                Text(notice)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            if showsWCAAccountRow {
                 Button {
                     wcaDestination = .account
                 } label: {
@@ -603,20 +608,23 @@ private extension SettingsTabView {
                 }
                 .buttonStyle(.plain)
                 .padding(.vertical, 4)
+                .disabled(!wcaAuth.isSignedIn)
 
-                Button {
-                    wcaDestination = .myCompetitions
-                } label: {
-                    settingsActionNavigationLabel(titleKey: "settings.wca_my_competitions")
-                }
-                .buttonStyle(.plain)
+                if wcaAuth.isSignedIn {
+                    Button {
+                        wcaDestination = .myCompetitions
+                    } label: {
+                        settingsActionNavigationLabel(titleKey: "settings.wca_my_competitions")
+                    }
+                    .buttonStyle(.plain)
 
-                Button {
-                    wcaDestination = .myResults
-                } label: {
-                    settingsActionNavigationLabel(titleKey: "settings.wca_my_results")
+                    Button {
+                        wcaDestination = .myResults
+                    } label: {
+                        settingsActionNavigationLabel(titleKey: "settings.wca_my_results")
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             } else {
                 HStack(alignment: .center, spacing: 12) {
                     Image("wca_logo")
@@ -652,6 +660,7 @@ private extension SettingsTabView {
         } header: {
             Text("settings.section.wca")
         }
+        .task { await wcaAuth.restoreBrokerSessionIfNeeded() }
     }
 
     var wcaAccountSettingsList: some View {
@@ -659,6 +668,9 @@ private extension SettingsTabView {
             Section {
                 wcaStatusCard(showsDisclosure: false)
                     .padding(.vertical, 4)
+                if wcaAuth.profile != nil, let notice = wcaAuth.brokerPresentation?.notice {
+                    Text(notice).font(.footnote).foregroundStyle(.secondary)
+                }
             }
 
             Section {
@@ -686,8 +698,16 @@ private extension SettingsTabView {
                 .disabled(wcaAuth.isSigningIn)
 
                 Button("settings.wca_sign_out", role: .destructive) {
-                    wcaAuth.signOut()
-                    wcaDestination = nil
+                    Task { @MainActor in
+                        do {
+                            let revision = try await wcaAuth.brokerSignOut()
+                            guard wcaAuth.brokerPublicationRevision == revision else { return }
+                            wcaDestination = nil
+                        } catch {
+                            if case WCABrokerAuthCoordinator.Failure.staleOperation = error { return }
+                            wcaAlertMessage = wcaAuth.brokerPresentation?.message ?? "Sign-in is temporarily unavailable."
+                        }
+                    }
                 }
             } footer: {
                 Text("settings.wca_sign_out_footer")
@@ -2238,33 +2258,36 @@ private extension SettingsTabView {
         }
     }
 
+    private var showsWCAAccountRow: Bool {
+        wcaAuth.brokerPresentation?.showsAccountRow == true
+    }
+
+    private var wcaStatusTitle: String {
+        if let profile = wcaAuth.profile { return profile.displayName }
+        if wcaAuth.brokerPresentation?.showsProfileLoading == true {
+            return appLocalizedString("settings.wca_loading_profile", languageCode: appLanguage)
+        }
+        return appLocalizedString("settings.wca_title", languageCode: appLanguage)
+    }
+
     func wcaStatusCard(showsDisclosure: Bool) -> some View {
         HStack(spacing: 12) {
-            if let avatarURLString = wcaAuth.profile?.avatarURL,
-               let avatarURL = URL(string: avatarURLString) {
-                AsyncImage(url: avatarURL) { image in
-                    image
-                        .resizable()
-                        .scaledToFit()
-                } placeholder: {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                }
-                .frame(width: 44, height: 44)
-            } else {
-                Image(systemName: wcaAuth.isSignedIn ? "person.crop.circle.badge.checkmark" : "person.crop.circle.badge.questionmark")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(wcaAuth.isSignedIn ? .blue : .secondary)
+            if wcaAuth.profile == nil, wcaAuth.brokerPresentation?.showsProfileLoading == true {
+                ProgressView()
                     .frame(width: 44, height: 44)
+            } else {
+                wcaProfileAvatar
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(wcaAuth.profile?.displayName ?? appLocalizedString("settings.wca_title", languageCode: appLanguage))
+                Text(wcaStatusTitle)
                     .font(.system(size: 17, weight: .semibold))
 
-                Text(wcaAuth.profile?.secondaryText ?? appLocalizedString("settings.wca_signed_out", languageCode: appLanguage))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.secondary)
+                if wcaAuth.profile != nil || wcaAuth.brokerPresentation?.showsProfileLoading != true {
+                    Text(wcaAuth.profile?.secondaryText ?? wcaAuth.brokerPresentation?.message ?? appLocalizedString("settings.wca_signed_out", languageCode: appLanguage))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer()
@@ -2274,6 +2297,27 @@ private extension SettingsTabView {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Color(.tertiaryLabel))
             }
+        }
+    }
+
+    @ViewBuilder
+    private var wcaProfileAvatar: some View {
+        if let avatarURLString = wcaAuth.profile?.avatarURL,
+           let avatarURL = URL(string: avatarURLString) {
+            AsyncImage(url: avatarURL) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+            } placeholder: {
+                ProgressView()
+                    .scaleEffect(0.7)
+            }
+            .frame(width: 44, height: 44)
+        } else {
+            Image(systemName: wcaAuth.isSignedIn ? "person.crop.circle.badge.checkmark" : "person.crop.circle.badge.questionmark")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(wcaAuth.isSignedIn ? .blue : .secondary)
+                .frame(width: 44, height: 44)
         }
     }
 
@@ -2419,13 +2463,11 @@ private extension SettingsTabView {
     func authenticateWithWCA() {
         Task { @MainActor in
             do {
-                if wcaAuth.isSignedIn {
-                    try await wcaAuth.refreshProfile()
-                } else {
-                    try await wcaAuth.signIn()
-                }
+                try await wcaAuth.performBrokerAccountAction()
             } catch {
-                wcaAlertMessage = appUserFacingErrorMessage(error, languageCode: appLanguage)
+                if let failure = error as? WCABrokerAuthCoordinator.Failure,
+                   [.staleOperation, .cancelled, .denied].contains(failure) { return }
+                wcaAlertMessage = wcaAuth.brokerPresentation?.message ?? "Sign-in is temporarily unavailable."
             }
         }
     }

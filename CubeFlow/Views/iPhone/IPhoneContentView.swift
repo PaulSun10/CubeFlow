@@ -100,6 +100,8 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.settings)
         }
+        // Restore identity for every WCA consumer, even before Settings is first opened.
+        .task { await WCAAuthManager.shared.restoreBrokerSessionIfNeeded() }
         .compatibleSoftScrollEdgeEffect()
         .compatibleTabViewBottomAccessory(isEnabled: shouldShowTabBottomAccessory) {
             tabBottomAccessoryContent

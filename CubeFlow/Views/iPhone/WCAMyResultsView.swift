@@ -1477,6 +1477,19 @@ final class WCAMyCompetitionsViewModel: ObservableObject {
     @Published private(set) var page: WCAMyCompetitionsPage?
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
+    private var brokerSubscription: AnyCancellable?
+    private var displayedBrokerRevision: UInt64?
+    init() {
+        let owner = WCAAuthManager.shared
+        displayedBrokerRevision = owner.brokerPublicationRevision
+        brokerSubscription = owner.$brokerPresentation.sink { [weak self, weak owner] _ in
+            guard let self, let owner, self.displayedBrokerRevision != owner.brokerPublicationRevision else { return }
+            self.displayedBrokerRevision = owner.brokerPublicationRevision
+            self.page = nil
+            self.errorMessage = nil
+            self.isLoading = false
+        }
+    }
 
     func load(forceRefresh: Bool = false) async {
         if !forceRefresh, page != nil {
@@ -1488,12 +1501,30 @@ final class WCAMyCompetitionsViewModel: ObservableObject {
             errorMessage = nil
         }
 
+        let brokerRevision = WCAAuthManager.shared.brokerPublicationRevision
         do {
-            page = try await WCAMyCompetitionsService.fetchMyCompetitions(
+            let fetched = try await WCAMyCompetitionsService.fetchMyCompetitions(
                 authManager: WCAAuthManager.shared
             )
+            if let brokerRevision, WCAAuthManager.shared.brokerPublicationRevision != brokerRevision {
+                return
+            }
+            page = fetched
             errorMessage = nil
         } catch {
+            if let brokerRevision, WCAAuthManager.shared.brokerPublicationRevision != brokerRevision {
+                return
+            }
+            if brokerRevision != nil {
+                let status = WCAAuthManager.shared.brokerPresentation
+                if status?.phase == .storageBlocked || status?.phase == .needsLogin || status?.refresh == .recoveryPending || status?.refresh == .uncertain {
+                    errorMessage = status?.message
+                } else {
+                    errorMessage = currentAppLocalizedString("wca.competitions_error_request_failed")
+                }
+                isLoading = false
+                return
+            }
             errorMessage = appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode())
         }
 
@@ -2021,10 +2052,7 @@ enum WCAMyCompetitionsService {
             throw WCAMyCompetitionsFetchError.invalidURL
         }
 
-        var request = try await authManager.authorizedRequest(for: url)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await authManager.authenticatedData(for: url)
         guard let httpResponse = response as? HTTPURLResponse else {
             throw WCAMyCompetitionsFetchError.requestFailed
         }

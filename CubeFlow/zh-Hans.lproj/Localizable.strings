@@ -305,6 +305,7 @@
 "settings.app_icon_light_gray" = "浅灰";
 "settings.section.timer" = "计时";
 "settings.wca_title" = "WCA";
+"settings.wca_loading_profile" = "正在加载 WCA 个人资料…";
 "settings.wca_signed_out" = "未登录";
 "settings.wca_connected" = "已连接";
 "settings.wca_not_connected" = "未连接";
