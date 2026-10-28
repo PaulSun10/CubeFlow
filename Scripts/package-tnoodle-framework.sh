@@ -30,10 +30,66 @@ xcrun install_name_tool -id "$INSTALL_NAME" "$BINARY"
 
 if [ -f "$CONFIG/PrivacyInfo.xcprivacy" ]; then
     /usr/bin/plutil -lint "$CONFIG/PrivacyInfo.xcprivacy"
+    # Syntax and known reason codes are not evidence that the purposes match.
+    /usr/bin/python3 - "$CONFIG/PrivacyInfo.xcprivacy" <<'PY'
+import plistlib
+import sys
+
+reasons = {
+    "NSPrivacyAccessedAPICategoryFileTimestamp": {"DDA9.1", "C617.1", "3B52.1", "0A2A.1"},
+    "NSPrivacyAccessedAPICategoryDiskSpace": {"85F4.1", "E174.1", "7D9E.1", "B728.1"},
+    "NSPrivacyAccessedAPICategorySystemBootTime": {"35F9.1", "8FFB.1", "3D61.1"},
+}
+
+def require(condition, message):
+    if not condition:
+        sys.exit("error: TNoodle privacy manifest: " + message)
+
+with open(sys.argv[1], "rb") as source:
+    manifest = plistlib.load(source)
+require(type(manifest) is dict, "root must be a dictionary")
+require(set(manifest) <= {
+    "NSPrivacyTracking", "NSPrivacyTrackingDomains",
+    "NSPrivacyCollectedDataTypes", "NSPrivacyAccessedAPITypes",
+}, "unexpected root keys")
+if "NSPrivacyTracking" in manifest:
+    require(type(manifest["NSPrivacyTracking"]) is bool, "tracking must be a boolean")
+if "NSPrivacyTrackingDomains" in manifest:
+    domains = manifest["NSPrivacyTrackingDomains"]
+    require(type(domains) is list and all(type(domain) is str and domain for domain in domains),
+            "tracking domains must be an array of nonempty strings")
+    require(not domains or manifest.get("NSPrivacyTracking") is True,
+            "tracking domains require tracking=true")
+if "NSPrivacyCollectedDataTypes" in manifest:
+    # No SDK collection schema/purpose has been reviewed in this integration.
+    require(manifest["NSPrivacyCollectedDataTypes"] == [],
+            "nonempty collection declarations require a separate reviewed validator")
+entries = manifest.get("NSPrivacyAccessedAPITypes")
+require(type(entries) is list and bool(entries), "required-reason entries must be a nonempty array")
+seen = set()
+for entry in entries:
+    require(type(entry) is dict and set(entry) == {
+        "NSPrivacyAccessedAPIType", "NSPrivacyAccessedAPITypeReasons",
+    }, "each API entry must contain only category and reasons")
+    category = entry["NSPrivacyAccessedAPIType"]
+    require(type(category) is str and category in reasons, "unreviewed API category")
+    require(category not in seen, "duplicate API category")
+    seen.add(category)
+    codes = entry["NSPrivacyAccessedAPITypeReasons"]
+    require(type(codes) is list and bool(codes)
+            and all(type(code) is str and code in reasons[category] for code in codes),
+            "empty or unrecognized reasons for " + category)
+    require(len(set(codes)) == len(codes), "duplicate reason codes")
+require(seen == set(reasons), "known native API categories are missing; exemptions require review")
+print("note: TNoodle manifest structure checked; API purposes are NOT approved by this check.")
+PY
     cp "$CONFIG/PrivacyInfo.xcprivacy" "$FRAMEWORK/PrivacyInfo.xcprivacy"
-else
-    echo 'warning: TNoodle SDK privacy purposes/manifest remain unverified; distribution is not cleared.'
 fi
+
+# Keep this gate even when a structurally valid manifest is supplied. The current
+# native purposes have no established approved reasons; file presence cannot clear it.
+echo 'warning: TNoodle privacy review unresolved: stat/fstat/lstat (system timezone/file metadata), fstatvfs (Direct I/O alignment), mach_absolute_time (runtime clock/possible random seeding).'
+echo 'warning: TNoodle External TestFlight privacy clearance remains pending; see docs/tnoodle-privacy-assessment-oct23.md. This is a CubeFlow evidence gate, not an Apple validation result.'
 
 # Remove only obsolete copies in the generated app during incremental migration.
 for legacy in "$APP/lib-scrambles.dylib" "$APP/Frameworks/lib-scrambles.dylib"; do
