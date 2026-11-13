@@ -25,17 +25,21 @@ private struct CompetitionResultCardSurface: ViewModifier {
 struct CompetitionResultCardCloseButton: View {
     let label: String
     let action: () -> Void
+    var systemImage = "xmark"
+    var glassDiameter: CGFloat = 38
+    var glyphSize: CGFloat = 18
+    private var targetDiameter: CGFloat { max(44, glassDiameter) }
     @ViewBuilder var body: some View {
         if #available(iOS 26.0, *) {
             Button(action: action) {
-                Image(systemName: "xmark").font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(.primary).frame(width: 38, height: 38)
+                Image(systemName: systemImage).font(.system(size: glyphSize, weight: .medium))
+                    .foregroundStyle(.primary).frame(width: glassDiameter, height: glassDiameter)
                     .contentShape(Circle()).glassEffect(.regular.interactive(), in: .circle)
-            }.buttonStyle(.plain).frame(width: 44, height: 44).accessibilityLabel(label)
+            }.buttonStyle(.plain).frame(width: targetDiameter, height: targetDiameter).accessibilityLabel(label)
         } else {
             Button(action: action) {
-                Image(systemName: "xmark").font(.body.weight(.semibold))
-                    .frame(width: 44, height: 44).contentShape(Rectangle())
+                Image(systemName: systemImage).font(glyphSize == 18 ? .body.weight(.semibold) : .system(size: glyphSize, weight: .semibold))
+                    .frame(width: targetDiameter, height: targetDiameter).contentShape(Rectangle())
             }.accessibilityLabel(label)
         }
     }
@@ -398,6 +402,7 @@ private struct CompetitionResultsPresentationModifier: ViewModifier {
     @ObservedObject var state: CompetitionResultCardState
     let language: String
     let round: CompetitionWCALiveRound?
+    @Environment(\.competitionSharing) private var sharingContext
     #if DEBUG
     @Environment(\.competitionDebugCompetitionID) private var diagnosticCompetitionID
     #endif
@@ -407,6 +412,7 @@ private struct CompetitionResultsPresentationModifier: ViewModifier {
                 if let selection = state.selection {
                     CompetitionResultExperience(round: round ?? selection.round, languageCode: language,
                         cardState: state, mode: .card, isPublished: selection.isPublished, onRequestDismiss: dismiss)
+                        .environment(\.competitionSharing, sharingContext)
                         #if DEBUG
                         .competitionDebugCompetition(diagnosticCompetitionID)
                         #endif

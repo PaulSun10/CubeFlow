@@ -4,6 +4,23 @@ import XCTest
 
 @MainActor
 final class CubingChinaDetailTests: XCTestCase {
+    func testScheduleDateReuseMatchesIndividualParsing() {
+        let dates = (0..<600).map { index in
+            index.isMultiple(of: 5) ? "2026-11-01T08:10:00.125+08:00" : "2026-11-01T01:\(String(format: "%02d", index % 60)):00Z"
+        } + ["invalid"]
+        var baseline: [Double] = [], optimized: [Double] = []
+        for _ in 0..<5 {
+            let start = ProcessInfo.processInfo.systemUptime
+            let expected = dates.map { CubingChinaDetailAdapter.date($0) }
+            let middle = ProcessInfo.processInfo.systemUptime
+            let parser = CubingChinaScheduleDates()
+            let actual = dates.map { parser.date($0) }
+            baseline.append((middle - start) * 1000)
+            optimized.append((ProcessInfo.processInfo.systemUptime - middle) * 1000)
+            XCTAssertEqual(actual, expected)
+        }
+        print("[ChinaScheduleDates] n=\(dates.count) before_ms=\(baseline) after_ms=\(optimized)")
+    }
     func testNuxtEventReferenceSeventeenResolvesToItsSemanticEventNotAnEventNumber() throws {
         let payload: [Any] = [["schedule": 1], [2], ["id": 3, "eventId": 17, "startTime": 4, "endTime": 5],
             123, "2026-10-05T00:30:00.000Z", "2026-10-05T01:30:00.000Z"]
@@ -111,6 +128,34 @@ final class CubingChinaDetailTests: XCTestCase {
         XCTAssertEqual(parsed.blocks[1].title, "Registration")
         XCTAssertTrue(parsed.blocks[1].body.contains("Check-in"))
         XCTAssertTrue(parsed.blocks[1].body.contains("Organizer award policy"))
+    }
+
+    func testJiangmenStyleOrganizerProseIsNotMarkedAsStructured() {
+        let html = """
+        <section><h2>Important dates</h2><div>8:10</div></section>
+        <section><h2>Introduction</h2><div class="shell"><div class="prose prose-slate">
+        <p><img src="https://example.org/logo.png"></p>
+        <section data-cc-block="card"><h3>Entry</h3><ol><li>Bring ID</li></ol></section>
+        </div></div></section><section><h2>Venue</h2><p>Main hall</p></section>
+        """
+        let parsed = CubingChinaDetailAdapter.blocks(html: html, section: .about, language: "en")
+        XCTAssertEqual(parsed.source, "semantic-sections+organizer-prose")
+        XCTAssertEqual(parsed.blocks.map(\.id), ["cubing-v2-about-0", "cubing-v2-organizer-information-1", "cubing-v2-about-2"])
+        XCTAssertEqual(parsed.blocks.map(\.title), ["Important dates", "Introduction", "Venue"])
+        XCTAssertTrue(parsed.blocks[1].html?.contains("data-cc-block") == true)
+        XCTAssertTrue(parsed.blocks[1].body.contains("Bring ID"))
+    }
+
+    func testOrganizerRulesKeepNativeCertificationSibling() {
+        let html = """
+        <section><h2>Rules</h2><div><h3>Certification</h3><p>Official rules apply.</p></div>
+        <div class="prose"><h3>Entry requirements</h3><p>Bring ID.</p></div></section>
+        """
+        let blocks = CubingChinaDetailAdapter.blocks(html: html, section: .regulations, language: "en").blocks
+        XCTAssertEqual(blocks.map(\.id), ["cubing-v2-regulations-0", "cubing-v2-organizer-regulations-0"])
+        XCTAssertTrue(blocks.first?.body.contains("Certification") == true)
+        XCTAssertFalse(blocks.first?.body.contains("Bring ID") == true)
+        XCTAssertTrue(blocks.last?.body.contains("Bring ID") == true)
     }
 
     func testValidCompetitorsDoNotFailLegacy404SubstringGuard() throws {

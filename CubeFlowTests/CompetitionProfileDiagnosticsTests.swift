@@ -136,10 +136,19 @@ import Combine
     }
 
     func testPassiveWindowObserversNeverRecognizeDelayOrPreventTouchesAndDetach() throws {
-        let store = CompetitionDebugStore.shared
-        let wasEnabled = store.enabled
+        let original = CompetitionDebugStore.shared
+        let suite = "PassiveWindowObserver-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(suite)
+        let store = CompetitionDebugStore(defaults: defaults, root: root)
+        CompetitionDebugStore.shared = store
+        defer {
+            store.stop(.filter); CompetitionDebugStore.shared = original
+            defaults.removePersistentDomain(forName: suite)
+            try? FileManager.default.removeItem(at: root)
+        }
         store.setEnabled(true); store.start(.filter)
-        defer { store.stop(.filter); store.setEnabled(wasEnabled) }
+        XCTAssertTrue(store.filterRecording)
         let window = try mount(Color.white)
         defer { window.isHidden = true; window.rootViewController = nil }
         let anchor = CompetitionFilterInputAnchor(frame: CGRect(x: 320, y: 50, width: 44, height: 44), recordingEnabled: true)

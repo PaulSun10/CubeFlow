@@ -111,7 +111,7 @@ struct CompetitionResultTableStatisticValue: View {
             if let tag = recordTag, !tag.isEmpty {
                 CompetitionWCARecordTagView(tag: tag, usesLitePersonalRecord: true, variant: .compact,
                     isOwnPersonalRecord: isOwnRecord)
-                    .offset(x: 23, y: -6)
+                    .offset(x: tag.uppercased() == "PR" ? 21 : 23, y: -6)
             }
         }
         .frame(width: width, alignment: .trailing)

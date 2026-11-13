@@ -96,6 +96,21 @@ nonisolated struct CompetitionWCALiveResultDeepLink: Hashable, Sendable {
         }
         return nil
     }
+
+    /// The public WCA Live Person query returns one competitor's entries,
+    /// without waiting for the target round's complete leaderboard.
+    func result(in competitor: CompetitionWCALiveCompetitorContent, region: String?) -> CompetitionWCALiveResultPreview? {
+        guard let personID, competitor.id == personID,
+              personWCAID.map({ $0.caseInsensitiveCompare(competitor.wcaID ?? "") == .orderedSame }) ?? true,
+              let value = competitor.results.first(where: {
+                  $0.roundID == roundID && (eventID == nil || $0.eventID == eventID)
+              }) else { return nil }
+        return .init(id: value.id, ranking: value.ranking.flatMap { $0 > 0 ? $0 : nil },
+            personID: competitor.id, personWCAID: competitor.wcaID, name: competitor.name,
+            region: region, attempts: value.attempts, best: value.best, average: value.average,
+            isAdvancing: value.isAdvancing, isAdvancingQuestionable: value.isAdvancingQuestionable,
+            singleRecordTag: value.singleRecordTag, averageRecordTag: value.averageRecordTag)
+    }
 }
 
 extension CompetitionWCALiveRecord {

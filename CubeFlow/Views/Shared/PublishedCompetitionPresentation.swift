@@ -29,8 +29,9 @@ enum PublishedCompetitionPresentation {
                 return CompetitionWCALiveResultPreview(id: value.id, ranking: value.ranking,
                     personID: nil, personWCAID: value.personWCAID, name: value.name, region: value.region,
                     attempts: value.attempts, best: value.best, average: value.average,
-                    isAdvancing: true, isAdvancingQuestionable: nil,
-                    singleRecordTag: value.singleRecordTag, averageRecordTag: value.averageRecordTag)
+                    isAdvancing: advancing.contains(row.wcaID) ? true : nil, isAdvancingQuestionable: nil,
+                    singleRecordTag: value.singleRecordTag, averageRecordTag: value.averageRecordTag,
+                    isPodium: round.isFinal && row.rank <= 3 && row.best > 0 ? true : nil)
             })
     }
 
@@ -40,8 +41,7 @@ enum PublishedCompetitionPresentation {
         let results = rows.map { row in
             let eventRounds = data.rounds(for: row.eventID)
             let round = eventRounds.first { $0.id == row.roundKey }
-            let confirmed = round.map { data.confirmedAdvancingPeople(from: $0).contains(row.wcaID)
-                || ($0.isFinal && row.rank <= 3 && row.best > 0) } ?? false
+            let confirmed = round.map { data.confirmedAdvancingPeople(from: $0).contains(row.wcaID) } ?? false
             return CompetitionWCALiveCompetitorResult(id: "published-\(row.id)", ranking: row.rank,
                 isAdvancing: confirmed ? true : nil, isAdvancingQuestionable: nil, attempts: row.performedAttempts,
                 best: row.best, average: row.average, singleRecordTag: row.singleBadge, averageRecordTag: row.averageBadge,
@@ -49,7 +49,9 @@ enum PublishedCompetitionPresentation {
                 roundNumber: eventRounds.firstIndex { $0.id == row.roundKey }, eventID: row.eventID,
                 eventName: CompetitionEventPresentation.localizedFullName(for: row.eventID, languageCode: language),
                 eventRank: data.eventIDs.firstIndex(of: row.eventID), formatID: row.formatID,
-                numberOfAttempts: attemptCount(row.formatID), sortBy: row.usesAverage ? "average" : "best")
+                numberOfAttempts: attemptCount(row.formatID), sortBy: row.usesAverage ? "average" : "best",
+                isPodium: round?.isFinal == true && row.rank <= 3 && row.best > 0 ? true : nil,
+                officialRoundType: row.roundTypeID, eventRoundTypes: eventRounds.map(\.typeID))
         }
         return CompetitionWCALiveCompetitorContent(id: id, name: first.name, wcaID: id,
             countryISO2: first.countryISO2, results: results)

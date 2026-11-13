@@ -12,6 +12,78 @@ struct CompetitionResultCardTitleStyle: ViewModifier {
     }
 }
 
+struct CompetitionResultShareActionLayout {
+    static let button: CGFloat = 44
+    static let gap: CGFloat = 4
+    static let inset: CGFloat = 12
+    static let horizontalTitleInset = inset + 2 * button + gap - CompetitionResultCardTitleStyle.contentInset + 4
+    let shareBelowClose: Bool
+
+    var followingFieldTrailingInset: CGFloat { shareBelowClose ? CompetitionResultCardTitleStyle.closeInset : 0 }
+
+    // Only the first full-width event group must clear the floating buttons.
+    func headerClearanceBeforeTable(spacing: CGFloat) -> CGFloat {
+        shareBelowClose ? Self.inset + 2 * Self.button + Self.gap - CompetitionResultCardTitleStyle.contentInset - spacing : 0
+    }
+
+    init(title: String, cardWidth: CGFloat, showsShare: Bool) {
+        let font = UIFont.systemFont(ofSize: CompetitionResultCardTitleStyle.fontSize, weight: .bold)
+        let titleWidth = ceil((title as NSString).size(withAttributes: [.font: font]).width)
+        let widthWithBothActions = cardWidth - 2 * CompetitionResultCardTitleStyle.contentInset - Self.horizontalTitleInset
+        shareBelowClose = showsShare && titleWidth > widthWithBothActions
+    }
+}
+
+private struct CompetitionResultCardPartHeights: PreferenceKey {
+    static let defaultValue: [Int: CGFloat] = [:]
+    static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
+        value.merge(nextValue(), uniquingKeysWith: max)
+    }
+}
+
+/// On tall cards the header stays with Close/Share, and only the details scroll.
+/// Report the natural height of the content even when the scroll viewport is capped.
+struct CompetitionResultCardFlow<Header: View, Content: View, Measure: View>: View {
+    let spacing: CGFloat
+    let scrollHeight: CGFloat?
+    @ViewBuilder let header: () -> Header
+    @ViewBuilder let content: () -> Content
+    @ViewBuilder let measure: (CGFloat) -> Measure
+    @State private var heights: [Int: CGFloat] = [:]
+
+    var body: some View {
+        let inset = CompetitionResultCardTitleStyle.contentInset
+        VStack(alignment: .leading, spacing: spacing) {
+            header()
+                .fixedSize(horizontal: false, vertical: true)
+                .background { heightReader(0) }
+            if scrollHeight != nil {
+                ScrollView {
+                    content().frame(maxWidth: .infinity, alignment: .leading)
+                        .background { heightReader(1) }
+                }
+            } else {
+                content().background { heightReader(1) }
+            }
+        }
+        .padding(inset)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: scrollHeight, alignment: .topLeading)
+        .onPreferenceChange(CompetitionResultCardPartHeights.self) { heights = $0 }
+        .background {
+            if let header = heights[0], let content = heights[1] {
+                measure(header + content + spacing + 2 * inset)
+            }
+        }
+    }
+
+    private func heightReader(_ part: Int) -> some View {
+        GeometryReader { proxy in
+            Color.clear.preference(key: CompetitionResultCardPartHeights.self, value: [part: proxy.size.height])
+        }
+    }
+}
+
 nonisolated enum CompetitionRoundBoundaryPaint {
     static func localY(origin: CGFloat, height: CGFloat, scale: CGFloat, bottom: Bool) -> CGFloat {
         // A top boundary is painted on the Canvas's own raster origin. Global

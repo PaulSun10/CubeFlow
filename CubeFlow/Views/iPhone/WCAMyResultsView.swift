@@ -1224,6 +1224,16 @@ struct WCAProfileView: View {
         } ?? false
 
         return VStack(alignment: .leading, spacing: 4) {
+            CompetitionShareButton(request: .init(mode: .report, context: .init(name: group.competitionName),
+                name: resolvedDisplayName, identity: viewModel.page?.summary.wcaId, rows: []),
+                language: appLanguage, loadFullRequest: {
+                    guard let page = viewModel.page else { return nil }
+                    return .init(mode: .report, context: .init(name: group.competitionName), name: resolvedDisplayName,
+                        identity: page.summary.wcaId, rows: page.resultsSections.flatMap { section in
+                            section.results.filter { ($0.competitionPath ?? $0.competitionName) == group.key }
+                                .map { CompetitionShareRow.make($0, event: section.event, language: appLanguage) }
+                        })
+                })
             HStack(spacing: 8) {
                 if let countryISO2 = group.countryISO2 {
                     Text(flagEmoji(for: countryISO2))
@@ -1475,46 +1485,89 @@ struct WCAMyResultsView: View {
 @MainActor
 final class WCAMyCompetitionsViewModel: ObservableObject {
     @Published private(set) var page: WCAMyCompetitionsPage?
+    @Published private(set) var localizedNames: [String: String] = [:]
+    @Published private(set) var participatedCompetitionIDs: Set<String> = []
+    private var participationRequest = UUID()
+    private var participationOwner: String?
+    private var pageRequest = UUID()
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     private var brokerSubscription: AnyCancellable?
     private var displayedBrokerRevision: UInt64?
-    init() {
+    private let fetch: @MainActor () async throws -> WCAMyCompetitionsPage
+    init(fetch: @escaping @MainActor () async throws -> WCAMyCompetitionsPage = {
+        try await WCAMyCompetitionsService.fetchMyCompetitions(authManager: WCAAuthManager.shared)
+    }) {
+        self.fetch = fetch
         let owner = WCAAuthManager.shared
         displayedBrokerRevision = owner.brokerPublicationRevision
         brokerSubscription = owner.$brokerPresentation.sink { [weak self, weak owner] _ in
             guard let self, let owner, self.displayedBrokerRevision != owner.brokerPublicationRevision else { return }
             self.displayedBrokerRevision = owner.brokerPublicationRevision
+            self.pageRequest = UUID()
             self.page = nil
+            self.localizedNames = [:]
+            self.participationRequest = UUID()
+            self.participationOwner = nil
+            self.participatedCompetitionIDs = []
             self.errorMessage = nil
             self.isLoading = false
         }
     }
 
-    func load(forceRefresh: Bool = false) async {
-        if !forceRefresh, page != nil {
-            return
+    func loadParticipation(wcaID: String?, force: Bool = false, profiles: WCAPublicProfileCache = .shared) async {
+        let request = UUID(); participationRequest = request
+        let canonicalID = wcaID.flatMap(WCAPublicProfileCache.canonicalID)
+        if participationOwner != canonicalID { participatedCompetitionIDs = [] }
+        participationOwner = canonicalID
+        guard let wcaID = canonicalID else { return }
+        let revision = WCAAuthManager.shared.brokerPublicationRevision
+        do {
+            let results = try await profiles.page(wcaID, language: "en", force: force)
+            guard participationRequest == request, !Task.isCancelled,
+                  WCAAuthManager.shared.brokerPublicationRevision == revision else { return }
+            participatedCompetitionIDs = WCAOfficialParticipation.competitionIDs(page: results, wcaID: wcaID)
+        } catch {
+            // No authoritative evidence means no checkmark, never registration/date inference.
         }
+    }
 
-        isLoading = true
+    func load(
+        forceRefresh: Bool = false,
+        fetchPage: (@MainActor () async throws -> WCAMyCompetitionsPage)? = nil,
+        resolveNames: @MainActor ([CompetitionNameReference], String) async -> [String: String] = {
+            await CompetitionService.localizedCompetitionDisplayNames($0, languageCode: $1, cachedOnly: false)
+        }
+    ) async {
+        guard !Task.isCancelled else { return }
+        let request = UUID()
+        pageRequest = request
+        let cachedPage = forceRefresh ? nil : page
+        isLoading = cachedPage == nil
         if page == nil {
             errorMessage = nil
         }
+        defer { if pageRequest == request { isLoading = false } }
 
         let brokerRevision = WCAAuthManager.shared.brokerPublicationRevision
+        let language = currentAppLanguageCode()
+        func ownsPublication() -> Bool {
+            pageRequest == request && !Task.isCancelled
+                && WCAAuthManager.shared.brokerPublicationRevision == brokerRevision
+                && currentAppLanguageCode() == language
+        }
         do {
-            let fetched = try await WCAMyCompetitionsService.fetchMyCompetitions(
-                authManager: WCAAuthManager.shared
-            )
-            if let brokerRevision, WCAAuthManager.shared.brokerPublicationRevision != brokerRevision {
-                return
-            }
-            page = fetched
+            let fetched: WCAMyCompetitionsPage
+            if let cachedPage { fetched = cachedPage }
+            else { fetched = try await (fetchPage ?? fetch)() }
+            guard ownsPublication() else { return }
+            let names = await resolveNames(Self.nameReferences(fetched), language)
+            guard ownsPublication() else { return }
+            localizedNames = names
+            if cachedPage == nil { page = fetched }
             errorMessage = nil
         } catch {
-            if let brokerRevision, WCAAuthManager.shared.brokerPublicationRevision != brokerRevision {
-                return
-            }
+            guard ownsPublication() else { return }
             if brokerRevision != nil {
                 let status = WCAAuthManager.shared.brokerPresentation
                 if status?.phase == .storageBlocked || status?.phase == .needsLogin || status?.refresh == .recoveryPending || status?.refresh == .uncertain {
@@ -1522,13 +1575,19 @@ final class WCAMyCompetitionsViewModel: ObservableObject {
                 } else {
                     errorMessage = currentAppLocalizedString("wca.competitions_error_request_failed")
                 }
-                isLoading = false
                 return
             }
             errorMessage = appUserFacingErrorMessage(error, languageCode: currentAppLanguageCode())
         }
 
-        isLoading = false
+    }
+
+    private static func nameReferences(_ page: WCAMyCompetitionsPage) -> [CompetitionNameReference] {
+        (page.futureCompetitions + page.pastCompetitions + page.bookmarkedCompetitions)
+            .map { item in
+                let year = item.countryISO2 == "CN" ? Int(item.id.suffix(4)).flatMap { (2000...2100).contains($0) ? $0 : nil } : nil
+                return .init(id: item.id, name: item.name, website: item.website, archiveYear: year)
+            }
     }
 }
 
@@ -1538,9 +1597,14 @@ struct WCAMyCompetitionsView: View {
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
     @Environment(\.openURL) private var openURL
-    @StateObject private var viewModel = WCAMyCompetitionsViewModel()
+    @StateObject private var viewModel: WCAMyCompetitionsViewModel
     @State private var isUpcomingExpanded = true
     @State private var isPastExpanded = false
+
+    init(profile: WCAUserProfile?, viewModel: WCAMyCompetitionsViewModel? = nil) {
+        self.profile = profile
+        _viewModel = StateObject(wrappedValue: viewModel ?? WCAMyCompetitionsViewModel())
+    }
 
     var body: some View {
         ScrollView {
@@ -1551,7 +1615,7 @@ struct WCAMyCompetitionsView: View {
                     myCompetitionsSection(page: page)
                     Divider()
                     bookmarkedCompetitionsSection(page.bookmarkedCompetitions)
-                } else if viewModel.isLoading {
+                } else if viewModel.isLoading || viewModel.errorMessage == nil {
                     loadingCard
                 } else {
                     errorCard(message: viewModel.errorMessage ?? appLocalizedString("wca.competitions_error_request_failed", languageCode: appLanguage))
@@ -1564,8 +1628,10 @@ struct WCAMyCompetitionsView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(Text(appLocalizedString("settings.wca_my_competitions", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.large)
-        .task {
+        .task(id: "\(profile?.wcaId ?? "")|\(appLanguage)") {
             await viewModel.load()
+            guard !Task.isCancelled else { return }
+            await viewModel.loadParticipation(wcaID: profile?.wcaId)
         }
         .modifier(
             WCAMyCompetitionsToolbarModifier(
@@ -1574,12 +1640,14 @@ struct WCAMyCompetitionsView: View {
                 refresh: {
                     Task {
                         await viewModel.load(forceRefresh: true)
+                        await viewModel.loadParticipation(wcaID: profile?.wcaId, force: true)
                     }
                 }
             )
         )
         .refreshable {
             await viewModel.load(forceRefresh: true)
+            await viewModel.loadParticipation(wcaID: profile?.wcaId, force: true)
         }
     }
 
@@ -1716,11 +1784,17 @@ struct WCAMyCompetitionsView: View {
     ) -> some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 5) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(competition.displayName)
+                HStack(alignment: .center, spacing: 8) {
+                    Text(viewModel.localizedNames[competition.id] ?? competition.displayName)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    if viewModel.participatedCompetitionIDs.contains(competition.id) {
+                        CompetitionParticipationMark()
+                            .frame(width: 20, height: 20)
+                            .accessibilityLabel(Text("wca.competitions.recorded_results"))
+                    }
 
                     if let registrationStatusText = localizedRegistrationStatus(registrationStatus) {
                         Text(registrationStatusText)
@@ -2032,8 +2106,7 @@ struct WCAMyCompetitionSummary: Identifiable, Hashable, Sendable, Codable {
 
     private func localizedCountryName(languageCode: String) -> String {
         guard let countryISO2, !countryISO2.isEmpty else { return "" }
-        let locale = appLocale(for: languageCode)
-        return locale.localizedString(forRegionCode: countryISO2) ?? countryISO2
+        return WCARegionPresentation.name(countryISO2, language: languageCode)
     }
 
     private func parsedDate(from value: String?) -> Date? {

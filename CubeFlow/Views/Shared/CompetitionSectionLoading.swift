@@ -136,6 +136,8 @@ extension CompetitionDetailContent {
         var content = self
         switch resource {
         case .info:
+            content.sharingArtwork = other.sharingArtwork
+            content.sharingLocation = other.sharingLocation
             content.overviewBlocks = other.overviewBlocks
             content.noteBlocks = other.noteBlocks
             content.wcaEvents = other.wcaEvents

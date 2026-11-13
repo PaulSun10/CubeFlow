@@ -71,7 +71,7 @@ struct CompetitionSummary: Identifiable, Hashable, Sendable, Codable {
     }
 
     nonisolated var localizedCountryName: String {
-        Locale.current.localizedString(forRegionCode: countryISO2) ?? countryISO2
+        WCARegionPresentation.name(countryISO2, language: currentAppLanguageCode())
     }
 
     nonisolated var compactDisplayName: String {
@@ -1066,6 +1066,7 @@ struct CompetitionWCALiveResultPreview: Identifiable, Hashable, Sendable, Codabl
     let isAdvancingQuestionable: Bool?
     let singleRecordTag: String?
     let averageRecordTag: String?
+    var isPodium: Bool? = nil
 }
 
 struct CompetitionWCALiveCompetitorResult: Identifiable, Hashable, Sendable, Codable {
@@ -1087,6 +1088,9 @@ struct CompetitionWCALiveCompetitorResult: Identifiable, Hashable, Sendable, Cod
     let formatID: String
     let numberOfAttempts: Int
     let sortBy: String
+    var isPodium: Bool? = nil
+    var officialRoundType: String? = nil
+    var eventRoundTypes: [String]? = nil
 }
 
 struct CompetitionWCALiveCompetitorContent: Hashable, Sendable, Codable {
@@ -1178,6 +1182,8 @@ nonisolated enum CompetitionWCALiveLookupState: Hashable, Sendable {
 }
 
 struct CompetitionDetailContent: Hashable, Sendable, Codable {
+    var sharingArtwork: CompetitionSharingArtwork? = nil
+    var sharingLocation: String? = nil
     var overviewBlocks: [CompetitionDetailTextBlock]
     var noteBlocks: [CompetitionDetailTextBlock]
     var regulationBlocks: [CompetitionDetailTextBlock]
@@ -1369,6 +1375,10 @@ enum CompetitionService {
     #if DEBUG
     /// Scoped to detail HTML so deterministic loading tests never replace Live transports.
     static var detailSession: URLSession = .shared
+    static var localizedCompetitionNamesForTesting: (
+        store: CompetitionLocalizedNameStore,
+        load: (String) async -> [String: LocalizedCompetitionInfo]
+    )?
     #endif
     nonisolated static let recentCompetitionLookbackDays = CompetitionDateWindow.lookbackDays
     nonisolated static let competitionPageSize = 500
@@ -1409,6 +1419,7 @@ enum CompetitionService {
     }
 
     static func clearCompetitionDetailCache() async {
+        await CompetitionSummaryCache.shared.clear()
         await PublishedCompetitionService.shared.clear()
         await CompetitionSectionStore.shared.clear()
         await CompetitionWCAInfoParseStore.shared.clear()
@@ -1451,7 +1462,13 @@ enum CompetitionService {
         let provider = competition.usesCubingChinaDetailSource ? "cubing" : "wca"
         let version = resource == .info ? "v2" : "v1"
         let key = "section-\(version)|\(provider)|\(competition.id)|\(languageCode)|\(resource.rawValue)"
-        return await CompetitionDetailContentStore.shared.snapshot(for: key, allowStale: true)
+        let snapshot = await CompetitionDetailContentStore.shared.snapshot(for: key, allowStale: true)
+        if resource == .info, let content = snapshot?.content, let name = content.localizedName,
+           cubingLanguageCode(for: languageCode).hasPrefix("zh_") {
+            await retainKnownCompetitionName(name, ids: [competition.id, content.wcaCompetitionID].compactMap { $0 },
+                slug: competition.cubingChinaCompetitionSlug, languageCode: languageCode)
+        }
+        return snapshot
     }
 
     private static func loadCompetitionResource(
@@ -1515,15 +1532,22 @@ enum CompetitionService {
         guard !Task.isCancelled,
               let html = await fetchCompetitionHTML(url: url, languageCode: languageCode, forceRefresh: forceRefresh),
               !Task.isCancelled else { return .empty }
-        if china { content.wcaCompetitionID = CubingChinaDetailAdapter.wcaID(in: html) ?? content.wcaCompetitionID }
+        let chinaMetadata = china ? CubingChinaDetailAdapter.competition(in: html) : nil
+        if china { content.wcaCompetitionID = CubingChinaDetailAdapter.wcaID(in: chinaMetadata) ?? content.wcaCompetitionID }
         switch resource {
         case .info:
             content.hasRegisterLink = china || hasWCARegisterLink(from: html, competitionID: competition.id)
             content.hasCompetitorsLink = china || hasWCACompetitorsLink(from: html, competitionID: competition.id)
             if china {
-                content.showTickets = CubingChinaTicket.isAvailable(competition: CubingChinaDetailAdapter.competition(in: html))
+                content.showTickets = CubingChinaTicket.isAvailable(competition: chinaMetadata)
                 content.overviewBlocks = await extractCubingOverviewBlocks(from: html, language: languageCode)
                 content.localizedName = extractCubingLocalizedCompetitionName(from: html)
+                content.sharingArtwork = CubingChinaDetailAdapter.sharingArtwork(in: chinaMetadata)
+                content.sharingLocation = CubingChinaDetailAdapter.sharingLocation(in: chinaMetadata, language: languageCode)
+                if let name = content.localizedName, cubingLanguageCode(for: languageCode).hasPrefix("zh_") {
+                    await retainKnownCompetitionName(name, ids: [competition.id, content.wcaCompetitionID].compactMap { $0 },
+                        slug: slug, languageCode: languageCode)
+                }
             } else {
                 let info = await CompetitionWCAInfoParseStore.shared.info(html: html, language: languageCode)
                 content.noteBlocks = info.blocks; content.wcaEvents = info.events
@@ -2041,41 +2065,46 @@ enum CompetitionService {
         for query: CompetitionQuery,
         now: Date = Date()
     ) -> [CompetitionSummary] {
-        let window = query.dateWindow ?? CompetitionDateWindow(now: now)
-        return competitions
-            .filter { matchesRegion($0, region: query.region) }
-            .filter { matchesEvents($0, selectedEvents: query.events) }
-            .filter { window?.contains($0, status: query.status) == true }
-            .filter { matchesYear($0, year: query.year, status: query.status) }
-            .sorted { lhs, rhs in
-                if query.status == .present {
-                    if lhs.startDate != rhs.startDate {
-                        return lhs.startDate < rhs.startDate
-                    }
-                    if lhs.endDate != rhs.endDate {
-                        return lhs.endDate < rhs.endDate
-                    }
-                } else {
-                    let lhsYear = officialCompetitionYear(for: lhs)
-                    let rhsYear = officialCompetitionYear(for: rhs)
-                    if lhsYear != rhsYear {
-                        return lhsYear > rhsYear
-                    }
-                    if lhs.endDate != rhs.endDate {
-                        return lhs.endDate > rhs.endDate
-                    }
-                    if lhs.startDate != rhs.startDate {
-                        return lhs.startDate > rhs.startDate
-                    }
+        guard let window = query.dateWindow ?? CompetitionDateWindow(now: now) else { return [] }
+        let eventIDs = requiredEventIDs(for: query.events)
+        let selectedYear: Int?
+        if query.status == .past, case .year(let year) = query.year { selectedYear = year }
+        else { selectedYear = nil }
+        // Sort compact keys; the UTC year and event query are invariant
+        // across comparisons and the full competition payload stays in place.
+        var matches: [(index: Int, year: Int)] = []
+        for (index, competition) in competitions.enumerated() {
+            guard matchesRegion(competition, region: query.region),
+                  eventIDs.allSatisfy(competition.eventIDs.contains),
+                  window.contains(competition, status: query.status) else { continue }
+            let year = query.status == .present ? 0 : officialCompetitionYear(for: competition)
+            if let selectedYear, year != selectedYear { continue }
+            matches.append((index, year))
+        }
+        matches.sort { left, right in
+            let lhs = competitions[left.index], rhs = competitions[right.index]
+            if query.status == .present {
+                if lhs.startDate != rhs.startDate {
+                    return lhs.startDate < rhs.startDate
                 }
-
-                let nameComparison = lhs.name.localizedCaseInsensitiveCompare(rhs.name)
-                if nameComparison != .orderedSame {
-                    return nameComparison == .orderedAscending
+                if lhs.endDate != rhs.endDate {
+                    return lhs.endDate < rhs.endDate
                 }
-
-                return lhs.id < rhs.id
+            } else {
+                if left.year != right.year {
+                    return left.year > right.year
+                }
+                if lhs.endDate != rhs.endDate {
+                    return lhs.endDate > rhs.endDate
+                }
+                if lhs.startDate != rhs.startDate {
+                    return lhs.startDate > rhs.startDate
+                }
             }
+            let nameComparison = lhs.name.localizedCaseInsensitiveCompare(rhs.name)
+            return nameComparison == .orderedSame ? lhs.id < rhs.id : nameComparison == .orderedAscending
+        }
+        return matches.map { competitions[$0.index] }
     }
 
     static func cacheCompetitions(
@@ -2101,7 +2130,30 @@ enum CompetitionService {
         }
     }
 
-    static func fetchCompetitionSummary(id: String, languageCode: String) async throws -> CompetitionSummary {
+    #if DEBUG
+    static var competitionSummaryLoaderForTesting: ((String, String) async throws -> CompetitionSummary)?
+    #endif
+
+    static func cachedCompetitionSummary(id: String, languageCode: String,
+        cache: CompetitionSummaryCache = .shared) async -> CompetitionSummary? {
+        let direct = await cache.summary(id)
+        let summary = if let direct { direct } else { await CompetitionQueryCacheStore.shared.summary(for: id, languageCode: languageCode) }
+        guard let summary else { return nil }
+        return await localizeCompetitionNamesIfNeeded([summary], languageCode: languageCode, cachedOnly: true).first
+    }
+
+    static func fetchCompetitionSummary(id: String, languageCode: String,
+        cache: CompetitionSummaryCache = .shared) async throws -> CompetitionSummary {
+        let summary = try await loadCompetitionSummary(id: id, languageCode: languageCode)
+        try Task.checkCancellation()
+        await cache.store(summary)
+        return await localizeCompetitionNamesIfNeeded([summary], languageCode: languageCode, cachedOnly: true).first ?? summary
+    }
+
+    private static func loadCompetitionSummary(id: String, languageCode: String) async throws -> CompetitionSummary {
+        #if DEBUG
+        if let loader = competitionSummaryLoaderForTesting { return try await loader(id, languageCode) }
+        #endif
         guard let encodedID = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
               let url = URL(string: "https://www.worldcubeassociation.org/api/v0/competitions/\(encodedID)") else {
             throw CompetitionServiceError.invalidURL
@@ -2167,11 +2219,14 @@ enum CompetitionService {
             languageCode: query.languageCode
         )
 
+        let eventIDs = requiredEventIDs(for: query.events)
         var baseCompetitions = payloadPage.payloads
             .map(\.summary)
-            .filter { matchesRegion($0, region: query.region) }
-            .filter { matchesEvents($0, selectedEvents: query.events) }
-            .filter { window.contains($0, status: query.status) }
+            .filter {
+                matchesRegion($0, region: query.region) &&
+                eventIDs.allSatisfy($0.eventIDs.contains) &&
+                window.contains($0, status: query.status)
+            }
         // Ended competitions never need live registration state. Avoiding this
         // second request per page keeps a complete Past traversal below WCA's
         // production API rate limit.
@@ -2231,15 +2286,14 @@ enum CompetitionService {
 
     static func localizeCompetitionNamesIfNeeded(
         _ competitions: [CompetitionSummary],
-        languageCode: String
+        languageCode: String,
+        cachedOnly: Bool = false
     ) async -> [CompetitionSummary] {
-        guard cubingLanguageCode(for: languageCode) == "zh_cn", !competitions.isEmpty else {
+        guard cubingLanguageCode(for: languageCode).hasPrefix("zh_"), !competitions.isEmpty else {
             return competitions
         }
 
-        let localizedNames = await CompetitionLocalizedNameStore.shared.localizedCompetitionNames {
-            await fetchCompetitionNameMapFromCubing(languageCode: languageCode)
-        }
+        let localizedNames = await competitionNameInformation(languageCode: languageCode, cachedOnly: cachedOnly)
 
         return competitions.map { competition in
             let localizedInfo = localizedNames[normalizeCompetitionLookupKey(competition.id)]
@@ -2247,7 +2301,7 @@ enum CompetitionService {
                 ?? localizedNames[normalizeCompetitionLookupKey(competition.name)]
 
             let usesCubingChinaOverrides = competition.usesCubingChinaDetailSource
-            let localizedName = usesCubingChinaOverrides ? (localizedInfo?.name ?? competition.name) : competition.name
+            let localizedName = CompetitionNameScript.display(localizedInfo?.name ?? competition.name, language: languageCode)
             let localizedRegionLineOverride: String?
             let localizedAddressLineOverride: String?
             let localizedStatusOverrideValue: CompetitionAvailabilityStatus?
@@ -2306,6 +2360,61 @@ enum CompetitionService {
                 localizedWaitlistStartOverride: usesCubingChinaOverrides ? localizedInfo?.reopenRegistration : nil
             )
         }
+    }
+
+    private static func competitionNameInformation(languageCode: String, cachedOnly: Bool, year: Int? = nil) async -> [String: LocalizedCompetitionInfo] {
+        guard cubingLanguageCode(for: languageCode).hasPrefix("zh_") else { return [:] }
+        #if DEBUG
+        let store = localizedCompetitionNamesForTesting?.store ?? CompetitionLocalizedNameStore.shared
+        #else
+        let store = CompetitionLocalizedNameStore.shared
+        #endif
+        return await store.localizedCompetitionNames(cachedOnly: cachedOnly, year: year) {
+            #if DEBUG
+            if let fixture = localizedCompetitionNamesForTesting { return await fixture.load(languageCode) }
+            #endif
+            return await fetchCompetitionNameMapFromCubing(languageCode: languageCode, year: year)
+        }
+    }
+
+    static func localizedCompetitionDisplayNames(_ references: [CompetitionNameReference], languageCode: String,
+        cachedOnly: Bool = true) async -> [String: String] {
+        var names = await competitionNameInformation(languageCode: languageCode, cachedOnly: cachedOnly)
+        func lookup(_ reference: CompetitionNameReference) -> LocalizedCompetitionInfo? {
+            names[normalizeCompetitionLookupKey(reference.id)]
+                ?? names[normalizeCompetitionLookupKey(reference.website ?? "")]
+                ?? names[normalizeCompetitionLookupKey(reference.name)]
+        }
+        if !cachedOnly, cubingLanguageCode(for: languageCode).hasPrefix("zh_") {
+            let missingYears = Set(references.filter { lookup($0) == nil }.compactMap(\.archiveYear))
+            for year in missingYears.sorted(by: >) {
+                if Task.isCancelled { break }
+                let archived = await competitionNameInformation(languageCode: languageCode, cachedOnly: false, year: year)
+                names.merge(archived) { _, known in known }
+            }
+        }
+        return Dictionary(references.compactMap { reference in
+            lookup(reference).map { (reference.id, CompetitionNameScript.display($0.name, language: languageCode)) }
+        }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private static func retainKnownCompetitionName(_ name: String, ids: [String], slug: String?, languageCode: String) async {
+        let existing = await competitionNameInformation(languageCode: languageCode, cachedOnly: true)
+        var updates: [String: LocalizedCompetitionInfo] = [:]
+        for id in ids {
+            let key = normalizeCompetitionLookupKey(id), old = existing[normalizeCompetitionLookupKey(id)]
+            guard old?.name != name else { continue }
+            updates[key] = .init(slug: old?.slug ?? slug, name: name,
+                regionPrimary: old?.regionPrimary, regionSecondary: old?.regionSecondary, address: old?.address,
+                registrationStart: old?.registrationStart, pauseRegistrationStart: old?.pauseRegistrationStart,
+                reopenRegistration: old?.reopenRegistration, registrationClose: old?.registrationClose)
+        }
+        #if DEBUG
+        let store = localizedCompetitionNamesForTesting?.store ?? CompetitionLocalizedNameStore.shared
+        #else
+        let store = CompetitionLocalizedNameStore.shared
+        #endif
+        await store.merge(updates)
     }
 
     private static func localizedStatusOverride(
@@ -2506,24 +2615,10 @@ enum CompetitionService {
         }
     }
 
-    nonisolated private static func matchesEvents(_ competition: CompetitionSummary, selectedEvents: Set<CompetitionEventFilter>) -> Bool {
-        let allSelectableEvents = Set(CompetitionEventFilter.selectableCases)
-        if selectedEvents.isEmpty || selectedEvents == allSelectableEvents {
-            return true
-        }
-
-        let selectedEventIDs = selectedEvents.map(\.wcaEventID)
-        return selectedEventIDs.allSatisfy { competition.eventIDs.contains($0) }
-    }
-
-    nonisolated private static func matchesYear(
-        _ competition: CompetitionSummary,
-        year: CompetitionYearFilter,
-        status: CompetitionStatusFilter
-    ) -> Bool {
-        guard status == .past else { return true }
-        guard case .year(let selectedYear) = year else { return true }
-        return officialCompetitionYear(for: competition) == selectedYear
+    nonisolated private static func requiredEventIDs(for selectedEvents: Set<CompetitionEventFilter>) -> [String] {
+        guard !selectedEvents.isEmpty,
+              selectedEvents != Set(CompetitionEventFilter.selectableCases) else { return [] }
+        return selectedEvents.map(\.wcaEventID)
     }
 
     private static func availabilityStatus(for competition: CompetitionSummary, now: Date) -> CompetitionAvailabilityStatus {
@@ -2776,9 +2871,9 @@ enum CompetitionService {
         }
     }
 
-    private static func fetchCompetitionNameMapFromCubing(languageCode: String) async -> [String: LocalizedCompetitionInfo] {
+    private static func fetchCompetitionNameMapFromCubing(languageCode: String, year: Int?) async -> [String: LocalizedCompetitionInfo] {
         let cubingLanguage = cubingLanguageCode(for: languageCode)
-        guard let url = URL(string: "https://cubing.com/competition?lang=\(cubingLanguage)&year=&type=WCA&province=&event=") else {
+        guard let url = URL(string: "https://cubing.com/competition?lang=\(cubingLanguage)&year=\(year.map(String.init) ?? "")&type=WCA&province=&event=") else {
             return [:]
         }
 
@@ -2798,6 +2893,9 @@ enum CompetitionService {
               let html = String(data: data, encoding: .utf8) else {
             return [:]
         }
+
+        let modern = modernCompetitionNameIndex(html)
+        if !modern.isEmpty { return modern }
 
         let matches = competitionHTMLCaptures(
             in: html,
@@ -2827,6 +2925,26 @@ enum CompetitionService {
         }
 
         return lookup
+    }
+
+    nonisolated static func modernCompetitionNameIndex(_ html: String) -> [String: LocalizedCompetitionInfo] {
+        let entries = CubingChinaPageState(html: html)?.scalarStrings(containing: "wcaCompetitionId",
+            fields: ["wcaCompetitionId", "nameZh", "alias", "name"]) ?? []
+        var names: [String: LocalizedCompetitionInfo] = [:]
+        for entry in entries {
+            guard let id = entry["wcaCompetitionId"], let name = entry["nameZh"] else { continue }
+            let info = LocalizedCompetitionInfo(slug: entry["alias"], name: name, regionPrimary: nil,
+                regionSecondary: nil, address: nil, registrationStart: nil, pauseRegistrationStart: nil,
+                reopenRegistration: nil, registrationClose: nil)
+            // WCA ID is authoritative. Aliases and English names are secondary
+            // lookups for older listings that do not carry the WCA identifier.
+            names[normalizeCompetitionLookupKey(id)] = info
+            for alias in [entry["alias"], entry["name"]].compactMap({ $0 }) {
+                let key = normalizeCompetitionLookupKey(alias)
+                if !key.isEmpty, names[key] == nil { names[key] = info }
+            }
+        }
+        return names
     }
 
     private static func fetchCompetitionRegistrationInfoFromCubing(
@@ -3794,60 +3912,11 @@ enum CompetitionService {
                 return (lhs.number ?? 0) < (rhs.number ?? 0)
             }
 
-        var previewMap: [String: [CompetitionWCALiveResultPreview]] = [:]
         guard targetRoundID == nil || rounds.contains(where: { $0.id == targetRoundID }) else {
             return nil
         }
-        // Metadata/records and a lightweight canonical roster cover the home UI.
-        // Only an explicit deep link needs an eager full round; ordinary rounds
-        // load on demand under the competition-scoped visited-round owner.
-        await withTaskGroup(of: (String, [CompetitionWCALiveResultPreview]?).self) { group in
-            for round in rounds where round.id == targetRoundID {
-                group.addTask {
-                    let previews = await fetchWCALiveRoundResultPreviews(
-                        roundID: round.id,
-                        languageCode: languageCode
-                    )
-                    return (round.id, previews)
-                }
-            }
-
-            for await (roundID, previews) in group {
-                if let previews {
-                    previewMap[roundID] = previews
-                }
-            }
-        }
-
-        let hydratedRounds = rounds.map { round in
-            CompetitionWCALiveRound(
-                id: round.id,
-                eventID: round.eventID,
-                eventName: round.eventName,
-                roundName: round.roundName,
-                number: round.number,
-                formatID: round.formatID,
-                numberOfAttempts: round.numberOfAttempts,
-                sortBy: round.sortBy,
-                isFinished: round.isFinished,
-                advancementType: round.advancementType,
-                advancementLevel: round.advancementLevel,
-                isActive: round.isActive,
-                isOpen: round.isOpen,
-                results: previewMap[round.id] ?? []
-            )
-        }
-        .sorted { lhs, rhs in
-            let lhsHasPreviews = !lhs.results.isEmpty
-            let rhsHasPreviews = !rhs.results.isEmpty
-            if lhsHasPreviews != rhsHasPreviews { return lhsHasPreviews && !rhsHasPreviews }
-
-            let lhsPriority = lhs.isActive ? 0 : (lhs.isOpen ? 1 : 2)
-            let rhsPriority = rhs.isActive ? 0 : (rhs.isOpen ? 1 : 2)
-            if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
-            if lhs.eventID != rhs.eventID { return lhs.eventID < rhs.eventID }
-            return (lhs.number ?? 0) < (rhs.number ?? 0)
-        }
+        // Publish round metadata independently of results. The mounted round
+        // owns the leaderboard request; a deep link may resolve one person first.
 
         let now = Date()
         let venues = payload.venues.map { venue in
@@ -3906,75 +3975,13 @@ enum CompetitionService {
             competitionID: resolved.competitionID,
             competitionName: payload.name,
             eventIDs: eventIDs,
-            rounds: hydratedRounds,
+            rounds: rounds,
             venues: venues,
             records: records,
             competitors: payload.competitors,
-            loadedRoundIDs: previewMap.keys.sorted(),
+            loadedRoundIDs: [],
             clientRequestContext: clientRequestContext
         )
-    }
-
-    private static func fetchWCALiveRoundResultPreviews(
-        roundID: String,
-        languageCode: String
-    ) async -> [CompetitionWCALiveResultPreview]? {
-        let query = """
-        query Round($id: ID!) {
-          round(id: $id) {
-            id
-            format { id }
-            competitionEvent { event { id name } }
-            results {
-              id
-              ranking
-              advancing
-              advancingQuestionable
-              best
-              average
-              attempts { result }
-              singleRecordTag
-              averageRecordTag
-              person {
-                id
-                wcaId
-                name
-                country { name }
-              }
-            }
-          }
-        }
-        """
-
-        let payload: [String: Any] = [
-            "query": query,
-            "variables": ["id": roundID]
-        ]
-
-        guard let body = try? JSONSerialization.data(withJSONObject: payload) else { return nil }
-
-        var request = URLRequest(url: URL(string: "https://live.worldcubeassociation.org/api")!)
-        request.httpMethod = "POST"
-        request.httpBody = body
-        request.timeoutInterval = 20
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue(appAcceptLanguageHeader(for: languageCode), forHTTPHeaderField: "Accept-Language")
-
-        guard let (data, response) = try? await URLSession.shared.data(for: request),
-              let httpResponse = response as? HTTPURLResponse,
-              200 ..< 300 ~= httpResponse.statusCode else {
-            return nil
-        }
-
-        let decoder = JSONDecoder()
-        guard let graph = try? decoder.decode(WCALiveRoundGraphQLResponse.self, from: data),
-              let round = graph.data?.round, round.id == roundID else {
-            return nil
-        }
-
-        return competitionWCALiveResultPreviews(from: round.results)
     }
 
     private static func fetchWCALiveRoundSnapshot(
@@ -6149,19 +6156,17 @@ enum CompetitionService {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    fileprivate static func normalizeCompetitionLookupKey(_ value: String) -> String {
-        value
-            .replacingOccurrences(of: #"^https?://www\.worldcubeassociation\.org/competitions/"#, with: "", options: .regularExpression)
+    nonisolated fileprivate static func normalizeCompetitionLookupKey(_ value: String) -> String {
+        let path = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: #"^https?://(?:www\.)?worldcubeassociation\.org/competitions/"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"^/competitions/"#, with: "", options: .regularExpression)
-            .replacingOccurrences(of: #"^https?://cubing\.com/competition/"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"^https?://(?:www\.)?(?:cubing\.com|cubingchina\.com)/competition/"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"^/competition/"#, with: "", options: .regularExpression)
-            .replacingOccurrences(of: #"^https?://cubing\.com/live/"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"^https?://(?:www\.)?(?:cubing\.com|cubingchina\.com)/live/"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"^/live/"#, with: "", options: .regularExpression)
-            .components(separatedBy: "/").first ?? value
-            .components(separatedBy: "?").first ?? value
-            .components(separatedBy: "#").first ?? value
+        return (path.components(separatedBy: CharacterSet(charactersIn: "/?#")).first ?? path)
             .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
-            .replacingOccurrences(of: #"[^A-Za-z0-9]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[^\p{L}\p{N}]+"#, with: "", options: .regularExpression)
             .lowercased()
     }
 
@@ -6608,14 +6613,22 @@ private actor CompetitionRecognizedCountryStore {
     }
 }
 
-private actor CompetitionLocalizedNameStore {
+actor CompetitionLocalizedNameStore {
     static let shared = CompetitionLocalizedNameStore()
 
     private var cachedLocalizedNames: [String: LocalizedCompetitionInfo]?
-    private var loadingTask: Task<[String: LocalizedCompetitionInfo], Never>?
+    private var loadingTasks: [Int: Task<[String: LocalizedCompetitionInfo], Never>] = [:]
+    private var catalogDates: [Int: Date] = [:]
+    private var catalogGeneration = UUID()
     private var hasLoadedFromDisk = false
+    private let directory: URL?
+
+    init(directory: URL? = nil) {
+        self.directory = directory
+    }
 
     private func cacheFileURL() -> URL {
+        if let directory { return directory.appendingPathComponent("competition-localized-names-v6.json") }
         let baseDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         return baseDirectory
@@ -6624,24 +6637,37 @@ private actor CompetitionLocalizedNameStore {
     }
 
     func localizedCompetitionNames(
+        cachedOnly: Bool = false,
+        year: Int? = nil,
         loader: @escaping () async -> [String: LocalizedCompetitionInfo]
     ) async -> [String: LocalizedCompetitionInfo] {
         loadFromDiskIfNeeded()
+        let key = year ?? 0
+        let generation = catalogGeneration
 
-        if let cachedLocalizedNames {
+        if let cachedLocalizedNames, cachedOnly || catalogDates[key].map({ Date().timeIntervalSince($0) < 86_400 }) == true {
             return cachedLocalizedNames
         }
 
-        if let loadingTask {
-            return await loadingTask.value
+        // Cached Browser rows must not wait for an optional fetch, even one already in flight.
+        guard !cachedOnly else { return [:] }
+
+        if let loadingTask = loadingTasks[key] {
+            let loaded = await loadingTask.value
+            guard generation == catalogGeneration else { return cachedLocalizedNames ?? [:] }
+            return loaded.merging(cachedLocalizedNames ?? [:]) { _, known in known }
         }
 
         let task = Task {
-            await loader()
+            Self.normalized(await loader())
         }
-        loadingTask = task
-        let loaded = await task.value
-        loadingTask = nil
+        loadingTasks[key] = task
+        var loaded = await task.value
+        guard generation == catalogGeneration else { return cachedLocalizedNames ?? [:] }
+        loadingTasks[key] = nil
+        if !loaded.isEmpty { catalogDates[key] = Date() }
+        // A detail response can supply a newer title while the catalogue is in flight.
+        if let known = cachedLocalizedNames { loaded.merge(known) { _, newer in newer } }
 
         if !loaded.isEmpty {
             cachedLocalizedNames = loaded
@@ -6654,7 +6680,7 @@ private actor CompetitionLocalizedNameStore {
         guard !localizedNames.isEmpty else { return }
         loadFromDiskIfNeeded()
         var merged = cachedLocalizedNames ?? [:]
-        merged.merge(localizedNames) { _, new in new }
+        merged.merge(Self.normalized(localizedNames)) { _, new in new }
         cachedLocalizedNames = merged
         saveToDisk(merged)
     }
@@ -6663,19 +6689,32 @@ private actor CompetitionLocalizedNameStore {
         guard !hasLoadedFromDisk else { return }
         hasLoadedFromDisk = true
 
-        guard let data = try? Data(contentsOf: cacheFileURL()),
-              let stored = try? JSONDecoder().decode([String: LocalizedCompetitionInfo].self, from: data),
-              !stored.isEmpty else {
-            return
+        guard let data = try? Data(contentsOf: cacheFileURL()) else { return }
+        if let catalog = try? JSONDecoder().decode(StoredNames.self, from: data) {
+            cachedLocalizedNames = Self.normalized(catalog.names)
+            catalogDates = catalog.catalogDates
+        } else if let stored = try? JSONDecoder().decode([String: LocalizedCompetitionInfo].self, from: data) {
+            // Older files do not distinguish complete indices from detail hints.
+            cachedLocalizedNames = Self.normalized(stored)
         }
+    }
 
-        cachedLocalizedNames = stored
+    private struct StoredNames: Codable {
+        let names: [String: LocalizedCompetitionInfo]
+        let catalogDates: [Int: Date]
+    }
+
+    private static func normalized(_ names: [String: LocalizedCompetitionInfo]) -> [String: LocalizedCompetitionInfo] {
+        Dictionary(names.compactMap { key, info in
+            let normalized = CompetitionService.normalizeCompetitionLookupKey(key)
+            return normalized.isEmpty ? nil : (normalized, info)
+        }, uniquingKeysWith: { first, _ in first })
     }
 
     private func saveToDisk(_ localizedNames: [String: LocalizedCompetitionInfo]) {
         let cacheFileURL = cacheFileURL()
         guard !localizedNames.isEmpty,
-              let data = try? JSONEncoder().encode(localizedNames) else { return }
+              let data = try? JSONEncoder().encode(StoredNames(names: localizedNames, catalogDates: catalogDates)) else { return }
 
         try? FileManager.default.createDirectory(
             at: cacheFileURL.deletingLastPathComponent(),
@@ -6686,7 +6725,10 @@ private actor CompetitionLocalizedNameStore {
 
     func clear() {
         cachedLocalizedNames = nil
-        loadingTask = nil
+        catalogDates.removeAll()
+        catalogGeneration = UUID()
+        loadingTasks.values.forEach { $0.cancel() }
+        loadingTasks.removeAll()
         hasLoadedFromDisk = false
         try? FileManager.default.removeItem(at: cacheFileURL())
     }
@@ -6717,6 +6759,16 @@ actor CompetitionQueryCacheStore {
         loadFromDiskIfNeeded()
         prune()
         return inMemorySnapshots[key]
+    }
+
+    func summary(for id: String, languageCode: String? = nil) -> CompetitionSummary? {
+        loadFromDiskIfNeeded(); prune()
+        let snapshots = inMemorySnapshots.filter { key, _ in
+            guard let languageCode else { return true }
+            return key.split(separator: "|", omittingEmptySubsequences: false).dropFirst().first.map(String.init) == languageCode
+        }.map(\.value)
+        return snapshots.sorted { $0.lastUpdated > $1.lastUpdated }
+            .lazy.compactMap { $0.competitions.first { $0.id == id } }.first
     }
 
     func store(_ snapshot: CompetitionCacheSnapshot, for key: String) {
@@ -6981,7 +7033,7 @@ nonisolated private let oceaniaCountryCodes: Set<String> = [
     "PF", "PG", "PN", "PW", "SB", "TK", "TO", "TV", "UM", "VU", "WF", "WS"
 ]
 
-private struct LocalizedCompetitionInfo: Sendable, Codable {
+struct LocalizedCompetitionInfo: Sendable, Codable {
     let slug: String?
     let name: String
     let regionPrimary: String?
@@ -7005,7 +7057,7 @@ private func localizedCompetitionString(key: String, languageCode: String) -> St
 }
 
 private func localizedCountryName(for code: String, languageCode: String) -> String {
-    appLocale(for: languageCode).localizedString(forRegionCode: code) ?? code
+    WCARegionPresentation.name(code, language: languageCode)
 }
 
 private func parseRecognizedCountryNames(from html: String) -> [String] {

@@ -33,6 +33,24 @@ private actor ProfileExploreProbe {
         clock = ProfileExploreClock()
     }
     override func tearDown() { try? FileManager.default.removeItem(at: root); super.tearDown() }
+
+    func testExploreForcedRefreshSerializationBenchmark() async throws {
+        let cache = WCAExplorePublicDataCache(directory: root)
+        let value = (0..<8_000).map { index in
+            ["id": String(index), "name": "Competitor \(index)", "event": "333", "country": "US"]
+        }
+        var times: [Double] = []
+        for _ in 0..<5 {
+            let start = ProcessInfo.processInfo.systemUptime
+            let response = try await cache.fetch(key: "rankings-benchmark", force: true) { value }
+            times.append((ProcessInfo.processInfo.systemUptime - start) * 1_000)
+            XCTAssertEqual(response.value, value)
+            let saved = await cache.load([[String: String]].self, key: "rankings-benchmark")
+            XCTAssertEqual(saved?.value, value)
+            XCTAssertEqual(saved?.fetchedAt, response.fetchedAt)
+        }
+        print("[PerfAudit] explore_refresh rows=8000 ms=\(times)")
+    }
     nonisolated private static func page(_ id: String = "2020TEST01", language: String = "en", count: String = "1") -> WCAPersonResultsPage {
         WCAPersonResultsPage(contentLanguage: language, summary: .init(region: "China", wcaId: id,
             gender: "Male", competitions: count, completedSolves: "5"), previousIdentityText: nil,

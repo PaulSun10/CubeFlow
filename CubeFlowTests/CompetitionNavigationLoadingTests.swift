@@ -502,6 +502,7 @@ private struct HostedDisclosureFixture: View {
                 CompetitionResultSeparatorDiagnostics.rows = [:]
                 try await render(CompetitionResultExperience(round: card.selection!.round, languageCode: "en", cardState: card,
                     mode: .card), width: horizontal ? 320 : 390, dark: dark, name: "oh-consistency-\(id)-\(count)-\(dark)-\(horizontal)") { window in
+                    var horizontalViewport: CGRect?
                     if horizontal {
                         let scroll = try XCTUnwrap(self.views(window).compactMap { $0 as? UIScrollView }.first {
                             $0.contentSize.width > $0.bounds.width + 1
@@ -511,6 +512,13 @@ private struct HostedDisclosureFixture: View {
                         scroll.layoutIfNeeded()
                         try await Task.sleep(nanoseconds: 30_000_000)
                         XCTAssertEqual(scroll.contentOffset.x, maximum, accuracy: 1)
+                        horizontalViewport = scroll.convert(scroll.bounds, to: window)
+                        if id == "2016KOLA02", count == 2, !dark {
+                            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                            }
+                            try image.pngData()?.write(to: root.appendingPathComponent("build/deep-stabilization-nov03/oh-trailing-light.png"))
+                        }
                     }
                     let bitmap = try self.finalUIBitmap(window)
                     let frames = try selected.map { try XCTUnwrap(CompetitionResultSeparatorDiagnostics.rows[$0.id]) }
@@ -519,13 +527,20 @@ private struct HostedDisclosureFixture: View {
                     for index in frames.indices {
                         let frame = frames[index]
                         let y = index == 0 ? frame.minY - pixel / 2 : (frames[index - 1].maxY + frame.minY) / 2
-                        let xPixel = Int(frame.midX * bitmap.scale), yPixel = Int(y * bitmap.scale)
+                        // The probe covers summary columns only; they may be
+                        // fully offscreen after horizontal scrolling. The rule
+                        // belongs to the complete summary + solves row Canvas.
+                        let visible = (horizontalViewport ?? frame).intersection(window.bounds)
+                        XCTAssertFalse(visible.isNull || visible.isEmpty, "The sampled table must be visible")
+                        let xPixel = Int(visible.midX * bitmap.scale), yPixel = Int(y * bitmap.scale)
+                        XCTAssertTrue((0..<bitmap.width).contains(xPixel))
+                        XCTAssertTrue((6..<(bitmap.height - 6)).contains(yPixel))
                         let base = (bitmap.tone(xPixel, yPixel - 6) + bitmap.tone(xPixel, yPixel + 6)) / 2
                         let intensity = (yPixel - 2...yPixel + 2).map { abs(bitmap.tone(xPixel, $0) - base) }.max() ?? 0
                         XCTAssertGreaterThan(intensity, 1, "Every header/round boundary must remain visible")
                         intensities.append(intensity)
                     }
-                    print("[OHBoundaryPixels] id=\(id) rows=\(count) dark=\(dark) intensities=\(intensities)")
+                    print("[OHBoundaryPixels] id=\(id) rows=\(count) dark=\(dark) frames=\(frames) intensities=\(intensities)")
                     XCTAssertLessThanOrEqual((intensities.max() ?? 0) - (intensities.min() ?? 0), 1,
                         "One adaptive treatment must not alternate between strong native and faint drawn rules")
                 }
@@ -598,6 +613,14 @@ private struct HostedDisclosureFixture: View {
                 }
                 let modal = try XCTUnwrap(host.presentedViewController)
                 let selection = state.selection?.result.id
+                let sample = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: false)
+                }
+                let encodingStart = ProcessInfo.processInfo.systemUptime
+                _ = sample.pngData()?.hashValue
+                let encoded = ProcessInfo.processInfo.systemUptime
+                _ = self.pixelFingerprint(sample)
+                print("[TestCapturePerf] full_pixel_png_ms=\((encoded - encodingStart) * 1000) raw_hash_ms=\((ProcessInfo.processInfo.systemUptime - encoded) * 1000)")
                 state.loadAllResults()
                 var forwardFrames: Set<Int> = []
                 for _ in 0..<20 {
@@ -643,7 +666,20 @@ private struct HostedDisclosureFixture: View {
         let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
             window.drawHierarchy(in: window.bounds, afterScreenUpdates: false)
         }
-        return image.pngData()?.hashValue ?? 0
+        return pixelFingerprint(image)
+    }
+    private func pixelFingerprint(_ image: UIImage) -> Int {
+        guard let bitmap = image.cgImage, let data = bitmap.dataProvider?.data,
+              let bytes = CFDataGetBytePtr(data) else { return 0 }
+        // Hash every rendered pixel without synchronous lossless compression
+        // stalling the main thread. Exclude row padding, which is not image ink.
+        var hasher = Hasher()
+        let rowBytes = (bitmap.width * bitmap.bitsPerPixel + 7) / 8
+        guard CFDataGetLength(data) >= bitmap.bytesPerRow * bitmap.height else { return 0 }
+        for row in 0..<bitmap.height {
+            hasher.combine(bytes: UnsafeRawBufferPointer(start: bytes + row * bitmap.bytesPerRow, count: rowBytes))
+        }
+        return hasher.finalize()
     }
     func testRoundOriginKeepsSummaryWhileAllResultsLoads() async throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()

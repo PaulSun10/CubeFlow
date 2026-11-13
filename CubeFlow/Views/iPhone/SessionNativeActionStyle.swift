@@ -28,7 +28,7 @@ struct SmartCubeNativeAction: UIViewRepresentable {
     let identifier: String
     let perform: () -> Void
     var isLarge = false
-
+    var systemImage: String? = nil
     func makeCoordinator() -> Coordinator { Coordinator() }
     func makeUIView(context: Context) -> UIButton {
         let button = UIButton(type: .system)
@@ -39,11 +39,13 @@ struct SmartCubeNativeAction: UIViewRepresentable {
     func updateUIView(_ button: UIButton, context: Context) {
         context.coordinator.perform = perform
         var config = SessionNativeActionStyle.configuration(tint: tint)
-        config.title = title
+        config.title = systemImage == nil ? title : nil
+        config.image = systemImage.flatMap { UIImage(systemName: $0) }
         if isLarge { config.buttonSize = .large }
         if button.configuration != config { button.configuration = config }
         button.tintColor = tint
         button.isEnabled = enabled
+        button.accessibilityLabel = title
         button.accessibilityIdentifier = identifier
     }
     @available(iOS 16.0, *)
@@ -54,5 +56,23 @@ struct SmartCubeNativeAction: UIViewRepresentable {
     final class Coordinator {
         var perform: (() -> Void)?
     }
+}
+/// A noninteractive status mark with the same native tint treatment as Edit.
+struct CompetitionParticipationMark: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIButton {
+        let button = UIButton(type: .system)
+        var config = SessionNativeActionStyle.configuration(tint: .systemGreen)
+        config.image = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(pointSize: 8, weight: .semibold))
+        config.contentInsets = .zero
+        config.background.cornerRadius = 10
+        config.buttonSize = .mini
+        config.cornerStyle = .capsule
+        button.configuration = config
+        button.tintColor = .systemGreen
+        button.isUserInteractionEnabled = false
+        button.accessibilityTraits = .image
+        return button
+    }
+    func updateUIView(_ uiView: UIButton, context: Context) {}
 }
 #endif

@@ -96,4 +96,44 @@ import XCTest
         let page = try await CompetitionService.fetchCompetitionsPage(query: query, page: 1)
         XCTAssertTrue(page.competitions.isEmpty); XCTAssertNil(page.nextPage); XCTAssertEqual(page.totalCount, 0)
     }
+
+    func testHistoricalCatalogFilteringBenchmark() throws {
+        let sampleDate = date("2026-01-01")
+        let rows: [CompetitionSummary] = (0..<12_000).map { index in
+            let day = sampleDate.addingTimeInterval(Double(-(index * 193 % 7000)) * 86_400)
+            return .init(id: String(index), name: "Event \(index % 63)", shortDisplayName: nil,
+                startDate: day, endDate: day, registrationOpen: nil, registrationClose: nil,
+                competitorLimit: nil, venue: "", venueAddress: "", venueDetails: nil, city: "",
+                countryISO2: index.isMultiple(of: 3) ? "CN" : "US", latitude: nil, longitude: nil,
+                url: "", website: nil, dateRange: "", eventIDs: index.isMultiple(of: 7) ? ["222"] : ["333"],
+                championshipTypes: nil, localizedRegionLineOverride: nil, localizedAddressLineOverride: nil,
+                localizedStatusOverride: nil, localizedRegistrationStartOverride: nil, localizedWaitlistStartOverride: nil)
+        }
+        let day = window("2026-10-21")
+        for year in [CompetitionYearFilter.all, .year(2025)] {
+            let query = CompetitionQuery(languageCode: "en", region: .country("US"),
+                events: [.threeByThree], year: year, status: .past, dateWindow: day)
+            let expected = rows.filter {
+                guard $0.countryISO2 == "US", $0.eventIDs.contains("333"), day.contains($0, status: .past) else { return false }
+                if case .year(let value) = year { return CompetitionService.officialCompetitionYear(for: $0) == value }
+                return true
+            }.sorted { lhs, rhs in
+                let ly = CompetitionService.officialCompetitionYear(for: lhs)
+                let ry = CompetitionService.officialCompetitionYear(for: rhs)
+                if ly != ry { return ly > ry }
+                if lhs.endDate != rhs.endDate { return lhs.endDate > rhs.endDate }
+                if lhs.startDate != rhs.startDate { return lhs.startDate > rhs.startDate }
+                let name = lhs.name.localizedCaseInsensitiveCompare(rhs.name)
+                return name == .orderedSame ? lhs.id < rhs.id : name == .orderedAscending
+            }.map(\.id)
+            var times: [Double] = []
+            for _ in 0..<5 {
+                let start = ProcessInfo.processInfo.systemUptime
+                let actual = CompetitionService.filterCompetitions(rows, for: query)
+                times.append((ProcessInfo.processInfo.systemUptime - start) * 1000)
+                XCTAssertEqual(actual.map(\.id), expected)
+            }
+            print("[Nov10Perf] historical_catalog rows=12000 year=\(year) matches=\(expected.count) ms=\(times)")
+        }
+    }
 }

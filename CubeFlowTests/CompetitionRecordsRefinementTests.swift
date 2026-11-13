@@ -156,7 +156,7 @@ final class CompetitionRecordsRefinementTests: XCTestCase {
             for legacy in [true, false] {
                 let view = VStack(alignment: .leading, spacing: 12) {
                     if legacy {
-                        legacySelectors
+                        acceptedCompactSelectors
                     } else {
                         PublishedEventSelector(eventIDs: ["333", "777"], selection: .constant("333"),
                             effectiveEvent: "333", language: "en", recordTags: ["333": "CR"])
@@ -196,15 +196,17 @@ final class CompetitionRecordsRefinementTests: XCTestCase {
         print("[RecordsSnapshot] \(url.path)")
     }
 
-    @ViewBuilder private var legacySelectors: some View {
+    // Independent compact reference from the accepted October 12 selector
+    // contract: 20pt glyphs / 30pt cells / zero pitch gap / 3pt round padding.
+    @ViewBuilder private var acceptedCompactSelectors: some View {
         CompetitionProgressiveBlurScrollView {
-            HStack(spacing: 6) {
+            HStack(spacing: 0) {
                 ForEach(["333", "777"], id: \.self) { event in
                     let glyph = CompetitionEventIconFont.glyph(for: event)!
-                    CompetitionEventGlyph(glyph: glyph, eventName: event, size: 22,
+                    CompetitionEventGlyph(glyph: glyph, eventName: event, size: 20,
                         color: PublishedEventSelectorStyle.foreground(selected: event == "333"))
-                        .offset(PublishedEventSelectorStyle.inkOffset(glyph, size: 22))
-                        .frame(width: 36, height: 36)
+                        .offset(PublishedEventSelectorStyle.inkOffset(glyph, size: 20))
+                        .frame(width: 30, height: 30)
                         .background(event == "333" ? Color.blue : Color.clear, in: RoundedRectangle(cornerRadius: 8))
                         .padding(.trailing, event == "333" ? 10 : 0)
                         .overlay(alignment: .topTrailing) {
@@ -219,7 +221,7 @@ final class CompetitionRecordsRefinementTests: XCTestCase {
                 ForEach(["1", "f"], id: \.self) { round in
                     Text(PublishedCompetitionStrings.round(round, language: "en"))
                         .font(.caption.weight(round == "1" ? .semibold : .regular))
-                        .padding(.horizontal, 9).padding(.vertical, 5)
+                        .padding(.horizontal, 9).padding(.vertical, 3)
                         .foregroundStyle(round == "1" ? Color.accentColor : .primary)
                         .background(round == "1" ? Color.accentColor.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 7))
                         .padding(.trailing, round == "1" ? 16 : 0)

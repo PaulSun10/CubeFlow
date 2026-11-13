@@ -16,6 +16,11 @@ final class CompetitionResultsNavigationAcceptanceTests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 5), app.debugDescription); row.tap()
         XCTAssertTrue(app.buttons["competition-result-close"].waitForExistence(timeout: 5))
         let image = XCTAttachment(screenshot: app.screenshot()); image.name = "actual-detail-background-back-before"; image.lifetime = .keepAlways; add(image)
+        let highlight = app.buttons["competition-share-highlight"]
+        XCTAssertTrue(highlight.isHittable)
+        highlight.tap()
+        XCTAssertTrue(app.navigationBars["Result Highlight"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
         let back = app.buttons["competition-detail-back"]
         XCTAssertTrue(back.isHittable, app.debugDescription)
         back.tap()
@@ -231,6 +236,17 @@ final class CompetitionResultsNavigationAcceptanceTests: XCTestCase {
         XCTAssertEqual(secondBest.frame.minX, otherX, accuracy: 1)
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "official-by-competitor-horizontal-solves"; shot.lifetime = .keepAlways; add(shot)
+        let report = app.buttons["competition-share-report"]
+        let close = app.buttons["competition-result-close"]
+        let reportFrame = report.frame
+        card.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.78))
+            .press(forDuration: 0.05, thenDragTo: card.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.33)))
+        XCTAssertEqual(report.frame, reportFrame, "The share action stays with the header during vertical scroll")
+        XCTAssertTrue(report.isHittable)
+        XCTAssertTrue(close.isHittable)
+        report.tap()
+        XCTAssertTrue(app.navigationBars["Competition Report"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
         app.buttons["competition-result-close"].tap()
         XCTAssertTrue(person.waitForExistence(timeout: 5))
     }

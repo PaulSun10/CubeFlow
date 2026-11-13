@@ -60,8 +60,8 @@ private struct ScrambleResponsivenessView: View {
 
 @MainActor
 final class PublishedCompetitionIntegrationTests: XCTestCase {
-    private func competition(_ id: String, url: String, canonical: String? = nil) -> CompetitionSummary {
-        CompetitionSummary(id: id, name: id, shortDisplayName: nil, startDate: .distantPast, endDate: .distantPast,
+    private func competition(_ id: String, url: String, canonical: String? = nil, name: String? = nil) -> CompetitionSummary {
+        CompetitionSummary(id: id, name: name ?? id, shortDisplayName: nil, startDate: .distantPast, endDate: .distantPast,
             registrationOpen: nil, registrationClose: nil, competitorLimit: nil, venue: "Venue", venueAddress: "Address",
             venueDetails: nil, city: "Beijing", countryISO2: "CN", latitude: nil, longitude: nil, url: url, website: nil,
             dateRange: "Oct 1-3", eventIDs: ["333", "222"], championshipTypes: nil, wcaCompetitionID: canonical,
@@ -172,7 +172,14 @@ final class PublishedCompetitionIntegrationTests: XCTestCase {
         let urlOnly = CompetitionDetailContent.empty.replacingWCALiveAvailability(.available,
             url: URL(string: "https://cubing.com/live/example"))
         XCTAssertFalse(CompetitionDetailNavigationPolicy.showsLive(content: urlOnly, cubingChina: true))
-        XCTAssertTrue(CompetitionDetailNavigationPolicy.showsLive(content: urlOnly, cubingChina: false))
+        XCTAssertFalse(CompetitionDetailNavigationPolicy.showsLive(content: urlOnly, cubingChina: false))
+        var wca = CompetitionDetailContent.empty.replacingWCALiveAvailability(.available,
+            url: URL(string: "https://live.worldcubeassociation.org/competitions/123"))
+        XCTAssertFalse(CompetitionDetailNavigationPolicy.showsLive(content: wca, cubingChina: false), "A URL alone is not validated provider data")
+        wca.wcaLiveContent = .init(competitionID: 123, competitionName: nil, eventIDs: ["333"],
+            rounds: [], venues: [], records: [])
+        XCTAssertTrue(CompetitionDetailNavigationPolicy.showsLive(content: wca, cubingChina: false))
+        XCTAssertFalse(CompetitionDetailNavigationPolicy.showsLive(content: wca, cubingChina: true))
         XCTAssertFalse(CompetitionDetailNavigationPolicy.showsLive(content: .empty, cubingChina: true))
     }
 
@@ -445,6 +452,9 @@ final class PublishedCompetitionIntegrationTests: XCTestCase {
         PublishedFixtureProtocol.configure { request in (request.url!.path.hasSuffix("scrambles") ? scramble : bytes, 200, 0) }
         let store = PublishedCompetitionStore(service: service())
         await store.load(id: id, events: ["333", "222"])
+        // Rendering fixtures bypass the parent resource coordinator; hydrate
+        // its owned scramble store explicitly, never restore child loading.
+        await store.scrambles.load(id: id)
         let about = CubingChinaDetailAdapter.blocks(html: "<section><h2>Venue overview</h2><p>Kun Tai Glory Hotel Beijing Wangjing</p></section><section><h2>Organizing team</h2><p>Organizers and delegates remain in the original document.</p></section>", section: .about, language: "en").blocks
         let regulations = CubingChinaDetailAdapter.blocks(html: "<section><h2>Regulations</h2><p>WCA regulations and organizer policies.</p></section>", section: .regulations, language: "en").blocks
         let travel = CubingChinaDetailAdapter.blocks(html: "<section><h2>Rail and buses</h2><p>Railway connection: 25 yuan.</p><table><tr><th>Route</th><th>Fare</th></tr><tr><td>Bus 12</td><td>2 yuan</td></tr></table></section>", section: .travel, language: "en").blocks
@@ -519,6 +529,7 @@ final class PublishedCompetitionIntegrationTests: XCTestCase {
         PublishedFixtureProtocol.configure { request in (request.url!.path.hasSuffix("scrambles") ? torontoScrambles : torontoBytes, 200, 0) }
         let torontoStore = PublishedCompetitionStore(service: service())
         await torontoStore.load(id: torontoID, events: ["333", "222"])
+        await torontoStore.scrambles.load(id: torontoID)
         for scheme in [ColorScheme.light, .dark] {
             for tab in [CompetitionDetailTab.info, .results, .scrambles] {
                 try await snapshot(CompatibleNavigationContainer {
@@ -557,6 +568,7 @@ final class PublishedCompetitionIntegrationTests: XCTestCase {
         }
         let store = PublishedCompetitionStore(service: service())
         await store.load(id: id, events: ["333"])
+        await store.scrambles.load(id: id)
         for scheme in [ColorScheme.light, .dark] {
             try await snapshot(CompatibleNavigationContainer {
                 CompetitionDetailView(competition: competition("Beijing-Autumn-Rivalry-2026",
@@ -578,6 +590,7 @@ final class PublishedCompetitionIntegrationTests: XCTestCase {
         PublishedFixtureProtocol.configure { request in (request.url!.path.hasSuffix("scrambles") ? scrambles : resultBytes, 200, 0) }
         let store = PublishedCompetitionStore(service: service())
         await store.load(id: id, events: ["333", "222"])
+        await store.scrambles.load(id: id)
         let title = "2026 WCA Beijing Autumn Rivalry"
         let content = CompetitionDetailContent(overviewBlocks: [CompetitionDetailTextBlock(id: "long-info", title: "About",
             body: Array(repeating: "Organizer-authored information remains available.", count: 70).joined(separator: "\n"), html: nil)],
@@ -592,7 +605,7 @@ final class PublishedCompetitionIntegrationTests: XCTestCase {
                     for collapsed in [false, true] {
                         try await snapshot(CompatibleNavigationContainer {
                             CompetitionDetailView(competition: competition(china ? "Beijing-Autumn-Rivalry-2026" : id,
-                                url: china ? "https://cubing.com/competition/Beijing-Autumn-Rivalry-2026" : "https://www.worldcubeassociation.org/competitions/\(id)", canonical: id),
+                                url: china ? "https://cubing.com/competition/Beijing-Autumn-Rivalry-2026" : "https://www.worldcubeassociation.org/competitions/\(id)", canonical: id, name: title),
                                 appLanguage: "en", renderingContent: content, renderingPublishedStore: store, renderingTab: tab)
                         }, name: "\(china ? "china" : "wca")-native-title-\(tab.rawValue)-\(dark ? "dark" : "light")-\(collapsed ? "inline" : "large")",
                             dark: dark, scrollToBottom: collapsed, nativeTitle: title)

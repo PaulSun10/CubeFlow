@@ -177,6 +177,32 @@ struct CompetitionEventGlyph: View {
     }
 }
 
+/// Uses the outline rather than the font's asymmetric typographic box.
+struct CompetitionEventInkGlyph: View {
+    let glyph: String
+    var body: some View {
+        if let outline = Self.outlines[glyph] {
+            Path(outline).fill(.primary).frame(width: 20, height: 20)
+        }
+    }
+
+    private static let outlines: [String: CGPath] = {
+        guard CompetitionEventIconFont.ensureRegistered() else { return [:] }
+        let font = CTFontCreateWithName(CompetitionEventIconFont.fontName as CFString, 20, nil)
+        return Dictionary(uniqueKeysWithValues: Set(PuzzleEvent.allCases.compactMap {
+            CompetitionEventIconFont.glyph(for: $0.cubingEventID)
+        }).compactMap { glyph in
+            guard var scalar = glyph.utf16.first else { return nil }
+            var index = CGGlyph()
+            guard CTFontGetGlyphsForCharacters(font, &scalar, &index, 1),
+                  let path = CTFontCreatePathForGlyph(font, index, nil) else { return nil }
+            let ink = path.boundingBoxOfPath
+            var transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 10 - ink.midX, ty: 10 + ink.midY)
+            return path.copy(using: &transform).map { (glyph, $0) }
+        })
+    }()
+}
+
 enum CompetitionEventIconFont {
     static let fontName = "event-icon"
     struct GlyphMetrics {

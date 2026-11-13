@@ -16,6 +16,23 @@ struct ExploreCompositionTests {
         #expect(result == ExploreComposer.compose(candidates, context: ExploreCompositionContext(now: now.addingTimeInterval(20))))
     }
 
+    @Test func interestingCompetitionsUseVerifiedSignalsAndAvoidStaleAndDuplicateEntries() {
+        let programs = ["333", "222", "444", "555", "666", "777", "pyram", "skewb"]
+        let world = competition("world", date: now, country: "CN", championshipTypes: ["world"])
+        let national = competition("national", date: now, country: "CN", championshipTypes: ["CN"])
+        let broad = competition("broad", date: now, country: "AU", events: programs)
+        let recent = competition("record", date: now.addingTimeInterval(-86_400), country: "US", events: ["sq1"])
+        let old = competition("old", date: now.addingTimeInterval(-31 * 86_400), events: programs)
+        let ordinary = competition("World_Championship_in_name_only", date: now)
+        let duplicateEvents = competition("duplicate-events", date: now, events: Array(repeating: "333", count: 8))
+        let entries = [national, world, broad, old, ordinary, duplicateEvents, recent, broad]
+        let result = ExploreCompetitionRecommendation.ranked(entries, worldRecordIDs: ["record", "old"], now: now)
+        #expect(result.map(\.id) == ["world", "record", "broad", "national"])
+        #expect(result.map(\.reason) == [.championship, .worldRecord, .eventProgram(8), .championship])
+        #expect(result.map(\.id) == ExploreCompetitionRecommendation.ranked(Array(entries.reversed()),
+            worldRecordIDs: ["record", "old"], now: now).map(\.id))
+    }
+
     @Test func freshImportantContentOutranksPersonalRelevance() {
         var record = candidate("record", .feature, hero: true)
         record.importance = 100
@@ -232,12 +249,13 @@ struct ExploreCompositionTests {
                          presentation: presentation, heroEligibility: hero ? .editorialHighlight : nil, importance: 40)
     }
 
-    private func competition(_ id: String, date: Date, registrationOpen: Date? = nil, registrationClose: Date? = nil, country: String = "CN", events: [String] = ["333"]) -> CompetitionSummary {
+    private func competition(_ id: String, date: Date, registrationOpen: Date? = nil, registrationClose: Date? = nil,
+                             country: String = "CN", events: [String] = ["333"], championshipTypes: [String]? = nil) -> CompetitionSummary {
         CompetitionSummary(id: id, name: id, shortDisplayName: nil, startDate: date, endDate: date,
             registrationOpen: registrationOpen, registrationClose: registrationClose, competitorLimit: nil,
             venue: "", venueAddress: "", venueDetails: nil, city: "Test city", countryISO2: country,
             latitude: nil, longitude: nil, url: "https://www.worldcubeassociation.org/competitions/\(id)",
-            website: nil, dateRange: "", eventIDs: events, championshipTypes: nil,
+            website: nil, dateRange: "", eventIDs: events, championshipTypes: championshipTypes,
             localizedRegionLineOverride: nil, localizedAddressLineOverride: nil, localizedStatusOverride: nil,
             localizedRegistrationStartOverride: nil, localizedWaitlistStartOverride: nil)
     }

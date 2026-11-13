@@ -11,6 +11,17 @@ private struct ExploreCompetitionSearchContextKey: EnvironmentKey {
     static let defaultValue: ExploreCompetitionSearchContext? = nil
 }
 
+private struct ExploreDiscoveryStoreKey: EnvironmentKey {
+    static let defaultValue: ExploreStore? = nil
+}
+
+private extension EnvironmentValues {
+    var exploreDiscoveryStore: ExploreStore? {
+        get { self[ExploreDiscoveryStoreKey.self] }
+        set { self[ExploreDiscoveryStoreKey.self] = newValue }
+    }
+}
+
 extension EnvironmentValues {
     var exploreCompetitionSearchContext: ExploreCompetitionSearchContext? {
         get { self[ExploreCompetitionSearchContextKey.self] }
@@ -101,6 +112,9 @@ struct ExploreView: View {
             }
             .task(id: "\(isActive)|\(language)|\(signedInWCAID ?? "")") {
                 guard isActive else { return }
+                // Global records have no dependency on optional person/region
+                // resolution; do not serialize them behind that request.
+                async let records: Void = store.loadRecentRecords(language: language)
                 if let wcaID = signedInWCAID, resolvedWCAID != wcaID {
                     store.setWCARegionCode(nil)
                     do {
@@ -119,7 +133,6 @@ struct ExploreView: View {
                 }
                 guard !Task.isCancelled else { return }
                 async let competitions: Void = store.load(language: language)
-                async let records: Void = store.loadRecentRecords(language: language)
                 _ = await (competitions, records)
             }
             .onChange(of: competitionRequestID) { _ in handleCompetitionRequest() }
@@ -139,6 +152,7 @@ struct ExploreView: View {
             isVisible: $isCompetitionBottomAccessoryVisible,
             requestID: $searchRequestID
         ))
+        .environment(\.exploreDiscoveryStore, store)
     }
 
     private func discovery(_ history: ExploreHistory) -> some View {
@@ -275,6 +289,7 @@ struct ExploreBrowseSection: View {
 struct ExploreBrowseView: View {
     let destination: ExploreBrowseDestination
     @Environment(\.exploreCompetitionSearchContext) private var searchContext
+    @Environment(\.exploreDiscoveryStore) private var discoveryStore
     @AppStorage("appLanguage") private var language = "en"
     @ViewBuilder
     var body: some View {
@@ -294,7 +309,12 @@ struct ExploreBrowseView: View {
         case .records:
             ExploreRecordsView(language: language)
         case .stats: ExploreStatsView(language: language)
-        case .highlights: ExploreDiscoveriesView(language: language)
+        case .highlights:
+            if let discoveryStore {
+                ExploreCachedDiscoveries(store: discoveryStore, language: language)
+            } else {
+                ExploreDiscoveriesView(language: language)
+            }
         }
     }
 }

@@ -35,7 +35,11 @@ nonisolated private final class PersonalDiscoveryTransport: CubingChinaLiveTrans
         }
         XCTAssertEqual(CubingLiveRecordIndicators.selector([mine, ("NR", "CR", other), ("WR", nil, other)], ownWCAID: own), "WR")
         XCTAssertFalse(CubingLiveRecordIndicators.isOwnPR("WR", ownWCAID: own, competitorWCAID: own))
-        XCTAssertTrue(CubingLiveRecordIndicators.isOwnPR("PR", ownWCAID: " 2019shay01 ", competitorWCAID: own))
+        XCTAssertTrue(CubingLiveRecordIndicators.isOwnPR("PR", ownWCAID: own, competitorWCAID: own))
+        for noncanonical in [" 2019SHAY01 ", "2019shay01", "Yinzhi Sha"] {
+            XCTAssertFalse(CubingLiveRecordIndicators.isOwnPR("PR", ownWCAID: noncanonical, competitorWCAID: own))
+            XCTAssertFalse(CubingLiveRecordIndicators.isOwnPR("PR", ownWCAID: own, competitorWCAID: noncanonical))
+        }
         XCTAssertFalse(CubingLiveRecordIndicators.isOwnPR(nil, ownWCAID: own, competitorWCAID: own))
         XCTAssertFalse(CubingLiveRecordIndicators.isOwnPR("PR", ownWCAID: "Yinzhi Sha", competitorWCAID: own))
     }

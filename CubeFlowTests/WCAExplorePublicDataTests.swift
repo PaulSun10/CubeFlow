@@ -116,7 +116,7 @@ struct WCAExplorePublicDataTests {
         #expect(records.map(\.id) == ["r1", "r2", "r3"])
         let candidates = WCAExplorePublicDataService.recentRecordsCandidate(records, language: "en")
         #expect(candidates.first?.items.map(\.id) == ["recent-record.r1", "recent-record.r2", "recent-record.r3"])
-        #expect(candidates.first?.items.last?.result == nil)
+        #expect(candidates.first?.items.last?.result?.level == .continental)
         #expect(candidates.filter { $0.heroEligibility != nil }.map(\.id) == ["records.recent-world"])
         #expect(candidates.last?.items.first?.content.destination == .records)
         let localized = WCAExplorePublicDataService.recentRecordsCandidate(records, language: "zh-Hans")

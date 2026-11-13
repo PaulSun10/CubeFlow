@@ -112,12 +112,17 @@ private struct LoadedTopSizingRow: View {
     private func withRecording(_ work: () async throws -> Void) async throws {
         let key = CompetitionScrollOwnerDiagnostics.enabledKey
         let old = UserDefaults.standard.object(forKey: key)
+        let debug = CompetitionDebugStore.shared
+        let wasEnabled = debug.enabled
+        debug.setEnabled(true)
         UserDefaults.standard.set(true, forKey: key); CompetitionScrollOwnerDiagnostics.clear()
         defer {
             CompetitionScrollOwnerDiagnostics.clear()
+            debug.setEnabled(wasEnabled)
             if let old { UserDefaults.standard.set(old, forKey: key) }
             else { UserDefaults.standard.removeObject(forKey: key) }
         }
+        XCTAssertTrue(CompetitionScrollOwnerDiagnostics.enabled, "The master DEBUG gate is required before collecting preferred-size events")
         try await work()
     }
     private func assertStableFits(_ expected: CGFloat, file: StaticString = #filePath, line: UInt = #line) {

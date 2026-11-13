@@ -16,30 +16,43 @@ nonisolated struct CubingChinaPageState {
     func objects(containing key: String) -> [[String: Any]] {
         var cache: [Int: Any] = [:]
         var budget = 500_000
+        var ancestors: Set<Int> = []
         return table.indices.compactMap { index in
             guard let object = table[index] as? [String: Any], object[key] != nil else { return nil }
-            return resolve(index, ancestors: [], cache: &cache, budget: &budget) as? [String: Any]
+            return resolve(index, ancestors: &ancestors, cache: &cache, budget: &budget) as? [String: Any]
         }
     }
 
-    private func resolve(_ index: Int, ancestors: Set<Int>, cache: inout [Int: Any], budget: inout Int) -> Any? {
+    func scalarStrings(containing key: String, fields: [String]) -> [[String: String]] {
+        table.compactMap { item in
+            guard let object = item as? [String: Int], object[key] != nil else { return nil }
+            return Dictionary(uniqueKeysWithValues: fields.compactMap { field in
+                guard let index = object[field], table.indices.contains(index),
+                      let value = table[index] as? String, !value.isEmpty else { return nil }
+                return (field, value)
+            })
+        }
+    }
+
+    private func resolve(_ index: Int, ancestors: inout Set<Int>, cache: inout [Int: Any], budget: inout Int) -> Any? {
         guard table.indices.contains(index), !ancestors.contains(index), budget > 0, ancestors.count < 80 else { return nil }
         if let value = cache[index] { return value }
         budget -= 1
-        let path = ancestors.union([index])
+        ancestors.insert(index)
+        defer { ancestors.remove(index) }
         let value: Any
         if let object = table[index] as? [String: Int] {
-            value = object.mapValues { resolve($0, ancestors: path, cache: &cache, budget: &budget) ?? NSNull() }
+            value = object.mapValues { resolve($0, ancestors: &ancestors, cache: &cache, budget: &budget) ?? NSNull() }
         } else if let array = table[index] as? [Any] {
             if let reducer = array.first as? String {
                 // Only observed serialization wrappers are unwrapped. Unknown reducers fail closed.
                 guard ["Reactive", "ShallowReactive", "Ref", "ShallowRef"].contains(reducer),
                       array.count == 2, let target = array[1] as? Int else { return nil }
-                return resolve(target, ancestors: path, cache: &cache, budget: &budget)
+                return resolve(target, ancestors: &ancestors, cache: &cache, budget: &budget)
             }
             value = array.map { item -> Any in
                 guard let target = item as? Int else { return NSNull() }
-                return resolve(target, ancestors: path, cache: &cache, budget: &budget) ?? NSNull()
+                return resolve(target, ancestors: &ancestors, cache: &cache, budget: &budget) ?? NSNull()
             }
         } else {
             value = table[index]
@@ -67,31 +80,96 @@ nonisolated enum CubingChinaDetailAdapter {
     }
 
     static func wcaID(in html: String) -> String? {
-        guard let id = competition(in: html)?["wcaCompetitionId"] as? String,
+        wcaID(in: competition(in: html))
+    }
+
+    static func wcaID(in metadata: [String: Any]?) -> String? {
+        guard let id = metadata?["wcaCompetitionId"] as? String,
               PublishedCompetitionService.validCompetitionID(id) else { return nil }
         return id
+    }
+
+    static func sharingArtwork(in html: String) -> CompetitionSharingArtwork? {
+        sharingArtwork(in: competition(in: html))
+    }
+
+    static func sharingArtwork(in metadata: [String: Any]?) -> CompetitionSharingArtwork? {
+        guard let metadata else { return nil }
+        for (field, kind) in [("banner", CompetitionSharingArtwork.Kind.banner), ("logo", .logo)] {
+            let raw = metadata[field] as? String ?? (metadata[field] as? [String: Any])?["url"] as? String
+            guard let raw, raw.hasPrefix("https://") || raw.hasPrefix("/"),
+                  let url = URL(string: raw, relativeTo: URL(string: "https://cubing.com"))?.absoluteURL,
+                  url.scheme == "https", url.host != nil else { continue }
+            return .init(kind: kind, url: url)
+        }
+        return nil
+    }
+
+    static func sharingLocation(in metadata: [String: Any]?, language: String) -> String? {
+        guard language.hasPrefix("zh"), let locations = metadata?["locations"] as? [[String: Any]],
+              !locations.isEmpty else { return nil }
+        var places: Set<String> = []
+        for location in locations {
+            guard location["regionIso2"] as? String == "CN" else { return nil }
+            let values = [location["cityName"], location["provinceName"]].compactMap { $0 as? String }
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+                .map { CompetitionNameScript.display($0, language: language) }
+            guard !values.isEmpty else { return nil }
+            places.insert((values.first == values.last ? Array(values.prefix(1)) : values).joined(separator: "\u{FF0C}"))
+        }
+        guard places.count == 1, let place = places.first else { return nil }
+        // A report labels the country, not the browser's mainland region filter.
+        let country = CompetitionNameScript.display("\u{4E2D}\u{56FD}", language: language)
+        return place + " \u{00B7} " + country
     }
 
     static func blocks(html: String, section: CubingChinaDetailSection, language: String) -> CubingChinaSectionParse {
         let start = ProcessInfo.processInfo.systemUptime
         defer { CompetitionLoadingTrace.record("china-section-parse", since: start, detail: section.rawValue) }
-        let clean = CubingChinaSemanticHTML.sanitize(html)
-        let sections = CubingChinaSemanticHTML.elements("section", in: clean)
-        let rendered = sections.enumerated().compactMap { index, content -> CompetitionDetailTextBlock? in
-            guard let heading = CubingChinaSemanticHTML.firstCapture(content,
-                pattern: #"(?is)<h[23]\b[^>]*>(.*?)</h[23]>"#) else { return nil }
-            let title = CubingChinaSemanticHTML.text(heading)
-            let body = content.replacingOccurrences(of: #"(?is)^.*?<h[23]\b[^>]*>.*?</h[23]>"#, with: "", options: .regularExpression)
-            guard !CubingChinaSemanticHTML.text(body).isEmpty || body.contains("<img") else { return nil }
-            return CompetitionDetailTextBlock(id: "cubing-v2-\(section.rawValue)-\(index)", title: title,
-                body: CubingChinaSemanticHTML.text(body), html: body)
-        }
         let key: String
         switch section {
         case .about: key = "information"
         case .regulations: key = "regulations"
         case .travel: key = "travel"
         case .registration: key = "registration"
+        }
+        let clean = CubingChinaSemanticHTML.sanitize(html)
+        let sections = CubingChinaSemanticHTML.elements("section", in: clean)
+        var hasOrganizer = false
+        let rendered = sections.enumerated().flatMap { index, content -> [CompetitionDetailTextBlock] in
+            guard let heading = CubingChinaSemanticHTML.firstCapture(content,
+                pattern: #"(?is)<h[23]\b[^>]*>(.*?)</h[23]>"#) else { return [] }
+            let title = CubingChinaSemanticHTML.text(heading)
+            let body = content.replacingOccurrences(of: #"(?is)^.*?<h[23]\b[^>]*>.*?</h[23]>"#, with: "", options: .regularExpression)
+            let organizer = body.contains("prose") ? CubingChinaSemanticHTML.elements("div", in: body, includesTags: true) { opening in
+                opening.contains("prose") && CubingChinaSemanticHTML.firstCapture(opening,
+                    pattern: #"(?i)\bclass\s*=\s*["']([^"']*)["']"#)?
+                        .split(whereSeparator: \.isWhitespace).contains("prose") == true
+            } : []
+            let id = "cubing-v2-\(section.rawValue)-\(index)"
+            var blocks: [CompetitionDetailTextBlock] = []
+            func append(_ fragment: String, id: String) {
+                let plain = CubingChinaSemanticHTML.text(fragment)
+                guard !plain.isEmpty || fragment.contains("<img") else { return }
+                blocks.append(CompetitionDetailTextBlock(id: id, title: blocks.isEmpty ? title : nil, body: plain, html: fragment))
+            }
+            var tail = body[...]
+            for (part, document) in organizer.enumerated() {
+                guard let range = tail.range(of: document) else { continue }
+                append(String(tail[..<range.lowerBound]), id: part == 0 ? id : "\(id)-before-\(part)")
+                let count = blocks.count
+                append(document, id: "cubing-v2-organizer-\(key)-\(index)\(part == 0 ? "" : "-\(part)")")
+                if blocks.count != count { hasOrganizer = true }
+                tail = tail[range.upperBound...]
+            }
+            append(String(tail), id: organizer.isEmpty ? id : "\(id)-after")
+            return blocks
+        }
+        if hasOrganizer {
+            // SSR already has the localized organizer document and its place
+            // in the page. Avoid decoding all Nuxt state to find a duplicate.
+            return CubingChinaSectionParse(blocks: rendered, source: "semantic-sections+organizer-prose", nonemptyContentFailed: false)
         }
         let attributes = competition(in: html)?["i18nAttributes"] as? [[String: Any]] ?? []
         let matching = attributes.filter { $0["key"] as? String == key }
@@ -152,9 +230,19 @@ nonisolated enum CubingChinaDetailAdapter {
     static func schedule(html: String, language: String) -> [CompetitionScheduleDay] {
         guard let payload = CubingChinaPageState(html: html)?.objects(containing: "schedule").first,
               let rows = payload["schedule"] as? [[String: Any]] else { return [] }
+        let dates = CubingChinaScheduleDates()
+        let formatter = DateFormatter()
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "HH:mm"
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        func minutes(_ date: Date) -> Int {
+            let values = calendar.dateComponents([.hour, .minute], from: date)
+            return (values.hour ?? 0) * 60 + (values.minute ?? 0)
+        }
         let entries = rows.compactMap { row -> CompetitionScheduleEntry? in
             guard let startString = row["startTime"] as? String, let endString = row["endTime"] as? String,
-                  let start = date(startString), let end = date(endString), end > start,
+                  let start = dates.date(startString), let end = dates.date(endString), end > start,
                   let id = row["id"] as? Int else { return nil }
             let venue = row["venue"] as? [String: Any] ?? [:]
             let round = row["round"] as? [String: Any] ?? [:]
@@ -163,12 +251,6 @@ nonisolated enum CubingChinaDetailAdapter {
             let title = localized(row, key: "name", language: language)
                 ?? eventID.map { CompetitionEventPresentation.localizedFullName(for: $0, languageCode: language) }
                 ?? activityTitle(activity, language: language)
-            let formatter = DateFormatter()
-            formatter.timeZone = timeZone
-            formatter.dateFormat = "HH:mm"
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = timeZone
-            let minutes = { (d: Date) in calendar.component(.hour, from: d) * 60 + calendar.component(.minute, from: d) }
             let limit = round["timeLimit"] as? [String: Any]
             let cutoff = round["cutoff"] as? [String: Any]
             let advance = round["advancementCondition"] as? [String: Any]
@@ -184,8 +266,6 @@ nonisolated enum CubingChinaDetailAdapter {
                 startTime: start, endTime: end, roomColorHex: venue["color"] as? String,
                 startMinuteOfDay: minutes(start), endMinuteOfDay: minutes(end))
         }
-        let formatter = DateFormatter()
-        formatter.timeZone = timeZone
         formatter.dateFormat = "yyyy-MM-dd"
         let days = Dictionary(grouping: entries) { formatter.string(from: $0.startTime!) }
         return days.keys.sorted().map { key in
@@ -217,6 +297,21 @@ nonisolated enum CubingChinaDetailAdapter {
     }
 }
 
+/// Scoped to one schedule parse. The formatters never cross worker boundaries.
+nonisolated struct CubingChinaScheduleDates {
+    private let fractional: ISO8601DateFormatter
+    private let wholeSeconds = ISO8601DateFormatter()
+
+    init() {
+        fractional = ISO8601DateFormatter()
+        fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    }
+
+    func date(_ text: String) -> Date? {
+        fractional.date(from: text) ?? wholeSeconds.date(from: text)
+    }
+}
+
 /// Balanced semantic elements tolerate arbitrary presentation wrappers and nested rich content.
 nonisolated enum CubingChinaSemanticHTML {
     static func firstCapture(_ text: String, pattern: String) -> String? {
@@ -225,17 +320,27 @@ nonisolated enum CubingChinaSemanticHTML {
               match.numberOfRanges > 1, let range = Range(match.range(at: 1), in: text) else { return nil }
         return String(text[range])
     }
-    static func elements(_ tag: String, in html: String) -> [String] {
+    static func elements(_ tag: String, in html: String, includesTags: Bool = false,
+                         matchingOpening: (String) -> Bool = { _ in true }) -> [String] {
         guard let regex = try? NSRegularExpression(pattern: "(?is)</?\(tag)\\b[^>]*>") else { return [] }
         let string = html as NSString
-        var starts: [NSRange] = [], spans: [NSRange] = []
+        var depth = 0, spans: [NSRange] = []
+        var root: (start: Int, depth: Int)?
         for match in regex.matches(in: html, range: NSRange(location: 0, length: string.length)) {
             let token = string.substring(with: match.range)
             if token.hasPrefix("</") {
-                if let start = starts.popLast(), starts.isEmpty {
-                    spans.append(NSRange(location: NSMaxRange(start), length: match.range.location - NSMaxRange(start)))
+                if let active = root, depth == active.depth {
+                    let end = includesTags ? NSMaxRange(match.range) : match.range.location
+                    spans.append(NSRange(location: active.start, length: end - active.start))
+                    root = nil
                 }
-            } else { starts.append(match.range) }
+                depth = max(0, depth - 1)
+            } else {
+                depth += 1
+                if root == nil, matchingOpening(token) {
+                    root = (includesTags ? match.range.location : NSMaxRange(match.range), depth)
+                }
+            }
         }
         return spans.map { string.substring(with: $0) }
     }

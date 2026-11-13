@@ -201,12 +201,15 @@ final class CompetitionSectionLoadingTests: XCTestCase {
         XCTAssertNil(result.personID)
         XCTAssertEqual(result.personWCAID, "2020TEST01")
         XCTAssertNil(result.isAdvancing)
+        XCTAssertEqual(result.isPodium, true, "A podium finish is not advancement to a nonexistent next round")
         XCTAssertFalse(round.isOpen); XCTAssertFalse(round.isActive)
         XCTAssertEqual(result.singleRecordTag, "CR")
         let competitor = try XCTUnwrap(PublishedCompetitionPresentation.competitor("2020TEST01", data: data, language: "en"))
         XCTAssertEqual(competitor.wcaID, "2020TEST01")
         XCTAssertEqual(competitor.results.first?.attempts, rows.first?.performedAttempts)
         XCTAssertEqual(competitor.results.first?.average, 1000)
+        XCTAssertNil(competitor.results.first?.isAdvancing)
+        XCTAssertEqual(competitor.results.first?.isPodium, true)
     }
 
     func testResultCardAllResultsAndCloseUseTheSuppliedSource() async throws {

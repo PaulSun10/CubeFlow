@@ -492,6 +492,8 @@ struct ExploreCompetitionLookupDestination: View {
     @State private var isLoading = true
     @State private var failed = false
     @State private var requestID = 0
+    @State private var usesCachedSummary = false
+    @State private var earlyLiveResult: (target: CompetitionWCALiveResultDeepLink, language: String, result: CompetitionWCALiveResultPreview)?
 
     init(competitionID: String, roundID: String?, language: String,
          publishedResultDeepLink: PublishedCompetitionResultDeepLink? = nil) {
@@ -522,7 +524,11 @@ struct ExploreCompetitionLookupDestination: View {
                     appLanguage: language,
                     initialWCALiveRoundID: resultDeepLink?.roundID,
                     initialWCALiveResultDeepLink: resultDeepLink,
-                    initialPublishedResultDeepLink: publishedResultDeepLink
+                    initialWCALiveResultPreview: earlyLiveResult.flatMap {
+                        $0.target == resultDeepLink && $0.language == language ? $0.result : nil
+                    },
+                    initialPublishedResultDeepLink: publishedResultDeepLink,
+                    usesCachedSummary: usesCachedSummary
                 )
             } else if isLoading {
                 ProgressView(explorePublicString("loading_competition", defaultValue: "Loading competition...", language: language))
@@ -538,14 +544,29 @@ struct ExploreCompetitionLookupDestination: View {
             }
         }
         .task(id: requestID) { await load() }
+        .task(id: "\(competitionID)|\(language)|\(String(describing: resultDeepLink))|\(requestID)") {
+            guard let target = resultDeepLink, let personID = target.personID,
+                  let person = await CompetitionService.fetchWCALiveCompetitorContent(personID: personID, languageCode: language),
+                  !Task.isCancelled else { return }
+            let region = person.countryISO2.flatMap { CompetitionService.localizedRegionName(for: $0, languageCode: language) }
+            if let result = target.result(in: person, region: region) {
+                earlyLiveResult = (target, language, result)
+            }
+        }
         .accessibilityIdentifier(resultDeepLink.map { "wca-round-\($0.roundID)" } ?? "wca-competition")
     }
 
     private func load() async {
         isLoading = true
         failed = false
+        if competition == nil, let cached = await CompetitionService.cachedCompetitionSummary(id: competitionID, languageCode: language) {
+            guard !Task.isCancelled else { return }
+            competition = cached; usesCachedSummary = true; isLoading = false
+        }
         do {
-            competition = try await CompetitionService.fetchCompetitionSummary(id: competitionID, languageCode: language)
+            let fresh = try await CompetitionService.fetchCompetitionSummary(id: competitionID, languageCode: language)
+            guard !Task.isCancelled else { return }
+            competition = fresh; usesCachedSummary = false
         } catch is CancellationError {
             return
         } catch {

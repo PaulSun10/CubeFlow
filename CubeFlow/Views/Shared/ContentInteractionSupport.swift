@@ -24,6 +24,7 @@ struct SelectableAttributedContent: UIViewRepresentable {
     let attributedText: NSAttributedString
     var inlineControls: [SelectableInlineControl] = []
     var onOpenURL: ((URL) -> Bool)? = nil
+    var protectsFirstLineInk = false
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -64,6 +65,7 @@ struct SelectableAttributedContent: UIViewRepresentable {
     }
 
     func updateUIView(_ textView: IntrinsicTextView, context: Context) {
+        textView.protectsFirstLineInk = protectsFirstLineInk
         context.coordinator.onOpenURL = onOpenURL
         context.coordinator.inlineControls = inlineControls.reduce(into: [:]) { result, control in
             result[control.id] = control
@@ -72,6 +74,7 @@ struct SelectableAttributedContent: UIViewRepresentable {
             let selectedRange = textView.selectedRange
             let wasFirstResponder = textView.isFirstResponder
             textView.attributedText = attributedText
+            textView.invalidateFirstLineInk()
             context.coordinator.appliedAttributedText = attributedText.copy() as? NSAttributedString
             if wasFirstResponder, NSMaxRange(selectedRange) <= attributedText.length {
                 textView.selectedRange = selectedRange
@@ -184,6 +187,10 @@ struct SelectableAttributedContent: UIViewRepresentable {
         }
 
         private var measuredWidth: CGFloat = 0
+        var protectsFirstLineInk = false {
+            didSet { if protectsFirstLineInk != oldValue { invalidateFirstLineInk() } }
+        }
+        private var inkWidth: CGFloat?
         private var inlineButtons: [String: UIButton] = [:]
         private var inlineControlsByID: [String: SelectableInlineControl] = [:]
         private var installedInlineControlSignature: [InlineControlSignature] = []
@@ -228,7 +235,38 @@ struct SelectableAttributedContent: UIViewRepresentable {
                 measuredWidth = bounds.width
                 invalidateIntrinsicContentSize()
             }
+            updateFirstLineInk()
             layoutInlineControls()
+        }
+
+        func invalidateFirstLineInk() {
+            guard protectsFirstLineInk || textContainerInset.top != 0 else { return }
+            inkWidth = nil
+            setNeedsLayout()
+        }
+
+        private func updateFirstLineInk() {
+            guard bounds.width > 0, inkWidth != bounds.width,
+                  protectsFirstLineInk || textContainerInset.top != 0 else { return }
+            inkWidth = bounds.width
+            var top: CGFloat = 0
+            if protectsFirstLineInk, attributedText.length > 0 {
+                layoutManager.ensureLayout(for: textContainer)
+                if layoutManager.numberOfGlyphs > 0 {
+                    var glyphs = NSRange()
+                    let fragment = layoutManager.lineFragmentRect(forGlyphAt: 0, effectiveRange: &glyphs)
+                    let chars = layoutManager.characterRange(forGlyphRange: glyphs, actualGlyphRange: nil)
+                    let line = CTLineCreateWithAttributedString(attributedText.attributedSubstring(from: chars))
+                    let ink = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds)
+                    let baseline = fragment.minY + layoutManager.location(forGlyphAt: 0).y
+                    let scale = traitCollection.displayScale > 0 ? traitCollection.displayScale : 1
+                    // Compute in text-container coordinates, so the inset cannot feed back into itself.
+                    top = ceil(max(0, ink.maxY - baseline) * scale) / scale
+                }
+            }
+            guard textContainerInset.top != top else { return }
+            textContainerInset.top = top
+            invalidateIntrinsicContentSize()
         }
 
         func reloadInlineControls(_ controls: [SelectableInlineControl]) {
@@ -678,6 +716,18 @@ actor ContentImageLoader {
     static let shared = ContentImageLoader()
 
     private let memoryCache = NSCache<NSURL, UIImage>()
+    private let session: URLSession
+
+    init(session: URLSession = .shared) {
+        self.session = session
+        memoryCache.countLimit = 32
+        memoryCache.totalCostLimit = 32 * 1024 * 1024
+    }
+
+    private func retain(_ image: UIImage, for url: URL) {
+        let cost = image.cgImage.map { $0.bytesPerRow * $0.height } ?? 0
+        memoryCache.setObject(image, forKey: url as NSURL, cost: cost)
+    }
 
     func image(for url: URL) async throws -> UIImage {
         if let cached = memoryCache.object(forKey: url as NSURL) {
@@ -685,19 +735,19 @@ actor ContentImageLoader {
         }
 
         let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
-        if let response = URLCache.shared.cachedResponse(for: request),
+        if let response = session.configuration.urlCache?.cachedResponse(for: request),
            let image = UIImage(data: response.data) {
-            memoryCache.setObject(image, forKey: url as NSURL)
+            retain(image, for: url)
             return image
         }
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
               (200..<300).contains(httpResponse.statusCode),
               let image = UIImage(data: data) else {
             throw ContentImageActionError.unavailable
         }
-        memoryCache.setObject(image, forKey: url as NSURL)
+        retain(image, for: url)
         return image
     }
 }
@@ -721,6 +771,19 @@ enum ContentImageActionError: LocalizedError {
 
 @MainActor
 enum ContentImageActions {
+    static func save(files: [URL]) async throws {
+        guard !files.isEmpty else { throw ContentImageActionError.unavailable }
+        let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+        guard status == .authorized || status == .limited else { throw ContentImageActionError.photosDenied }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            PHPhotoLibrary.shared().performChanges {
+                for url in files { PHAssetCreationRequest.forAsset().addResource(with: .photo, fileURL: url, options: nil) }
+            } completionHandler: { success, error in
+                if success { continuation.resume() }
+                else { continuation.resume(throwing: error ?? ContentImageActionError.saveFailed) }
+            }
+        }
+    }
     static func copy(_ image: UIImage) {
         UIPasteboard.general.image = image
     }
@@ -1224,6 +1287,12 @@ private struct ContentUnavailableViewCompat: View {
 
 struct SystemShareSheet: UIViewControllerRepresentable {
     let items: [Any]
+    var retainedResource: AnyObject? = nil
+    final class Coordinator {
+        let retainedResource: AnyObject?
+        init(_ resource: AnyObject?) { retainedResource = resource }
+    }
+    func makeCoordinator() -> Coordinator { Coordinator(retainedResource) }
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: items, applicationActivities: nil)

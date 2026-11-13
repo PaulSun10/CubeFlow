@@ -193,23 +193,6 @@ private struct CompetitionDetailHeaderSeparatorPreferenceKey: PreferenceKey {
     }
 }
 
-private struct CompetitionDetailScrollTopInsetModifier: ViewModifier {
-    @Binding var topInset: CGFloat
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(iOS 18.0, *) {
-            content.onScrollGeometryChange(for: CGFloat.self) { geometry in
-                geometry.contentInsets.top
-            } action: { _, newValue in
-                topInset = newValue
-            }
-        } else {
-            content
-        }
-    }
-}
-
 private struct CompetitionCardSurfaceModifier: ViewModifier {
     let isGlass: Bool
     let shape: RoundedRectangle
@@ -953,7 +936,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ collectionView: UICollectionView, coordinator: Coordinator) {
-        coordinator.unregisterContentScrollView(collectionView)
+        coordinator.dismantle(collectionView)
     }
 
     final class Coordinator: NSObject, UICollectionViewDelegate {
@@ -967,6 +950,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
         private var appliedPresentationSignature = ""
         private var appliedFooterState: CompetitionVirtualizedFooterState?
         private var isApplyingSnapshot = false
+        private var isDismantled = false
         private var pendingParent: CompetitionVirtualizedList?
         private var refreshTask: Task<Void, Never>?
         private var dataSource: UICollectionViewDiffableDataSource<Int, String>?
@@ -1016,8 +1000,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
         func installDataSource(on collectionView: UICollectionView) {
             dataSource = UICollectionViewDiffableDataSource<Int, String>(
                 collectionView: collectionView
-            ) { [weak self] collectionView, indexPath, identifier in
-                guard let self else { return nil }
+            ) { [self] collectionView, indexPath, identifier in
                 let cell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: Self.cellReuseIdentifier,
                     for: indexPath
@@ -1025,28 +1008,48 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
                 guard let hostingCell = cell as? CompetitionHostingCollectionViewCell else {
                     return cell
                 }
-                if identifier == Self.footerID {
-                    #if DEBUG
-                    if CompetitionPhysicalBrowserAcceptance.enabled, CompetitionPhysicalBrowserAcceptance.interior {
-                        hostingCell.setRootView(AnyView(VStack(spacing: 0) {
-                            self.parent.footerContent(self.parent.footerState)
-                            Color.clear.frame(height: 1600)
-                        }))
-                    } else {
-                        hostingCell.setRootView(parent.footerContent(parent.footerState))
-                    }
-                    #else
-                    hostingCell.setRootView(parent.footerContent(parent.footerState))
-                    #endif
-                } else if let item = itemsByID[identifier] {
-                    hostingCell.setRootView(AnyView(parent.rowContent(item)
-                        .environment(\.competitionListInteraction, scrollActivity)))
-                }
+                configure(hostingCell, identifier: identifier)
                 return hostingCell
             }
         }
 
+        private func configure(_ cell: CompetitionHostingCollectionViewCell, identifier: String) {
+            if identifier == Self.footerID {
+                #if DEBUG
+                if CompetitionPhysicalBrowserAcceptance.enabled, CompetitionPhysicalBrowserAcceptance.interior {
+                    cell.setRootView(AnyView(VStack(spacing: 0) {
+                        self.parent.footerContent(self.parent.footerState)
+                        Color.clear.frame(height: 1600)
+                    }))
+                } else {
+                    cell.setRootView(parent.footerContent(parent.footerState))
+                }
+                #else
+                cell.setRootView(parent.footerContent(parent.footerState))
+                #endif
+            } else if let item = itemsByID[identifier] {
+                cell.setRootView(AnyView(parent.rowContent(item)
+                    .environment(\.competitionListInteraction, scrollActivity)))
+            }
+        }
+
+        func dismantle(_ collectionView: UICollectionView) {
+            guard !isDismantled else { return }
+            isDismantled = true
+            pendingParent = nil
+            refreshTask?.cancel()
+            refreshTask = nil
+            collectionView.delegate = nil
+            collectionView.dataSource = nil
+            collectionView.refreshControl?.removeTarget(self, action: #selector(didRequestRefresh(_:)), for: .valueChanged)
+            unregisterContentScrollView(collectionView)
+            isContentScrollViewRegistrationPending = false
+            // Outstanding UIKit requests retain the provider and its owner; break only our back-reference.
+            dataSource = nil
+        }
+
         func registerAsContentScrollView(_ collectionView: UICollectionView) {
+            guard !isDismantled else { return }
             if registeredContentScrollView === collectionView,
                isContentScrollViewRegistered {
                 return
@@ -1055,7 +1058,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
             guard !isContentScrollViewRegistrationPending else { return }
             isContentScrollViewRegistrationPending = true
             DispatchQueue.main.async { [weak self, weak collectionView] in
-                guard let self else { return }
+                guard let self, !self.isDismantled else { return }
                 self.isContentScrollViewRegistrationPending = false
                 guard let collectionView,
                       self.registeredContentScrollView === collectionView,
@@ -1088,6 +1091,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
         }
 
         func update(parent: CompetitionVirtualizedList, collectionView: UICollectionView) {
+            guard !isDismantled else { return }
             self.parent = parent
 
             if appliedDataRevision != parent.dataRevision {
@@ -1149,7 +1153,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
         }
 
         private func applyPendingUpdateIfPossible(on collectionView: UICollectionView) {
-            guard !isApplyingSnapshot, let pendingParent else { return }
+            guard !isDismantled, !isApplyingSnapshot, let pendingParent else { return }
             guard !collectionView.isDragging, !collectionView.isDecelerating else { return }
             self.pendingParent = nil
             self.parent = pendingParent
@@ -1168,7 +1172,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
                 snapshot.appendItems([Self.footerID], toSection: 0)
                 isApplyingSnapshot = true
                 dataSource?.apply(snapshot, animatingDifferences: false) { [weak self, weak collectionView] in
-                    guard let self else { return }
+                    guard let self, !self.isDismantled else { return }
                     #if DEBUG
                     CompetitionScrollOwnerDiagnostics.event("snapshot-completed", details: ["offsetY": collectionView?.contentOffset.y ?? 0])
                     #endif
@@ -1184,7 +1188,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
                         CompetitionBrowserPublicationAcceptance.reportDisplayed(ids, scope: parent.publicationScope)
                     }
                     #endif
-                    guard let collectionView else { return }
+                    guard !isDismantled, let collectionView else { return }
                     if appliedQuerySignature != pendingParent.querySignature {
                         #if DEBUG
                         let previousQuery = appliedQuerySignature
@@ -1231,7 +1235,7 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
             #endif
             isApplyingSnapshot = true
             dataSource?.apply(snapshot, animatingDifferences: false) { [weak self, weak collectionView] in
-                guard let self else { return }
+                guard let self, !self.isDismantled else { return }
                 #if DEBUG
                 CompetitionScrollOwnerDiagnostics.event("reconfigure-completed", details: ["offsetY": collectionView?.contentOffset.y ?? 0])
                 #endif
@@ -1244,10 +1248,12 @@ private struct CompetitionVirtualizedList: UIViewRepresentable {
         }
 
         @objc func didRequestRefresh(_ sender: UIRefreshControl) {
+            guard !isDismantled else { return }
             refreshTask?.cancel()
             let refresh = parent.onRefresh
             refreshTask = Task { @MainActor in
                 await refresh()
+                guard !Task.isCancelled else { return }
                 sender.endRefreshing()
             }
         }
@@ -1412,8 +1418,20 @@ private enum CompetitionRowPreparation {
     }
 }
 
+private struct CompetitionCachedLocalizationRequest {
+    let id = UUID()
+    let signature: String
+    let language: String
+    let sourceRevision: UInt64
+    let competitions: [CompetitionSummary]
+}
+
 struct CompetitionBrowserView: View {
     private static let paginationProgressPublishInterval: TimeInterval = 1.0
+    #if DEBUG
+    static var cachedLocalizationRowsForTesting: (([String: String]) -> Void)?
+    static var cachedLocalizationDidFinishForTesting: (([String]) -> Void)?
+    #endif
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("competitionCardStyle") private var competitionCardStyle: String = CompetitionCardStyleOption.list.rawValue
@@ -1452,6 +1470,7 @@ struct CompetitionBrowserView: View {
     @State private var decodedCompetitionsBackgroundImage: UIImage?
     @State private var activeLoadSignature: String?
     @State private var activeLoadID: UUID?
+    @State private var cachedLocalizationRequest: CompetitionCachedLocalizationRequest?
     @State private var competitionDateRevision = 0
     #if DEBUG
     @Environment(\.competitionBrowserPublicationEnabled) private var publicationAcceptanceEnabled
@@ -1617,6 +1636,10 @@ struct CompetitionBrowserView: View {
             .task(id: "\(isActive)|\(filterSignature)") {
                 guard isActive else { return }
                 await loadCompetitions()
+            }
+            .task(id: "\(isActive)|\(filterSignature)|\(cachedLocalizationRequest?.id.uuidString ?? "")") {
+                guard let request = cachedLocalizationRequest else { return }
+                await enrichCachedCompetitionNames(request)
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                 competitionDateRevision &+= 1
@@ -3120,7 +3143,26 @@ struct CompetitionBrowserView: View {
         let runtimeSnapshot = CompetitionListRuntimeCache.shared.snapshot(for: expectedSignature)
         if let runtimeSnapshot {
             if displayedFilterSignature != expectedSignature {
-                restoreCompetitionRuntimeSnapshot(runtimeSnapshot)
+                // A new presentation may adopt names warmed by an earlier one,
+                // before mounting any native rows. Never update an active list.
+                let localized = await CompetitionService.localizeCompetitionNamesIfNeeded(
+                    runtimeSnapshot.competitions, languageCode: query.languageCode, cachedOnly: true)
+                guard !Task.isCancelled, isCompetitionListRequestCurrent(expectedSignature, requestID: requestID) else { return }
+                let changed = zip(localized, runtimeSnapshot.competitions).contains { new, old in
+                    new.name != old.name || new.shortDisplayName != old.shortDisplayName
+                        || new.localizedRegionLineOverride != old.localizedRegionLineOverride
+                        || new.localizedAddressLineOverride != old.localizedAddressLineOverride
+                        || new.localizedStatusOverride != old.localizedStatusOverride
+                }
+                if changed {
+                    let items = await makeCompetitionListItems(for: localized)
+                    guard !Task.isCancelled, isCompetitionListRequestCurrent(expectedSignature, requestID: requestID) else { return }
+                    restoreCompetitionRuntimeSnapshot(.init(competitions: localized,
+                        competitionsByID: Dictionary(uniqueKeysWithValues: localized.map { ($0.id, $0) }),
+                        displayItems: items, nextPage: runtimeSnapshot.nextPage,
+                        loadedCount: runtimeSnapshot.loadedCount, totalCount: runtimeSnapshot.totalCount,
+                        topCuberStatesByCompetitionID: runtimeSnapshot.topCuberStatesByCompetitionID))
+                } else { restoreCompetitionRuntimeSnapshot(runtimeSnapshot) }
             }
             displayedFilterSignature = expectedSignature
         } else if displayedFilterSignature != expectedSignature {
@@ -3129,15 +3171,16 @@ struct CompetitionBrowserView: View {
 
         let cachedSnapshot = await cachedCompetitionList(for: query)
         guard isCompetitionListRequestCurrent(expectedSignature, requestID: requestID) else { return }
-        let localizedCachedCompetitions = await CompetitionService.localizeCompetitionNamesIfNeeded(
+        let localizedCachedCompetitions = uniqueCompetitions(await CompetitionService.localizeCompetitionNamesIfNeeded(
             cachedSnapshot?.competitions ?? [],
-            languageCode: appLanguage
-        )
+            languageCode: query.languageCode,
+            cachedOnly: true
+        ))
         guard isCompetitionListRequestCurrent(expectedSignature, requestID: requestID) else { return }
         let reusesCachedList = cachedSnapshot.map { CompetitionCachePolicy.canReuseList($0, query: query) } ?? false
         if (competitions.isEmpty && !localizedCachedCompetitions.isEmpty)
             || (reusesCachedList && competitions != localizedCachedCompetitions) {
-            let cached = uniqueCompetitions(localizedCachedCompetitions)
+            let cached = localizedCachedCompetitions
             let lookup = await Task.detached(priority: .userInitiated) {
                 Dictionary(uniqueKeysWithValues: cached.map { ($0.id, $0) })
             }.value
@@ -3154,6 +3197,12 @@ struct CompetitionBrowserView: View {
                 competitionListLoadPhase = .completed
                 storeCompetitionRuntimeSnapshot(signature: expectedSignature)
             }
+        }
+        // Runtime restoration can already contain these canonical rows; it still needs enrichment.
+        if !localizedCachedCompetitions.isEmpty, competitions == localizedCachedCompetitions {
+            cachedLocalizationRequest = CompetitionCachedLocalizationRequest(signature: expectedSignature,
+                language: query.languageCode, sourceRevision: competitionLookupStore.sourceRevision,
+                competitions: localizedCachedCompetitions)
         }
         if publishedVisibleCompetitions.isEmpty {
             competitionListLoadPhase = .initialLoading
@@ -3189,6 +3238,29 @@ struct CompetitionBrowserView: View {
 
         guard isCompetitionListRequestCurrent(expectedSignature, requestID: requestID) else { return }
         markCompetitionFilterLoaded(signature: expectedSignature)
+    }
+
+    @MainActor
+    private func enrichCachedCompetitionNames(_ request: CompetitionCachedLocalizationRequest) async {
+        guard isCachedLocalizationCurrent(request) else { return }
+        #if DEBUG
+        defer {
+            if publicationAcceptanceEnabled, publicationAcceptanceScope == CompetitionBrowserPublicationAcceptance.scope {
+                Self.cachedLocalizationDidFinishForTesting?(request.competitions.map(\.id))
+            }
+        }
+        #endif
+        // Warm the optional public-name cache, but keep the current native row
+        // presentation stable. Normal list loading uses these names next time;
+        // metadata arrival is not a reason to replace rows beneath the user.
+        _ = await CompetitionService.localizeCompetitionNamesIfNeeded(
+            request.competitions, languageCode: request.language)
+    }
+
+    private func isCachedLocalizationCurrent(_ request: CompetitionCachedLocalizationRequest) -> Bool {
+        isCompetitionListRequestCurrent(request.signature)
+            && cachedLocalizationRequest?.id == request.id
+            && competitionLookupStore.sourceRevision == request.sourceRevision
     }
 
     private func isCompetitionListRequestCurrent(_ signature: String, requestID: UUID? = nil) -> Bool {
@@ -3611,11 +3683,7 @@ struct CompetitionBrowserView: View {
             snapshot.competitions,
             lookup: snapshot.competitionsByID
         )
-        competitionLookupStore.setPreparedDisplayItems(snapshot.displayItems)
-        if publishedCompetitionListItems != snapshot.displayItems {
-            publishedCompetitionListItems = snapshot.displayItems
-            competitionListDataRevision &+= 1
-        }
+        publishPreparedCompetitionListItems(snapshot.displayItems)
         updateBottomAccessoryVisibility()
         nextPage = snapshot.nextPage
         loadedCompetitionCount = snapshot.loadedCount
@@ -3652,6 +3720,12 @@ struct CompetitionBrowserView: View {
         }
         #if DEBUG
         if publicationAcceptanceEnabled, publicationAcceptanceScope == CompetitionBrowserPublicationAcceptance.scope {
+            if let observe = Self.cachedLocalizationRowsForTesting {
+                observe(Dictionary(uniqueKeysWithValues: items.compactMap { item -> (String, String)? in
+                    if case .competition(let row) = item { return (row.id, row.name) }
+                    return nil
+                }))
+            }
             CompetitionBrowserPublicationAcceptance.published?(.init(revision: competitionListDataRevision,
                 signature: filterSignature, ids: competitionLookupStore.publishedCompetitions.map(\.id),
                 sourceIDs: competitionLookupStore.competitions.map(\.id),
@@ -4547,6 +4621,7 @@ final class CompetitionCubingLiveSession: ObservableObject {
     private var modernObservation: AnyCancellable?
     private var configuredTransport: AnyObject?
     private var consumedInitialRoundOptionID: String?
+    private var lastModernSelection: CubingChinaLiveRoundKey?
     private var language = "en"
 
     var roundOptions: [CompetitionLiveRoundOption] {
@@ -4576,6 +4651,7 @@ final class CompetitionCubingLiveSession: ObservableObject {
                 stop(); modernObservation = nil
                 let modern = CubingChinaModernLiveSession(bootstrap: bootstrap, transport: transport)
                 modernSession = modern
+                lastModernSelection = nil
                 modernObservation = modern.objectWillChange.sink { [weak self] _ in
                     Task { @MainActor [weak self] in self?.synchronizeModern() }
                 }
@@ -4672,7 +4748,9 @@ final class CompetitionCubingLiveSession: ObservableObject {
 
     func selectionDidChange() {
         if let modernSession, let round = modernSession.rounds.first(where: { $0.key.selectionID == selectedRoundOptionID }) {
-            modernSession.select(round.key); return
+            modernSession.select(round.key)
+            synchronizeModern()
+            return
         }
         Task { [weak self] in
             guard let self else { return }
@@ -4697,10 +4775,21 @@ final class CompetitionCubingLiveSession: ObservableObject {
               roundOptions.contains(where: { $0.id == id }) else { return }
         consumedInitialRoundOptionID = id
         if selectedRoundOptionID != id { selectedRoundOptionID = id }
+        if let modernSession, let key = modernSession.rounds.first(where: { $0.key.selectionID == id })?.key {
+            modernSession.select(key, explicitlyRequested: true)
+            // Commit the selection marker with this command. A later configure
+            // must not mistake its queued observation for a new selection and
+            // overwrite a newer user choice.
+            synchronizeModern()
+        }
     }
 
     private func synchronizeModern() {
         guard let modern = modernSession else { return }
+        if lastModernSelection != modern.selectedKey {
+            lastModernSelection = modern.selectedKey
+            if selectedRoundOptionID != modern.selectedKey.selectionID { selectedRoundOptionID = modern.selectedKey.selectionID }
+        }
         if onlineNumber != modern.viewers { onlineNumber = modern.viewers }
         if isLoadingResults != modern.isLoadingResults { isLoadingResults = modern.isLoadingResults }
         if isLoadingMessages != modern.isLoadingMessages { isLoadingMessages = modern.isLoadingMessages }
@@ -5236,10 +5325,23 @@ enum CompetitionWCALiveResultStatistic: Hashable {
     case best
 }
 
-private struct CompetitionWCALiveCompetitorEventGroup: Identifiable {
+struct CompetitionWCALiveCompetitorEventGroup: Identifiable {
     let id: String
     let name: String
     let results: [CompetitionWCALiveCompetitorResult]
+
+    static func ordered(_ results: [CompetitionWCALiveCompetitorResult]) -> [Self] {
+        Dictionary(grouping: results, by: \.eventID).map { eventID, rows in
+            let ordered = rows.sorted {
+                ($0.roundNumber ?? Int.max, $0.roundID, $0.id) < ($1.roundNumber ?? Int.max, $1.roundID, $1.id)
+            }
+            let rank = rows.compactMap(\.eventRank).min() ?? Int.max
+            let fallback = CubingChinaSumRankDisplay.eventOrder.firstIndex(of: eventID) ?? Int.max
+            return (group: Self(id: eventID, name: ordered[0].eventName, results: ordered), rank: rank, fallback: fallback)
+        }.sorted {
+            ($0.rank, $0.fallback, $0.group.id) < ($1.rank, $1.fallback, $1.group.id)
+        }.map(\.group)
+    }
 }
 
 struct CompetitionWCARecordTagView: View {
@@ -5266,7 +5368,7 @@ struct CompetitionWCARecordTagView: View {
             .padding(.vertical, isStandard ? 6 : 1)
             .frame(minWidth: isStandard ? nil : 0, minHeight: isStandard ? nil : 0)
             .background(backgroundColor)
-            .clipShape(RoundedRectangle(cornerRadius: isStandard ? 4 : 4.5, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: isStandard && displayTag == "WR" ? 4 : 4.5, style: .continuous))
             .fixedSize()
             .accessibilityLabel(displayTag)
     }
@@ -5308,11 +5410,14 @@ private struct CompetitionWCALiveRoundDetailView: View {
     let languageCode: String
     let areEventIconsReady: Bool
     let resultDeepLink: CompetitionWCALiveResultDeepLink?
+    let initialResultPreview: CompetitionWCALiveResultPreview?
     let session: CompetitionWCALiveSession?
 
     @StateObject private var realtimeManager: CompetitionWCALiveRealtimeManager
 
     @StateObject private var resultCard = CompetitionResultCardState()
+    @State private var didRevealDeepLink = false
+    @State private var isVisible = false
 
     init(
         round: CompetitionWCALiveRound,
@@ -5320,6 +5425,7 @@ private struct CompetitionWCALiveRoundDetailView: View {
         languageCode: String,
         areEventIconsReady: Bool,
         resultDeepLink: CompetitionWCALiveResultDeepLink? = nil,
+        initialResultPreview: CompetitionWCALiveResultPreview? = nil,
         session: CompetitionWCALiveSession? = nil
     ) {
         initialRound = round
@@ -5327,6 +5433,7 @@ private struct CompetitionWCALiveRoundDetailView: View {
         self.languageCode = languageCode
         self.areEventIconsReady = areEventIconsReady
         self.resultDeepLink = resultDeepLink
+        self.initialResultPreview = initialResultPreview
         self.session = session
         let cached = session?.knownRound(round, competitionID: competitionID, language: languageCode)
         _realtimeManager = StateObject(
@@ -5432,12 +5539,14 @@ private struct CompetitionWCALiveRoundDetailView: View {
         .competitionResultsPresentation(state: resultCard, language: languageCode, round: round)
         .competitionDebugCompetition(String(competitionID))
         .onAppear {
+            isVisible = true
             if let session {
                 session.activate(realtimeManager, competitionID: competitionID, language: languageCode)
             } else { realtimeManager.start() }
             revealDeepLinkedResultIfAvailable()
         }
         .onDisappear {
+            isVisible = false
             if let session { session.deactivate(realtimeManager) } else { realtimeManager.stop() }
         }
         .onChange(of: scenePhase) { phase in
@@ -5455,6 +5564,8 @@ private struct CompetitionWCALiveRoundDetailView: View {
         .onChange(of: round.results) { _ in
             revealDeepLinkedResultIfAvailable()
         }
+        .onChange(of: initialResultPreview) { _ in revealDeepLinkedResultIfAvailable() }
+        .onChange(of: resultCard.selection?.result.id) { if $0 != nil { didRevealDeepLink = true } }
     }
 
     private func liveCompetitorContent(_ result: CompetitionWCALiveResultPreview) async -> CompetitionWCALiveCompetitorContent? {
@@ -5463,7 +5574,9 @@ private struct CompetitionWCALiveRoundDetailView: View {
     }
 
     private func revealDeepLinkedResultIfAvailable() {
-        guard resultCard.selection == nil, let result = resultDeepLink?.result(in: round) else { return }
+        guard isVisible, !didRevealDeepLink, resultCard.selection == nil,
+              let result = resultDeepLink?.result(in: round) ?? initialResultPreview else { return }
+        didRevealDeepLink = true
         resultCard.present(result: result, round: round, loader: liveCompetitorContent)
     }
 }
@@ -5577,6 +5690,7 @@ struct CompetitionResultExperience: View {
     var onResultVisible: (CompetitionWCALiveResultPreview) -> Void = { _ in }
     var onResultHidden: (CompetitionWCALiveResultPreview) -> Void = { _ in }
     var onRequestDismiss: (() -> Void)?
+    @Environment(\.competitionSharing) private var sharingContext
     @Environment(\.competitionProfilePresenter) private var profilePresenter
     @Environment(\.accessibilityReduceMotion) private var reducesContentMotion
     @ObservedObject private var auth = WCAAuthManager.shared
@@ -5717,11 +5831,11 @@ struct CompetitionResultExperience: View {
     }
 
     private func resultRankingBackgroundColor(_ result: CompetitionWCALiveResultPreview) -> Color {
-        CompetitionAdvancementStyle.background(advancing: result.isAdvancing, questionable: result.isAdvancingQuestionable)
+        CompetitionAdvancementStyle.background(advancing: result.isPodium == true ? true : result.isAdvancing, questionable: result.isAdvancingQuestionable)
     }
 
     private func resultRankingForegroundColor(_ result: CompetitionWCALiveResultPreview) -> Color {
-        CompetitionAdvancementStyle.foreground(advancing: result.isAdvancing, questionable: result.isAdvancingQuestionable)
+        CompetitionAdvancementStyle.foreground(advancing: result.isPodium == true ? true : result.isAdvancing, questionable: result.isAdvancingQuestionable)
     }
 
     private func resultStatisticValue(
@@ -5755,6 +5869,13 @@ struct CompetitionResultExperience: View {
             let internalSwitch = cardState.selection?.entry == .round && cardState.resultSummaryHeight > 0
             let showsAll = cardState.selectedCompetitorContent != nil
                 && (!internalSwitch || cardState.allResultsHeight > 0)
+            let showsHighlight = cardState.selection?.entry != .competition
+            let roundActions = CompetitionResultShareActionLayout(title: resultCardTitle(result), cardWidth: cardWidth,
+                showsShare: showsHighlight)
+            let allActions = cardState.selectedCompetitorContent.map {
+                CompetitionResultShareActionLayout(title: competitorCardTitle($0), cardWidth: cardWidth, showsShare: true)
+            }
+            let actions = (showsAll ? allActions : nil) ?? roundActions
 
             ZStack {
                 CompetitionResultBackdrop()
@@ -5766,13 +5887,10 @@ struct CompetitionResultExperience: View {
                   Group {
                     if let content = cardState.selectedCompetitorContent, showsAll {
                         if cardState.allResultsHeight > maximumCardHeight {
-                            ScrollView {
-                                measuredCompetitorResultsContent(content, width: cardWidth)
-                                    .frame(width: cardWidth)
-                            }
-                            .frame(height: maximumCardHeight)
+                            measuredCompetitorResultsContent(content, width: cardWidth, actions: allActions,
+                                scrollHeight: maximumCardHeight).frame(width: cardWidth)
                         } else {
-                            measuredCompetitorResultsContent(content, width: cardWidth)
+                            measuredCompetitorResultsContent(content, width: cardWidth, actions: allActions)
                                 .frame(width: cardWidth)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -5786,12 +5904,9 @@ struct CompetitionResultExperience: View {
                             }
                         }.padding(28).padding(.trailing, 32)
                     } else if cardState.resultSummaryHeight > maximumCardHeight {
-                        ScrollView {
-                            measuredResultSummaryContent(result)
-                        }
-                        .frame(height: maximumCardHeight)
+                        measuredResultSummaryContent(result, actions: roundActions, scrollHeight: maximumCardHeight)
                     } else {
-                        measuredResultSummaryContent(result)
+                        measuredResultSummaryContent(result, actions: roundActions)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -5800,7 +5915,7 @@ struct CompetitionResultExperience: View {
                 }
                 .background(alignment: .topLeading) {
                     if internalSwitch, let content = cardState.selectedCompetitorContent, !showsAll {
-                        measuredCompetitorResultsContent(content, width: cardWidth)
+                        measuredCompetitorResultsContent(content, width: cardWidth, actions: allActions)
                             .frame(width: cardWidth).fixedSize(horizontal: false, vertical: true)
                             .hidden().allowsHitTesting(false).accessibilityHidden(true)
                     }
@@ -5820,9 +5935,30 @@ struct CompetitionResultExperience: View {
                 .frame(width: cardWidth)
                 .competitionResultCardSurface()
                 .overlay(alignment: .topTrailing) {
-                    resultDialogCloseButton
-                        .accessibilityIdentifier("competition-result-close")
-                        .padding(12)
+                    let share = Group {
+                        if showsAll, let content = cardState.selectedCompetitorContent {
+                            CompetitionShareButton(request: .init(mode: .report, context: sharingContext ?? .init(name: nil),
+                                name: content.name, identity: content.wcaID, rows: []),
+                                language: languageCode, compact: true, loadFullRequest: {
+                                    let context = sharingContext ?? .init(name: nil)
+                                    let groups = CompetitionWCALiveCompetitorEventGroup.ordered(content.results)
+                                    return .init(mode: .report, context: context, name: content.name, identity: content.wcaID,
+                                        rows: groups.flatMap(\.results).map { .make($0, language: languageCode, chinaStages: context.chinaStages) })
+                                }).id(content.id)
+                        } else if showsHighlight {
+                            CompetitionShareButton(request: highlightRequest(result), language: languageCode, compact: true)
+                                .id(result.id)
+                        }
+                    }
+                    let close = resultDialogCloseButton.accessibilityIdentifier("competition-result-close")
+                    // Keep the same top-trailing X position, regardless of the share slot.
+                    ZStack(alignment: .topTrailing) {
+                        share.padding(.top, actions.shareBelowClose
+                            ? CompetitionResultShareActionLayout.button + CompetitionResultShareActionLayout.gap : 0)
+                            .padding(.trailing, actions.shareBelowClose ? 0
+                                : CompetitionResultShareActionLayout.button + CompetitionResultShareActionLayout.gap)
+                        close
+                    }.padding(CompetitionResultShareActionLayout.inset)
                 }
                 .competitionResultCardShadow()
                 // This owner survives the child identity change in both directions.
@@ -5833,13 +5969,24 @@ struct CompetitionResultExperience: View {
         }
     }
 
-    private func resultSummaryContent(_ result: CompetitionWCALiveResultPreview) -> some View {
-        VStack(alignment: .leading, spacing: 22) {
-            Text(result.ranking.map { "\(result.name) #\($0)" } ?? result.name)
+    private func resultCardTitle(_ result: CompetitionWCALiveResultPreview) -> String {
+        result.ranking.map { "\(result.name) #\($0)" } ?? result.name
+    }
+
+    private func resultSummaryContent(_ result: CompetitionWCALiveResultPreview, actions: CompetitionResultShareActionLayout,
+                                      scrollHeight: CGFloat?) -> some View {
+        CompetitionResultCardFlow(spacing: 22, scrollHeight: scrollHeight) {
+            VStack(alignment: .leading, spacing: 22) {
+            Text(resultCardTitle(result))
                 .modifier(CompetitionResultCardTitleStyle())
+                .padding(.trailing, actions.shareBelowClose ? 0
+                    : CompetitionResultShareActionLayout.horizontalTitleInset - CompetitionResultCardTitleStyle.closeInset)
 
             resultNameField(result)
-
+                .padding(.trailing, actions.followingFieldTrailingInset)
+            }
+        } content: {
+          VStack(alignment: .leading, spacing: 22) {
             if let country = nonempty(result.region) {
                 resultDetailField(
                     title: appLocalizedString(
@@ -5871,26 +6018,43 @@ struct CompetitionResultExperience: View {
                     )
                 }
             }
+          }
+        } measure: { height in
+            Color.clear.preference(key: ResultSummaryHeightPreferenceKey.self, value: height)
         }
-        .padding(CompetitionResultCardTitleStyle.contentInset)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .selectableContent()
     }
 
-    private func measuredResultSummaryContent(_ result: CompetitionWCALiveResultPreview) -> some View {
-        resultSummaryContent(result)
-            .background {
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: ResultSummaryHeightPreferenceKey.self,
-                        value: proxy.size.height
-                    )
-                }
-            }
+    private func highlightRequest(_ result: CompetitionWCALiveResultPreview) -> CompetitionShareRequest {
+        .init(mode: .highlight, context: sharingContext ?? .init(name: nil),
+                name: result.name, identity: result.personWCAID,
+                rows: [.make(.init(id: result.id, ranking: result.ranking, isAdvancing: result.isAdvancing,
+                    isAdvancingQuestionable: result.isAdvancingQuestionable, attempts: result.attempts,
+                    best: result.best, average: result.average, singleRecordTag: result.singleRecordTag, averageRecordTag: result.averageRecordTag,
+                    roundID: round.id, roundName: round.roundName, roundNumber: round.number,
+                    eventID: round.eventID, eventName: round.eventName, eventRank: nil,
+                    formatID: round.formatID ?? "a", numberOfAttempts: round.numberOfAttempts ?? result.attempts.count,
+                    sortBy: round.sortBy ?? "average"), language: languageCode)])
     }
 
-    private func competitorResultsContent(_ content: CompetitionWCALiveCompetitorContent, width: CGFloat? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
+    private func measuredResultSummaryContent(_ result: CompetitionWCALiveResultPreview, actions: CompetitionResultShareActionLayout,
+                                               scrollHeight: CGFloat? = nil) -> some View {
+        resultSummaryContent(result, actions: actions, scrollHeight: scrollHeight)
+    }
+
+    private func competitorCardTitle(_ content: CompetitionWCALiveCompetitorContent) -> String {
+        content.countryISO2.map { "\(content.name) \(competitionFlagEmoji(for: $0))" } ?? content.name
+    }
+
+    private func competitorResultsContent(_ content: CompetitionWCALiveCompetitorContent, width: CGFloat? = nil,
+                                          actions: CompetitionResultShareActionLayout? = nil, scrollHeight: CGFloat? = nil) -> some View {
+        let averages = content.results.compactMap { result in
+            competitorResultStatistics(result).contains(.average) ? competitorResultStatisticValue(.average, result: result) : nil
+        }
+        let columns = CompetitionAllResultsColumns(roundNames: content.results.map(\.roundName), averageTexts: averages,
+            bestTexts: content.results.map { competitorResultStatisticValue(.best, result: $0) }, hasAverage: !averages.isEmpty)
+        return CompetitionResultCardFlow(spacing: 18, scrollHeight: scrollHeight) {
+          VStack(alignment: .leading, spacing: 18) {
             if showsCompetitorBack, cardState.selection?.entry != .competition { Button {
                 withAnimation(.easeOut(duration: 0.16)) {
                     cardState.selectedCompetitorContent = nil
@@ -5904,12 +6068,11 @@ struct CompetitionResultExperience: View {
                 .font(.system(size: 15, weight: .semibold))
             }.accessibilityIdentifier("competition-all-results-back") }
 
-            Text(
-                content.countryISO2.map {
-                    "\(content.name) \(competitionFlagEmoji(for: $0))"
-                } ?? content.name
-            )
+            VStack(alignment: .leading, spacing: 18) {
+            Text(competitorCardTitle(content))
             .modifier(CompetitionResultCardTitleStyle())
+            .padding(.trailing, actions?.shareBelowClose == false
+                ? CompetitionResultShareActionLayout.horizontalTitleInset - CompetitionResultCardTitleStyle.closeInset : 0)
 
             if let wcaID = nonempty(content.wcaID) {
                 Group {
@@ -5921,9 +6084,14 @@ struct CompetitionResultExperience: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("competition-wca-profile")
+                .padding(.trailing, actions?.followingFieldTrailingInset ?? 0)
             }
-
-            ForEach(competitorEventGroups(content.results)) { group in
+            }
+            .frame(minHeight: actions?.headerClearanceBeforeTable(spacing: 18) ?? 0, alignment: .topLeading)
+          }
+        } content: {
+          VStack(alignment: .leading, spacing: 18) {
+            ForEach(CompetitionWCALiveCompetitorEventGroup.ordered(content.results)) { group in
                 VStack(alignment: .leading, spacing: 7) {
                     if group.id == "smart", content.id.hasPrefix("ccc-user:") {
                         HStack(alignment: .firstTextBaseline, spacing: 7) {
@@ -5936,7 +6104,7 @@ struct CompetitionResultExperience: View {
                             .foregroundStyle(.primary)
                     }
 
-                    competitorEventResultsTable(group, allResults: content.results, viewportWidth: width.map { $0 - 44 })
+                    competitorEventResultsTable(group, columns: columns, viewportWidth: width.map { $0 - 44 })
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -5953,33 +6121,23 @@ struct CompetitionResultExperience: View {
                 .foregroundStyle(.secondary)
             }
 
+          }
+        } measure: { height in
+            Color.clear.preference(key: AllResultsHeightPreferenceKey.self,
+                value: [AllResultsMeasurement(content: content, width: width, language: languageCode): height])
         }
-        .padding(22)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .selectableContent()
     }
 
     private func measuredCompetitorResultsContent(
-        _ content: CompetitionWCALiveCompetitorContent, width: CGFloat? = nil
+        _ content: CompetitionWCALiveCompetitorContent, width: CGFloat? = nil,
+        actions: CompetitionResultShareActionLayout? = nil, scrollHeight: CGFloat? = nil
     ) -> some View {
-        competitorResultsContent(content, width: width)
-            .background {
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: AllResultsHeightPreferenceKey.self,
-                        value: [AllResultsMeasurement(content: content, width: width, language: languageCode): proxy.size.height]
-                    )
-                }
-            }
+        competitorResultsContent(content, width: width, actions: actions, scrollHeight: scrollHeight)
     }
 
     private func competitorEventResultsTable(_ group: CompetitionWCALiveCompetitorEventGroup,
-                                            allResults: [CompetitionWCALiveCompetitorResult], viewportWidth: CGFloat? = nil) -> some View {
-        let columns = CompetitionAllResultsColumns(roundNames: allResults.map(\.roundName),
-            averageTexts: allResults.filter { competitorResultStatistics($0).contains(.average) }.map {
-                competitorResultStatisticValue(.average, result: $0)
-            }, bestTexts: allResults.map { competitorResultStatisticValue(.best, result: $0) },
-            hasAverage: allResults.contains { competitorResultStatistics($0).contains(.average) })
+                                            columns: CompetitionAllResultsColumns, viewportWidth: CGFloat? = nil) -> some View {
         let statistics = columns.statistics
         let roundWidth = columns.round
         let widths = columns.widths
@@ -6162,25 +6320,6 @@ struct CompetitionResultExperience: View {
         return trimmed
     }
 
-    private func competitorEventGroups(
-        _ results: [CompetitionWCALiveCompetitorResult]
-    ) -> [CompetitionWCALiveCompetitorEventGroup] {
-        Dictionary(grouping: results, by: \.eventID)
-            .compactMap { eventID, eventResults in
-                guard let first = eventResults.first else { return nil }
-                return CompetitionWCALiveCompetitorEventGroup(
-                    id: eventID,
-                    name: first.eventName,
-                    results: eventResults.sorted {
-                        ($0.roundNumber ?? Int.max) < ($1.roundNumber ?? Int.max)
-                    }
-                )
-            }
-            .sorted {
-                ($0.results.first?.eventRank ?? Int.max) < ($1.results.first?.eventRank ?? Int.max)
-            }
-    }
-
     private func competitorResultStatistics(
         _ result: CompetitionWCALiveCompetitorResult
     ) -> [CompetitionWCALiveResultStatistic] {
@@ -6225,13 +6364,13 @@ struct CompetitionResultExperience: View {
     private func competitorResultRankingBackgroundColor(
         _ result: CompetitionWCALiveCompetitorResult
     ) -> Color {
-        CompetitionAdvancementStyle.background(advancing: result.isAdvancing, questionable: result.isAdvancingQuestionable)
+        CompetitionAdvancementStyle.background(advancing: result.isPodium == true ? true : result.isAdvancing, questionable: result.isAdvancingQuestionable)
     }
 
     private func competitorResultRankingForegroundColor(
         _ result: CompetitionWCALiveCompetitorResult
     ) -> Color {
-        CompetitionAdvancementStyle.foreground(advancing: result.isAdvancing, questionable: result.isAdvancingQuestionable)
+        CompetitionAdvancementStyle.foreground(advancing: result.isPodium == true ? true : result.isAdvancing, questionable: result.isAdvancingQuestionable)
     }
 
     private func loadCompetitorContent(for result: CompetitionWCALiveResultPreview) {
@@ -6750,12 +6889,16 @@ struct CompetitionCubingLiveSection: View {
                 if content.modern != nil {
                     Text(PublishedCompetitionStrings.text("live.chat_read_only", appLanguage))
                         .font(.caption).foregroundStyle(.secondary)
+                    if let liveURL {
+                        Link(PublishedCompetitionStrings.text("live.chat_website", appLanguage), destination: liveURL)
+                            .font(.footnote)
+                    }
                 }
 
                 if session.modernSession?.chatError != nil {
                     Text(PublishedCompetitionStrings.text("live.chat_unavailable", appLanguage))
                         .font(.subheadline).foregroundStyle(.secondary)
-                    if let liveURL { Link(PublishedCompetitionStrings.text("live.chat_website", appLanguage), destination: liveURL) }
+                    if content.modern == nil, let liveURL { Link(PublishedCompetitionStrings.text("live.chat_website", appLanguage), destination: liveURL) }
                 } else if session.isLoadingMessages {
                     HStack(spacing: 10) {
                         ProgressView()
@@ -7171,7 +7314,9 @@ private extension View {
 struct CompetitionDetailView: View {
     let competition: CompetitionSummary
     let appLanguage: String
+    let usesCachedSummary: Bool
     let initialWCALiveResultDeepLink: CompetitionWCALiveResultDeepLink?
+    let initialWCALiveResultPreview: CompetitionWCALiveResultPreview?
     private let explicitlyOpenedLive: Bool
     private let explicitlyOpenedPublishedResult: Bool
 
@@ -7223,8 +7368,6 @@ struct CompetitionDetailView: View {
     @State private var psychOverallRankByCompetitorIDSnapshot: [String: Int] = [:]
     @State private var psychMatrixEventIDsSnapshot: [String] = []
     @State private var collapsedNavigationTitleOpacity: CGFloat = 0
-    @State private var detailScrollTopInset: CGFloat = 0
-    @State private var detailHeaderSeparatorY: CGFloat = .greatestFiniteMagnitude
     @State private var calendarImport: CompetitionCalendarImport?
     @State private var calendarPreviewError: String?
     @State private var isLoadingCalendarPreview = false
@@ -7236,8 +7379,6 @@ struct CompetitionDetailView: View {
     @State private var wcaPsychNameColumnWidth: CGFloat = 180
     @State private var wcaPsychRepresentingColumnWidth: CGFloat = 140
 
-    private let collapsedNavigationTitleFadeDistance: CGFloat = 28
-    private let collapsedNavigationTitleTriggerOffset: CGFloat = 0
 
     #if DEBUG
     private var isRenderingFixture = false
@@ -7264,11 +7405,15 @@ struct CompetitionDetailView: View {
         appLanguage: String,
         initialWCALiveRoundID: String? = nil,
         initialWCALiveResultDeepLink: CompetitionWCALiveResultDeepLink? = nil,
-        initialPublishedResultDeepLink: PublishedCompetitionResultDeepLink? = nil
+        initialWCALiveResultPreview: CompetitionWCALiveResultPreview? = nil,
+        initialPublishedResultDeepLink: PublishedCompetitionResultDeepLink? = nil,
+        usesCachedSummary: Bool = false
     ) {
         self.competition = competition
         self.appLanguage = appLanguage
+        self.usesCachedSummary = usesCachedSummary
         self.initialWCALiveResultDeepLink = initialWCALiveResultDeepLink
+        self.initialWCALiveResultPreview = initialWCALiveResultPreview
         explicitlyOpenedPublishedResult = initialPublishedResultDeepLink != nil
         _pendingPublishedResultDeepLink = State(initialValue: initialPublishedResultDeepLink)
         let roundID = initialWCALiveResultDeepLink?.roundID
@@ -7315,11 +7460,12 @@ struct CompetitionDetailView: View {
     }
 
     private var displayCompetitionName: String {
+        guard appLanguage.hasPrefix("zh") else { return competition.name }
         guard let localizedName = detailContent.localizedName?.trimmingCharacters(in: .whitespacesAndNewlines),
               !localizedName.isEmpty else {
             return competition.name
         }
-        return localizedName
+        return CompetitionNameScript.display(localizedName, language: appLanguage)
     }
 
     private var isMainlandChinaCompetition: Bool {
@@ -7872,6 +8018,11 @@ struct CompetitionDetailView: View {
 
     var body: some View {
         historicalDetailBody
+        .environment(\.competitionSharing, .init(name: displayCompetitionName,
+            details: [detailContent.sharingLocation ?? competition.locationLine, competition.dateRange]
+                .map { $0.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: "\u{00B7}"))) }
+                .filter { !$0.isEmpty }.joined(separator: " \u{00B7} "), artwork: detailContent.sharingArtwork,
+            chinaStages: isMainlandChinaCompetition))
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if hasMountedCubingChinaLive {
                 CompetitionLiveChatAccessory(language: appLanguage) { showsLiveChat = true }
@@ -7918,7 +8069,7 @@ struct CompetitionDetailView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
 
-                if (selectedTab == .info && !staleCachedDetailResources.isEmpty)
+                if (selectedTab == .info && (usesCachedSummary || !staleCachedDetailResources.isEmpty))
                     || (selectedTab == .results && publishedStore.failed && publishedStore.data != nil)
                     || (selectedTab == .scrambles && publishedStore.scrambles.isStale) {
                     Text(appLocalizedString("explore.cached", languageCode: appLanguage))
@@ -7932,11 +8083,10 @@ struct CompetitionDetailView: View {
                 }
             }
         }
+        .coordinateSpace(name: "competitionDetailScrollViewport")
         .competitionResultsPresentation(state: publishedResultCard, language: appLanguage)
         .competitionDebugCompetition(competition.id)
         .onDisappear { publishedResultCard.cancelLoading() }
-        .coordinateSpace(name: "competitionDetailScrollFallback")
-        .modifier(CompetitionDetailScrollTopInsetModifier(topInset: $detailScrollTopInset))
         .background(Color(uiColor: .systemGroupedBackground))
         .onAppear { CompetitionLoadingTrace.record("detail-first-visible", since: detailOpenedAt, detail: competition.id) }
         .background {
@@ -7962,6 +8112,7 @@ struct CompetitionDetailView: View {
                         languageCode: appLanguage,
                         areEventIconsReady: areCompetitionEventIconsReady,
                         resultDeepLink: initialWCALiveResultDeepLink,
+                        initialResultPreview: initialWCALiveResultPreview,
                         session: wcaLiveSession
                     ),
                     isActive: $isPresentingInitialWCALiveResult
@@ -7972,12 +8123,9 @@ struct CompetitionDetailView: View {
             }
         }
         .onPreferenceChange(CompetitionDetailHeaderSeparatorPreferenceKey.self) { separatorY in
-            guard !isUsingModernScrollGeometry else { return }
-            detailHeaderSeparatorY = separatorY
-            updateCollapsedNavigationTitleOpacity()
-        }
-        .onChange(of: detailScrollTopInset) { _ in
-            updateCollapsedNavigationTitleOpacity()
+            if #unavailable(iOS 16.0) {
+                collapsedNavigationTitleOpacity = Self.titleOpacity(separatorY: separatorY)
+            }
         }
         .task(id: "\(competition.id)|\(appLanguage)|\(detailReloadGeneration)") {
             areCompetitionEventIconsReady = CompetitionEventIconFont.ensureRegistered()
@@ -8246,31 +8394,23 @@ struct CompetitionDetailView: View {
         .padding(.top, 4)
     }
 
-    private var isUsingModernScrollGeometry: Bool {
-        if #available(iOS 18.0, *) {
-            return true
-        }
-        return false
-    }
-
     private var headerSeparator: some View {
         let separator = Divider()
             .padding(.top, 6)
 
         return Group {
-            if #available(iOS 18.0, *) {
+            if #available(iOS 16.0, *) {
                 separator.onGeometryChange(for: CGFloat.self) { proxy in
-                    proxy.frame(in: .scrollView).minY
-                } action: { _, separatorY in
-                    detailHeaderSeparatorY = separatorY
-                    updateCollapsedNavigationTitleOpacity()
+                    Self.titleOpacity(separatorY: proxy.frame(in: .named("competitionDetailScrollViewport")).minY)
+                } action: { opacity in
+                    collapsedNavigationTitleOpacity = opacity
                 }
             } else {
                 separator.background(
                     GeometryReader { proxy in
                         Color.clear.preference(
                             key: CompetitionDetailHeaderSeparatorPreferenceKey.self,
-                            value: proxy.frame(in: .named("competitionDetailScrollFallback")).minY
+                            value: proxy.frame(in: .named("competitionDetailScrollViewport")).minY
                         )
                     }
                 )
@@ -8278,16 +8418,9 @@ struct CompetitionDetailView: View {
         }
     }
 
-    private func updateCollapsedNavigationTitleOpacity() {
-        guard detailHeaderSeparatorY.isFinite else {
-            collapsedNavigationTitleOpacity = 0
-            return
-        }
-
-        let triggerY = collapsedNavigationTitleTriggerOffset
-        let distanceBeforeSeparatorHitsTrigger = detailHeaderSeparatorY - triggerY
-        let opacity = min(max((collapsedNavigationTitleFadeDistance - distanceBeforeSeparatorHitsTrigger) / collapsedNavigationTitleFadeDistance, 0), 1)
-        collapsedNavigationTitleOpacity = opacity
+    nonisolated private static func titleOpacity(separatorY: CGFloat) -> CGFloat {
+        guard separatorY.isFinite else { return 0 }
+        return min(max(1 - separatorY / 28, 0), 1)
     }
 
     @ViewBuilder
@@ -10802,7 +10935,8 @@ struct CompetitionDetailView: View {
                 CubingDetailDocumentBlock(
                     block: block,
                     fallbackTitle: fallbackTitle,
-                    areEventIconsReady: areCompetitionEventIconsReady
+                    areEventIconsReady: areCompetitionEventIconsReady,
+                    slug: competition.cubingChinaCompetitionSlug
                 )
 
                 if block.id == mapBlockID {
@@ -10862,7 +10996,10 @@ struct CompetitionDetailView: View {
         includesBlockTitleInSelection: Bool = false
     ) -> some View {
         if let html = block.html, !html.isEmpty {
-            if isMainlandChinaCompetition {
+            if isMainlandChinaCompetition, OrganizerWebDocument.sectionKey(for: block.id) != nil {
+                CompetitionOrganizerHTMLView(html: html, baseURL: OrganizerWebDocument.sourceURL(
+                    slug: competition.cubingChinaCompetitionSlug, section: block.id))
+            } else if isMainlandChinaCompetition {
                 CompetitionRichHTMLContent(
                     html: html,
                     areEventIconsReady: areCompetitionEventIconsReady,
@@ -12982,6 +13119,7 @@ private struct CubingDetailDocumentBlock: View {
     let block: CompetitionDetailTextBlock
     let fallbackTitle: String
     let areEventIconsReady: Bool
+    let slug: String?
 
     @State private var isExpanded = false
 
@@ -13008,6 +13146,21 @@ private struct CubingDetailDocumentBlock: View {
     }
 
     var body: some View {
+        if let html = block.html, OrganizerWebDocument.sectionKey(for: block.id) != nil {
+            VStack(alignment: .leading, spacing: 10) {
+                if let title {
+                    Text(title).font(.headline).fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
+                }
+                CompetitionOrganizerHTMLView(html: html,
+                    baseURL: OrganizerWebDocument.sourceURL(slug: slug, section: block.id))
+            }
+        } else {
+            structuredBody
+        }
+    }
+
+    private var structuredBody: some View {
         VStack(alignment: .leading, spacing: 6) {
             if let title, isEntryFeeBlock || isContactBlock {
                 HStack(alignment: .firstTextBaseline) {
@@ -13242,10 +13395,11 @@ enum CompetitionRichTextParagraphLayout {
     }
 }
 
-private struct CompetitionRichHTMLContent: View {
+struct CompetitionRichHTMLContent: View {
     let html: String
     let leadingTitle: String?
     @State private var parsedElements: [CompetitionRichHTMLElement]?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     private var elements: [CompetitionRichHTMLElement] { parsedElements ?? [] }
     let tableRowLimit: Int?
     let areEventIconsReady: Bool
@@ -13287,7 +13441,8 @@ private struct CompetitionRichHTMLContent: View {
                                   url.host == "add-competition-schedule" else { return false }
                             onAddScheduleToCalendar?()
                             return true
-                        }
+                        },
+                        protectsFirstLineInk: elements[block.range.lowerBound].isHeading
                     )
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -13454,12 +13609,8 @@ private struct CompetitionRichHTMLContent: View {
     ) -> Bool {
         switch element.kind {
         case .heading(let text, let level):
-            result.append(
-                NSAttributedString(
-                    string: text,
-                    attributes: textAttributes(font: richHeadingUIFont(level: level), color: .label)
-                )
-            )
+            result.append(NSAttributedString(string: text,
+                attributes: textAttributes(font: richHeadingUIFont(level: level), color: .label)))
         case .paragraph(let text):
             result.append(
                 NSAttributedString(
@@ -13540,6 +13691,10 @@ private struct CompetitionRichHTMLContent: View {
         return false
     }
 
+    private var richTextTraits: UITraitCollection {
+        UITraitCollection(preferredContentSizeCategory: UIContentSizeCategory(dynamicTypeSize))
+    }
+
     private func richHeadingUIFont(level: Int) -> UIFont {
         let specification: (CGFloat, UIFont.Weight, UIFont.TextStyle) = {
             switch level {
@@ -13552,13 +13707,13 @@ private struct CompetitionRichHTMLContent: View {
             }
         }()
         return UIFontMetrics(forTextStyle: specification.2).scaledFont(
-            for: UIFont.systemFont(ofSize: specification.0, weight: specification.1)
+            for: UIFont.systemFont(ofSize: specification.0, weight: specification.1), compatibleWith: richTextTraits
         )
     }
 
     private func richBodyUIFont(weight: UIFont.Weight = .regular) -> UIFont {
         UIFontMetrics(forTextStyle: .body).scaledFont(
-            for: UIFont.systemFont(ofSize: 15, weight: weight)
+            for: UIFont.systemFont(ofSize: 15, weight: weight), compatibleWith: richTextTraits
         )
     }
 
@@ -14421,6 +14576,10 @@ private struct CompetitionRichHTMLImage: View {
 }
 
 nonisolated struct CompetitionRichHTMLElement: Sendable {
+    var isHeading: Bool {
+        if case .heading = kind { return true }
+        return false
+    }
     enum Kind {
         case heading(String, Int)
         case paragraph(String)

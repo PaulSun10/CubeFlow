@@ -494,7 +494,7 @@ actor WCAExplorePublicDataCache {
         let fetchedAt: Date
     }
     private let storage: PublicDataSnapshotStore
-    private let requests = CompetitionRequestPool<Data>()
+    private let requests = CompetitionRequestPool<PublicDataSnapshotStore.Entry>()
     private let recentRequests = CompetitionRequestPool<ExploreRecentRecordsSnapshot>()
     private let now: @Sendable () -> Date
     private var generation = UUID()
@@ -521,20 +521,22 @@ actor WCAExplorePublicDataCache {
         if !force, let cached = await load(Value.self, key: key), generation == epoch,
            now().timeIntervalSince(cached.fetchedAt) < 900 { return cached }
         guard generation == epoch else { throw CancellationError() }
-        let body = try await requests.value(key: key) { [self] in
+        let entry = try await requests.value(key: key) { [self] in
             let value = try await loader()
             return try await commit(value, key: key, epoch: epoch)
         }
-        return try JSONDecoder().decode(Cached<Value>.self, from: body)
+        return Cached(value: try JSONDecoder().decode(Value.self, from: entry.body), fetchedAt: entry.fetchedAt)
     }
-    private func commit<Value: Codable & Sendable>(_ value: Value, key: String, epoch: UUID) async throws -> Data {
+    private func commit<Value: Codable & Sendable>(_ value: Value, key: String, epoch: UUID) async throws -> PublicDataSnapshotStore.Entry {
         try Task.checkCancellation()
         guard generation == epoch else { throw CancellationError() }
         let date = now()
-        await save(value, key: key, now: date)
+        // Share the same encoded body with disk storage and waiting consumers.
+        let body = try JSONEncoder().encode(value)
+        await storage.save(body, key: key, fetchedAt: date)
         try Task.checkCancellation()
         guard generation == epoch else { throw CancellationError() }
-        return try JSONEncoder().encode(Cached(value: value, fetchedAt: date))
+        return .init(body: body, fetchedAt: date)
     }
     func recentRecords(key: String, loader: @escaping @Sendable () async throws -> ExploreRecentRecordsSnapshot) async throws -> ExploreRecentRecordsSnapshot {
         let epoch = generation
