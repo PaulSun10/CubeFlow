@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)initializeTables;
 + (NSString *)randomStateFacelets;
 + (NSString *)solveFacelets:(NSString *)facelets;
++ (nullable NSString *)fmcScrambleFromScramble:(NSString *)scramble NS_SWIFT_NAME(fmcScramble(from:));
 + (NSString *)movesFromFacelets:(NSString *)sourceFacelets toFacelets:(NSString *)targetFacelets;
 + (NSString *)searchFromFacelets:(NSString *)sourceFacelets toFacelets:(NSString *)targetFacelets
                    maximumDepth:(NSInteger)maximumDepth probeLimit:(NSInteger)probeLimit

@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <random>
 #include <chrono>
+#include <sstream>
+#include <vector>
 
 namespace {
 #if DEBUG
@@ -67,6 +69,40 @@ NSString *validatedSolution(const std::string &solution) {
         }
     }
     return @"";
+}
+
+using Cube = min2phase::CubieCube;
+Cube product(const Cube &a, const Cube &b) {
+    Cube result;
+    Cube::cornMult(a, b, result); Cube::edgeMult(a, b, result);
+    return result;
+}
+bool outerMoves(const std::string &text, std::vector<int> &moves) {
+    std::istringstream stream(text);
+    std::string token;
+    while (stream >> token) {
+        const auto face = std::string("URFDLB").find(token[0]);
+        if (face == std::string::npos || token.size() > 2) { return false; }
+        int power = 0;
+        if (token.size() == 2) {
+            if (token[1] == '2') { power = 1; }
+            else if (token[1] == '\'') { power = 2; }
+            else { return false; }
+        }
+        moves.push_back(static_cast<int>(face) * 3 + power);
+    }
+    return !moves.empty();
+}
+Cube stateOf(const std::vector<int> &moves) {
+    Cube cube;
+    for (int move : moves) { cube = product(cube, min2phase::coords::coords.moveCube[move]); }
+    return cube;
+}
+std::string moveText(int move) {
+    return std::string(1, "URFDLB"[move / 3]) + (move % 3 == 0 ? "" : move % 3 == 1 ? "2" : "'");
+}
+bool fmcBoundaries(const std::vector<int> &moves) {
+    return !moves.empty() && (moves.front() / 3) % 3 != 2 && (moves.back() / 3) % 3 != 1;
 }
 }
 
@@ -127,6 +163,47 @@ NSString *validatedSolution(const std::string &solution) {
     std::string solution = search.solve(faceletsStr, 21, 1000000, 0, 0, nullptr);
 
     return validatedSolution(solution);
+}
+
++ (nullable NSString *)fmcScrambleFromScramble:(NSString *)scramble {
+    std::vector<int> nativeMoves;
+    if (!outerMoves([scramble UTF8String], nativeMoves)) { return nil; }
+    [self initializeTables];
+    const Cube target = stateOf(nativeMoves);
+    const auto targetText = Cube::toFaceCube(target);
+    if (targetText == Cube::toFaceCube(Cube())) { return nil; }
+    for (int move = 0; move < 18; ++move) {
+        if (targetText == Cube::toFaceCube(min2phase::coords::coords.moveCube[move])) { return nil; }
+    }
+    const std::vector<int> padding = {5, 2, 6}; // R' U' F
+    Cube inversePadding = stateOf(padding); inversePadding.inv();
+    const Cube middle = product(product(inversePadding, target), inversePadding);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(1500);
+    auto search = [&](const Cube &state) {
+        min2phase::Search solver;
+        solver.setInterruption([deadline] { return std::chrono::steady_clock::now() >= deadline; });
+        solver.setSolutionFilter([](const std::string &body) {
+            if (body.empty()) { return true; }
+            std::vector<int> moves;
+            return outerMoves(body, moves) && fmcBoundaries(moves);
+        });
+        return solver.solve(Cube::toFaceCube(state), 21, 1000000, 0, min2phase::INVERSE_SOLUTION, nullptr);
+    };
+    auto emit = [&](const std::string &body) -> NSString * {
+        std::vector<int> moves;
+        if ((!body.empty() && (!outerMoves(body, moves) || !fmcBoundaries(moves)))
+            || Cube::toFaceCube(stateOf(moves)) != Cube::toFaceCube(middle)) { return nil; }
+        std::vector<int> fullMoves = padding;
+        fullMoves.insert(fullMoves.end(), moves.begin(), moves.end());
+        fullMoves.insert(fullMoves.end(), padding.begin(), padding.end());
+        if (Cube::toFaceCube(stateOf(fullMoves)) != targetText) { return nil; }
+        std::string full;
+        for (int move : fullMoves) { if (!full.empty()) { full += " "; } full += moveText(move); }
+        return [NSString stringWithUTF8String:full.c_str()];
+    };
+    // Search more representations of this exact state, never another random
+    // draw. FMC is the only caller that installs the boundary filter.
+    return emit(search(middle));
 }
 
 + (NSString *)movesFromFacelets:(NSString *)sourceFacelets toFacelets:(NSString *)targetFacelets {

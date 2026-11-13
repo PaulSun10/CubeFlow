@@ -296,11 +296,11 @@
     },
     {
       "path": "CubeFlow/Views/Shared/TNoodleNativeBridge.m",
-      "sha256": "eab341a11ac42a9596a1d4be43ca36e8bc18018b57ce6134d822f63cc771600c"
+      "sha256": "d2c59630a9e6df962333dca419b7888393fcbbbb5760ee5ac399816720df493d"
     },
     {
       "path": "CubeFlow/Views/Shared/TNoodleScrambler.swift",
-      "sha256": "fc0fc734db71d5a47b1b6aa332403569ac35c1913f74dd92627580f02d66846b"
+      "sha256": "08037ba91e6244242ae507d2052b110daab9e6ffd35280aca1bcae4960c964c8"
     },
     {
       "path": "Scripts/package-tnoodle-framework.sh",

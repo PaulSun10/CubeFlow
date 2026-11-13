@@ -53,6 +53,7 @@ namespace min2phase {
         bool allowShorter = false;
         struct Interrupted {};
         std::function<bool()> interruption;
+        std::function<bool(const std::string &)> solutionFilter;
         uint32_t visitedNodes = 0;
         void checkInterruption() {
             if (interruption && ((++visitedNodes & 1023) == 0) && interruption()) {
@@ -66,6 +67,9 @@ namespace min2phase {
         // Optional, per-search cooperative interruption. Legacy callers do not
         // install a hook, retaining their existing search policy.
         void setInterruption(const std::function<bool()> &callback) { interruption = callback; }
+        // Optional presentation constraint, per search. Normal solver callers
+        // leave it unset; rejected candidates never replace the accepted result.
+        void setSolutionFilter(const std::function<bool(const std::string &)> &callback) { solutionFilter = callback; }
 
         /**
          * This is used to solve the cube. It has many configuration in base of the

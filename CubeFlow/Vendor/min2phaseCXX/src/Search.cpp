@@ -365,18 +365,20 @@ int8_t min2phase::Search::initPhase2(uint16_t p2corn, int8_t p2csym, uint16_t p2
         if (ret < 0)
             break;
 
-        depth2 -= ret;
-        solLen = 0;
+        CubieCube::OutputFormat candidate;
+        candidate.isFound = true;
+        candidate.reset();
+        candidate.setArgs(verbose, urfIdx, depth1);
 
-        solution.isFound = true;
-        solution.reset();
-        solution.setArgs(verbose, urfIdx, depth1);
-
-        for (i = 0; i < depth1 + depth2; i++)
-            solution.appendSolMove(move[i]);
+        for (i = 0; i < depth1 + depth2 - ret; i++)
+            candidate.appendSolMove(move[i]);
 
         for (i = preMoveLen - 1; i >= 0; i--)
-            solution.appendSolMove(preMoves[i]);
+            candidate.appendSolMove(preMoves[i]);
+
+        if (solutionFilter && !solutionFilter(candidate.toString())) { return 1; }
+        depth2 -= ret;
+        solution = candidate;
 
         solLen = solution.length;
     }

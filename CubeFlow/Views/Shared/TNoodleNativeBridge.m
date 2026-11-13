@@ -66,6 +66,7 @@ static NSString *tnoodleInitializationError = nil;
 @implementation TNoodleNativeBridge
 
 + (nullable NSString *)scrambleForEventIndex:(NSInteger)eventIndex {
+    if (eventIndex < 0 || eventIndex >= 15) { return nil; }
     if (![self ensureInitialized]) {
         return nil;
     }
