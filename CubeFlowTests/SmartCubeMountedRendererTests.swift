@@ -50,7 +50,14 @@ import Combine
                 let current = try XCTUnwrap(owner.debugPresentation.current, "\(surface) must enqueue even isolated slow \(move)")
                 let identity = current.id
                 manager.objectWillChange.send()
-                try await Task.sleep(nanoseconds: 60_000_000)
+                // Observe the real display clock, not an assumed number of
+                // callbacks in 60 ms while other hosted views are updating.
+                let deadline = current.startedAt + current.duration
+                while owner.debugPresentation.current?.id == identity,
+                      abs(owner.debugPivotAngle ?? 0) <= 0.05,
+                      ProcessInfo.processInfo.systemUptime < deadline {
+                    try await Task.sleep(nanoseconds: 1_000_000)
+                }
                 XCTAssertTrue(cubes(window).first === view, "\(surface) must retain its renderer on unrelated publication")
                 XCTAssertEqual(owner.debugPresentation.current?.id, identity, surface)
                 XCTAssertGreaterThan(abs(owner.debugPivotAngle ?? 0), 0.05, "\(surface) must render an intermediate angle")

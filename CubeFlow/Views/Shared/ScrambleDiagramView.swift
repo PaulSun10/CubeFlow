@@ -951,12 +951,13 @@ private struct SolveDiagramExportView: View {
 }
 
 @MainActor
-private enum ImageExportRenderUtility {
+enum ImageExportRenderUtility {
     static func render<Content: View>(
         _ content: Content,
         width: CGFloat,
         isOpaque: Bool,
-        fallbackBackground: UIColor
+        fallbackBackground: UIColor,
+        pixelScale: CGFloat = 2
     ) throws -> UIImage {
         let controller = UIHostingController(rootView: content)
         controller.view.backgroundColor = fallbackBackground
@@ -970,7 +971,7 @@ private enum ImageExportRenderUtility {
         if #available(iOS 16.0, *) {
             let renderer = ImageRenderer(content: content)
             renderer.proposedSize = ProposedViewSize(width: size.width, height: size.height)
-            renderer.scale = 2
+            renderer.scale = pixelScale
             renderer.isOpaque = isOpaque
             guard let image = renderer.uiImage else { throw ContentImageActionError.unavailable }
             return image
@@ -978,7 +979,7 @@ private enum ImageExportRenderUtility {
 
         let format = UIGraphicsImageRendererFormat()
         format.opaque = isOpaque
-        format.scale = 2
+        format.scale = pixelScale
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
             controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
         }
@@ -1068,6 +1069,13 @@ final class ScrambleDiagramImageRenderer: NSObject, WKNavigationDelegate {
     }
 }
 
+/// Immutable bundled code is read/escaped once, not eleven file reads and JSON
+/// encodings per diagram. Static initialization is thread safe and bounded.
+nonisolated enum ScrambleDiagramResources {
+    static var encodedSources: String { ScrambleDiagramWebView.sourceEntries }
+    static func prewarm() { _ = encodedSources }
+}
+
 private struct ScrambleDiagramWebView: UIViewRepresentable {
     let puzzleKey: String
     let scramble: String
@@ -1114,7 +1122,7 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
         webView.loadHTMLString(Self.html(puzzleKey: puzzleKey, scramble: scramble, colorScheme: colorScheme, strokeScale: strokeScale), baseURL: Bundle.main.resourceURL)
     }
 
-    fileprivate static func html(puzzleKey: String, scramble: String, colorScheme: String, strokeScale: Double = 1) -> String {
+    nonisolated fileprivate static let sourceEntries: String = {
         let sourceMap: [String: String] = [
             "main": loadJavaScript(relativePath: "main.js"),
             "mathlib": loadJavaScript(relativePath: "mathlib.js"),
@@ -1129,12 +1137,14 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
             "cubes/squareone": loadJavaScript(relativePath: "cubes/squareone.js"),
         ]
 
-        let sourceEntries = sourceMap.map { key, value in
+        return sourceMap.map { key, value in
             "\(javaScriptLiteral(key)): \(javaScriptLiteral(value))"
         }
         .sorted()
         .joined(separator: ",\n")
+    }()
 
+    fileprivate static func html(puzzleKey: String, scramble: String, colorScheme: String, strokeScale: Double = 1) -> String {
         return """
         <!doctype html>
         <html>
@@ -1315,7 +1325,7 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
         """
     }
 
-    private static func loadJavaScript(relativePath: String) -> String {
+    nonisolated private static func loadJavaScript(relativePath: String) -> String {
         for candidate in resourceCandidates(relativePath: relativePath) {
             if let url = candidate, let content = try? String(contentsOf: url, encoding: .utf8) {
                 return content
@@ -1324,7 +1334,7 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
         return ""
     }
 
-    private static func resourceCandidates(relativePath: String) -> [URL?] {
+    nonisolated private static func resourceCandidates(relativePath: String) -> [URL?] {
         let relative = relativePath.split(separator: "/").map(String.init)
         let fileName = relative.last
         let base = Bundle.main.resourceURL
@@ -1346,7 +1356,7 @@ private struct ScrambleDiagramWebView: UIViewRepresentable {
         ] + [base.flatMap { root in fileName.map { root.appendingPathComponent($0, isDirectory: false) } }]
     }
 
-    private static func javaScriptLiteral(_ string: String) -> String {
+    nonisolated private static func javaScriptLiteral(_ string: String) -> String {
         let data = try? JSONSerialization.data(withJSONObject: [string])
         let encoded = data.flatMap { String(data: $0, encoding: .utf8) } ?? "[\"\"]"
         return String(encoded.dropFirst().dropLast())

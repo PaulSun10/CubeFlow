@@ -85,6 +85,7 @@ private actor GuidanceGate {
 @MainActor private struct MountedGuidance: View {
     @ObservedObject var harness: GuidanceHarness
     @ObservedObject var controller: SmartCubeGuidanceController
+    var mounted: () -> Void = {}
     let rendered: (Int) -> Void
     var body: some View {
         let progress = harness.progress
@@ -98,6 +99,7 @@ private actor GuidanceGate {
             isUpdatingGuidance: controller.isUpdating)
             .padding(20)
             .onChange(of: progress.replanGeneration) { rendered($0) }
+            .onAppear(perform: mounted)
     }
 }
 
@@ -262,14 +264,16 @@ private actor GuidanceGate {
 
     func testMountedProductionRendererUpdatesAfterStopWithoutAnotherPhysicalMove() async throws {
         let harness = try GuidanceHarness()
+        let mounted = expectation(description: "Guidance view observer mounted")
         let rendered = expectation(description: "SwiftUI renders rebased tokens")
         let host = UIHostingController(rootView: MountedGuidance(harness: harness,
-            controller: harness.controller) { generation in if generation > 0 { rendered.fulfill() } })
+            controller: harness.controller, mounted: { mounted.fulfill() }) { generation in if generation > 0 { rendered.fulfill() } })
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
         let window = UIWindow(windowScene: scene)
         window.frame = CGRect(x: 0, y: 0, width: 402, height: 420)
         window.rootViewController = host; window.makeKeyAndVisible()
         defer { window.isHidden = true; window.rootViewController = nil; harness.controller.cancel() }
+        await fulfillment(of: [mounted], timeout: 5)
         try harness.turn("R")
         await fulfillment(of: [rendered], timeout: 5)
         try assertCurrent(harness, target: harness.progress.targetFacelets)

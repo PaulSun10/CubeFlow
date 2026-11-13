@@ -33,7 +33,7 @@ struct CubeStateEquivalenceTests {
         _ = progress.update(with: different)
         #expect(!progress.isComplete)
         #expect(!CubeStateEquivalence.matches(different, progress.targetFacelets, puzzleSize: 2))
-        #expect(!progress.isDeviated)
+        #expect(progress.isDeviated)
         #expect(CombinedPhysicalResultClassifier.result(facelets: rotatedTarget, isStateTrusted: true) == .dnf)
         let rotatedSolved = try rotateWholeCube(CubeSurface.solved(size: 2), size: 2)
         #expect(CombinedPhysicalResultClassifier.result(facelets: rotatedSolved, isStateTrusted: true) == .solved)
@@ -72,9 +72,27 @@ struct CubeStateEquivalenceTests {
         #expect(adapter.validatedTurns.last?.facelets == CubeSurface.solved(size: 2))
 
         adapter.note(.init(code: 0, turnCounter: 13, missedTurnCount: 0))
-        #expect(adapter.accept(nativeState("0C3451410659924B6D", counter: 13)) == nil)
-        #expect(adapter.rejectedNewSnapshot)
+        #expect(adapter.accept(nativeState("0C3451410659924B6D", counter: 13)) != nil)
+        #expect(adapter.acceptedNewSnapshot)
+        #expect(adapter.advancedTurnCounter)
         #expect(adapter.validatedTurns.isEmpty)
+        #expect(adapter.accept(.init(stickerValues: Array(repeating: 0, count: 24), turnCounter: 14)) == nil)
+        #expect(adapter.rejectedNewSnapshot)
+    }
+
+    @Test func indexedCheckpointEquivalenceMatchesExhaustiveReference() throws {
+        let scrambles = ["R", "U'", "R U", "R U F", "R2", "F2 R U", "F2 R2 U2",
+            "U R' F2 D R2", "L D R", "R2 U R' U2 R F2"]
+        let states = try scrambles.map {
+            try #require(SmartCubeBluetoothManager.facelets(afterApplying: $0, puzzleSize: 2))
+        }
+        for lhs in states {
+            let rotated = try rotateWholeCube(lhs, size: 2)
+            for rhs in states {
+                #expect((CubeStateEquivalence.twoByTwoCheckpointKey(rotated) == CubeStateEquivalence.twoByTwoCheckpointKey(rhs))
+                    == CubeStateEquivalence.matches(rotated, rhs, puzzleSize: 2))
+            }
+        }
     }
 
     @Test func twoByTwoReconstructionStartsBeforeItsFirstCertifiedTurn() throws {

@@ -44,13 +44,14 @@ import Combine
     private let settle: Settle
     private let fastSearch: Search?
     private var latest: Request?
+    private var completedRequest: Request?
     private var ticket: UInt64 = 0
     private var settledTicket: UInt64?
     private var debounceTask: Task<Void, Never>?
     private var worker: Task<Void, Never>?
     private var fastWorker: Task<Void, Never>?
 
-    init(settle: @escaping Settle = { try await Task.sleep(nanoseconds: 120_000_000) },
+    init(settle: @escaping Settle = { await Task.yield() },
          search: Search? = nil, fastSearch: Search? = nil) {
         self.settle = settle
         if let search {
@@ -67,9 +68,10 @@ import Combine
     }
 
     func submit(_ request: Request) {
-        if latest == request, isUpdating { return }
+        if latest == request || completedRequest == request { return }
         ticket &+= 1
         let currentTicket = ticket
+        completedRequest = nil
         latest = request
         settledTicket = nil
         publication = nil
@@ -85,13 +87,20 @@ import Combine
             guard !Task.isCancelled, let self, ticket == currentTicket else { return }
             settledTicket = currentTicket
             debounceTask = nil
+            #if DEBUG
+            trace("settled", request, detail: "nativeBusy=\(worker != nil) exactBusy=\(fastWorker != nil)")
+            #endif
             drain()
         }
     }
 
     func cancel() {
+        #if DEBUG
+        if let latest { trace("cancelled", latest) }
+        #endif
         ticket &+= 1
         latest = nil
+        completedRequest = nil
         settledTicket = nil
         debounceTask?.cancel()
         debounceTask = nil
@@ -111,6 +120,7 @@ import Combine
             guard let self else { return }
             worker = nil
             if !Task.isCancelled, ticket == currentTicket, latest == request {
+                completedRequest = request
                 latest = nil
                 settledTicket = nil
                 phase = decision.replacement == nil ? .unavailable : .idle
@@ -126,17 +136,26 @@ import Combine
     }
 
     private func startFast(_ request: Request, search: @escaping Search, ticket currentTicket: UInt64) {
+        #if DEBUG
+        trace("fast-started", request)
+        #endif
         fastWorker = Task { [weak self] in
             let decision = await search(request)
             guard !Task.isCancelled, let self, ticket == currentTicket, latest == request else { return }
             fastWorker = nil
             if decision.replacement != nil {
+                completedRequest = request
                 latest = nil; settledTicket = nil; phase = .idle
                 debounceTask?.cancel(); debounceTask = nil
                 worker?.cancel()
                 trace("fast-published", request)
                 publishIfImproved(decision, request: request)
-            } else { drain() }
+            } else {
+                #if DEBUG
+                trace("fast-missed", request)
+                #endif
+                drain()
+            }
         }
     }
 

@@ -94,11 +94,11 @@ nonisolated enum TimerScrambleGenerator {
     )
 
     static func prewarm() {
-        FTOScrambler.prewarm()
         let requestedAt = ProcessInfo.processInfo.systemUptime
         queue.async {
             let startedAt = ProcessInfo.processInfo.systemUptime
             TNoodleNativeBridge.prewarm()
+            ScrambleDiagramResources.prewarm()
             #if DEBUG
             let finishedAt = ProcessInfo.processInfo.systemUptime
             print(
@@ -114,6 +114,12 @@ nonisolated enum TimerScrambleGenerator {
     }
 
     private static let ftoQueue = DispatchQueue(label: "CubeFlow.fto-delivery", qos: .userInitiated)
+
+    private static let secondaryPreparation: Void = { FTOScrambler.prewarm() }()
+
+    /// Unrelated producers start only after the visible scramble is ready.
+    /// Direct FTO demand still initializes its existing pool immediately.
+    static func prepareSecondaryResources() { _ = secondaryPreparation }
 
     static func generate(
         for context: TimerScrambleGenerationContext,
@@ -196,10 +202,10 @@ nonisolated enum TimerScrambleGenerator {
         return scramble.joined(separator: " ")
     }
 
-    private static func tnoodleRegistry(for event: PuzzleEvent) -> TNoodlePuzzleRegistry? {
+    static func tnoodleRegistry(for event: PuzzleEvent) -> TNoodlePuzzleRegistry? {
         switch event {
         case .twoByTwo: .two
-        case .threeByThree, .threeByThreeOH, .threeByThreeMBLD: .three
+        case .threeByThree, .threeByThreeOH: .three
         case .fourByFour, .fourByFourFast: .four
         case .fiveByFive: .five
         case .sixBySix: .six
@@ -210,7 +216,7 @@ nonisolated enum TimerScrambleGenerator {
         case .clock: .clock
         case .skewb: .skewb
         case .threeByThreeFM: .threeFM
-        case .threeByThreeBLD: .threeNI
+        case .threeByThreeBLD, .threeByThreeMBLD: .threeNI
         case .fourByFourBLD: .fourNI
         case .fiveByFiveBLD: .fiveNI
         case .fto: nil

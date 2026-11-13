@@ -25,11 +25,15 @@ import SwiftUI
     var stop: ((Double) -> Void)?
     var save: (() -> Void)?
     var selectEvent: ((PuzzleEvent) -> Void)?
+    var cancelInspection: (() -> Void)?
+    var restartInspection: (() -> Void)?
+    var inspection: (() -> (active: Bool, canRestart: Bool, running: Bool))?
     var generate: ((TimerScrambleGenerationContext, String,
                     @escaping @MainActor (TimerScrambleGenerationPayload) -> Void) -> Void)?
     func reset() {
         prepare = nil; snapshot = nil; displayedPathText = nil; next = nil; start = nil; finish = nil
         stop = nil; save = nil; selectEvent = nil; generate = nil
+        cancelInspection = nil; restartInspection = nil; inspection = nil
     }
 }
 private struct SmartCubeTimerGuidanceProbeKey: EnvironmentKey {

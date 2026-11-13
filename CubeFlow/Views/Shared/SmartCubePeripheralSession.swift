@@ -39,6 +39,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
     private var weiPo2VisualAdapter = WeiPo2NativeVisualAdapter()
     private var weiPo2LocalReference: SmartCubeSoftwareResetReference?
     private var weiPo2PendingMoves: [UInt8: SmartCubeMoveEvent] = [:]
+    private var weiPo2ResetRequestedAttempt: UUID?
     private var weiPo2PendingSnapshotCounters: Set<UInt8> = []
     @Published private(set) var weiPo2PendingSnapshotCount = 0
     private(set) var weiPo2ReferenceOrientation: SmartCubeGyroState?
@@ -148,6 +149,11 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
         connectionDeviceID = deviceID
         connectionAttemptID = attemptID
         connectionState = state
+    }
+    func debugAwaitConnectionPolicy() { connectionPolicyResolvedAttemptID = nil }
+    func debugApplyProtocolEvent(_ event: SmartCubeParsedEvent, protocolKind: SmartCubeProtocolKind) {
+        connectedProtocol = protocolKind
+        apply(event)
     }
     #endif
 
@@ -431,6 +437,11 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
             return
         }
         if connectedProtocol == .moyu, puzzleSize == 2 {
+            if weiPo2PendingSnapshotCount > 0, hasTrustedCanonicalState, weiPo2LastNativeSnapshot != nil {
+                weiPo2ResetRequestedAttempt = connectionAttemptID
+                _ = sendCommand(.requestFacelets)
+                return
+            }
             guard let native = weiPo2VisualAdapter.renderableFacelets,
                   weiPo2LastNativeSnapshot != nil,
                   weiPo2PendingSnapshotCount == 0,
@@ -440,6 +451,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
                 return
             }
             let solved = CubeSurface.solved(size: 2)
+            weiPo2ResetRequestedAttempt = nil
             weiPo2LocalReference = SmartCubeSoftwareResetReference(
                 deviceID: connectionDeviceID,
                 expectedDeviceFacelets: native,
@@ -539,6 +551,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
     }
 
     private func resetSessionData(keepLogs: Bool) {
+        weiPo2ResetRequestedAttempt = nil
         connectionTimeout?.cancel()
         connectionTimeout = nil
         #if DEBUG
@@ -1052,7 +1065,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
                 weiPo2VisualRevision += 1
                 facelets = nil
                 cubeStateRevision += 1
-                canonicalFeed.breakContinuity(.historyGap, facelets: nil)
+                canonicalFeed.breakContinuity(.weiPoSnapshot, facelets: nil)
                 break
             }
             guard weiPo2VisualAdapter.acceptedNewSnapshot else { break }
@@ -1091,6 +1104,8 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
             if let visual {
                 let steps = weiPo2VisualAdapter.validatedTurns
                 let moves = steps.compactMap { weiPo2PendingMoves[$0.turnCounter] }
+                let observed = weiPo2VisualAdapter.advancedTurnCounter
+                    ? weiPo2PendingMoves[state.turnCounter]?.localTimestamp : nil
                 if !referenceInvalidated, !steps.isEmpty, moves.count == steps.count,
                    previousFacelets != nil, wasTrusted {
                     for (index, pair) in zip(steps, moves).enumerated() {
@@ -1103,8 +1118,8 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
                         )
                     }
                     trimMoveHistoryIfNeeded()
-                } else if previousFacelets != visual || !wasTrusted || !steps.isEmpty {
-                    canonicalFeed.breakContinuity(.resync, facelets: visual)
+                } else if previousFacelets != visual || !wasTrusted || !steps.isEmpty || observed != nil {
+                    canonicalFeed.breakContinuity(.weiPoSnapshot, facelets: visual, observedWeiPoTurnAt: observed)
                 }
                 weiPo2PendingMoves = weiPo2PendingMoves.filter {
                     let ahead = Int($0.key &- state.turnCounter)
@@ -1119,10 +1134,15 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
                 weiPo2PendingMoves.removeAll()
                 weiPo2PendingSnapshotCounters.removeAll()
                 weiPo2PendingSnapshotCount = 0
-                canonicalFeed.breakContinuity(.historyGap, facelets: nil)
+                canonicalFeed.breakContinuity(.weiPoSnapshot, facelets: nil)
             }
             if protocolDebugLogging {
                 appendProtocolLog("WeiPo 2x2 native state", "counter \(state.turnCounter), values \(state.stickerValues.map(String.init).joined()), layouts \(weiPo2VisualAdapter.possibleLayoutCount), validated turns \(weiPo2VisualAdapter.validatedTurns.count), renderable \(visual != nil)")
+            }
+            if let requested = weiPo2ResetRequestedAttempt, requested == connectionAttemptID,
+               weiPo2PendingSnapshotCount == 0, visual != nil, hasTrustedCanonicalState {
+                weiPo2ResetRequestedAttempt = nil
+                resetCubeStateToSolved()
             }
         case .weiPo2Turn(let turn):
             weiPo2LatestNativeTurn = turn
@@ -1130,7 +1150,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
             weiPo2PendingSnapshotCounters.insert(turn.turnCounter)
             weiPo2PendingSnapshotCount = weiPo2PendingSnapshotCounters.count
             let nativeNotation = ["F", "F'", "U", "U'", "R", "R'"]
-            if Int(turn.code) < nativeNotation.count, turn.missedTurnCount == 0 {
+            if Int(turn.code) < nativeNotation.count {
                 weiPo2PendingMoves[turn.turnCounter] = SmartCubeMoveEvent(
                     move: nativeNotation[Int(turn.code)],
                     serial: Int(turn.turnCounter),
@@ -1650,6 +1670,7 @@ final class SmartCubePeripheralSession: NSObject, ObservableObject {
         if value.count == 24 {
             return CubeLayerTurn(move)?.applying(to: value, size: 2)
         }
+        if let turn = CubeLayerTurn(move) { return turn.applying(to: value, size: 3) }
         guard let face = move.first else { return nil }
         let turns: Int
         if move.hasSuffix("2") {

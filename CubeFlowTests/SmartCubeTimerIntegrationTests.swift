@@ -34,6 +34,63 @@ private actor VirtualGuidanceSettle {
         XCTFail("Actual Timer failed to reach expected state", file: file, line: line)
     }
 
+    func testMountedInspectionExitThenManualAndPhysicalReentry() async throws {
+        let persistence = PersistenceController(inMemory: true)
+        let context = persistence.container.viewContext
+        let selected = Session(name: "Inspection fixture", selectedTimingMethodRawValue: "smartCube", context: context)
+        try context.save()
+        let defaults = UserDefaults.standard
+        let values: [String: Any] = ["selectedSessionID": selected.id.uuidString, "enteringTimesWith": "smartCube",
+                                     "smartCubeShowVirtualCube": false, "wcaInspectionEnabled": true]
+        let saved = values.keys.map { ($0, defaults.object(forKey: $0)) }
+        for (key, value) in values { defaults.set(value, forKey: key) }
+        defer { for (key, value) in saved { defaults.set(value, forKey: key) } }
+
+        let manager = SmartCubeBluetoothManager.shared
+        manager.prepareIfNeeded()
+        try await Task.sleep(nanoseconds: 150_000_000)
+        let device = UUID(), attempt = UUID()
+        let session = manager.debugMakeRoutedSession(for: device)
+        session.debugSeedConnectedState(deviceID: device, attemptID: attempt, facelets: CubeSurface.solved(size: 3))
+        manager.selectActiveDevice(device)
+        defer { manager.disconnect(deviceID: device) }
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        let probe = SmartCubeTimerGuidanceProbe()
+        window.rootViewController = UIHostingController(rootView: TimerTabView()
+            .environment(\.managedObjectContext, context)
+            .environment(\.smartCubeTimerGuidanceProbe, probe))
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil; probe.reset() }
+        try await wait { probe.prepare != nil }
+        probe.prepare?("R U")
+        try await wait { probe.snapshot?().progress?.tokens == ["R", "U"] }
+        session.debugEmitPhysicalMove("R")
+        session.debugEmitPhysicalMove("U")
+        try await wait { probe.inspection?().active == true }
+        probe.cancelInspection?()
+        try await wait { probe.inspection?().canRestart == true }
+        XCTAssertFalse(try XCTUnwrap(probe.inspection?().active))
+        probe.restartInspection?()
+        try await wait { probe.inspection?().active == true }
+        XCTAssertFalse(try XCTUnwrap(probe.inspection?().running))
+        probe.cancelInspection?()
+        try await wait { probe.inspection?().canRestart == true }
+
+        session.debugEmitPhysicalMove("U'")
+        try await wait { probe.inspection?().canRestart == false }
+        probe.restartInspection?()
+        XCTAssertFalse(try XCTUnwrap(probe.inspection?().active))
+        session.debugEmitPhysicalMove("U")
+        try await wait { probe.inspection?().active == true }
+        XCTAssertFalse(try XCTUnwrap(probe.inspection?().running))
+        XCTAssertEqual(probe.snapshot?().scramble, "R U")
+        XCTAssertEqual(probe.snapshot?().sessionID, selected.id)
+        XCTAssertEqual(manager.connectionAttemptID, attempt)
+        XCTAssertEqual(try context.count(for: Solve.fetchRequest()), 0)
+        probe.cancelInspection?()
+    }
+
     func testActualTimerSevenThenNineteenTurnsWithStationaryVirtualPausesAndOriginalTarget() async throws {
         let persistence = PersistenceController(inMemory: true)
         let selected = Session(name: "Stationary guidance", selectedTimingMethodRawValue: "smartCube",

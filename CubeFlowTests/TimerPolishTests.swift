@@ -68,6 +68,39 @@ struct TimerPolishTests {
         #expect(!state.metrics.contains("mean") && !state.metrics.contains("solveCount"))
     }
 
+    @Test func timerPBSummariesMatchOldWindowsOnLargeSession() {
+        let samples = (0..<8_000).map { index in
+            sample(3 + Double((index * 263) % 12_107) / 100, age: index,
+                penalty: index.isMultiple(of: 11) ? .dnf : index.isMultiple(of: 7) ? .plusTwo : .solved)
+        }
+        func baseline(_ samples: [SessionSolveSample]) -> Set<String> {
+            var records: Set<String> = []
+            if let time = samples.first?.adjustedTime,
+               time < (samples.dropFirst().compactMap(\.adjustedTime).min() ?? .infinity) { records.insert("best") }
+            for type in AverageListType.allCases {
+                let metric = RecordAverageMetric(title: type.rawValue, solveCount: type.solveCount, kind: type.recordMetricKind)
+                let evaluation = DataTabComputation.evaluateRecordMetric(metric: metric, solves: samples, includeWindowValues: true)
+                if let current = evaluation.currentValue, current.isFinite,
+                   current < (evaluation.windowValues.dropFirst().compactMap { $0 }.filter(\.isFinite).min() ?? .infinity) {
+                    records.insert(type.rawValue)
+                }
+            }
+            return records
+        }
+        var before: [Double] = [], after: [Double] = []
+        for startIndex in 0..<5 {
+            let workload = Array(samples.dropFirst(startIndex))
+            let start = ProcessInfo.processInfo.systemUptime
+            let expected = baseline(workload)
+            let middle = ProcessInfo.processInfo.systemUptime
+            let actual = TimerPersonalBestState.current(from: workload)
+            before.append((middle - start) * 1000)
+            after.append((ProcessInfo.processInfo.systemUptime - middle) * 1000)
+            #expect(actual.metrics == expected)
+        }
+        print("[TimerPBSummary] rows=7996...8000 before_ms=\(before) after_ms=\(after)")
+    }
+
     @Test func multipleRecordsCelebrateOnlyOnceForTheSavedSolve() {
         let new = sample(10)
         let state = TimerPersonalBestState.current(from: [new] + (1..<13).map { sample(Double(20 + $0), age: $0) })

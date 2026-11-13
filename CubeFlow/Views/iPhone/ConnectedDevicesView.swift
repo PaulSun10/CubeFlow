@@ -337,11 +337,17 @@ struct SmartCubeDeviceLabel: View {
 
 struct SmartCubeDeviceDetailView: View {
     let deviceID: UUID
-    @ObservedObject private var manager = SmartCubeBluetoothManager.shared
-    @ObservedObject private var savedDevices = SavedSmartCubeDevices.shared
+    @ObservedObject private var manager: SmartCubeBluetoothManager
+    @ObservedObject private var savedDevices: SavedSmartCubeDevices
     @State private var showingRename = false
     @State private var proposedName = ""
     @State private var showingMarkSolved = false
+
+    init(deviceID: UUID, manager: SmartCubeBluetoothManager = .shared, savedDevices: SavedSmartCubeDevices = .shared) {
+        self.deviceID = deviceID
+        self.manager = manager
+        self.savedDevices = savedDevices
+    }
 
     private var device: SavedSmartCubeDevice? { savedDevices.device(deviceID) }
     private var session: SmartCubePeripheralSession? { manager.session(for: deviceID) }
@@ -454,7 +460,7 @@ struct SmartCubeActiveDeviceMenu: View {
                 if manager.activeDeviceID == nil {
                     Text("smart_cube.device.no_active").tag(Optional<UUID>.none).disabled(true)
                 }
-                ForEach(manager.compatibleConnectedDeviceIDs, id: \.self) { id in
+                ForEach(manager.managementConnectedDeviceIDs, id: \.self) { id in
                     if let device = savedDevices.device(id) {
                         Label {
                             Text(device.displayName)

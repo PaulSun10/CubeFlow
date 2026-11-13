@@ -137,6 +137,68 @@ struct SmartCubeCloseoutTests {
         #expect(combinedAction == .enteredReady && combined.phase == .ready)
     }
 
+    @Test @MainActor func inspectionExitRequiresDepartureAndReturnWithoutResettingTracking() {
+        for elapsed in [0.0, 15.0, 17.0] {
+            var epoch = SmartCubeScrambleEpoch()
+            var lifecycle = SmartCubeSolveLifecycle()
+            let now = Date.now
+            let completingMove = SmartCubeMoveEvent(move: "R", serial: 1, face: 1, direction: 0, localTimestamp: now, cubeTimestampMilliseconds: nil)
+            epoch.establish(at: now, latestMoveID: nil, canonicalSequence: 7)
+            let accepted = epoch.observePhysicalMove(completingMove)
+            #expect(accepted)
+            #expect(epoch.completionAction(inspectionEnabled: true, completingMoveID: completingMove.id, lifecycle: &lifecycle) == .beginInspection)
+            lifecycle.inspectionDidAdvance(elapsed: elapsed)
+            let identity = epoch.currentRecoveryIdentity
+
+            let attempt = UUID()
+            epoch.cancelInspection(attemptID: attempt, lifecycle: &lifecycle)
+            epoch.cancelInspection(attemptID: attempt, lifecycle: &lifecycle)
+            #expect(lifecycle.phase == .scrambling)
+            #expect(epoch.currentRecoveryIdentity == identity)
+            #expect(epoch.consumedCanonicalSequence == 7)
+            #expect(epoch.hasAcceptedPhysicalMove)
+            #expect(lifecycle.physicalMoveDidOccur(completingMove) == .none)
+            #expect(epoch.completionAction(inspectionEnabled: true, completingMoveID: nil, lifecycle: &lifecycle) == .none)
+
+            epoch.rebaseGuidance(latestMoveID: completingMove.id, canonicalSequence: 7)
+            epoch.observeWeiPoTurn(at: now)
+            #expect(epoch.completionAction(inspectionEnabled: true, completingMoveID: nil, lifecycle: &lifecycle) == .none)
+            epoch.observeScrambleDeparture()
+            #expect(epoch.completionAction(inspectionEnabled: true, completingMoveID: nil, lifecycle: &lifecycle) == .beginInspection)
+            #expect(lifecycle.phase == .inspecting)
+        }
+    }
+
+    @Test @MainActor func manualInspectionRestartRequiresTheCurrentVerifiedTargetAndConnection() throws {
+        for size in [2, 3] {
+            var progress = try #require(SmartCubeScrambleProgress(scramble: "R U", puzzleSize: size))
+            let attempt = UUID()
+            let moveID = UUID()
+            var epoch = SmartCubeScrambleEpoch()
+            var lifecycle = SmartCubeSolveLifecycle()
+            _ = lifecycle.scrambleDidComplete(inspectionEnabled: true, completingMoveID: moveID)
+            _ = progress.update(with: progress.targetFacelets)
+            epoch.cancelInspection(attemptID: attempt, lifecycle: &lifecycle)
+
+            #expect(!progress.isVerifiedComplete(at: nil))
+            #expect(!progress.isVerifiedComplete(at: CubeSurface.solved(size: size)))
+            #expect(progress.isVerifiedComplete(at: progress.targetFacelets))
+            let wrongAttempt = epoch.restartInspection(attemptID: UUID(), targetVerified: true,
+                latestMoveID: moveID, lifecycle: &lifecycle)
+            let wrongTarget = epoch.restartInspection(attemptID: attempt, targetVerified: false,
+                latestMoveID: moveID, lifecycle: &lifecycle)
+            #expect(wrongAttempt == .none && wrongTarget == .none)
+            #expect(lifecycle.phase == .scrambling)
+
+            let restart = epoch.restartInspection(attemptID: attempt, targetVerified: true,
+                latestMoveID: moveID, lifecycle: &lifecycle)
+            #expect(restart == .beginInspection)
+            #expect(lifecycle.phase == .inspecting)
+            #expect(lifecycle.completingMoveID == moveID)
+            #expect(!epoch.canRestartInspection(attemptID: attempt, targetVerified: true, lifecycle: lifecycle))
+        }
+    }
+
     @Test func moyuAmbiguousThreeByThreeModelsRemainUnknown() {
         let identity = SmartCubeIdentity.resolve(advertisedName: "WCU_MY32", protocolFamily: .moyu,
             protocolConfirmed: true, protocolInfo: nil, serviceIdentifiers: [])

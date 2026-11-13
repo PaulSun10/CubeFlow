@@ -1,6 +1,67 @@
 import XCTest
 
 final class TimerTouchReliabilityTests: XCTestCase {
+    @MainActor func testInspectionExitInCardsAndClassicDoesNotStartOrRecordASolve() {
+        continueAfterFailure = false
+        for (arrangement, hidden, language) in [
+            ("cards", true, "ar"),
+            ("cards", false, "de"),
+            ("classic", true, "en"),
+            ("classic", false, "en")
+        ] {
+            let app = XCUIApplication()
+            app.launchEnvironment["CUBEFLOW_DATA_TOOLBAR_UI_TEST"] = "1"
+            app.launchArguments = ["-requestedIPhoneTab", "timer", "-appLanguage", language,
+                "-selectedSessionID", "", "-enteringTimesWith", "timer",
+                "-timerArrangement", arrangement, "-scrambleDisplayMode", "scroll",
+                "-wcaInspectionEnabled", "YES", "-hideElementsWhenSolving", hidden ? "YES" : "NO"]
+            app.launch()
+            let time = app.staticTexts["timer-time-display"].firstMatch
+            let exit = app.buttons["timer-inspection-exit"].firstMatch
+            let scramble = app.descendants(matching: .any)["timer-scramble-control"].firstMatch
+            let event = app.buttons["timer-event-menu"].firstMatch
+            XCTAssertTrue(time.waitForExistence(timeout: 15))
+            XCTAssertTrue(scramble.waitForExistence(timeout: 15))
+            let originalScramble = scramble.label
+            let originalEvent = event.label
+            let idleTime = time.label
+            let idleTimerY = time.frame.midY
+            XCTAssertFalse(exit.exists)
+            for attempt in 0..<2 {
+                time.tap()
+                XCTAssertTrue(exit.waitForExistence(timeout: 3))
+                XCTAssertTrue(exit.isHittable)
+                XCTAssertEqual(time.frame.midY, idleTimerY, accuracy: 1)
+                if hidden {
+                    XCTAssertLessThan(exit.frame.midX, app.frame.midX)
+                    XCTAssertGreaterThan(exit.frame.minY, time.frame.maxY)
+                    XCTAssertLessThan(exit.frame.maxY, app.frame.maxY)
+                    XCTAssertEqual(exit.frame.width, 48, accuracy: 1)
+                    XCTAssertEqual(exit.frame.height, 48, accuracy: 1)
+                    XCTAssertGreaterThanOrEqual(app.frame.maxY - exit.frame.maxY, 7.5)
+                    XCTAssertEqual(exit.frame.midX - app.frame.minX, app.frame.maxY - exit.frame.midY, accuracy: 1)
+                    XCTAssertFalse(event.exists)
+                } else {
+                    XCTAssertEqual(exit.frame.midX, time.frame.midX, accuracy: 2)
+                    XCTAssertGreaterThanOrEqual(exit.frame.minY, time.frame.maxY)
+                    XCTAssertTrue(event.exists)
+                }
+                if arrangement == "classic" && !hidden && attempt == 0 {
+                    let expired = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", "DNF"), object: time)
+                    XCTAssertEqual(XCTWaiter.wait(for: [expired], timeout: 19), .completed)
+                }
+                if attempt == 0 { exit.tap() } else { exit.press(forDuration: 0.15) }
+                XCTAssertFalse(exit.exists)
+                XCTAssertEqual(time.label, idleTime)
+                XCTAssertTrue(scramble.waitForExistence(timeout: 3))
+                XCTAssertEqual(scramble.label, originalScramble)
+                XCTAssertEqual(event.label, originalEvent)
+                XCTAssertFalse(app.alerts.firstMatch.exists)
+            }
+            app.terminate()
+        }
+    }
+
     @MainActor func testDynamicUpperBlankSpaceAndHeaderControls() {
         continueAfterFailure = false
         for mode in ["shrinkFont", "scroll"] {

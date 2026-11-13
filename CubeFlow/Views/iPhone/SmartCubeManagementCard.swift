@@ -56,10 +56,15 @@ struct SmartCubeDiscoveryNavigationHost<Content: View>: UIViewControllerRepresen
 }
 
 struct SmartCubeManagementCard: View {
+    private struct DeviceDetails: Identifiable { let id: UUID }
     @ObservedObject var manager: SmartCubeBluetoothManager
     @ObservedObject var saved: SavedSmartCubeDevices
     @State private var selectedID: UUID?
+    @State private var deviceDetails: DeviceDetails?
     @State private var pendingForgetID: UUID?
+    @State private var policyAttemptID: UUID?
+    @State private var showingResetPrompt = false
+    @AppStorage("smartCubeResetPolicy") private var resetPolicyRaw = SmartCubeResetPolicy.prompt.rawValue
     @AppStorage("appLanguage") private var appLanguage = "en"
     let dismiss: () -> Void
     #if DEBUG
@@ -81,9 +86,7 @@ struct SmartCubeManagementCard: View {
     }
     private var displayedID: UUID? {
         selectedID.flatMap { id in
-            guard deviceIDs.contains(id), let session = manager.session(for: id),
-                  let attempt = session.connectionAttemptID,
-                  session.connectionPolicyResolvedAttemptID == attempt else { return nil }
+            guard deviceIDs.contains(id), manager.session(for: id) != nil else { return nil }
             return id
         }
     }
@@ -114,6 +117,15 @@ struct SmartCubeManagementCard: View {
             if selectedID == nil { selectedID = preferredID }
             if let pendingForgetID, !connected.contains(pendingForgetID) { self.pendingForgetID = nil }
         }
+        .onAppear(perform: resolveDisplayedConnectionPolicy)
+        .onChange(of: displayedID) { _ in resolveDisplayedConnectionPolicy() }
+        .onChange(of: manager.pendingPolicyAttemptID) { _ in resolveDisplayedConnectionPolicy() }
+        .onChange(of: showingResetPrompt) { showing in
+            if !showing { resolveDisplayedConnectionPolicy() }
+        }
+        .smartCubeResetConfirmation(isPresented: $showingResetPrompt,
+            onReset: { finishConnectionPolicy(reset: true) },
+            onContinue: { finishConnectionPolicy(reset: false) })
         #if DEBUG
         .onAppear { observeSelection?(displayedID, deviceIDs) }
         .onChange(of: displayedID) { observeSelection?($0, deviceIDs) }
@@ -128,7 +140,37 @@ struct SmartCubeManagementCard: View {
                 }
                 Button("common.cancel", role: .cancel) { pendingForgetID = nil }
             } message: { Text("smart_cube.manage.forget_message") }
+        .sheet(item: $deviceDetails) { destination in
+            CompatibleNavigationContainer {
+                SmartCubeDeviceDetailView(deviceID: destination.id, manager: manager, savedDevices: saved)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("common.done") { deviceDetails = nil }
+                        }
+                    }
+            }
+        }
         .environment(\.locale, appLocale(for: appLanguage))
+    }
+
+    private func resolveDisplayedConnectionPolicy() {
+        guard !showingResetPrompt, let id = displayedID, let session = manager.session(for: id), session.isConnected,
+              let attempt = session.connectionAttemptID, session.connectionPolicyResolvedAttemptID != attempt,
+              policyAttemptID != attempt else { return }
+        policyAttemptID = attempt
+        switch (SmartCubeResetPolicy(rawValue: resetPolicyRaw) ?? .prompt).connectionAction {
+        case .reset: finishConnectionPolicy(reset: true)
+        case .continueWithoutReset: finishConnectionPolicy(reset: false)
+        case .prompt: showingResetPrompt = true
+        }
+    }
+
+    private func finishConnectionPolicy(reset: Bool) {
+        defer { policyAttemptID = nil }
+        guard let attempt = policyAttemptID, let session = manager.session(attemptID: attempt),
+              session.isConnected else { return }
+        if reset { manager.resetCubeStateToSolved(deviceID: session.connectionDeviceID, attemptID: attempt) }
+        manager.resolveConnectionPolicy(for: attempt)
     }
 
     private func content(discoveryHeight: CGFloat) -> some View {
@@ -155,19 +197,27 @@ struct SmartCubeManagementCard: View {
         }
     }
 
-    @ViewBuilder private func deviceName(_ id: UUID) -> some View {
-        if deviceIDs.count > 1 {
-            Menu {
-                ForEach(deviceIDs, id: \.self) { value in
-                    Button { selectedID = value } label: {
-                        if value == id { Label(name(value), systemImage: "checkmark") }
-                        else { Text(name(value)) }
+    private func deviceName(_ id: UUID) -> some View {
+        HStack(spacing: 6) {
+            Button { deviceDetails = DeviceDetails(id: id) } label: {
+                Text(name(id)).contentShape(Rectangle())
+            }.buttonStyle(.plain).accessibilityIdentifier("smart-cube-management-device-name")
+            if deviceIDs.count > 1 {
+                Menu {
+                    ForEach(deviceIDs, id: \.self) { value in
+                        Button { selectedID = value } label: {
+                            if value == id { Label(name(value), systemImage: "checkmark") }
+                            else { Text(name(value)) }
+                        }
                     }
-                }
-            } label: {
-                HStack(spacing: 6) { Text(name(id)); Image(systemName: "chevron.down").font(.caption.weight(.semibold)) }
-            }.buttonStyle(.plain).accessibilityIdentifier("smart-cube-management-device")
-        } else { Text(name(id)) }
+                } label: {
+                    Image(systemName: "chevron.down").font(.caption.weight(.semibold))
+                        .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+                }.buttonStyle(.plain)
+                    .accessibilityLabel(Text("smart_cube.devices"))
+                    .accessibilityIdentifier("smart-cube-management-device")
+            }
+        }
     }
 }
 
@@ -222,9 +272,10 @@ private struct SmartCubeManagementDeviceContent: View {
         guard session.isConnected, session.connectionDeviceID == deviceID, session.connectionAttemptID != nil else { return false }
         return session.connectedProtocol != .moyu || session.puzzleSize != 2
             || (session.hasTrustedCanonicalState && session.weiPo2LastNativeSnapshot != nil
-                && session.weiPo2PendingSnapshotCount == 0 && session.weiPo2VisualFacelets != nil)
+                && session.weiPo2VisualFacelets != nil)
     }
     var body: some View {
+        VStack(spacing: 0) {
         SmartCubeManagementBody(name: name, battery: session.isConnected ? session.batteryLevel : nil,
             liveCube: session.isConnected ? AnyView(Group {
                 if let visualFacelets {
@@ -239,6 +290,7 @@ private struct SmartCubeManagementDeviceContent: View {
             }) : nil, canReset: canReset, canDisconnect: session.isConnected,
             reset: { if let attempt = session.connectionAttemptID { reset(attempt) } },
             disconnect: disconnect, forget: forget)
+        }
     }
 }
 

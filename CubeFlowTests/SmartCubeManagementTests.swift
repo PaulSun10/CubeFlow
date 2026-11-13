@@ -275,7 +275,7 @@ import Vision
         let b = UUID()
         manager.debugInstallSession(session(b, size: 2), for: b)
         defer { manager.disconnect(deviceID: b) }
-        XCTAssertNil(manager.activeDeviceID, "A connected 2x2 is inspectable without becoming Active for Timer's 3x3")
+        XCTAssertEqual(manager.activeDeviceID, b, "The only connected cube takes precedence over Timer's old event")
         var fallback: UUID?
         window.rootViewController = UIHostingController(rootView:
             SmartCubeManagementCard(manager: manager, saved: store, selectedID: offline, dismiss: {})
@@ -283,7 +283,7 @@ import Vision
         window.makeKeyAndVisible()
         try await Task.sleep(nanoseconds: 200_000_000)
         XCTAssertNil(fallback, "An explicit offline identity opens discovery, not a different connected cube")
-        XCTAssertNil(manager.activeDeviceID)
+        XCTAssertEqual(manager.activeDeviceID, b, "Opening the offline device must not change Timer ownership")
     }
 
     func testSharedCardGeometryAndDisconnectedBodyHaveNoLiveStateOrEnabledReset() {

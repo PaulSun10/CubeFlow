@@ -5,6 +5,39 @@ import Combine
 @testable import CubeFlow
 
 @MainActor final class SmartCubeGuidanceTraceTests: XCTestCase {
+    func testCaptureSeparatesSettlingExactLaneNativeLaneAndCancellation() async throws {
+        let diagnostics = SmartCubeDiagnostics.shared
+        diagnostics.setEnabled(true); diagnostics.clearGuidance()
+        defer { diagnostics.setEnabled(false); diagnostics.clearGuidance() }
+        let unavailable: SmartCubeGuidanceController.Search = { _ in
+            .init(replacement: nil, reason: .candidateUnavailable, recoveryCost: nil,
+                candidateCost: nil, inverseMovePenalty: 0)
+        }
+        let owner = SmartCubeGuidanceController(settle: {}, search: unavailable, fastSearch: unavailable)
+        defer { owner.cancel() }
+        let request = SmartCubeGuidanceController.Request(
+            identity: .init(scrambleEpochID: UUID(), stateVersion: 1), sourceFacelets: CubeSurface.solved(size: 3),
+            targetFacelets: try XCTUnwrap(SmartCubeBluetoothManager.facelets(afterApplying: "R U F")),
+            generation: 0, knownPath: nil)
+        owner.submit(request)
+        for _ in 0..<100 where owner.isUpdating { try await Task.sleep(nanoseconds: 1_000_000) }
+        XCTAssertFalse(owner.isUpdating)
+        let next = SmartCubeGuidanceController.Request(
+            identity: .init(scrambleEpochID: request.identity.scrambleEpochID, stateVersion: 2),
+            sourceFacelets: request.sourceFacelets, targetFacelets: request.targetFacelets,
+            generation: 0, knownPath: nil)
+        owner.submit(next)
+        XCTAssertEqual(owner.currentRequest, next, "Cancel an actual pending request, not a deduplicated completed one")
+        owner.cancel()
+        let export = diagnostics.guidanceExport()
+        for stage in ["scheduled", "settled", "fast-started", "fast-missed", "started", "unavailable", "cancelled"] {
+            XCTAssertTrue(export.contains("\tguidance." + stage + "\t"), stage)
+        }
+        XCTAssertTrue(export.contains("nativeBusy="))
+        XCTAssertTrue(export.contains("exactBusy="))
+        XCTAssertNil(owner.publication)
+    }
+
     func testPathEvidenceIsBoundedNotationAndDoesNotEchoArbitraryText() {
         let evidence = SmartCubeGuidanceTrace.path(Array(repeating: "R2", count: 1000) + ["private device name"])
         XCTAssertLessThan(evidence.count, 220)

@@ -9,6 +9,9 @@ import Vision
 
 @MainActor final class SmartCubeDevicePolishTests: XCTestCase {
     func testNativeDiscoveryLargeTitleCollapsesWithoutBackgroundNavigationAndEmptyProse() async throws {
+        let previousLanguage = UserDefaults.standard.object(forKey: "appLanguage")
+        UserDefaults.standard.set("en", forKey: "appLanguage")
+        defer { UserDefaults.standard.set(previousLanguage, forKey: "appLanguage") }
         let suite = "DiscoveryNavigation." + UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }

@@ -28,8 +28,46 @@ nonisolated enum CubeStateEquivalence {
     }
 
     static func isSolved(_ facelets: String, puzzleSize: Int) -> Bool {
-        matches(facelets, CubeSurface.solved(size: puzzleSize), puzzleSize: puzzleSize)
+        if puzzleSize == 2 { return solvedTwoByTwoStates.contains(facelets) }
+        return matches(facelets, CubeSurface.solved(size: puzzleSize), puzzleSize: puzzleSize)
     }
+
+    /// Canonicalizes both allowed rotations without enumerating 576 complete
+    /// sticker arrays. Once the URF colors are renamed, their ordered corner
+    /// determines the unique body pose.
+    static func twoByTwoCheckpointKey(_ facelets: String) -> [UInt8]? {
+        let indices = facelets.utf8.compactMap { faceCodes[$0] }
+        guard indices.count == 24, facelets.utf8.count == 24 else { return nil }
+        var best: [UInt8]?
+        for colors in colorFrames {
+            guard let pose = inverseRotations.first(where: {
+                colors[Int(indices[$0[urf.0]])] == 0 &&
+                colors[Int(indices[$0[urf.1]])] == 1 &&
+                colors[Int(indices[$0[urf.2]])] == 2
+            }) else { continue }
+            let normalized = pose.map { colors[Int(indices[$0])] }
+            if best.map({ normalized.lexicographicallyPrecedes($0) }) ?? true { best = normalized }
+        }
+        return best
+    }
+
+    private static let faceCodes = Dictionary(uniqueKeysWithValues:
+        "URFDLB".utf8.enumerated().map { ($0.element, UInt8($0.offset)) })
+    private static let colorFrames = rotations.map { frame in (0..<6).map { UInt8(frame[$0 * 4] / 4) } }
+    private static let inverseRotations = rotations.map { frame in
+        var inverse = frame
+        for (i, j) in frame.enumerated() { inverse[j] = i }
+        return inverse
+    }
+    // Indices of the U, R and F stickers on the same corner in CubeSurface.
+    private static let urf = (3, 4, 9)
+
+    // The solved pattern's color-frame and body-pose actions close over the
+    // same 24 proper rotations. Keep the full matcher for arbitrary targets.
+    private static let solvedTwoByTwoStates: Set<String> = {
+        let solved = Array(CubeSurface.solved(size: 2))
+        return Set(rotations.map { pose in String(pose.map { solved[$0] }) })
+    }()
 
     private static func validColors(_ stickers: [Character]) -> Bool {
         "URFDLB".allSatisfy { face in stickers.filter { $0 == face }.count == 4 }

@@ -6,6 +6,49 @@ import Combine
 @testable import CubeFlow
 
 @MainActor final class SmartCubeAnimationRegressionTests: XCTestCase {
+    func testCaptureDistinguishesContinuousMovesFromHiddenAndEventlessResyncs() async throws {
+        let diagnostics = SmartCubeDiagnostics.shared
+        diagnostics.setEnabled(true); diagnostics.clearGuidance()
+        defer { diagnostics.setEnabled(false); diagnostics.clearGuidance() }
+        let owner = SmartCube3DView.Coordinator(), feed = SmartCubeCanonicalFeed()
+        let view = owner.makeView(owner: "animation-capture"), attempt = UUID()
+        defer { owner.stop(); view.scene = nil }
+        func update(_ state: String, sequence: UInt64) {
+            owner.update(facelets: state, stateRevision: 1, fixedView: .urf, size: 3,
+                events: feed.events, attemptID: attempt, trusted: true, tps: 10, appearance: .classic,
+                plastic: .black, reflections: false, customColor: .purple, canonicalSequence: sequence)
+        }
+        var state = CubeSurface.solved(size: 3)
+        update(state, sequence: 0)
+        for move in ["R", "U", "F2"] {
+            state = try XCTUnwrap(CubeLayerTurn(move)?.applying(to: state, size: 3))
+            feed.send(move: .init(move: move, serial: nil, face: nil, direction: nil,
+                localTimestamp: .now, cubeTimestampMilliseconds: nil), facelets: state)
+        }
+        while let animation = owner.debugPresentation.current {
+            owner.debugRender(at: animation.startedAt + animation.duration + 0.001)
+        }
+        XCTAssertEqual(owner.debugPresentation.settled, state)
+        owner.setRenderingEnabled(false)
+        state = try XCTUnwrap(CubeLayerTurn("B")?.applying(to: state, size: 3))
+        feed.send(move: .init(move: "B", serial: nil, face: nil, direction: nil,
+            localTimestamp: .now, cubeTimestampMilliseconds: nil), facelets: state)
+        update(CubeSurface.solved(size: 3), sequence: feed.sequence + 1)
+        for _ in 0..<50 where owner.debugPresentation.settled != CubeSurface.solved(size: 3) {
+            try await Task.sleep(nanoseconds: 1_000_000)
+        }
+        for _ in 0..<4096 { diagnostics.mark("ble.rx") }
+        let export = diagnostics.guidanceExport()
+        for stage in ["binding-resync", "move-enqueued", "render-transition", "move-resync", "eventless-snapshot-resync"] {
+            XCTAssertTrue(export.contains("animation." + stage), stage)
+        }
+        XCTAssertTrue(export.contains("enabled=false"))
+        XCTAssertTrue(export.contains("pending=2"))
+        XCTAssertFalse(export.contains(state))
+        XCTAssertFalse(export.contains(attempt.uuidString))
+        XCTAssertLessThanOrEqual(export.split(separator: "\n").count, 2048)
+    }
+
     func testEventlessAuthoritativeSnapshotReconcilesAfterDeliveryTurnAndCannotCrossRebinding() async throws {
         let owner = SmartCube3DView.Coordinator(), feed = SmartCubeCanonicalFeed()
         let view = owner.makeView(owner: "snapshot-fallback"), attempt = UUID()

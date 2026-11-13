@@ -30,9 +30,13 @@ struct SmartCubeScrambleProgressView: View {
     let highlightBackgroundStyle: AnyShapeStyle
     let highlightForegroundStyle: AnyShapeStyle
     var showsLiveProgress = false
+    var showsStateOnlyProgress = false
+    var isStateOnlyOffPath = false
     var isUpdatingGuidance = false
     var isGuidanceUnavailable = false
+    var showsInspectionCompletion = false
     var diagnosticContext: String? = nil
+    @Environment(\.locale) private var locale
     #if DEBUG
     @Environment(\.smartCubeTimerGuidanceProbe) private var guidanceProbe
     #endif
@@ -47,6 +51,12 @@ struct SmartCubeScrambleProgressView: View {
                         collapsesCompletedMoves: behavior == .collapse
                     ) {
                         moveTokens
+                        if showsInspectionCompletion {
+                            Image(systemName: "checkmark")
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.green)
+                                .accessibilityLabel(Text("settings.gan_status_ready"))
+                        }
                     }
                     .backgroundPreferenceValue(SmartCubeHighlightedTokenBoundsKey.self) { anchor in
                         GeometryReader { proxy in
@@ -65,7 +75,9 @@ struct SmartCubeScrambleProgressView: View {
                         }
                     }
                 } else {
-                    Text(fallbackText)
+                    (showsInspectionCompletion
+                        ? fallbackTokenText + Text(" ") + Text(Image(systemName: "checkmark")).foregroundColor(.green)
+                        : fallbackTokenText)
                         .multilineTextAlignment(.center)
                 }
             }
@@ -77,7 +89,12 @@ struct SmartCubeScrambleProgressView: View {
             if let recoveryPlan, recoveryDisplay == .separate {
                 recoveryLane(recoveryPlan)
             }
-            if showsLiveProgress, !tokens.isEmpty {
+            if showsLiveProgress, showsStateOnlyProgress, isStateOnlyOffPath {
+                Text(appLocalizedString("smart_cube.guidance.checkpoint_unmatched", languageCode: locale.identifier,
+                    defaultValue: "No matching scramble checkpoint"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else if showsLiveProgress, !tokens.isEmpty {
                 HStack(spacing: 8) {
                     ProgressView(value: Double(completedTokenIndices.count), total: Double(tokens.count))
                         .tint(.accentColor)
@@ -99,6 +116,25 @@ struct SmartCubeScrambleProgressView: View {
         .onAppear { guidanceProbe?.displayedPathText = fallbackText }
         .onChange(of: fallbackText) { guidanceProbe?.displayedPathText = $0 }
         #endif
+    }
+
+    private var fallbackTokenText: Text {
+        guard showsStateOnlyProgress, let highlightedTokenIndex, tokens.indices.contains(highlightedTokenIndex)
+        else { return Text(fallbackText) }
+        var text = AttributedString(tokens.prefix(highlightedTokenIndex).joined(separator: " "))
+        if highlightedTokenIndex > 0 { text += AttributedString(" ") }
+        var current = AttributedString(tokens[highlightedTokenIndex])
+        current.inlinePresentationIntent = .stronglyEmphasized
+        current.underlineStyle = .single
+        text += current
+        if highlightedTokenIndex + 1 < tokens.count {
+            text += AttributedString(" " + tokens.dropFirst(highlightedTokenIndex + 1).joined(separator: " "))
+        }
+        return Text(text)
+    }
+
+    private func isDisplayedTokenCompleted(_ index: Int) -> Bool {
+        !showsStateOnlyProgress && completedTokenIndices.contains(index)
     }
 
     @ViewBuilder
@@ -130,6 +166,7 @@ struct SmartCubeScrambleProgressView: View {
         return Text(tokens[index])
             .lineLimit(1)
             .fixedSize()
+            .accessibilityAddTraits(isHighlighted ? .isSelected : [])
             .foregroundStyle(isHighlighted ? highlightForegroundStyle : foregroundStyle)
             .anchorPreference(
                 key: SmartCubeHighlightedTokenBoundsKey.self,
@@ -144,7 +181,7 @@ struct SmartCubeScrambleProgressView: View {
             .scaleEffect(tokenScale(at: index))
             .layoutValue(
                 key: SmartCubeMoveCompletedLayoutKey.self,
-                value: completedTokenIndices.contains(index)
+                value: isDisplayedTokenCompleted(index)
             )
     }
 
@@ -252,7 +289,7 @@ struct SmartCubeScrambleProgressView: View {
     private var fallbackText: String {
         let indices = behavior == .collapse
             ? tokens.indices.filter {
-                !completedTokenIndices.contains($0)
+                !isDisplayedTokenCompleted($0)
                     && !(recoveryPlan?.supersededOriginalTokenIndices.contains($0) ?? false)
             }
             : tokens.indices.filter {
@@ -274,20 +311,20 @@ struct SmartCubeScrambleProgressView: View {
     }
 
     private func tokenOpacity(at index: Int) -> Double {
-        guard completedTokenIndices.contains(index) else { return 1 }
+        guard isDisplayedTokenCompleted(index) else { return 1 }
         if behavior == .collapse { return 0 }
         return transition == .blur ? 0.36 : 0.34
     }
 
     private func tokenBlur(at index: Int) -> CGFloat {
-        guard completedTokenIndices.contains(index), transition == .blur else { return 0 }
+        guard isDisplayedTokenCompleted(index), transition == .blur else { return 0 }
         return behavior == .collapse ? 8 : 3
     }
 
     private func tokenHorizontalOffset(at index: Int) -> CGFloat {
         guard behavior == .collapse,
               transition == .slide,
-              completedTokenIndices.contains(index)
+              isDisplayedTokenCompleted(index)
         else { return 0 }
         return -18
     }
@@ -295,7 +332,7 @@ struct SmartCubeScrambleProgressView: View {
     private func tokenVerticalOffset(at index: Int) -> CGFloat {
         guard behavior == .collapse,
               transition == .slide,
-              completedTokenIndices.contains(index)
+              isDisplayedTokenCompleted(index)
         else { return 0 }
         return -3
     }
@@ -303,7 +340,7 @@ struct SmartCubeScrambleProgressView: View {
     private func tokenScale(at index: Int) -> CGFloat {
         guard behavior == .collapse,
               transition == .bounce,
-              completedTokenIndices.contains(index)
+              isDisplayedTokenCompleted(index)
         else { return 1 }
         return 0.58
     }

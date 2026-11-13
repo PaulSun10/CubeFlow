@@ -15,7 +15,7 @@ nonisolated enum SmartCubeTargetPath {
         var forwards: [(state: String, move: String)] = []
         for move in moves {
             guard !Task.isCancelled else { return nil }
-            guard let state = SmartCubeBluetoothManager.facelets(source, applying: move) else { return nil }
+            guard let state = CubeLayerTurn(move)?.applying(to: source, size: source.count == 24 ? 2 : 3) else { return nil }
             if state == target { return [move] }
             forwards.append((state, move))
         }
@@ -23,7 +23,7 @@ nonisolated enum SmartCubeTargetPath {
         var firstLayer: [(state: String, path: [String])] = []
         for move in moves {
             guard !Task.isCancelled else { return nil }
-            guard let state = SmartCubeBluetoothManager.facelets(target, applying: move) else { return nil }
+            guard let state = CubeLayerTurn(move)?.applying(to: target, size: source.count == 24 ? 2 : 3) else { return nil }
             let path = [inverse(move)]
             if backwards[state] == nil { backwards[state] = path; firstLayer.append((state, path)) }
         }
@@ -33,7 +33,8 @@ nonisolated enum SmartCubeTargetPath {
         for node in firstLayer {
             guard !Task.isCancelled else { return nil }
             for move in moves {
-                guard let state = SmartCubeBluetoothManager.facelets(node.state, applying: move) else { return nil }
+                guard !Task.isCancelled,
+                      let state = CubeLayerTurn(move)?.applying(to: node.state, size: source.count == 24 ? 2 : 3) else { return nil }
                 if backwards[state] == nil { backwards[state] = [inverse(move)] + node.path }
             }
         }

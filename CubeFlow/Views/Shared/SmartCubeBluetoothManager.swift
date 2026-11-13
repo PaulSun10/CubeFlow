@@ -370,13 +370,14 @@ nonisolated struct SmartCubeCanonicalUpdate: Equatable {
 }
 
 nonisolated enum SmartCubeContinuityReason: String, Equatable {
-    case reset, resync, disconnected, historyGap, truncatedHistory
+    case reset, resync, disconnected, historyGap, truncatedHistory, weiPoSnapshot
 }
 
 nonisolated struct SmartCubeContinuityBoundary: Equatable {
     let sequence: UInt64
     let reason: SmartCubeContinuityReason
     let facelets: String?
+    var observedWeiPoTurnAt: Date? = nil
 }
 
 nonisolated enum SmartCubeCanonicalEvent: Equatable {
@@ -420,10 +421,11 @@ final class SmartCubeCanonicalFeed {
         publish(.move(update))
     }
 
-    func breakContinuity(_ reason: SmartCubeContinuityReason, facelets: String?) {
+    func breakContinuity(_ reason: SmartCubeContinuityReason, facelets: String?, observedWeiPoTurnAt: Date? = nil) {
         isStateTrusted = facelets != nil
         sequence &+= 1
-        publish(.boundary(SmartCubeContinuityBoundary(sequence: sequence, reason: reason, facelets: facelets)))
+        publish(.boundary(SmartCubeContinuityBoundary(sequence: sequence, reason: reason, facelets: facelets,
+            observedWeiPoTurnAt: observedWeiPoTurnAt)))
     }
 
     func acceptAuthoritativeSnapshot(_ facelets: String, stateChanged: Bool) {
@@ -565,7 +567,9 @@ final class SmartCubeActiveFeedRouter {
         guard activeID == deviceID, connected else { return }
         switch event {
         case .move(let update): feed.send(move: update.move, facelets: update.facelets)
-        case .boundary(let boundary): feed.breakContinuity(boundary.reason, facelets: boundary.facelets)
+        case .boundary(let boundary):
+            feed.breakContinuity(boundary.reason, facelets: boundary.facelets,
+                observedWeiPoTurnAt: boundary.observedWeiPoTurnAt)
         }
     }
 }
@@ -638,6 +642,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private var savedDevices = SavedSmartCubeDevices.shared
     private var radioState: SmartCubeConnectionState = .disconnected
     private(set) var requestedPuzzleSize = 3
+    private var recordedActivePuzzleSize: Int?
     private let activeFeed = SmartCubeActiveFeedRouter()
     private var canonicalFeed: SmartCubeCanonicalFeed { activeFeed.feed }
     let gyroFeed = SmartCubeGyroFeed()
@@ -663,6 +668,9 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         if let connectionFeedback { self.connectionFeedback = connectionFeedback }
     }
     func debugReportConnectionSuccess(_ id: UUID) { announceConnectionSuccess(id) }
+    func debugReconcileConnectedDevice(_ id: UUID, userInitiated: Bool) {
+        reconcileConnectedDevice(id, userInitiated: userInitiated)
+    }
     var debugResetRequested: ((UUID?) -> Void)?
     func debugSetDiscoveries(_ devices: [SmartCubeDiscoveredDevice]) { discoveredDevices = devices }
     func debugInstallSession(_ session: SmartCubePeripheralSession, for id: UUID) {
@@ -694,7 +702,7 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         resumeSavedDeviceDiscovery()
     }
     var compatibleConnectedDeviceIDs: [UUID] {
-        sessions.filter { $0.value.isConnected && $0.value.puzzleSize == requestedPuzzleSize }
+        sessions.filter { $0.value.isConnected && $0.value.puzzleSize == puzzleSize }
             .map(\.key).sorted { $0.uuidString < $1.uuidString }
     }
     var connectedDeviceIDs: [UUID] {
@@ -731,17 +739,33 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         objectWillChange.send()
     }
     func selectActiveDevice(_ id: UUID) {
-        guard compatibleConnectedDeviceIDs.contains(id) else { return }
-        savedDevices.markActive(id)
+        guard let session = sessions[id], session.isConnected else { return }
+        requestedPuzzleSize = session.puzzleSize
         switchActive(to: id)
     }
+    private func reconcileConnectedDevice(_ id: UUID, userInitiated: Bool) {
+        reconcileActive()
+        // A manual connection can establish Timer ownership when no cube owns
+        // it yet, even if the old Timer event requested the other puzzle size.
+        // Connecting a second cube must not take ownership from the first.
+        guard userInitiated, activeDeviceID == nil,
+              let session = sessions[id], session.isConnected, [2, 3].contains(session.puzzleSize) else { return }
+        selectActiveDevice(id)
+    }
     private func reconcileActive() {
-        let next = SavedSmartCubeSelection.activeID(
-            current: activeDeviceID,
-            remembered: savedDevices.lastActiveID(puzzleSize: requestedPuzzleSize),
-            compatibleIDs: Set(compatibleConnectedDeviceIDs)
-        )
-        switchActive(to: next)
+        // An attached cube owns its event, even if protocol identification
+        // changes its size after didConnect. The requested event only seeds selection.
+        if activeSession?.isConnected != true {
+            let connected = sessions.filter { $0.value.isConnected }
+            let requested = Set(connected.keys.filter { connected[$0]?.puzzleSize == requestedPuzzleSize })
+            let next = SavedSmartCubeSelection.activeID(
+                current: nil,
+                remembered: savedDevices.lastActiveID(puzzleSize: requestedPuzzleSize),
+                compatibleIDs: requested
+            ) ?? (connected.count == 1 ? connected.keys.first : nil)
+            switchActive(to: next)
+        }
+        recordActivePuzzleSize()
         let pending = sessions.values.filter {
             $0.isConnected && $0.connectionPolicyResolvedAttemptID != $0.connectionAttemptID
         }.compactMap(\.connectionAttemptID).sorted { $0.uuidString < $1.uuidString }.first
@@ -750,9 +774,16 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
     private func switchActive(to id: UUID?) {
         guard activeDeviceID != id else { return }
         activeDeviceID = id
-        if let id { savedDevices.markActive(id) }
+        recordedActivePuzzleSize = nil
+        recordActivePuzzleSize()
         activeFeed.activate(id, facelets: activeSession?.facelets, trusted: activeSession?.hasTrustedCanonicalState == true)
         gyroFeed.send(activeSession?.gyroState)
+    }
+    private func recordActivePuzzleSize() {
+        guard let id = activeDeviceID, let size = activeSession?.puzzleSize,
+              recordedActivePuzzleSize != size else { return }
+        recordedActivePuzzleSize = size
+        savedDevices.markActive(id, puzzleSize: size)
     }
     private func scheduleRefresh() {
         guard !refreshScheduled else { return }
@@ -891,9 +922,13 @@ final class SmartCubeBluetoothManager: NSObject, ObservableObject {
         return UIApplication.shared.applicationState == .active
     }
     private var needsSavedDeviceScan: Bool {
-        let wanted = Set(savedDevices.devices.filter(\.autoConnect).map(\.id))
-            .union(reconnectIDs).subtracting(manuallyDisconnectedIDs)
-        return wanted.contains { sessions[$0]?.isConnected != true && sessions[$0]?.connectionState != .connecting }
+        func needsConnection(_ id: UUID) -> Bool {
+            guard !manuallyDisconnectedIDs.contains(id) else { return false }
+            let state = sessions[id]?.connectionState
+            return state != .connected && state != .connecting
+        }
+        return reconnectIDs.contains(where: needsConnection)
+            || savedDevices.devices.contains { $0.autoConnect && needsConnection($0.id) }
     }
     private func reconcileDiscoveryScan() {
         let requested = !discoveryScanOwners.isEmpty || manualScanRequested || needsSavedDeviceScan
@@ -1145,7 +1180,8 @@ extension SmartCubeBluetoothManager: CBCentralManagerDelegate {
         session.centralManager(central, didConnect: peripheral)
         announceConnectionSuccess(id)
         reconnectIDs.insert(id)
-        if automaticallyApproved.remove(id) != nil, let attempt = session.connectionAttemptID {
+        let automaticallyConnected = automaticallyApproved.remove(id) != nil
+        if automaticallyConnected, let attempt = session.connectionAttemptID {
             _ = session.resolveConnectionPolicy(for: attempt)
         }
         if let identity = session.identity {
@@ -1154,7 +1190,7 @@ extension SmartCubeBluetoothManager: CBCentralManagerDelegate {
         let discovery = discovery(for: id, peripheral: peripheral)
         savedDevices.rememberTransport(id: id, salt: salts[id],
             manufacturerDataHex: discovery?.manufacturerDataHex, macAddress: discovery?.macAddress)
-        reconcileActive()
+        reconcileConnectedDevice(id, userInitiated: !automaticallyConnected)
         objectWillChange.send()
     }
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {

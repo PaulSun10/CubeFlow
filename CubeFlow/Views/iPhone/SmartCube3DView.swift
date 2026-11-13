@@ -87,7 +87,14 @@ struct SmartCube3DView: UIViewRepresentable {
         private var selectedFixedView: SmartCubeFixedView = .urf
         private var presentation = CubeTurnPresentation(facelets: SmartCube3DView.solvedFacelets)
         private var subscription: AnyCancellable?
-        private var clock: Timer?
+        private var clock: CADisplayLink?
+        private var lifecycleSubscriptions = Set<AnyCancellable>()
+        private var applicationIsActive = UIApplication.shared.applicationState != .background
+        private let displayLinkTarget = DisplayLinkTarget()
+        private final class DisplayLinkTarget: NSObject {
+            var draw: (() -> Void)?
+            @objc func step() { draw?() }
+        }
         private var wantsRendering = true
         private var isInWindow = false
         private var hasBeenInWindow = false
@@ -116,12 +123,25 @@ struct SmartCube3DView: UIViewRepresentable {
         private var perfResetPending = false
 
         #if DEBUG
+        private(set) var debugDisplayLinkTicks = 0
+        private var diagnosticFrameCount = 0
+        private var diagnosticFrameTotal: TimeInterval = 0
+        private var diagnosticFrameMaximum: TimeInterval = 0
+        private var diagnosticPreviousFrame: TimeInterval?
         var debugPresentation: CubeTurnPresentation { presentation }
         func debugRender(at time: TimeInterval) { tick(at: time) }
         var debugPivotAngle: Float? { pivot?.rotation.w }
         var debugClockIsActive: Bool { clock != nil }
+        var debugClockIsPaused: Bool { clock?.isPaused ?? true }
+        var debugRequestedFrameRange: CAFrameRateRange? { clock?.preferredFrameRateRange }
         var debugLifecycle: String {
             "window=\(isInWindow) enabled=\(wantsRendering) suspended=\(renderingWasSuspended) clock=\(clock != nil) sequence=\(lastSequence ?? 0) trust=\(presentation.isTrusted) tps=\(presentation.tps) generation=\(presentation.generation)"
+        }
+
+        private func traceAnimation(_ stage: String, moveID: UUID? = nil, detail: String = "") {
+            guard SmartCubeDiagnostics.shared.enabled else { return }
+            SmartCubeDiagnostics.shared.mark("animation." + stage, id: moveID,
+                detail: "owner=\(perfOwner) binding=\(bindingGeneration) \(debugLifecycle) pending=\(presentation.pending.count) active=\(presentation.current?.id.description ?? "none") canonical=\(SmartCubeGuidanceTrace.digest(presentation.canonical)) settled=\(SmartCubeGuidanceTrace.digest(presentation.settled)) \(detail)")
         }
         #endif
 
@@ -172,6 +192,7 @@ struct SmartCube3DView: UIViewRepresentable {
             bindingGeneration += 1
             snapshotReconciliation?.cancel(); snapshotReconciliation = nil; pendingSnapshot = nil
             subscription = nil
+            lifecycleSubscriptions = []
             clock?.invalidate()
             clock = nil
             (perfView as? SmartCubeSceneView)?.windowChanged = nil
@@ -186,10 +207,15 @@ struct SmartCube3DView: UIViewRepresentable {
         }
 
         private func updateRenderActivity() {
-            let active = wantsRendering && isInWindow
-            perfView?.rendersContinuously = active
+            let active = wantsRendering && isInWindow && applicationIsActive
+            // SceneKit schedules camera/gesture transactions itself. A static
+            // cube needs neither continuous GPU work nor application ticks.
+            perfView?.rendersContinuously = false
             perfView?.isPlaying = active
             guard active else {
+                #if DEBUG
+                if clock != nil { traceAnimation("suspended") }
+                #endif
                 if clock != nil { renderingWasSuspended = true }
                 clock?.invalidate(); clock = nil
                 return
@@ -199,12 +225,24 @@ struct SmartCube3DView: UIViewRepresentable {
                 presentation.resync(presentation.canonical, trusted: presentation.isTrusted)
                 renderedState = nil
                 renderingWasSuspended = false
+                #if DEBUG
+                traceAnimation("resume-resync")
+                #endif
             }
-            let timer = Timer(timeInterval: 1.0 / 120, repeats: true) { [weak self] _ in
-                MainActor.assumeIsolated { self?.tick() }
+            displayLinkTarget.draw = { [weak self] in
+                #if DEBUG
+                self?.debugDisplayLinkTicks += 1
+                self?.recordFramePacing()
+                #endif
+                self?.tick()
             }
-            clock = timer
-            RunLoop.main.add(timer, forMode: .common)
+            let link = CADisplayLink(target: displayLinkTarget, selector: #selector(DisplayLinkTarget.step))
+            let maximum = perfView?.window?.windowScene?.screen.maximumFramesPerSecond ?? UIScreen.main.maximumFramesPerSecond
+            link.preferredFrameRateRange = CAFrameRateRange(minimum: Float(min(60, maximum)), maximum: Float(maximum), preferred: Float(maximum))
+            perfView?.preferredFramesPerSecond = maximum
+            clock = link
+            link.add(to: .main, forMode: .common)
+            tick()
         }
 
         func makeView(owner: String = "test") -> SCNView {
@@ -214,6 +252,16 @@ struct SmartCube3DView: UIViewRepresentable {
             view.debugOwner = self
             #endif
             perfView = view
+            NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+                .sink { [weak self] _ in
+                    self?.applicationIsActive = false
+                    self?.updateRenderActivity()
+                }.store(in: &lifecycleSubscriptions)
+            NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+                .sink { [weak self] _ in
+                    self?.applicationIsActive = true
+                    self?.updateRenderActivity()
+                }.store(in: &lifecycleSubscriptions)
             view.windowChanged = { [weak self] visible in
                 guard let self else { return }
                 self.isInWindow = visible
@@ -283,6 +331,9 @@ struct SmartCube3DView: UIViewRepresentable {
                 presentation = CubeTurnPresentation(size: size, facelets: CubeSurface.solved(size: size))
                 presentation.resync(facelets, trusted: trusted)
                 renderedState = nil
+                #if DEBUG
+                traceAnimation("binding-resync")
+                #endif
                 subscription = events?.sink { [weak self] event in
                     // CanonicalFeed publishes synchronously on MainActor, before SwiftUI can coalesce moves.
                     MainActor.assumeIsolated {
@@ -314,6 +365,9 @@ struct SmartCube3DView: UIViewRepresentable {
                 } else if facelets != presentation.canonical || trusted != presentation.isTrusted {
                     presentation.resync(trusted ? facelets : nil, trusted: trusted)
                     if let canonicalSequence { lastSequence = canonicalSequence }
+                    #if DEBUG
+                    traceAnimation("unsequenced-snapshot-resync")
+                    #endif
                 } else if let canonicalSequence {
                     lastSequence = canonicalSequence
                 }
@@ -331,6 +385,9 @@ struct SmartCube3DView: UIViewRepresentable {
             switch event {
             case .boundary(let boundary):
                 presentation.resync(boundary.facelets, trusted: boundary.facelets != nil)
+                #if DEBUG
+                traceAnimation("boundary-resync", detail: "reason=\(boundary.reason.rawValue)")
+                #endif
                 if boundary.reason == .reset {
                     perfCompleted = 0
                     perfInterrupted = 0
@@ -341,14 +398,24 @@ struct SmartCube3DView: UIViewRepresentable {
                     logPerformance("boundary_\(boundary.reason.rawValue)")
                 }
             case .move(let update):
-                if hasGap || !update.isStateTrusted || !wantsRendering || (hasBeenInWindow && !isInWindow) {
+                if hasGap || !update.isStateTrusted || !wantsRendering || !applicationIsActive || (hasBeenInWindow && !isInWindow) {
                     presentation.resync(update.isStateTrusted ? update.facelets : nil, trusted: update.isStateTrusted)
+                    #if DEBUG
+                    traceAnimation("move-resync", moveID: update.move.id,
+                        detail: "gap=\(hasGap) trusted=\(update.isStateTrusted) enabled=\(wantsRendering) window=\(isInWindow)")
+                    #endif
                 } else {
                     let now = ProcessInfo.processInfo.systemUptime
-                    presentation.enqueue(update.move.move, target: update.facelets, timestamp: now, now: now)
+                    presentation.enqueue(update.move.move, target: update.facelets,
+                        timestamp: now - max(0, Date.now.timeIntervalSince(update.move.localTimestamp)), now: now)
+                    #if DEBUG
+                    traceAnimation("move-enqueued", moveID: update.move.id,
+                        detail: "move=\(CubeLayerTurn(update.move.move)?.notation ?? "?") ageMS=\(Date.now.timeIntervalSince(update.move.localTimestamp) * 1000)")
+                    #endif
                 }
             }
             if case .move = event { observeTransition(from: perfPrevious) }
+            if wantsRendering && isInWindow && applicationIsActive { tick() }
         }
 
         private func stageSnapshot(_ facelets: String, trusted: Bool, sequence: UInt64) {
@@ -365,6 +432,9 @@ struct SmartCube3DView: UIViewRepresentable {
                 // authoritative correction, never a fabricated animation.
                 self.presentation.resync(snapshot.trusted ? snapshot.facelets : nil, trusted: snapshot.trusted)
                 self.lastSequence = snapshot.sequence
+                #if DEBUG
+                self.traceAnimation("eventless-snapshot-resync")
+                #endif
                 if self.wantsRendering && self.isInWindow { self.tick() }
             }
             snapshotReconciliation = work
@@ -377,10 +447,22 @@ struct SmartCube3DView: UIViewRepresentable {
                 perfResetPending = false
             }
             guard presentation.current != nil || !presentation.pending.isEmpty ||
-                renderedState != presentation.settled || renderedAnimationID != nil else { return }
+                renderedState != presentation.settled || renderedAnimationID != nil else {
+                clock?.isPaused = true
+                perfView?.rendersContinuously = false
+                #if DEBUG
+                diagnosticPreviousFrame = nil
+                #endif
+                return
+            }
             let perfPrevious = presentation.current
             presentation.advance(at: now)
             observeTransition(from: perfPrevious)
+            #if DEBUG
+            if perfPrevious?.id != presentation.current?.id {
+                traceAnimation("render-transition", detail: "previous=\(perfPrevious?.id.description ?? "none") tick=\(now)")
+            }
+            #endif
             SCNTransaction.begin()
             SCNTransaction.disableActions = true
             if renderedState != presentation.settled || renderedAnimationID != presentation.current?.id {
@@ -410,6 +492,11 @@ struct SmartCube3DView: UIViewRepresentable {
                 pivot.rotation = SCNVector4(axis.x, axis.y, axis.z, Float(animation.move.turn.angle * eased))
             }
             SCNTransaction.commit()
+            clock?.isPaused = presentation.current == nil && presentation.pending.isEmpty
+            // SceneKit must present every active display-link update, not wait
+            // for its independent idle/change detector to schedule another frame.
+            perfView?.rendersContinuously = presentation.current != nil || !presentation.pending.isEmpty
+            perfView?.setNeedsDisplay()
             if perfResetPending {
                 logPerformance("reset_settled")
                 perfResetPending = false
@@ -419,6 +506,23 @@ struct SmartCube3DView: UIViewRepresentable {
                 perfSnapshotPending = false
             }
         }
+
+        #if DEBUG
+        private func recordFramePacing() {
+            guard SmartCubeDiagnostics.shared.enabled else { diagnosticPreviousFrame = nil; return }
+            let now = ProcessInfo.processInfo.systemUptime
+            defer { diagnosticPreviousFrame = now }
+            guard let previous = diagnosticPreviousFrame else { return }
+            let interval = now - previous
+            diagnosticFrameCount += 1
+            diagnosticFrameTotal += interval
+            diagnosticFrameMaximum = max(diagnosticFrameMaximum, interval)
+            if diagnosticFrameCount == 120 {
+                traceAnimation("frame-pacing", detail: "samples=120 averageMS=\(diagnosticFrameTotal / 120 * 1000) maximumMS=\(diagnosticFrameMaximum * 1000) coalesced=\(presentation.coalescedVisualTurns)")
+                diagnosticFrameCount = 0; diagnosticFrameTotal = 0; diagnosticFrameMaximum = 0
+            }
+        }
+        #endif
 
         private func installGestures(on view: SCNView) {
             let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))

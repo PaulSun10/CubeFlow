@@ -13,19 +13,17 @@ nonisolated struct TimerPersonalBestState: Equatable {
         }
         guard let newest = ordered.first else { return .empty }
         var records = Set<String>()
-        let previousBest = ordered.dropFirst().compactMap(\.adjustedTime).min()
+        let previousBest = ordered.dropFirst().lazy.compactMap(\.adjustedTime).min()
         if let value = newest.adjustedTime, value.isFinite,
            previousBest == nil || value < previousBest! {
             records.insert("best")
         }
-        for type in AverageListType.allCases {
-            let metric = RecordAverageMetric(title: type.rawValue, solveCount: type.solveCount, kind: type.recordMetricKind)
-            let evaluation = DataTabComputation.evaluateRecordMetric(metric: metric, solves: ordered, includeWindowValues: true)
-            let previous = evaluation.windowValues.dropFirst().compactMap { $0 }.filter(\.isFinite).min()
-            if let value = evaluation.currentValue, value.isFinite,
-               previous == nil || value < previous! {
-                records.insert(type.rawValue)
-            }
+        let metrics = AverageListType.allCases.filter { ordered.count >= $0.solveCount }.map {
+            RecordAverageMetric(title: $0.rawValue, solveCount: $0.solveCount, kind: $0.recordMetricKind)
+        }
+        for (metric, evaluation) in zip(metrics, DataTabComputation.evaluateRecordSummaries(metrics: metrics, solves: ordered))
+            where evaluation.currentIsStrictlyBest {
+            records.insert(metric.title)
         }
         return Self(solveID: newest.id, metrics: records)
     }

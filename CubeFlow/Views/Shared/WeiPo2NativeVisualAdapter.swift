@@ -67,6 +67,7 @@ nonisolated struct WeiPo2NativeVisualAdapter {
     private(set) var validatedTurns: [ValidatedTurn] = []
     private(set) var acceptedNewSnapshot = false
     private(set) var rejectedNewSnapshot = false
+    private(set) var advancedTurnCounter = false
     var possibleLayoutCount: Int { possibleLayouts.count }
 
     mutating func reset() { self = Self() }
@@ -80,6 +81,7 @@ nonisolated struct WeiPo2NativeVisualAdapter {
         validatedTurns = []
         acceptedNewSnapshot = false
         rejectedNewSnapshot = false
+        advancedTurnCounter = false
         let previousVisual = renderableFacelets
         let distance = lastSnapshot.map { Int((state.turnCounter &- $0.turnCounter)) } ?? 0
         if let previous = lastSnapshot {
@@ -104,7 +106,7 @@ nonisolated struct WeiPo2NativeVisualAdapter {
                     turn.turnCounter == previous.turnCounter &+ UInt8(index + 1)
             }
             if complete {
-                rendered = rendered.filter { layout, target in
+                let verified = rendered.filter { layout, target in
                     guard var projected = layout.render(previous.stickerValues) else { return false }
                     for turn in covered {
                         // These are native preferred-side axes, never physical move names.
@@ -116,7 +118,12 @@ nonisolated struct WeiPo2NativeVisualAdapter {
                     }
                     return projected == target
                 }
-                validatedChain = covered
+                // A native reference change may invalidate the projected turns
+                // without invalidating the authoritative sticker snapshot.
+                if !verified.isEmpty {
+                    rendered = verified
+                    validatedChain = covered
+                }
             }
             pendingTurns.removeAll {
                 let offset = Int($0.turnCounter &- previous.turnCounter)
@@ -133,6 +140,7 @@ nonisolated struct WeiPo2NativeVisualAdapter {
         }
         lastSnapshot = state
         acceptedNewSnapshot = true
+        advancedTurnCounter = distance > 0
         possibleLayouts = Set(rendered.keys)
         let distinct = Set(rendered.values)
         renderableFacelets = distinct.count == 1 ? distinct.first : nil

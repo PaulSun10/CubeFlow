@@ -1026,7 +1026,7 @@ enum PuzzleEvent: String, CaseIterable, Sendable {
     case fiveByFiveBLD = "5x5 bld"
     case threeByThreeMBLD = "3x3 mbld"
 
-    var localizationKey: String {
+    nonisolated var localizationKey: String {
         switch self {
         case .twoByTwo: return "event.2x2"
         case .threeByThree: return "event.3x3"

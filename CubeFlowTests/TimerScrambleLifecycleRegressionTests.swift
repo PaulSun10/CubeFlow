@@ -7,6 +7,17 @@ import Vision
 @testable import CubeFlow
 
 @MainActor final class TimerScrambleLifecycleRegressionTests: XCTestCase {
+    private var previousReadySound: Any?
+    override func setUp() {
+        super.setUp()
+        previousReadySound = UserDefaults.standard.object(forKey: "smartCubeReadySound")
+        // These are scramble/persistence tests, not simulator audio-service tests.
+        UserDefaults.standard.set(false, forKey: "smartCubeReadySound")
+    }
+    override func tearDown() {
+        UserDefaults.standard.set(previousReadySound, forKey: "smartCubeReadySound")
+        super.tearDown()
+    }
     func testPresentationStoreRefusesTextFromDifferentCanonicalTarget() throws {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: "TargetAffinity." + UUID().uuidString))
         let store = SmartCubeTimerPresentationStore(defaults: defaults)
@@ -112,7 +123,8 @@ import Vision
         try context.save()
         let defaults = UserDefaults.standard
         let settings: [String: Any] = ["selectedSessionID": selected.id.uuidString, "enteringTimesWith": "smartCube",
-            "smartCubeShowVirtualCube": false, "wcaInspectionEnabled": false, "smartCubeReadySound": false]
+            "timerArrangement": "classic", "smartCubeShowVirtualCube": false,
+            "wcaInspectionEnabled": false, "smartCubeReadySound": false]
         let previous = settings.keys.map { ($0, defaults.object(forKey: $0)) }
         for (key, value) in settings { defaults.set(value, forKey: key) }
         defer { for (key, value) in previous { defaults.set(value, forKey: key) } }
@@ -140,8 +152,12 @@ import Vision
         try await wait { probe.snapshot?().scramble == "R U'" && probe.snapshot?().progress?.tokens == ["R", "U'"] }
         try await wait { pending.contains { $0.reason == "prefetch" } }
         let next = pending.remove(at: pending.firstIndex { $0.reason == "prefetch" }!)
+        for move in ["R", "U'", "U"] { cube.debugEmitPhysicalMove(move) }
+        XCTAssertEqual(probe.snapshot?().assignment?.scramble, "R U'")
         next.complete(.init(context: next.context, scrambles: ["L D2"]))
-        for move in ["R", "U'", "U", "R'", "L"] { cube.debugEmitPhysicalMove(move) }
+        probe.next?()
+        XCTAssertEqual(probe.snapshot?().scramble, "R U'", "An active solve owns the displayed scramble even when prefetch completes or Next is requested")
+        for move in ["R'", "L"] { cube.debugEmitPhysicalMove(move) }
         try await wait { selected.solveList.count == 1 && probe.snapshot?().scramble == "L D2" }
         let target = SmartCubeBluetoothManager.facelets(afterApplying: "L D2")
         XCTAssertEqual(probe.snapshot?().progress?.targetFacelets, target, "The first next-scramble turn must already belong to the new target")
@@ -214,6 +230,94 @@ import Vision
         })
     }
 
+    func testCompletedSmartScrambleCannotRestoreWhileNextGenerationIsPending() async throws {
+        try await assertCompletedSmartScrambleIsRetired(arrangement: "classic")
+    }
+
+    func testCardsRetainsOldPresentationButResumesPendingNextInsteadOfRestoringConsumedTarget() async throws {
+        try await assertCompletedSmartScrambleIsRetired(arrangement: "cards")
+    }
+
+    private func assertCompletedSmartScrambleIsRetired(arrangement: String) async throws {
+        let persistence = PersistenceController(inMemory: true), context = persistence.container.viewContext
+        let session = Session(name: "Completed target owner", selectedTimingMethodRawValue: "smartCube", context: context)
+        try context.save()
+        let defaults = UserDefaults.standard
+        let settings: [String: Any] = ["selectedSessionID": session.id.uuidString, "enteringTimesWith": "smartCube",
+            "timerArrangement": arrangement, "smartCubeShowVirtualCube": false,
+            "wcaInspectionEnabled": false, "smartCubeReadySound": false]
+        let previous = settings.keys.map { ($0, defaults.object(forKey: $0)) }
+        for (key, value) in settings { defaults.set(value, forKey: key) }
+        defer { for (key, value) in previous { defaults.set(value, forKey: key) } }
+        let manager = SmartCubeBluetoothManager.shared, device = UUID()
+        manager.prepareIfNeeded(); try await Task.sleep(nanoseconds: 150_000_000)
+        let cube = manager.debugMakeRoutedSession(for: device)
+        cube.debugSeedConnectedState(deviceID: device, attemptID: UUID(), facelets: CubeSurface.solved(size: 3))
+        manager.selectActiveDevice(device)
+        defer {
+            manager.disconnect(deviceID: device)
+            SmartCubeTimerPresentationStore.shared.discardScramble(timerSessionID: session.id, puzzleSize: 3)
+        }
+        let probe = SmartCubeTimerGuidanceProbe(); var pending: [Generation] = []
+        probe.generate = { pending.append(.init(context: $0, reason: $1, complete: $2)) }
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene); window.frame = CGRect(x: 0, y: 0, width: 393, height: 852)
+        let tabs = UITabBarController()
+        tabs.viewControllers = [UIHostingController(rootView: TimerTabView()
+            .environment(\.managedObjectContext, context).environment(\.smartCubeTimerGuidanceProbe, probe)), UIViewController()]
+        window.rootViewController = tabs; window.windowLevel = .alert + 1; window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil; probe.reset() }
+        try await wait { !pending.isEmpty && probe.next != nil }
+        let first = pending.removeFirst()
+        first.complete(.init(context: first.context, scrambles: ["R U'"]))
+        try await wait { probe.snapshot?().progress?.tokens == ["R", "U'"] }
+        try await wait { pending.contains { $0.reason == "prefetch" } }
+        let obsolete = pending.remove(at: pending.firstIndex { $0.reason == "prefetch" }!)
+        for move in ["R", "U'", "U", "R'"] { cube.debugEmitPhysicalMove(move) }
+        try await wait { session.solveList.count == 1 }
+        XCTAssertEqual(probe.snapshot?().scramble, arrangement == "cards" ? "R U'" : "…")
+        if arrangement == "cards" {
+            probe.start?()
+            XCTAssertNil(probe.snapshot?().assignment, "A retained consumed Cards target cannot start another solve while its replacement is pending")
+        }
+        XCTAssertEqual(session.solveList.first?.scramble, "R U'")
+        XCTAssertNil(SmartCubeTimerPresentationStore.shared.restoredScramble(timerSessionID: session.id, puzzleSize: 3))
+        tabs.selectedIndex = 1
+        try await Task.sleep(nanoseconds: 100_000_000)
+        tabs.selectedIndex = 0
+        try await wait { pending.contains { $0.reason == "foreground" } }
+        if arrangement != "cards" {
+            XCTAssertNotEqual(probe.snapshot?().scramble, "R U'", "An already consumed solve target must not be restored as the next scramble")
+        }
+        let fresh = try XCTUnwrap(pending.last { $0.reason == "foreground" })
+        obsolete.complete(.init(context: obsolete.context, scrambles: ["F B'"]))
+        fresh.complete(.init(context: fresh.context, scrambles: ["L D2"]))
+        try await wait { probe.snapshot?().scramble == "L D2" }
+        XCTAssertEqual(probe.snapshot?().progress?.targetFacelets, SmartCubeBluetoothManager.facelets(afterApplying: "L D2"))
+        XCTAssertEqual(session.solveList.first?.scramble, "R U'")
+    }
+
+    func testRetiringTargetOnlyInvalidatesItsOwnSessionAndPuzzleRecoveryCache() throws {
+        let name = "SmartCubeRetirementTests.\(UUID())", session = UUID(), other = UUID()
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let store = SmartCubeTimerPresentationStore(defaults: defaults)
+        let progress = try XCTUnwrap(SmartCubeScrambleProgress(scramble: "R U'"))
+        store.saveScramble("R U'", timerSessionID: session, puzzleSize: 3)
+        store.saveScramble("L D2", timerSessionID: session, puzzleSize: 2)
+        store.saveScramble("F B'", timerSessionID: other, puzzleSize: 3)
+        XCTAssertTrue(store.save(scramble: "R U'", progress: progress, epoch: .init(),
+            recoveryState: .inactive, timerSessionID: session))
+        store.discardScramble(timerSessionID: other, puzzleSize: 3)
+        XCTAssertNotNil(store.snapshot)
+        store.discardScramble(timerSessionID: session, puzzleSize: 3)
+        XCTAssertNil(store.snapshot)
+        XCTAssertNil(store.restoredScramble(timerSessionID: session, puzzleSize: 3))
+        XCTAssertEqual(store.restoredScramble(timerSessionID: session, puzzleSize: 2), "L D2")
+        XCTAssertNil(SmartCubeTimerPresentationStore(defaults: defaults).restoredScramble(timerSessionID: session, puzzleSize: 3),
+            "A new process/store must not resurrect the consumed target")
+    }
+
     func testActualTimerRejectsStaleCallbacksAcrossNextSessionPuzzleAndRemount() async throws {
         let persistence = PersistenceController(inMemory: true), context = persistence.container.viewContext
         let firstSession = Session(name: "First owner", context: context)
@@ -257,6 +361,30 @@ import Vision
         puzzleRequest.complete(.init(context: puzzleRequest.context, scrambles: ["U2 R F'"]))
         try await wait { probe.snapshot?().scramble == "U2 R F'" }
         XCTAssertEqual(probe.snapshot?().event, .twoByTwo)
+        try await wait { pending.contains { $0.reason == "prefetch" } }
+        let beforeModeSwitch = pending
+        pending.removeAll()
+        defaults.set("smartCube", forKey: "enteringTimesWith")
+        try await wait { secondSession.selectedTimingMethodRawValue == "smartCube" }
+        // With no connected device, the puzzle/session generation context is
+        // identical. Reusing its in-flight prefetch is valid and intentional.
+        let reusable = try XCTUnwrap(beforeModeSwitch.last { $0.reason == "prefetch" })
+        reusable.complete(.init(context: reusable.context, scrambles: ["B R2"]))
+        try await wait { probe.snapshot?().scramble == "B R2" }
+        XCTAssertEqual(probe.snapshot?().progress?.targetFacelets,
+            SmartCubeBluetoothManager.facelets(afterApplying: "B R2", puzzleSize: 2))
+        try await wait { pending.contains { $0.reason == "prefetch" } }
+        let smartMode = pending
+        pending.removeAll()
+        defaults.set("timer", forKey: "enteringTimesWith")
+        try await wait { secondSession.selectedTimingMethodRawValue == "timer" }
+        let returnedMode = try XCTUnwrap(smartMode.last { $0.reason == "prefetch" })
+        returnedMode.complete(.init(context: returnedMode.context, scrambles: ["D F2"]))
+        try await wait { probe.snapshot?().scramble == "D F2" }
+        for obsolete in beforeModeSwitch + smartMode {
+            obsolete.complete(.init(context: obsolete.context, scrambles: ["B R2"]))
+        }
+        XCTAssertEqual(probe.snapshot?().scramble, "D F2", "Late or repeated completions cannot replace the active mode's scramble")
         try await wait { pending.contains { $0.reason == "prefetch" } }
         let beforeRemount = pending.remove(at: pending.firstIndex { $0.reason == "prefetch" }!)
         probe.next?()

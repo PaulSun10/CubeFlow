@@ -137,7 +137,7 @@ nonisolated final class SmartCubeDiagnostics: @unchecked Sendable {
         if entries.count > 2048 { entries.removeFirst(entries.count - 2048) }
         // Continuous gyro/packet traffic must not erase the move-to-guidance
         // evidence before the user can navigate back and copy it.
-        if stage.hasPrefix("guidance.") || Self.guidanceMoveStages.contains(stage) {
+        if stage.hasPrefix("guidance.") || stage.hasPrefix("animation.") || Self.guidanceMoveStages.contains(stage) {
             guidanceEntries.append(entry)
             if guidanceEntries.count > 2048 { guidanceEntries.removeFirst(guidanceEntries.count - 2048) }
         }

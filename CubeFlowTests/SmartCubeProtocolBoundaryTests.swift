@@ -137,6 +137,14 @@ struct SmartCubeProtocolBoundaryTests {
         }
         #expect(latest.code == 5)
         #expect(latest.missedTurnCount == 2)
+        packet[13] = 0x3D
+        #expect(parser.handleStateEvent(packet).isEmpty)
+        packet[13] = 0x3F
+        guard case .weiPo2Turn(let next) = try #require(parser.handleStateEvent(packet).first) else {
+            Issue.record("Expected next WeiPo turn")
+            return
+        }
+        #expect(next.missedTurnCount == 0)
     }
 
     @Test func weiPo2CapturedInversePairsUseThreeBitNativeCodes() throws {

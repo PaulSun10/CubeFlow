@@ -138,12 +138,38 @@ private actor DelayedTargetSolver {
     }
     func testNativeTwoByTwoKeepsStateOnlyGuidanceWithoutGuessingPhysicalMoveFrame() throws {
         var progress = try XCTUnwrap(SmartCubeScrambleProgress(scramble: "R U F", puzzleSize: 2))
+        XCTAssertEqual(progress.currentMoveTokenIndex, 0)
         let source = try state("L D", size: 2)
+        XCTAssertTrue(CubeStateEquivalence.matches(source, try state("R U", size: 2), puzzleSize: 2))
+        _ = progress.update(with: try state("R", size: 2))
+        XCTAssertEqual(progress.verifiedMoveCount, 1)
+        XCTAssertEqual(progress.currentMoveTokenIndex, 1)
         _ = progress.update(with: source, canonicalMove: "L")
         XCTAssertFalse(progress.isDeviated)
-        XCTAssertNil(progress.currentMoveTokenIndex)
+        XCTAssertEqual(progress.verifiedMoveCount, 2)
+        XCTAssertEqual(progress.currentMoveTokenIndex, 2)
         XCTAssertFalse(progress.isComplete)
+        let deviation = try state("R2", size: 2)
+        _ = progress.update(with: deviation)
+        XCTAssertTrue(progress.isDeviated)
+        XCTAssertNil(progress.currentMoveTokenIndex)
+        XCTAssertFalse(progress.needsGuidanceSearch)
+        XCTAssertEqual(progress.verifiedMoveCount, 0)
+        _ = progress.update(with: source)
+        XCTAssertEqual(progress.verifiedMoveCount, 2)
+        XCTAssertEqual(progress.currentMoveTokenIndex, 2)
         _ = progress.update(with: progress.targetFacelets)
         XCTAssertTrue(progress.isComplete)
+        XCTAssertNil(progress.currentMoveTokenIndex)
+    }
+
+    func testNativeTwoByTwoHalfTurnCheckpointsDoNotCreditUnfinishedHalfTurn() throws {
+        var progress = try XCTUnwrap(SmartCubeScrambleProgress(scramble: "R U2 F", puzzleSize: 2))
+        for (moves, completed) in [("R U", 1), ("R U'", 1), ("R U2", 2), ("R U2 F", 3)] {
+            _ = progress.update(with: try state(moves, size: 2))
+            XCTAssertFalse(progress.isDeviated, moves)
+            XCTAssertEqual(progress.verifiedMoveCount, completed, moves)
+            XCTAssertEqual(progress.currentMoveTokenIndex, completed == 3 ? nil : completed, moves)
+        }
     }
 }

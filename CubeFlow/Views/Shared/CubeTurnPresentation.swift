@@ -32,7 +32,11 @@ nonisolated struct CubeSurface: Hashable {
     }
 
     static func solved(size: Int) -> String {
-        "URFDLB".map { String(repeating: String($0), count: size * size) }.joined()
+        switch size {
+        case 2: "UUUURRRRFFFFDDDDLLLLBBBB"
+        case 3: "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+        default: "URFDLB".map { String(repeating: String($0), count: size * size) }.joined()
+        }
     }
 }
 
@@ -64,6 +68,13 @@ nonisolated struct CubeLayerTurn: Equatable {
     }
 
     func applying(to facelets: String, size: Int) -> String? {
+        guard let permutation = CubeFaceletPermutations.tables[size]?[notation] else { return nil }
+        let input = Array(facelets)
+        guard input.count == permutation.count else { return nil }
+        return String(permutation.map { input[$0] })
+    }
+
+    func applyingGeometrically(to facelets: String, size: Int) -> String? {
         let surfaces = CubeSurface.all(size: size)
         let input = Array(facelets)
         guard !surfaces.isEmpty, input.count == surfaces.count else { return nil }
@@ -90,12 +101,28 @@ nonisolated struct CubeLayerTurn: Equatable {
     }
 }
 
+/// Immutable and bounded (2 sizes x 18 face turns). Built from the same integer
+/// geometry as the renderer, not a second hand-authored face convention.
+nonisolated enum CubeFaceletPermutations {
+    static let tables: [Int: [String: [Int]]] = Dictionary(uniqueKeysWithValues: [2, 3].map { size in
+        let seed = String((0..<(6 * size * size)).map { Character(UnicodeScalar(0x100 + $0)!) })
+        let turns = "URFDLB".flatMap { face in ["", "'", "2"].map { String(face) + $0 } }
+        let entries = turns.compactMap { move -> (String, [Int])? in
+            guard let result = CubeLayerTurn(move)?.applyingGeometrically(to: seed, size: size) else { return nil }
+            return (move, result.map { Int($0.unicodeScalars.first!.value) - 0x100 })
+        }
+        return (size, Dictionary(uniqueKeysWithValues: entries))
+    })
+}
+
 /// No BLE or wall-clock dependency. Replay callers can supply their own monotonic playback clock.
 nonisolated struct CubeTurnPresentation {
     struct Policy {
         static let halfTurnMultiplier = 1.3
         static let interruptedRemaining = 0.055
-        static let minimumTurnDuration = 1.0 / 30
+        static let minimumTurnDuration = 1.0 / 120
+        static let maximumVisualAge = 0.5
+        static let catchUpBudget = 0.12
         static let maximumPendingTurns = 128
     }
 
@@ -126,6 +153,7 @@ nonisolated struct CubeTurnPresentation {
     private(set) var generation: UInt64 = 0
     private(set) var isTrusted = true
     private var isCatchingUp = false
+    private(set) var coalescedVisualTurns = 0
     var tps: Int = 10
 
     init(size: Int = 3, facelets: String) {
@@ -190,6 +218,14 @@ nonisolated struct CubeTurnPresentation {
             current = nil
         }
         if current == nil, !pending.isEmpty {
+            // Canonical state already includes every physical turn. Only skip
+            // obsolete visual transitions, and only after the current turn ends.
+            if now - pending[0].timestamp > Policy.maximumVisualAge, pending.count > 3 {
+                let obsolete = pending.count - 3
+                settled = pending[obsolete - 1].target
+                pending.removeFirst(obsolete)
+                coalescedVisualTurns += obsolete
+            }
             let backlog = pending.count
             let move = pending.removeFirst()
             generation &+= 1
@@ -198,7 +234,8 @@ nonisolated struct CubeTurnPresentation {
             current = Animation(
                 id: generation, move: move, startedAt: now,
                 duration: isCatchingUp
-                    ? max(Policy.minimumTurnDuration, min(nominalDuration, Policy.interruptedRemaining))
+                    ? max(Policy.minimumTurnDuration, min(nominalDuration,
+                        min(Policy.interruptedRemaining, Policy.catchUpBudget / Double(backlog))))
                     : nominalDuration
             )
         }

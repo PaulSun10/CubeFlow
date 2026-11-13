@@ -213,6 +213,7 @@ enum TimerStatisticMetric: String, CaseIterable, Identifiable, Hashable {
 }
 
 enum TimerCustomizationDefaults {
+    static let scrambleVerticalPosition: Double = 0.25
     static let drawScrambleSize: Double = 275
     static let drawScrambleSizeRange: ClosedRange<Double> = 96...500
 

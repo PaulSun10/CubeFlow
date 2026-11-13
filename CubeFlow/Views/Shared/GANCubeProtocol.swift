@@ -324,11 +324,10 @@ final class GANCubeProtocolParser {
     private func weiPo2TurnEvents(from message: [UInt8]) -> [SmartCubeParsedEvent] {
         guard message.count >= 15 else { return [] }
         let counter = Int(message[13])
-        let previous = moYuPreviousMoveCount
-        moYuPreviousMoveCount = counter
-        guard let previous else { return [] }
+        guard let previous = moYuPreviousMoveCount else { moYuPreviousMoveCount = counter; return [] }
         let difference = (counter - previous) & 0xFF
-        guard difference > 0 else { return [] }
+        guard (1...127).contains(difference) else { return [] }
+        moYuPreviousMoveCount = counter
         let code = UInt8(readBitWord(bytes: message, startBit: 112, bitLength: 3))
         return [.weiPo2Turn(WeiPo2NativeTurn(
             code: code,

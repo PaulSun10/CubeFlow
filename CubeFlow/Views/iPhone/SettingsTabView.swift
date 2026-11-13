@@ -133,6 +133,10 @@ struct SettingsTabView: View {
     @AppStorage("timerUpdatingMode") private var timerUpdatingMode: String = TimerUpdatingMode.on.rawValue
     @AppStorage("timerAccuracy") private var timerAccuracy: String = SolveTimeAccuracy.thousandths.rawValue
     @AppStorage("enteringTimesWith") private var enteringTimesWith: String = SessionTimingMethod.timer.rawValue
+    @AppStorage("manualInputInterface") private var manualInputInterface = ManualInputInterface.keyboard.rawValue
+    @AppStorage("manualTimeInterpretation") private var manualInterpretation = ManualTimeInterpretation.fixed.rawValue
+    @AppStorage("manualTimeFormat") private var manualFormat = ManualTimeFormat.defaultFormat.rawValue
+    @AppStorage("manualSmartDefault") private var manualDefault = ManualTimePrecision.hundredths.rawValue
     @AppStorage("hideElementsWhenSolving") private var hideElementsWhenSolving: Bool = true
     @AppStorage("scrambleDisplayMode") private var scrambleDisplayMode: String = ScrambleDisplayMode.shrinkFont.rawValue
     @AppStorage("timerBackgroundImageData") private var timerBackgroundImageData: Data?
@@ -154,7 +158,7 @@ struct SettingsTabView: View {
     @AppStorage("timerMinimalMode") private var timerMinimalMode: Bool = false
     @AppStorage("timerMinimalArrangementMigrationCompleted") private var timerMinimalArrangementMigrationCompleted: Bool = false
     @AppStorage("timerSplitOrder") private var timerSplitOrder: String = TimerSplitOrder.statisticsLeading.rawValue
-    @AppStorage("timerScrambleVerticalPosition") private var timerScrambleVerticalPosition: Double = 0
+    @AppStorage("timerScrambleVerticalPosition") private var timerScrambleVerticalPosition: Double = TimerCustomizationDefaults.scrambleVerticalPosition
     @AppStorage("timerStatisticsSelection") private var timerStatisticsSelection: String = ""
     @AppStorage("timerClassicStatisticsSelection") private var timerClassicStatisticsSelection: String = ""
     @AppStorage("timerCardsStatisticsSelection") private var timerCardsStatisticsSelection: String = ""
@@ -214,7 +218,11 @@ struct SettingsTabView: View {
     }
 
     private var currentLanguageOption: AppLanguageOption {
-        appLanguageOptions().first(where: { $0.id == appLanguage }) ?? appLanguageOptions()[0]
+        if followsSystemAppLanguage() {
+            return AppLanguageOption(id: "system", displayNameKey: "settings.language_system",
+                nativeName: appLocalizedString("settings.language_system", languageCode: appLanguage))
+        }
+        return appLanguageOptions().first(where: { $0.id == appLanguage }) ?? appLanguageOptions()[0]
     }
 
     private var selectedSession: Session? {
@@ -725,6 +733,12 @@ private extension SettingsTabView {
             Spacer()
 
             Menu {
+                Button {
+                    UserDefaults.standard.removeObject(forKey: "appLanguage")
+                    registerSystemAppLanguage()
+                } label: {
+                    Text("settings.language_system")
+                }
                 ForEach(appLanguageOptions()) { language in
                     Button {
                         appLanguage = language.id
@@ -2107,6 +2121,23 @@ private extension SettingsTabView {
 
     var timerInputSettingsList: some View {
         List {
+            Section("manual.settings") {
+                Picker("manual.input_interface", selection: $manualInputInterface) {
+                    ForEach(ManualInputInterface.allCases, id: \.self) { Text(LocalizedStringKey($0.key)).tag($0.rawValue) }
+                }
+                Picker("manual.interpretation", selection: $manualInterpretation) {
+                    ForEach(ManualTimeInterpretation.allCases, id: \.self) { Text(LocalizedStringKey($0.key)).tag($0.rawValue) }
+                }
+                if manualInterpretation == ManualTimeInterpretation.fixed.rawValue {
+                    Picker("manual.fixed_format", selection: $manualFormat) {
+                        ForEach(ManualTimeFormat.allCases, id: \.self) { Text(verbatim: $0.rawValue).tag($0.rawValue) }
+                    }
+                } else {
+                    Picker("manual.smart_default", selection: $manualDefault) {
+                        ForEach(ManualTimePrecision.allCases, id: \.self) { Text(LocalizedStringKey($0.key)).tag($0.rawValue) }
+                    }
+                }
+            }
             Section {
                 listSettingsMenuRow(
                     titleKey: "settings.entering_times_with",

@@ -107,11 +107,13 @@ final class SavedSmartCubeDevices: ObservableObject {
         persist()
     }
 
-    func markActive(_ id: UUID) {
-        lastActiveDeviceID = id
-        defaults.set(id.uuidString, forKey: "savedSmartCubeDevices.lastActive")
-        if let device = device(id) {
-            defaults.set(id.uuidString, forKey: "savedSmartCubeDevices.lastActive.\(device.puzzleSize)")
+    func markActive(_ id: UUID, puzzleSize: Int? = nil) {
+        if lastActiveDeviceID != id {
+            lastActiveDeviceID = id
+            defaults.set(id.uuidString, forKey: "savedSmartCubeDevices.lastActive")
+        }
+        if let size = puzzleSize ?? device(id)?.puzzleSize {
+            defaults.set(id.uuidString, forKey: "savedSmartCubeDevices.lastActive.\(size)")
         }
     }
 

@@ -97,12 +97,46 @@ struct CubeFlowApp: App {
     @UIApplicationDelegateAdaptor(CubeFlowAppDelegate.self) private var appDelegate
     #endif
 
-    private let persistenceController = PersistenceController.shared
+    private let persistenceController: PersistenceController
     @AppStorage("timerAccuracy") private var timerAccuracy = SolveTimeAccuracy.thousandths.rawValue
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        #if DEBUG && os(iOS) && targetEnvironment(simulator)
+        if ProcessInfo.processInfo.environment["CUBEFLOW_DATA_TOOLBAR_UI_TEST"] == "1" {
+            let store = PersistenceController(inMemory: true)
+            let context = store.container.viewContext
+            let source = Session(name: "Toolbar source", context: context)
+            _ = Session(name: "Toolbar destination", context: context)
+            for index in 0..<1_021 {
+                _ = Solve(time: 9 + Double(index) / 100, scramble: "R U", event: "3x3", session: source, context: context)
+            }
+            try! context.save()
+            persistenceController = store
+        } else {
+            persistenceController = .shared
+        }
+        #else
+        persistenceController = .shared
+        #endif
+        registerSystemAppLanguage()
         #if os(iOS)
         TimerScrambleGenerator.prewarm()
+        // Begin exactly the persisted visible event while SwiftUI mounts. The
+        // Timer may consume it once only if the full context still matches.
+        if UIApplication.shared.applicationState != .background,
+           let id = UUID(uuidString: UserDefaults.standard.string(forKey: "selectedSessionID") ?? ""),
+           let session = try? persistenceController.container.viewContext.fetchSession(with: id),
+           let event = PuzzleEvent(rawValue: session.selectedEventRawValue),
+           event != .threeByThreeMBLD,
+           !(SessionTimingMethod(rawValue: session.selectedTimingMethodRawValue
+                ?? UserDefaults.standard.string(forKey: "enteringTimesWith") ?? "timer") ?? .timer).usesSmartCube {
+            let context = TimerScrambleGenerationContext(sessionID: id, event: event, multiBlindCount: 1,
+                unavailableMessage: currentAppLocalizedString("timer.scramble_unavailable"))
+            TimerLaunchScrambleReservation.shared.prepare(context) { context, complete in
+                TimerScrambleGenerator.generate(for: context, reason: "launch-reservation", completion: complete)
+            }
+        }
         #endif
     }
 
@@ -122,5 +156,8 @@ struct CubeFlowApp: App {
         }
         .environment(\.managedObjectContext, persistenceController.container.viewContext)
         .environment(\.solveTimeAccuracy, SolveTimeAccuracy.resolved(from: timerAccuracy))
+        .onChange(of: scenePhase) { phase in
+            if phase == .active { registerSystemAppLanguage() }
+        }
     }
 }
