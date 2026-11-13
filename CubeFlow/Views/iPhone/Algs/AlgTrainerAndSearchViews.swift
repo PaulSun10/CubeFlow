@@ -867,23 +867,8 @@ struct AlgSearchView: View {
 
     @State private var query = ""
 
-    private var filteredItems: [AlgSearchItem] {
-        items.filter { $0.matches(query) }
-    }
-
-    private var setItems: [AlgSearchItem] {
-        filteredItems.filter { $0.kind == .set }
-    }
-
-    private var subsetItems: [AlgSearchItem] {
-        filteredItems.filter { $0.kind == .subset }
-    }
-
-    private var caseItems: [AlgSearchItem] {
-        filteredItems.filter { $0.kind == .caseName }
-    }
-
     var body: some View {
+        let results = AlgSearchResults(items: items, query: query)
         List {
             if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
@@ -897,7 +882,7 @@ struct AlgSearchView: View {
                 }
                 .padding(.vertical, 8)
                 .listRowSeparator(.hidden)
-            } else if filteredItems.isEmpty {
+            } else if results.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizedAlgString(key: "algs.search.no_results_title", languageCode: languageCode))
                         .font(.system(size: 17, weight: .semibold))
@@ -910,25 +895,25 @@ struct AlgSearchView: View {
                 .padding(.vertical, 8)
                 .listRowSeparator(.hidden)
             } else {
-                if !setItems.isEmpty {
+                if !results.sets.isEmpty {
                     Section(localizedAlgString(key: "algs.search.section_sets", languageCode: languageCode)) {
-                        ForEach(setItems) { item in
+                        ForEach(results.sets) { item in
                             searchRow(item)
                         }
                     }
                 }
 
-                if !subsetItems.isEmpty {
+                if !results.subsets.isEmpty {
                     Section(localizedAlgString(key: "algs.search.section_subsets", languageCode: languageCode)) {
-                        ForEach(subsetItems) { item in
+                        ForEach(results.subsets) { item in
                             searchRow(item)
                         }
                     }
                 }
 
-                if !caseItems.isEmpty {
+                if !results.cases.isEmpty {
                     Section(localizedAlgString(key: "algs.search.section_cases", languageCode: languageCode)) {
-                        ForEach(caseItems) { item in
+                        ForEach(results.cases) { item in
                             searchRow(item)
                         }
                     }
@@ -937,6 +922,8 @@ struct AlgSearchView: View {
         }
         .listStyle(.plain)
         .navigationTitle(localizedAlgString(key: "algs.search.title", languageCode: languageCode))
+        .frame(maxWidth: 960)
+        .frame(maxWidth: .infinity)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(
             text: $query,

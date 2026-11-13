@@ -413,11 +413,40 @@ struct AlgSearchItem: Identifiable {
     let subtitle: String
     let searchableText: [String]
     let destination: AlgSearchDestination
+    private let normalizedSearchText: String
+
+    init(id: String, kind: AlgSearchItemKind, title: String, subtitle: String, searchableText: [String], destination: AlgSearchDestination) {
+        self.id = id; self.kind = kind; self.title = title; self.subtitle = subtitle
+        self.searchableText = searchableText; self.destination = destination
+        normalizedSearchText = Self.normalized(searchableText.joined(separator: " "))
+    }
+
+    static func normalized(_ text: String) -> String {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    func matchesNormalized(_ query: String) -> Bool { normalizedSearchText.contains(query) }
 
     func matches(_ query: String) -> Bool {
-        let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let normalizedQuery = Self.normalized(query.trimmingCharacters(in: .whitespacesAndNewlines))
         guard !normalizedQuery.isEmpty else { return true }
-        return searchableText.joined(separator: " ").lowercased().contains(normalizedQuery)
+        return matchesNormalized(normalizedQuery)
+    }
+}
+
+struct AlgSearchResults {
+    var sets: [AlgSearchItem] = [], subsets: [AlgSearchItem] = [], cases: [AlgSearchItem] = []
+    var isEmpty: Bool { sets.isEmpty && subsets.isEmpty && cases.isEmpty }
+    init(items: [AlgSearchItem], query: String) {
+        let normalized = AlgSearchItem.normalized(query.trimmingCharacters(in: .whitespacesAndNewlines))
+        guard !normalized.isEmpty else { return }
+        for item in items where item.matchesNormalized(normalized) {
+            switch item.kind {
+            case .set: sets.append(item)
+            case .subset: subsets.append(item)
+            case .caseName: cases.append(item)
+            }
+        }
     }
 }
 
@@ -427,11 +456,11 @@ struct AlgSubset: Identifiable, Hashable {
     let cases: [AlgCase]
 
     var uniqueCaseIDs: [String] {
-        Array(Set(cases.map(\.id))).sorted()
+        Set(cases.lazy.map(\.id)).sorted()
     }
 
     var uniqueCaseCount: Int {
-        uniqueCaseIDs.count
+        Set(cases.lazy.map(\.id)).count
     }
 }
 
@@ -440,12 +469,18 @@ struct AlgSubsetGroup: Identifiable, Hashable {
     let title: String
     let subsets: [AlgSubset]
 
-    var uniqueCaseIDs: [String] {
-        Array(Set(subsets.flatMap(\.uniqueCaseIDs))).sorted()
+    private var caseIDSet: Set<String> {
+        var ids = Set<String>()
+        for subset in subsets {
+            ids.formUnion(subset.cases.lazy.map(\.id))
+        }
+        return ids
     }
 
+    var uniqueCaseIDs: [String] { caseIDSet.sorted() }
+
     var uniqueCaseCount: Int {
-        uniqueCaseIDs.count
+        caseIDSet.count
     }
 }
 
@@ -455,11 +490,11 @@ struct AlgCaseGroup: Identifiable, Hashable {
     let cases: [AlgCase]
 
     var uniqueCaseIDs: [String] {
-        Array(Set(cases.map(\.id))).sorted()
+        Set(cases.lazy.map(\.id)).sorted()
     }
 
     var uniqueCaseCount: Int {
-        uniqueCaseIDs.count
+        Set(cases.lazy.map(\.id)).count
     }
 }
 
@@ -499,6 +534,15 @@ struct AlgTrainerAttemptRecord: Identifiable, Codable, Hashable {
     let isCorrect: Bool
     let isSkipped: Bool
     let timestamp: Date
+
+    static func latest(in records: [Self]) -> Self? {
+        // Strictly newer only: preserve the first record when timestamps tie,
+        // matching the previous stable descending-sort/first behavior.
+        records.reduce(nil) { current, candidate in
+            guard let current else { return candidate }
+            return candidate.timestamp > current.timestamp ? candidate : current
+        }
+    }
 }
 
 struct AlgRecentPracticeContext: Identifiable {

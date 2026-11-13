@@ -44,6 +44,7 @@ struct AlgsTabView: View {
     @Binding private var searchRequestID: Int
 
     @State private var selectedPuzzle: AlgPuzzle = .threeByThree
+    @State private var hasActivated = false
     @State private var isShowingRecentPractice = false
     @State private var isShowingSearch = false
     @State private var isShowingTrainerHome = false
@@ -85,7 +86,7 @@ struct AlgsTabView: View {
         decoder.dateDecodingStrategy = .iso8601
 
         guard let records = try? decoder.decode([AlgTrainerAttemptRecord].self, from: Data(trainerAttemptStore.utf8)),
-              let latestRecord = records.sorted(by: { $0.timestamp > $1.timestamp }).first,
+              let latestRecord = AlgTrainerAttemptRecord.latest(in: records),
               let set = AlgLibrarySet(itemID: latestRecord.setID),
               let payload = AlgLibraryLoader.load(set) else {
             return nil
@@ -137,13 +138,15 @@ struct AlgsTabView: View {
 
     var body: some View {
         Group {
-            if isActive {
+            if isActive || hasActivated {
                 activeContent
             } else {
                 Color.clear
             }
         }
+        .onAppear { if isActive { hasActivated = true } }
         .onChange(of: isActive) { newValue in
+            if newValue { hasActivated = true }
             guard usesSystemBottomAccessory else { return }
             if newValue {
                 updateOverviewBottomAccessoryVisibility()
@@ -269,7 +272,7 @@ struct AlgsTabView: View {
                         .padding(.vertical, 12)
                 } else {
                     ForEach(sections) { section in
-                        VStack(alignment: .leading, spacing: 0) {
+                        LazyVStack(alignment: .leading, spacing: 0) {
                             sectionHeader(section.localizedTitleKey)
                                 .padding(.horizontal, 16)
                                 .padding(.top, 6)
@@ -282,6 +285,8 @@ struct AlgsTabView: View {
                                     algRow(item)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 2)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
 
@@ -305,7 +310,7 @@ struct AlgsTabView: View {
 
     private var overviewGridContent: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            LazyVStack(alignment: .leading, spacing: 16) {
                 if showsAlgTrainingEntrypoints,
                    let recentPracticeContext,
                    recentPracticeContext.dismissToken != dismissedRecentPracticeRecordID {
@@ -527,7 +532,10 @@ struct AlgsTabView: View {
                                     localizedSubset,
                                     algCase.subgroup,
                                     setTitle,
-                                    payload.set
+                                    payload.set,
+                                    algCase.recognition,
+                                    algCase.algorithms.map(\.notation).joined(separator: " "),
+                                    (algCase.algorithmGroups ?? []).flatMap(\.algorithms).map(\.notation).joined(separator: " ")
                                 ],
                                 destination: .caseDetail(payload, algCase)
                             )
@@ -2426,7 +2434,7 @@ private struct AlgCaseGroupListView: View {
             }
         }
         .scrollAwareNavigationTitle(displayAlgGroupTitle(setID: payload.set, title: group.title, languageCode: appLanguage))
-        .toolbar {
+        .algSingleCaseLearnToolbar(setID: payload.set, caseID: group.cases.count == 1 ? group.cases.first?.id : nil) {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     isShowingInfoSheet = true
@@ -2436,19 +2444,18 @@ private struct AlgCaseGroupListView: View {
                 }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    learnedCasesStore = updatedLearnedCaseStorageForAll(
-                        storage: learnedCasesStore,
-                        setID: payload.set,
-                        caseIDs: group.uniqueCaseIDs,
-                        learned: !allCasesLearned
-                    )
-                } label: {
-                    Image(systemName: allCasesLearned ? "graduationcap.fill" : "graduationcap")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.orange)
-                }
+        } learn: {
+            Button {
+                learnedCasesStore = updatedLearnedCaseStorageForAll(
+                    storage: learnedCasesStore,
+                    setID: payload.set,
+                    caseIDs: group.uniqueCaseIDs,
+                    learned: !allCasesLearned
+                )
+            } label: {
+                Image(systemName: allCasesLearned ? "graduationcap.fill" : "graduationcap")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.orange)
             }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -2999,7 +3006,7 @@ struct AlgSubsetCaseListView: View {
             }
         }
         .scrollAwareNavigationTitle(localizedAlgSubgroup(subset.title, languageCode: appLanguage))
-        .toolbar {
+        .algSingleCaseLearnToolbar(setID: payload.set, caseID: subset.cases.count == 1 ? subset.cases.first?.id : nil) {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     isShowingInfoSheet = true
@@ -3009,19 +3016,18 @@ struct AlgSubsetCaseListView: View {
                 }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    learnedCasesStore = updatedLearnedCaseStorageForAll(
-                        storage: learnedCasesStore,
-                        setID: payload.set,
-                        caseIDs: subset.uniqueCaseIDs,
-                        learned: !allCasesLearned
-                    )
-                } label: {
-                    Image(systemName: allCasesLearned ? "graduationcap.fill" : "graduationcap")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(.orange)
-                }
+        } learn: {
+            Button {
+                learnedCasesStore = updatedLearnedCaseStorageForAll(
+                    storage: learnedCasesStore,
+                    setID: payload.set,
+                    caseIDs: subset.uniqueCaseIDs,
+                    learned: !allCasesLearned
+                )
+            } label: {
+                Image(systemName: allCasesLearned ? "graduationcap.fill" : "graduationcap")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.orange)
             }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -5154,6 +5160,33 @@ private struct AlgSetInfoContent {
     }
 }
 
+private func algCaseLearnToolbarID(setID: String, caseID: String) -> String {
+    "alg-learn:\(normalizedAlgSetID(setID)):\(caseID)"
+}
+
+private extension View {
+    @ViewBuilder
+    func algSingleCaseLearnToolbar<Leading: ToolbarContent, Learn: View>(
+        setID: String, caseID: String?,
+        @ToolbarContentBuilder leading: () -> Leading, @ViewBuilder learn: () -> Learn
+    ) -> some View {
+        if #available(iOS 26.0, *), let caseID {
+            toolbar {
+                leading()
+                // Match only when both actions change the learned state of the same case.
+                ToolbarItem(id: algCaseLearnToolbarID(setID: setID, caseID: caseID), placement: .topBarTrailing) {
+                    learn()
+                }
+            }
+        } else {
+            toolbar {
+                leading()
+                ToolbarItem(placement: .topBarTrailing) { learn() }
+            }
+        }
+    }
+}
+
 struct AlgCaseDetailView: View {
     @AppStorage("scrambleDiagramColorSchemeData") private var casePaletteData: Data?
     @AppStorage("algCaseSort") private var caseSortRaw = "default"
@@ -5214,7 +5247,7 @@ struct AlgCaseDetailView: View {
             )
         )
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(id: algCaseLearnToolbarID(setID: payload.set, caseID: algCase.id), placement: .topBarTrailing) {
                 Button {
                     learnedCasesStore = updatedLearnedCaseStorage(
                         storage: learnedCasesStore,

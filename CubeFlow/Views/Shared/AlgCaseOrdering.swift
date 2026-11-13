@@ -2,17 +2,17 @@ import SwiftUI
 
 enum AlgCaseOrdering {
     static func sorted(_ cases: [AlgCase], by raw: String) -> [AlgCase] {
-        guard raw != "default" else { return cases }
-        return cases.enumerated().sorted { lhs, rhs in
-            let a: Double, b: Double
-            switch raw {
-            case "likely": a = -(lhs.element.probabilityExact?.value ?? lhs.element.probability ?? -.infinity); b = -(rhs.element.probabilityExact?.value ?? rhs.element.probability ?? -.infinity)
-            case "unlikely": a = lhs.element.probabilityExact?.value ?? lhs.element.probability ?? .infinity; b = rhs.element.probabilityExact?.value ?? rhs.element.probability ?? .infinity
-            case "slices": a = Double(lhs.element.sliceCount ?? Int.max); b = Double(rhs.element.sliceCount ?? Int.max)
-            default: return lhs.offset < rhs.offset
-            }
-            return a == b ? lhs.offset < rhs.offset : a < b
-        }.map(\.element)
+        let key: (AlgCase) -> Double
+        switch raw {
+        case "likely": key = { -($0.probabilityExact?.value ?? $0.probability ?? -.infinity) }
+        case "unlikely": key = { $0.probabilityExact?.value ?? $0.probability ?? .infinity }
+        case "slices": key = { Double($0.sliceCount ?? Int.max) }
+        default: return cases
+        }
+        // Slice count parses notation. Compute it once per case, not on each comparison.
+        var order = cases.indices.map { (index: $0, key: key(cases[$0])) }
+        order.sort { $0.key == $1.key ? $0.index < $1.index : $0.key < $1.key }
+        return order.map { cases[$0.index] }
     }
 }
 
