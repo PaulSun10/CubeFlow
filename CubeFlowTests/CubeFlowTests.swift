@@ -1231,7 +1231,7 @@ struct CubeFlowTests {
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
         let initial = NumeralPreferencesSnapshot.load(from: defaults)
-        #expect(initial.app.system == .systemDefault)
+        #expect(initial.app.system == .westernArabic)
         #expect(initial.resolved(for: .timer) == initial.app)
         #expect(initial.resolved(for: .statistics) == initial.app)
 
@@ -1750,7 +1750,8 @@ struct CubeFlowTests {
         #expect(abs((SolveMetrics.trimmedAverage(from: heroSolves, count: 12) ?? 0) - 10.71) < 0.000_001)
         #expect(Set(solves.map { Calendar.current.startOfDay(for: $0.date) }).count == 17)
         var configuration = MarketingPreviewPreset.timerThreeByThreeHero.timerConfiguration
-        #expect(configuration.scramble == "R U2 F' L2 D B2 R2 U' F2 D2 L' B U R' F D' L2 U2 B' R2")
+        #expect(configuration.scramble == "F' D2 B' R2 F2 L2 F' D2 F' U2 F R D2 R' F2 D L2 F' R")
+        #expect(configuration.fixedScrambleIndex == 0)
         #expect(configuration.mean == 10.9275)
         #expect(configuration.ao5 == 10.24)
         #expect(configuration.ao12 == 10.71)
@@ -2580,7 +2581,8 @@ struct CubeFlowTests {
         #expect(recentIDs.contains("Yesterday2026"))
         #expect(recentIDs.contains("RecentWindowBoundary2026"))
         #expect(!recentIDs.contains("OutsideRecentWindow2026"))
-        #expect(!recentIDs.contains("Ongoing2026"))
+        // The accepted Browser windows classify by WCA start day, not end day.
+        #expect(recentIDs.contains("Ongoing2026"))
         #expect(!recentIDs.contains("FutureCompetition2026"))
 
         let presentQuery = CompetitionQuery(
@@ -2596,7 +2598,7 @@ struct CubeFlowTests {
             now: now
         ).map(\.id))
         #expect(presentIDs.contains("Today2026"))
-        #expect(presentIDs.contains("Ongoing2026"))
+        #expect(!presentIDs.contains("Ongoing2026"))
         #expect(presentIDs.contains("FutureCompetition2026"))
         #expect(!presentIDs.contains("Yesterday2026"))
     }

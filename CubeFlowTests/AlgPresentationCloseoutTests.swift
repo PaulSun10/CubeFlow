@@ -462,7 +462,9 @@ import UIKit
                 #expect(visibleRed > 0)
                 #expect(escapedRed == 0)
                 if count == 5_000 && !end {
-                    try image.pngData()?.write(to: URL(fileURLWithPath: "/tmp/cubeflow-alg-closeout/scroll-clipping.png"))
+                    let directory = URL(fileURLWithPath: "/tmp/cubeflow-alg-closeout", isDirectory: true)
+                    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                    try image.pngData()?.write(to: directory.appendingPathComponent("scroll-clipping.png"))
                 }
             }
         }
