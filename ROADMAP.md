@@ -2,6 +2,8 @@
 
 This is CubeFlow's durable product and engineering planning reference, reconciled against the current local worktree on 2026-10-05. Historical hardware evidence is retained below. Preserve implemented behavior; revisit priorities after each release. Documentation is not authorization to implement or deploy.
 
+**2026-11-13 status:** See the [development closeout after 0.15.0](docs/development-closeout-nov13.md) for the latest implementation and physical acceptance. Inspection Exit (including the final circular control), Smart Cube inspection re-entry, and Data/Sessions UI fixes are accepted. Competition Filter rapid reopen and WeiPo 2x2 physical verification are intentionally deferred. Older investigation and acceptance notes below are historical where superseded by that closeout.
+
 ## Product Boundaries And Planning Status
 
 **Implemented/accepted foundation:** Timer customization, numeral presentation, Data/provenance, Explore home and focused Competition/Rankings/Records/Recent Records destinations. Smart Cube Phases 0-2 retain checkpoint `1844425d` and the physical evidence below; current Phase 3-6 foundations are described in the current status section. Do not rebuild accepted UI, event-icon alignment or device behavior.
@@ -45,7 +47,7 @@ Keep customization strong but Automatic/default behavior useful without configur
 
 **Data strategy:** Competition Groups documents that it presents assignments stored in WCIF. CubeFlow should consume WCA WCIF directly rather than scrape or depend on Competition Groups' UI.
 
-**Sequence and source boundaries:** authoritative detail depth first, then availability-aware reminders/Live Activities, then the WCIF-first personal dashboard. Preserve existing WCA Live GraphQL/realtime behavior. A future Cubing China adapter must verify the current v2 structured contract; the public PHP/Yii repository and dormant legacy socket client do not prove that contract. Keep official results, provisional Live scores and scheduled assignments distinct, with provider IDs, cache age and offline snapshots. See [competition/Live design](docs/competition-data-live-design.md). No regional Live UI or dashboard was implemented in the depth pass.
+**Sequence and source boundaries:** authoritative detail depth first, then availability-aware reminders/Live Activities, then the WCIF-first personal dashboard. Preserve existing WCA Live GraphQL/realtime behavior. Modern CubingChina Live is implemented; see [round progress and advancement](docs/cubingchina-live-progress-nov02.md) for current evidence and provider limits. Keep official results, provisional Live scores and scheduled assignments distinct, with provider IDs, cache age and offline snapshots. The personal dashboard and reminders remain planned.
 
 **First release completion criteria:** A signed-in user can open an upcoming or active competition and see their next group and latest result without leaving CubeFlow.
 
@@ -263,7 +265,7 @@ One Reconstruction concept supports manual entry, video/memory analysis, recreat
 
 ### Current Local Behavior Must Remain Available
 
-**Implemented:** Head-to-Head and Side-by-Side are local two-person Timer experiences with continuous cumulative wins. Ten consecutive wins can mean 10-0; there are no fixed attempt counts, rounds, sets or automatic match ending. Users keep solving until they stop. Player 1/2 can be placeholders, not persistent accounts. Side-by-Side specifically means same-device landscape split-screen, not networking. Head-to-Head is not already an advanced match engine.
+**Implemented:** Head-to-Head and Side-by-Side are local two-person Timer experiences with continuous cumulative wins. A solve pair has its own ready/start/finish lifecycle, but there is no fixed match length, set format, or automatic match ending. Players can independently use touch, manual entry, a Smart Cube or a supported Bluetooth timer, with separate event and handicap settings. Side-by-Side means same-device landscape split-screen, not networking. See the [mixed-input Battle closeout](docs/performance-battle-sharing-nov03.md).
 
 "Free Play" is a useful future name for these semantics, not an instruction to rename current UI. Preserve this simple default when optionally adding richer rules.
 

@@ -1,0 +1,75 @@
+# CubeFlow performance and recovery pass, November 6, 2026
+
+## Functional and Presentation Changes
+
+| Area | Finding and change | Verification boundary |
+| --- | --- | --- |
+| WeiPo 2x2 Timer | A manual BLE connection could be filtered out of active-device selection by the persisted 3x3 request. When the stale event later reconciled, a redundant replacement could mark the already-correct 2x2 scramble as unavailable to the solve assignment. Manual adoption now takes place only when no device is active; the Timer rejects mismatched events and retains the correct scramble when its session and event already match. | The mounted regression uses the production connection handoff and simulated A3/A5 state transitions through scramble verification, timing, and persistence. This is not another BLE hardware acceptance result. |
+| Data Sessions | Intermediate sheet choices previously started Data snapshot preparation and woke the hidden Timer's synchronous statistics path. Selection still writes the real preference immediately. Data invalidates stale work and reads the final session after dismissal; inactive Timer stats are invalidated and refreshed on activation or when required for completed-solve PB handling. | The mounted 3,569/4,505-solve test verifies five immediate preference changes, no intermediate destination loads or hidden Timer reads, and exactly one final Data load. |
+| Data toolbar | The selection-range path no longer traverses the full list before an anchor exists. The all-selected predicate rejects impossible counts early. Delete uses the shared system-red prominent UIKit configuration, a native-sized target and measured width for text or trash. The original native Select/X toolbar identities and scroll-edge APIs remain; no mask or scroll adjustment was added. | A simulator geometry trace is not proof that the reported physical bottom rectangle or transition hitch is fixed. |
+| Session and charts | Normal Session title uses the native inline title; editing keeps its separate leading title and reuses the established circle/checkmark transition. The line chart keeps the existing layout and adds a separate dashed Ao12 run, distinct DNF/+2 totals and no redundant chevrons. The histogram is unchanged. | Exact series and penalties continue to use the existing statistics rules. |
+| Recent Records | The targeted WCA Live competition request formerly waited for a whole-round roster. It now yields after round metadata; the destination starts one competitor request in parallel and can show an exact person/event/round result while the normal round owner still loads its roster. Late results do not auto-reopen a dismissed card. | No demonstrated published-WCA or CubingChina Live deep-link latency change. No global round scanning or new network transport. |
+| Interesting Competitions | Existing historical discoveries were static facts. A new six-item section uses cached scheduled championships, programs with at least eight distinct events, and ended competitions within 30 days when matched to a cached WR. The window for scheduled entries is 120 days. The strongest ranked signal leads; remaining picks prefer new regions and event coverage, with stable ordering and canonical-ID deduplication. | Does not fetch extra competitions or infer format from names. Geographic diversity is limited by available cached data. Historical fact sections remain. |
+| Sharing | Report attempts are inline when the actual text fits and otherwise wrap; report badges use the existing compact variant. In Chinese, verified CubingChina city/province fields join the localized country (e.g. 江门，广东 · 中国), without new network traffic. The overlay keeps X fixed and chooses Share's slot from actual title width. Highlight has a separate compact production layout and no top blue rule. | Reports still export a single strip-encoded PNG, preview tiles are not share items, and unsupported sizes return an explicit error. |
+| Badges and device management | The small PR badge moves 2 pt toward the value. Standard CR/NR/PR corner radius is 4.5 pt; WR and compact geometry are unchanged. Tapping a connected cube's name opens its existing detail view with the same manager and saved-device owner; multi-device switching remains a separate chevron menu. | No connect/disconnect is triggered by opening or leaving the detail view. |
+| Battle | The event button now expands into that player's settings using a matched native glass identity on iOS 26+, with a material fallback and no matched animation under Reduce Motion. Existing input, event, device, manual format and 0–10-second handicap are consolidated; there is no extra ellipsis. | There is no per-player inspection or separate scramble setting to expose. Scoring and device ownership were not changed. |
+
+The [WCA Live competition schema](https://github.com/thewca/wca-live/blob/main/lib/wca_live_web/schema/competitions_types.ex)
+supports a person-scoped result query; the [round schema](https://github.com/thewca/wca-live/blob/main/lib/wca_live_web/schema/scoretaking_types.ex)
+does not expose a per-person result filter on the roster. The [Jiangmen listing](https://cubing.com/competition/Jiangmen-Open-2026)
+and its public SSR metadata provide the city and province. Battle uses
+[Apple's public SwiftUI Liquid Glass APIs](https://developer.apple.com/documentation/SwiftUI/Applying-Liquid-Glass-to-custom-views).
+
+## Performance Audit
+
+- **Launch and shared UI:** Deferred tab construction and the existing first-frame diagnostics are unchanged. The launch probe's first display-link callback is not a hardware first-visible-frame or black-screen measurement. Data's native tab attachment and toolbar share the app's existing scroll-edge system; no attempt was made to obscure a layer with a custom background.
+- **Timer:** The generator remains off-main with its existing prewarm, foreground/prefetch ordering and stale-result checks. The only added gating concerns inactive statistics and stale 3x3 selection over an active 2x2. No timing, scramble animation or format rewrite.
+- **Data:** The important change is dropping work while the session sheet covers the destination, rather than delaying preference publication. Snapshot generation rejects canceled/stale reads. Existing Core Data background snapshot, chart downsampling, and average-window paths remain. First-use, query and formatting timings below are simulator wall-clock values.
+- **Algs:** The tab still mounts lazily; overview search items use the existing signature cache and are built on demand. Trainer history decoding in overview accessors remains a profiling candidate, not a measured regression fixed in this pass.
+- **Explore and competitions:** The removed eager WCA Live roster was on the navigation critical path. The targeted lookup begins without awaiting that roster. Recommendation ranking runs over the already-bounded cached candidate set; no polling or new global lookup was added. CubingChina Info now reuses parsed metadata for WCA ID, tickets, artwork, and location instead of parsing the same HTML for those fields separately.
+- **Smart Cube and rendering:** No changes to the physically accepted GAN 3x3 animator, canonical processing, solver or Guidance scheduling. The 2x2 connection/Timer fix does not change the protocol decoder. Simulator tests exercise dual mounted renderers, but do not measure real BLE, battery, background reconnect or ProMotion behavior.
+- **Battle:** Configuration stays per player. Rendering and timing remain mounted underneath the expanded view; input hit testing is disabled only for the affected panel. Tests exercise rapid native/canonical state changes and round restoration. No physical animation or simultaneous BLE measurements.
+- **Sharing:** One full PNG plus bounded strips; the smaller report height is an output-layout improvement, not a promise about Photos or every share extension. The runtime still performs the existing lease cleanup and cancellation checks.
+
+## Measurements
+
+Xcode 27.2, iPhone 17 Pro simulator, iOS 26.5, Debug. Wall times below are not physical-device frame deadlines. Small samples do not justify tail percentiles or energy claims.
+
+| Workload | Reference | Current |
+| --- | --- | --- |
+| Five alternating selections with 3,569 and 4,505 solves | User observed approximately 1 s of intermittent stalling on iPhone; no comparable simulator baseline | 1.20–1.64 ms synchronous selection and preference publication; no intermediate destination fetch or hidden Timer statistics read; one final Data load. Dismissal to published snapshot was 869–909 ms including native dismissal and harness scheduling. Not a measurement of visible selection feedback. |
+| 68-round single PNG | 1680 × 14570, 2,092,728 bytes, 377 ms | 1680 × 9946, 1,746,868 bytes, 269–278 ms |
+| 512-round single PNG | 880 × 53876, 7,588,259 bytes, 1109–1203 ms | 906 × 51855, 7,181,773 bytes, 939–996 ms; largest individual strip remains 2,580,480 bytes |
+| 72 all-selected checks over 10,000 rows, five current batches | Set construction/equality: 80–84 ms | Early-exit membership: 26–27 ms. This is a microbenchmark and repeats the already accepted predicate comparison; the new anchor guard removes a separate scan. |
+| XCTest app-launch duration, five samples | 1.537 s mean in prior pass | 1.534 s mean, 0.815% RSD. No reliable improvement. Cold Timer-control check: 5.13–5.22 s including XCTest polling and accessibility. |
+| Three cold-launch in-process traces | No directly comparable display-link samples | Persistence 17.5–20.6 ms; root appeared 428–441 ms after trace start; Timer initialization section 1.5–1.9 ms; first display-link callback 763–806 ms after trace start. Two traces logged a callback gap above 100 ms at about 3 s. This does not identify a production stall or a black-frame duration. |
+| All-tab mounted snapshot, first / warm | See [prior report](physical-device-recovery-nov03.md) | Final run: Timer 131 / 357 ms; Data 197 / 397 ms; Algs 555 / 448 ms; Explore 674 / 417 ms; Settings 481 / 443 ms. The Data fixture published 1,000 rows after 494 ms with one initial fetch (574 ms in the earlier run). Snapshot rendering and simulator noise are included. No broad first-entry speed-up is established. |
+| Recent Records to WCA Live | Required round roster before targeted navigation | Person request and competition metadata can run concurrently; card may use the exact targeted result without waiting for the roster. No comparable live tap-to-card timings were collected. |
+
+The export comparisons use different compact layouts, not an isolated encoder optimization. Strip size is not a bound on process RSS. Charts retained ordinal selection; the 8,000-solve fixture builds the history off-main in 116–120 ms and services 256 indexed lookups in about 0.06 ms.
+
+## Visual Review
+
+Artifacts live under the ignored `build/recovery-nov06/` directory:
+
+| Surface | Artifact |
+| --- | --- |
+| Real root Data, search and selected native toolbar in Light/Dark | `data-search-1.png`, `data-search-2.png`, `data-delete-1.png`, `data-delete-2.png` |
+| Data navigation/compositor samples in both appearances | `data-toolbar-1.json`, `data-toolbar-2.json` |
+| Session selector while opening, centered native title | `session-selector.png` |
+| Direct SwiftUI chart raster, including actual axes, Ao5, Ao12 and penalty counts | `line-chart-rendered-1.png`, `line-chart-rendered-2.png` |
+| Rendered, exported Competition Report and Result Highlight PNGs | `report-single-round.png`, `highlight.png` |
+| Battle collapsed, one expanded, two expanded | `battle-panels.png`, `battle-one-configuration.png`, `battle-dual-configuration.png` |
+
+The mounted chart's UIKit window screenshot omits the plot on this simulator, including on the previous version. The direct SwiftUI raster includes both series and axes. For Data, 16 sampled geometry states in each appearance show constant top scroll offset (-183 pt) and native bottom inset changes (0 or 86 pt) during Select/X. Sampling is not frame-accurate, and it neither reproduces nor attributes the reported physical white/black rectangle. No speculative masking or inset override was added.
+
+## Verification and Acceptance
+
+- The mounted WeiPo regression first reproduced the old mismatch, then passed: persisted 3x3, manual connection/adoption, 2x2 event and scramble, navigation away and back, native A3/A5 state transitions, timing, and saved solve metadata. This does not exercise a physical peripheral.
+- The first full application run had one failing test (three assertions) for Apple's Chinese country display name. The targeted retest passed after restricting the correction to the Chinese share label. A subsequent expanded root-Tab test initially consumed its navigation request in the host; isolating the test preferences fixed the harness. Both final visual tests passed.
+- Final full application regression passed: 1,189 test cases, 1,183 passed, zero failed, six skipped. The split is 831 XCTest cases (825 passed and six skipped) plus 358 passed Swift Testing cases. The six skips are the opt-in live provider probe and five host Keychain tests requiring entitlements. See `units-final.xcresult` and `units-final.log`.
+- All six targeted XCUITests passed: launch performance, restored Timer controls, Explore's competition entry, published detail Back, official By Competitor results and horizontal solves, and sum-row/result-card navigation.
+- Unsigned generic iOS Debug build passed with app `MinimumOSVersion=15.0`. This is compile and product metadata verification, not a run on iOS 15. All 60 localization files passed `plutil -lint`; `git diff --check` passed. Existing TNoodle privacy assessment and App Intents metadata warnings were not part of this pass. Simulator runs also emit WebKit/UIKit/QoS warnings; Xcode's optional post-run simulator diagnostics collection reported a `simctl` lookup error, but the test command and result bundle passed.
+- Work is confined to the App repository. `main` remains at `82b455c39`, 0 ahead/0 behind the existing local `origin/main` ref, with 89 modified tracked files, 73 untracked files (including pre-existing work), and no staged changes. No physical device was operated, and no commit, push, reset or deployment was performed.
+
+Physical acceptance still needed at the time of this pass: (1) use the WeiPo from a previously selected 3x3 Timer, return from device management, complete and verify one saved 2x2 solve; (2) switch the two large sessions repeatedly, then check Data Select/X at the top and bottom in Light and Dark for a jump and the reported color block; (3) verify Battle's native glass reversal on both sides and with Reduce Motion, and compare the first-result wait for a previously slow WCA Live Recent Record; (4) share/save one representative long PNG and check that its final round is present. Simulator evidence does not settle the physical cold-start black frame or tab-entry frame pacing. For subsequent decisions, see the [November 13 closeout](development-closeout-nov13.md).
