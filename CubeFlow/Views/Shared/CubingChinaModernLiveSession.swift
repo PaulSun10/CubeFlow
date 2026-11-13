@@ -18,12 +18,18 @@ final class CubingChinaModernLiveSession: ObservableObject {
     private var knownBadgeRounds: [String: CubingChinaLiveRound] = [:]
     private var knownBadgeEpochs: [String: Int] = [:]
     @Published private(set) var roundAdvancement: [String: [String: CompetitionAdvancement]] = [:]
+    @Published private(set) var competitionRules: CubingChinaLiveCompetitionRules?
+    private var rulesTask: Task<Void, Never>?
+    private var requestedRules = false
+    private var explicitSelection = false
     @Published private var nextRosters: [CubingChinaLiveRoundKey: Roster] = [:]
     private struct Roster {
         let revision: Int
         let people: Set<CubingChinaLiveID<CubingChinaIDKind.User>>
+        let streamEpoch: Int
     }
     private var nextRosterTask: Task<Void, Never>?
+    private var adjacentRequestID = UUID()
     private(set) var selectedKey: CubingChinaLiveRoundKey
     let bootstrap: CubingChinaLiveBootstrap
     private let transport: any CubingChinaLiveTransport
@@ -58,8 +64,10 @@ final class CubingChinaModernLiveSession: ObservableObject {
         personalObservation = personalRecords.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
     }
 
-    func select(_ key: CubingChinaLiveRoundKey) {
+    func select(_ key: CubingChinaLiveRoundKey, explicitlyRequested: Bool = false) {
+        if explicitlyRequested { explicitSelection = true }
         guard key != selectedKey, let round = rounds.first(where: { $0.key == key }) else { return }
+        explicitSelection = true
         selectionGeneration += 1; snapshotTask?.cancel(); snapshotTask = nil
         nextRosterTask?.cancel(); nextRosterTask = nil
         needsSnapshotRefresh = false
@@ -89,6 +97,10 @@ final class CubingChinaModernLiveSession: ObservableObject {
         guard runTask == nil else { return }
         generation += 1
         let token = generation
+        if !explicitSelection, let preferred = CubingChinaLiveBootstrap.preferredRound(in: rounds), preferred.key != selectedKey {
+            select(preferred.key); explicitSelection = false
+        }
+        loadCompetitionRules()
         refreshSelectedRound()
         runTask = Task { [weak self] in
             guard let self else { return }
@@ -100,9 +112,10 @@ final class CubingChinaModernLiveSession: ObservableObject {
                     guard !Task.isCancelled, generation == token else { opened.cancel(); return }
                     ownedConnection = opened
                     streamEpoch += 1
+                    adjacentRequestID = UUID(); nextRosterTask?.cancel(); nextRosterTask = nil
                     connection = opened; connectionError = nil
                     // The stream buffers during resync. Reconnect never assumes server replay support.
-                    await refreshRounds(token: token)
+                    await refreshRounds(token: token, chooseDefault: attempt == 0)
                     guard !Task.isCancelled, generation == token else { opened.cancel(); return }
                     if attempt > 0 { aggregateRefreshID += 1 }
                     refreshSelectedRound()
@@ -136,6 +149,7 @@ final class CubingChinaModernLiveSession: ObservableObject {
         runTask?.cancel(); runTask = nil
         snapshotTask?.cancel(); snapshotTask = nil
         nextRosterTask?.cancel(); nextRosterTask = nil
+        rulesTask?.cancel(); rulesTask = nil; requestedRules = false; competitionRules = nil
         needsSnapshotRefresh = false
         connection?.cancel(); connection = nil
         viewersObservedAt = nil
@@ -144,7 +158,7 @@ final class CubingChinaModernLiveSession: ObservableObject {
 
     func retry() { stop(); start() }
 
-    private func refreshRounds(token: Int) async {
+    private func refreshRounds(token: Int, chooseDefault: Bool = false) async {
         do {
             let fetched = try await transport.rounds(slug: bootstrap.slug)
             let validated = try CubingChinaLiveBootstrap.make(slug: bootstrap.slug, rounds: fetched)
@@ -157,6 +171,9 @@ final class CubingChinaModernLiveSession: ObservableObject {
                 return value
             }
             if rounds != merged { rounds = merged }
+            if chooseDefault, !explicitSelection, let preferred = CubingChinaLiveBootstrap.preferredRound(in: rounds), preferred.key != selectedKey {
+                select(preferred.key); explicitSelection = false
+            }
             let validKeys = Set(rounds.map(\.key))
             cachedRounds = cachedRounds.filter { validKeys.contains($0.key) }
             cachedRoundOrder.removeAll { !validKeys.contains($0) }
@@ -261,10 +278,49 @@ final class CubingChinaModernLiveSession: ObservableObject {
                 snapshot.results.flatMap { [$0.singleIndicator, $0.averageIndicator] })
             if knownRoundBadges[snapshot.round.key.selectionID] != tag { knownRoundBadges[snapshot.round.key.selectionID] = tag }
         }
-        let advancement = CubingChinaLivePresentation.advancement(
-            snapshot, rounds: rounds, nextParticipants: nextParticipants(for: snapshot.round))
-        if roundAdvancement[snapshot.round.key.selectionID] != advancement { roundAdvancement[snapshot.round.key.selectionID] = advancement }
+        recomputeAdvancement()
         loadNextRosterIfNeeded()
+    }
+
+    private func loadCompetitionRules() {
+        guard !requestedRules, let transport = transport as? any CubingChinaLiveRulesTransport else { return }
+        requestedRules = true
+        let token = generation
+        rulesTask = Task { [weak self] in
+            guard let self else { return }
+            guard let rules = try? await transport.competitionRules(slug: bootstrap.slug),
+                  !Task.isCancelled, generation == token, rules.id == bootstrap.competitionID else { return }
+            competitionRules = rules
+            recomputeAdvancement()
+        }
+    }
+
+    private func recomputeAdvancement() {
+        var all: [String: [String: CompetitionAdvancement]] = [:]
+        for cached in cachedRounds.values where cached.streamEpoch == streamEpoch {
+            guard let value = cached.state.snapshot, rounds.contains(value.round),
+                  value.round.revision >= cached.state.minimumRevision else { continue }
+            all[value.round.key.selectionID] = CubingChinaLivePresentation.advancement(value, rounds: rounds,
+                nextParticipants: nextParticipants(for: value.round), hasCompleteRoster: true,
+                supportsIndependentAdvancement: competitionRules?.supportsIndependentAdvancement(value.round.eventId) == true)
+        }
+        if roundAdvancement != all { roundAdvancement = all }
+    }
+
+    func inferredParticipants(for round: CubingChinaLiveRound) -> [CubingChinaLiveParticipant] {
+        guard let previous = rounds.first(where: { $0.eventId == round.eventId && $0.roundNumber + 1 == round.roundNumber }),
+              competitionRules?.supportsIndependentAdvancement(previous.eventId) == true,
+              let cached = cachedRounds[previous.key], cached.streamEpoch == streamEpoch,
+              let source = cached.state.snapshot, source.round == previous else { return [] }
+        if source.round.isFinished && round.hasStarted, let roster = nextParticipants(for: previous), !roster.isEmpty { return [] }
+        let assessments = CompetitionAdvancementCalculation.assessments(source, isFinal: false, hasCompleteRoster: true)
+        let authoritative = nextParticipants(for: previous)
+            ?? Set(snapshot?.round.key == round.key ? snapshot?.results.map(\.userId) ?? [] : [])
+        return source.rankedResults.compactMap { result in
+            guard assessments["ccc-result:\(result.id.rawValue)"] == .guaranteed,
+                  !authoritative.contains(result.userId), let person = result.competitor else { return nil }
+            return CubingChinaLiveParticipant(competitor: person, sourceRound: previous.key)
+        }
     }
 
     private func rememberSelectedRound() {
@@ -346,6 +402,8 @@ final class CubingChinaModernLiveSession: ObservableObject {
     /// Grouped records/podiums contain only a subset of the field. Fetch their
     /// complete evidence without selecting a Results tab or changing its round.
     func loadAdvancementEvidence(for keys: [CubingChinaLiveRoundKey]) async {
+        loadCompetitionRules()
+        await rulesTask?.value
         let token = generation
         for key in keys {
             guard !Task.isCancelled, generation == token else { return }
@@ -353,8 +411,10 @@ final class CubingChinaModernLiveSession: ObservableObject {
             if roundAdvancement[key.selectionID] != nil,
                nextRound(after: expected) == nil || nextParticipants(for: expected) != nil { continue }
             do {
+                let epoch = streamEpoch, eventSequences = roundEventSequences
                 let full = try await fetchSnapshot(key).validated()
-                guard acceptsEvidence(full, expected: expected, token: token) else { continue }
+                guard acceptsEvidence(full, expected: expected, token: token), epoch == streamEpoch,
+                      roundEventSequences[key, default: 0] == eventSequences[key, default: 0] else { continue }
                 let next = nextRound(after: full.round)
                 var fetchedNext: CubingChinaLiveSnapshot?
                 if let next, nextParticipants(for: full.round) == nil {
@@ -362,17 +422,20 @@ final class CubingChinaModernLiveSession: ObservableObject {
                     guard let fetchedNext, acceptsEvidence(fetchedNext, expected: next, token: token),
                           nextRound(after: full.round)?.id == next.id else { continue }
                 }
-                guard acceptsEvidence(full, expected: expected, token: token) else { continue }
+                guard acceptsEvidence(full, expected: expected, token: token), epoch == streamEpoch,
+                      roundEventSequences[key, default: 0] == eventSequences[key, default: 0],
+                      next.map({ roundEventSequences[$0.key, default: 0] == eventSequences[$0.key, default: 0] }) ?? true else { continue }
                 // Install metadata, roster and derived states together, after all
                 // suspension points; no partial field can authorize a highlight.
                 updateRound(full.round)
+                var fullState = CubingChinaLiveRoundState(round: full.round)
+                _ = try fullState.install(full); remember(fullState, key: key)
                 if let fetchedNext {
                     updateRound(fetchedNext.round)
                     nextRosters[fetchedNext.round.key] = Roster(revision: fetchedNext.round.revision,
-                        people: Set(fetchedNext.results.map(\.userId)))
+                        people: Set(fetchedNext.results.map(\.userId)), streamEpoch: streamEpoch)
                 }
-                roundAdvancement[key.selectionID] = CubingChinaLivePresentation.advancement(
-                    full, rounds: rounds, nextParticipants: nextParticipants(for: full.round))
+                recomputeAdvancement()
                 if snapshot?.round.key == key, snapshot?.round != full.round, runTask != nil {
                     refreshSelectedRound()
                 }
@@ -397,14 +460,16 @@ final class CubingChinaModernLiveSession: ObservableObject {
 
     private func fetchSnapshot(_ key: CubingChinaLiveRoundKey) async throws -> CubingChinaLiveSnapshot {
         guard let round = rounds.first(where: { $0.key == key }) else { throw CubingChinaLiveError.unsupported }
-        let identity = "\(round.id.rawValue)|\(round.competitionRoundId.rawValue)|\(round.revision)"
+        let identity = "\(round.id.rawValue)|\(round.competitionRoundId.rawValue)|\(round.revision)|\(streamEpoch)|\(roundEventSequences[key, default: 0])"
         let transport = transport, slug = bootstrap.slug
         return try await resultRequests.value(key: identity) { try await transport.results(slug: slug, key: key) }
     }
 
     func nextParticipants(for round: CubingChinaLiveRound) -> Set<CubingChinaLiveID<CubingChinaIDKind.User>>? {
-        guard let next = nextRound(after: round), let roster = nextRosters[next.key],
-              roster.revision == next.revision else { return nil }
+        guard let next = nextRound(after: round) else { return nil }
+        if let cached = cachedRounds[next.key], cached.streamEpoch == streamEpoch,
+           let value = cached.state.snapshot, value.round == next { return Set(value.results.map(\.userId)) }
+        guard let roster = nextRosters[next.key], roster.revision == next.revision, roster.streamEpoch == streamEpoch else { return nil }
         return roster.people
     }
 
@@ -423,13 +488,22 @@ final class CubingChinaModernLiveSession: ObservableObject {
     }
 
     private func loadNextRosterIfNeeded() {
-        guard nextRosterTask == nil, let snapshot, let next = nextRound(after: snapshot.round),
-              nextParticipants(for: snapshot.round) == nil else { return }
+        guard nextRosterTask == nil, let snapshot else { return }
+        let adjacent = rounds.filter { $0.eventId == snapshot.round.eventId && abs($0.roundNumber - snapshot.round.roundNumber) == 1 }
+            .filter { round in
+                guard let cached = cachedRounds[round.key], cached.streamEpoch == streamEpoch else { return true }
+                return cached.state.snapshot?.round != round
+            }
+        guard !adjacent.isEmpty else { return }
+        let requestID = UUID()
+        adjacentRequestID = requestID
         let token = generation, selection = selectionGeneration
         nextRosterTask = Task { [weak self] in
             guard let self else { return }
-            defer { if generation == token, selectionGeneration == selection { nextRosterTask = nil } }
-            // Only the adjacent round in this opened competition, never global discovery.
+            defer { if generation == token, selectionGeneration == selection, adjacentRequestID == requestID { nextRosterTask = nil } }
+            // At most the predecessor and successor of the selected round, never a global scan.
+            for next in adjacent {
+            let eventSequence = roundEventSequences[next.key, default: 0], epoch = streamEpoch
             guard let fetched = try? await fetchSnapshot(next.key),
                   (try? fetched.validated()) != nil, fetched.round.key == next.key,
                   fetched.round.competitionId == bootstrap.competitionID,
@@ -437,12 +511,13 @@ final class CubingChinaModernLiveSession: ObservableObject {
                   fetched.round.revision >= next.revision, !Task.isCancelled,
                   generation == token, selectionGeneration == selection,
                   let current = rounds.first(where: { $0.id == next.id }),
-                  current.revision <= fetched.round.revision else { return }
+                  current.revision <= fetched.round.revision,
+                  streamEpoch == epoch, roundEventSequences[next.key, default: 0] == eventSequence else { continue }
             updateRound(fetched.round)
-            nextRosters[next.key] = Roster(revision: fetched.round.revision, people: Set(fetched.results.map(\.userId)))
-            if let snapshot = self.snapshot {
-                roundAdvancement[snapshot.round.key.selectionID] = CubingChinaLivePresentation.advancement(
-                    snapshot, rounds: rounds, nextParticipants: nextParticipants(for: snapshot.round))
+            nextRosters[next.key] = Roster(revision: fetched.round.revision, people: Set(fetched.results.map(\.userId)), streamEpoch: streamEpoch)
+            var fullState = CubingChinaLiveRoundState(round: fetched.round)
+            if (try? fullState.install(fetched)) == true { remember(fullState, key: fetched.round.key) }
+            recomputeAdvancement()
             }
         }
     }
@@ -496,8 +571,12 @@ final class CubingChinaModernLiveSession: ObservableObject {
             }
             updateRound(delta.round)
             if delta.round.revision >= previousRevision { aggregateRefreshID += 1 }
+            let needsFullRoster = ["round.competitor.joined", "round.competitor.quit", "advancement.refreshed", "results.reranked"].contains(envelope.type)
+                && delta.upsertedResults.isEmpty && delta.removedResultIds.isEmpty
             guard delta.round.key == selectedKey else {
-                if let cached = cachedRounds[delta.round.key], cached.streamEpoch == streamEpoch {
+                if needsFullRoster {
+                    cachedRounds[delta.round.key] = nil; cachedRoundOrder.removeAll { $0 == delta.round.key }
+                } else if let cached = cachedRounds[delta.round.key], cached.streamEpoch == streamEpoch {
                     var updated = cached.state
                     if try !updated.apply(delta) { remember(updated, key: delta.round.key) }
                     else { cachedRounds[delta.round.key] = nil; cachedRoundOrder.removeAll { $0 == delta.round.key } }
@@ -505,14 +584,18 @@ final class CubingChinaModernLiveSession: ObservableObject {
                 if delta.round.revision >= previousRevision {
                     knownRoundBadges[delta.round.key.selectionID] = nil; knownBadgeRounds[delta.round.key.selectionID] = nil
                 }
-                if let snapshot, nextRound(after: snapshot.round)?.id == delta.round.id,
-                   nextParticipants(for: snapshot.round) == nil {
+                if let snapshot, snapshot.round.eventId == delta.round.eventId,
+                   abs(snapshot.round.roundNumber - delta.round.roundNumber) == 1 {
                     nextRosterTask?.cancel(); nextRosterTask = nil
                 }
                 updateBadge()
                 return
             }
-            if try state.apply(delta) { refreshSelectedRound() }
+            if needsFullRoster {
+                try state.observeMetadata(delta.round)
+                cachedRounds[delta.round.key] = nil; cachedRoundOrder.removeAll { $0 == delta.round.key }
+                recomputeAdvancement(); refreshSelectedRound()
+            } else if try state.apply(delta) { refreshSelectedRound() }
             else { snapshot = state.snapshot; rememberSelectedRound(); updateBadge() }
         default:
             personalEvidenceSequence += 1

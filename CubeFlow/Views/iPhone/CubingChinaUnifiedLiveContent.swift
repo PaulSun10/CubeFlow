@@ -21,7 +21,7 @@ struct CubingChinaUnifiedLiveContent<Actions: View>: View {
     private var eventID: String { session.rounds.first { $0.key.selectionID == roundSelection }?.eventId ?? session.selectedKey.eventID }
     private var eventBinding: Binding<String> {
         Binding(get: { eventID }, set: { event in
-            if let round = session.rounds.filter({ $0.eventId == event }).max(by: { $0.roundNumber < $1.roundNumber }) {
+            if let round = CubingChinaLiveBootstrap.preferredRound(in: session.rounds.filter { $0.eventId == event }) {
                 roundSelection = round.key.selectionID
             }
         })
@@ -122,7 +122,18 @@ struct CubingChinaUnifiedLiveContent<Actions: View>: View {
                     Text(appLocalizedString("explore.cached", languageCode: language))
                         .font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 10)
                 }
-                list(value)
+                if CubingChinaLivePresentation.resultsState(value) != .recorded {
+                    Text(PublishedCompetitionStrings.text(CubingChinaLivePresentation.resultsState(value) == .notStarted
+                        ? "live.not_started" : "live.no_results_yet", language))
+                        .font(.subheadline).foregroundStyle(.secondary).padding()
+                    participantNames(value.results.compactMap(\.competitor), inferred: false)
+                } else { list(value) }
+                let inferred = session.inferredParticipants(for: value.round)
+                if !inferred.isEmpty {
+                    Text(PublishedCompetitionStrings.text("live.guaranteed_participants", language))
+                        .font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(10)
+                    participantNames(inferred.map(\.competitor), inferred: true)
+                }
             } else if session.isLoadingResults { ProgressView().padding(24) }
             else { Text(PublishedCompetitionStrings.text("live.results_unavailable", language)).foregroundStyle(.secondary).padding() }
             if session.resultError != nil || session.connectionError != nil {
@@ -132,6 +143,18 @@ struct CubingChinaUnifiedLiveContent<Actions: View>: View {
         .modifier(CompetitionResultsSurface())
     }
 
+    private func participantNames(_ people: [CubingChinaLiveResult.Competitor], inferred: Bool) -> some View {
+        LazyVStack(spacing: 0) {
+        ForEach(people, id: \.id) { person in
+            CompetitionResultTableRow(rank: "", name: language.hasPrefix("zh") ? person.localName ?? person.name : person.name,
+                values: [], language: language)
+                .accessibilityLabel((language.hasPrefix("zh") ? person.localName ?? person.name : person.name)
+                    + (inferred ? ", " + PublishedCompetitionStrings.text("live.guaranteed_participants", language) : ""))
+                .accessibilityIdentifier("cubing-participant-\(person.id.rawValue)")
+        }
+        }
+    }
+
     private func list(_ snapshot: CubingChinaLiveSnapshot, isCompleteSnapshot: Bool = true) -> some View {
         Group {
             if snapshot.results.isEmpty {
@@ -139,7 +162,7 @@ struct CubingChinaUnifiedLiveContent<Actions: View>: View {
             } else {
                 CompetitionResultExperience(round: CubingChinaLivePresentation.round(snapshot, rounds: session.rounds, language: language,
                     nextParticipants: session.nextParticipants(for: snapshot.round),
-                    advancementStates: isCompleteSnapshot ? nil : session.knownAdvancement),
+                    advancementStates: session.knownAdvancement),
                     languageCode: language, cardState: card, decoratesList: false, showsMyResultsShortcut: false,
                     allowsProviderResultsLoader: true, loadAllResults: loadCompetitor)
             }

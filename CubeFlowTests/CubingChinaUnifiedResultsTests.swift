@@ -176,8 +176,13 @@ nonisolated final class UnifiedCoreFixture: CubingChinaLiveTransport, @unchecked
                     let views = self.descendants(window)
                     let hierarchy = views.map { "\(type(of: $0)) \($0.convert($0.bounds, to: window)) id=\($0.accessibilityIdentifier ?? "")" }.joined(separator: "\n")
                     try hierarchy.write(toFile: "/tmp/cubeflow-unified-results-goal/toolbar-hierarchy-\(Int(width)).txt", atomically: true, encoding: .utf8)
-                    let buttons = views.filter { String(describing: type(of: $0)) == "ToolbarTAMICAdaptorView" && !$0.isHidden && $0.alpha > 0 }
-                        .map { $0.convert($0.bounds, to: window) }.filter { $0.minY > window.bounds.height - 150 }.sorted { $0.minX < $1.minX }
+                    // UIKit renamed ToolbarTAMICAdaptorView to
+                    // _UITAMICAdaptorView in the current runtime. Keep checking
+                    // the actual native item host, not its historical prefix.
+                    let buttons = views.filter {
+                        String(describing: type(of: $0)).hasSuffix("TAMICAdaptorView") && !$0.isHidden && $0.alpha > 0
+                    }.map { $0.convert($0.bounds, to: window) }
+                        .filter { $0.minY > window.bounds.height - 150 && window.bounds.intersects($0) }
                     XCTAssertEqual(buttons.count, 1, "Chat is the only bottom action; preferences remain in Chat")
                     XCTAssertGreaterThan(try XCTUnwrap(buttons.last).midX, width * 2 / 3, "Chat remains bottom-right")
                 }

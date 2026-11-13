@@ -78,14 +78,14 @@ nonisolated private struct GroupedEvidenceExtras: CubingChinaLiveExtrasTransport
         let first = try snapshot((1...8).map { [$0 * 100] })
         let next = try snapshot([[100]], number: 2)
         let rounds = [first.round, next.round]
-        XCTAssertTrue(CubingChinaLivePresentation.advancement(first, rounds: rounds).isEmpty)
+        XCTAssertEqual(CubingChinaLivePresentation.advancement(first, rounds: rounds)["ccc-result:1002"], .possible)
         let roster = Set(next.results.map(\.userId))
         let states = CubingChinaLivePresentation.advancement(first, rounds: rounds, nextParticipants: roster)
-        XCTAssertEqual(states.count, 1)
+        XCTAssertEqual(states.count, 3, "Unavailable/partial next roster must not erase current possible advancement")
         let person = try XCTUnwrap(CubingChinaLivePresentation.competitor([first.results[0], next.results[0]], rounds: rounds, language: "en"))
         XCTAssertEqual(person.results.first?.isAdvancing, true)
         let absent = try XCTUnwrap(CubingChinaLivePresentation.competitor([first.results[1]], rounds: rounds, language: "en", knownAdvancement: states))
-        XCTAssertNil(absent.results.first?.isAdvancing, "Rank two does not prove participation or elimination")
+        XCTAssertEqual(absent.results.first?.isAdvancingQuestionable, true, "Rank two remains possible, not authoritative")
     }
 
     func testOfficialRoundAndAllResultsHaveIdenticalVerifiedFlags() throws {
@@ -128,12 +128,13 @@ nonisolated private struct GroupedEvidenceExtras: CubingChinaLiveExtrasTransport
         let transport = FakeCubingChinaTransport(snapshot: first, additional: [next])
         let bootstrap = try CubingChinaLiveBootstrap.make(slug: "Beijing-Autumn-Rivalry-2026", rounds: [first.round, next.round])
         let session = CubingChinaModernLiveSession(bootstrap: bootstrap, transport: transport)
+        session.select(first.round.key, explicitlyRequested: true)
         session.start(); defer { session.stop() }
         for _ in 0..<100 where session.nextParticipants(for: first.round) == nil { try await Task.sleep(nanoseconds: 10_000_000) }
         XCTAssertEqual(session.selectedKey, first.round.key)
         XCTAssertEqual(session.nextParticipants(for: first.round), Set(next.results.map(\.userId)))
         XCTAssertEqual(session.knownAdvancement["ccc-result:1001"], .confirmed)
-        XCTAssertNil(session.knownAdvancement["ccc-result:1002"])
+        XCTAssertEqual(session.knownAdvancement["ccc-result:1002"], .confirmed, "Complete field guarantees this place independently of next roster")
         XCTAssertTrue(transport.requestedKeys.allSatisfy { $0 == first.round.key || $0 == next.round.key })
     }
     func testColdGroupedEvidenceUsesCompleteFieldAndAdjacentRosterWithoutSelectingResults() async throws {
@@ -150,7 +151,7 @@ nonisolated private struct GroupedEvidenceExtras: CubingChinaLiveExtrasTransport
         XCTAssertNil(session.snapshot, "Evidence must not require or mutate the selected Results snapshot")
         XCTAssertEqual(session.selectedKey, selection)
         XCTAssertEqual(session.knownAdvancement["ccc-result:1001"], .confirmed)
-        XCTAssertNil(session.knownAdvancement["ccc-result:1002"], "Rank/record alone cannot authorize advancement")
+        XCTAssertEqual(session.knownAdvancement["ccc-result:1002"], .confirmed, "Complete field, not rank/record subset, proves advancement")
         XCTAssertEqual(session.knownAdvancement["ccc-result:2001"], .confirmed, "Final podium, not next-round advancement")
         let count = transport.resultRequests
         await session.loadAdvancementEvidence(for: [first.round.key, next.round.key])
@@ -206,10 +207,11 @@ nonisolated private struct GroupedEvidenceExtras: CubingChinaLiveExtrasTransport
     }
 
     func testAdjacentRosterRevisionRevokesOldEvidenceAndRefreshesWithoutChangingSelection() async throws {
-        let first = try snapshot((1...8).map { [$0 * 100] })
+        let first = try snapshot((1...8).map { [$0 * 100] }, final: true)
         let next = try snapshot([[100]], number: 2)
         let transport = FakeCubingChinaTransport(snapshot: first, additional: [next])
         let session = CubingChinaModernLiveSession(bootstrap: try .make(slug: "Beijing-Autumn-Rivalry-2026", rounds: [first.round, next.round]), transport: transport)
+        session.select(first.round.key, explicitlyRequested: true)
         session.start(); defer { session.stop() }
         for _ in 0..<100 where session.nextParticipants(for: first.round) == nil { try await Task.sleep(nanoseconds: 10_000_000) }
         var object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(snapshot([[100], [200]], number: 2))) as! [String: Any]
@@ -234,16 +236,23 @@ nonisolated private struct GroupedEvidenceExtras: CubingChinaLiveExtrasTransport
     func testSelectionCancellationCannotInstallOldAdjacentRoster() async throws {
         let first = try snapshot((1...8).map { [$0 * 100] })
         let next = try snapshot([[100]], number: 2)
-        let transport = FakeCubingChinaTransport(snapshot: first, additional: [next])
+        var otherObject = try JSONSerialization.jsonObject(with: JSONEncoder().encode(next)) as! [String: Any]
+        var otherRound = otherObject["round"] as! [String: Any]
+        otherRound["id"] = 99; otherRound["competitionRoundId"] = 299; otherRound["eventId"] = "222"; otherRound["roundNumber"] = 1
+        var rules = otherRound["round"] as! [String: Any]; rules["id"] = 299; otherRound["round"] = rules
+        otherObject["round"] = otherRound; otherObject["results"] = []
+        let other = try JSONDecoder().decode(CubingChinaLiveSnapshot.self, from: JSONSerialization.data(withJSONObject: otherObject))
+        let transport = FakeCubingChinaTransport(snapshot: first, additional: [next, other])
         transport.holdResults(for: next.round.key)
-        let session = CubingChinaModernLiveSession(bootstrap: try .make(slug: "Beijing-Autumn-Rivalry-2026", rounds: [first.round, next.round]), transport: transport)
+        let session = CubingChinaModernLiveSession(bootstrap: try .make(slug: "Beijing-Autumn-Rivalry-2026", rounds: [first.round, next.round, other.round]), transport: transport)
+        session.select(first.round.key, explicitlyRequested: true)
         session.start(); defer { session.stop(); transport.releaseHeldResults() }
         for _ in 0..<100 where transport.heldCount == 0 { try await Task.sleep(nanoseconds: 10_000_000) }
         XCTAssertGreaterThan(transport.heldCount, 0)
-        session.select(next.round.key)
+        session.select(other.round.key)
         transport.releaseHeldResults()
-        for _ in 0..<100 where session.snapshot?.round.key != next.round.key { try await Task.sleep(nanoseconds: 10_000_000) }
-        XCTAssertEqual(session.snapshot?.round.key, next.round.key)
+        for _ in 0..<100 where session.snapshot?.round.key != other.round.key { try await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertEqual(session.snapshot?.round.key, other.round.key)
         XCTAssertNil(session.nextParticipants(for: first.round), "A cancelled prior selection must not publish its roster")
     }
 

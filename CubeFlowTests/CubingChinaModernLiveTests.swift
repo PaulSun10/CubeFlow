@@ -174,6 +174,7 @@ final class CubingChinaModernLiveTests: XCTestCase {
         let bootstrap = try CubingChinaLiveBootstrap.make(slug: "Beijing-Autumn-Rivalry-2026", rounds: [first.round, second.round])
         let session = CubingChinaModernLiveSession(bootstrap: bootstrap, transport: transport)
         transport.holdResults(for: first.round.key)
+        session.select(first.round.key, explicitlyRequested: true)
         session.start()
         await eventually { transport.heldCount > 0 }
         session.select(second.round.key)
@@ -262,7 +263,7 @@ final class CubingChinaModernLiveTests: XCTestCase {
     }
 }
 
-nonisolated final class FakeCubingChinaTransport: CubingChinaLiveTransport, @unchecked Sendable {
+nonisolated final class FakeCubingChinaTransport: CubingChinaLiveTransport, CubingChinaLiveRulesTransport, @unchecked Sendable {
     let value: CubingChinaLiveSnapshot
     let failsConnections: Bool
     let failsRoundList: Bool
@@ -290,6 +291,11 @@ nonisolated final class FakeCubingChinaTransport: CubingChinaLiveTransport, @unc
     func rounds(slug: String) async throws -> [CubingChinaLiveRound] {
         if failsRoundList { throw CubingChinaLiveError.http(503) }
         return lock.withLock { values.values.map(\.round).sorted { $0.id.rawValue < $1.id.rawValue } }
+    }
+    func competitionRules(slug: String) async throws -> CubingChinaLiveCompetitionRules {
+        .init(id: value.round.competitionId, type: "WCA", events: lock.withLock {
+            Set(values.values.map { $0.round.eventId }).map { .init(eventId: $0, dualRounds: false) }
+        })
     }
     func results(slug: String, key: CubingChinaLiveRoundKey) async throws -> CubingChinaLiveSnapshot {
         try await withCheckedThrowingContinuation { incoming in

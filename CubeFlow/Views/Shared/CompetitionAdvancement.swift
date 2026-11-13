@@ -6,6 +6,13 @@ nonisolated enum CompetitionAdvancement: Sendable, Equatable {
     var questionable: Bool { self == .possible }
 }
 
+nonisolated enum CubingChinaAdvancementAssessment: Equatable {
+    case authoritative, guaranteed, possible, eliminated, undetermined
+    var highlight: CompetitionAdvancement? {
+        switch self { case .authoritative, .guaranteed: .confirmed; case .possible: .possible; default: nil }
+    }
+}
+
 enum CompetitionAdvancementStyle {
     static func background(advancing: Bool?, questionable: Bool?) -> Color {
         if questionable == true { return Color(red: 1, green: 245 / 255, blue: 157 / 255) }
@@ -17,9 +24,8 @@ enum CompetitionAdvancementStyle {
     }
 }
 
-/// WCA Live semantics: current qualification, then qualification with every missing
-/// attempt optimistically completed. Only complete results can be confirmed.
-/// Reference: thewca/wca-live, scoretaking/advancing.ex (algorithm semantics, not copied code).
+/// Read-only CubingChina qualification bounds over a complete current roster.
+/// Missing attempts receive optimistic legal scores; no displayed result is reranked.
 nonisolated enum CompetitionAdvancementCalculation {
     private struct Score: Equatable, Comparable {
         let primary: Int
@@ -29,13 +35,20 @@ nonisolated enum CompetitionAdvancementCalculation {
         }
     }
 
-    static func states(_ snapshot: CubingChinaLiveSnapshot, isFinal: Bool) -> [String: CompetitionAdvancement] {
+    static func states(_ snapshot: CubingChinaLiveSnapshot, isFinal: Bool,
+                       hasCompleteRoster: Bool = true) -> [String: CompetitionAdvancement] {
+        assessments(snapshot, isFinal: isFinal, hasCompleteRoster: hasCompleteRoster).compactMapValues(\.highlight)
+    }
+
+    static func assessments(_ snapshot: CubingChinaLiveSnapshot, isFinal: Bool,
+                            hasCompleteRoster: Bool) -> [String: CubingChinaAdvancementAssessment] {
         let round = snapshot.round
         guard ["open", "live", "finished"].contains(round.status),
               !round.eventId.hasPrefix("333mb"),
               ["a", "m", "1", "2", "3", "5"].contains(round.round.format),
               (try? snapshot.validated()) != nil,
-              Set(snapshot.results.map(\.userId)).count == snapshot.results.count else { return [:] }
+              Set(snapshot.results.map(\.userId)).count == snapshot.results.count,
+              Set(snapshot.results.map(\.registrationId)).count == snapshot.results.count else { return [:] }
         let rule = round.round.advancementCondition
         guard isFinal || (rule.map { ["ranking", "percent", "attemptResult", "attempt-result"].contains($0.type) && $0.level > 0 } == true) else { return [:] }
         if rule?.type == "percent", let level = rule?.level, level > 100 { return [:] }
@@ -49,16 +62,7 @@ nonisolated enum CompetitionAdvancementCalculation {
         }
         // An unsupported/holey result must not disappear from the hypothetical field.
         guard optimistic.count == snapshot.results.count else { return [:] }
-        let ordered = optimistic.sorted { $0.1 < $1.1 }
-        var hypotheticalRanks: [String: Int] = [:]
-        var previous: Score?
-        var ranking = 0
-        for (index, item) in ordered.enumerated() {
-            if previous != item.1 { ranking = index + 1; previous = item.1 }
-            hypotheticalRanks[String(item.0.id.rawValue)] = ranking
-        }
         let currentBoundary = exclusionBoundary(snapshot.results.compactMap(\.position), total: snapshot.results.count)
-        let futureBoundary = exclusionBoundary(Array(hypotheticalRanks.values), total: snapshot.results.count)
         func qualifies(rank: Int?, primary: Int, best: Int, boundary: Int) -> Bool {
             guard let rank, best > 0 else { return false }
             if isFinal { return rank <= 3 }
@@ -70,15 +74,69 @@ nonisolated enum CompetitionAdvancementCalculation {
             default: return false
             }
         }
-        var states: [String: CompetitionAdvancement] = [:]
+        let started = snapshot.results.filter(\.hasRecordedAttempts).count
+        let absent = snapshot.results.count - started
+        let completedScores = optimistic.filter { $0.2 }.map { $0.1 }.sorted()
+        let pendingScores = optimistic.filter { !$0.2 && $0.0.hasRecordedAttempts }.map { $0.1 }.sorted()
+        let unstartedScores = optimistic.filter { !$0.0.hasRecordedAttempts }.map { $0.1 }.sorted()
+        func count(_ scores: [Score], before score: Score, includingTies: Bool) -> Int {
+            var low = 0, high = scores.count
+            while low < high {
+                let middle = (low + high) / 2
+                if scores[middle] < score || (includingTies && scores[middle] == score) { low = middle + 1 }
+                else { high = middle }
+            }
+            return low
+        }
+        var states: [String: CubingChinaAdvancementAssessment] = [:]
         for (value, score, complete) in optimistic {
             let primary = average ? value.average : value.best
-            guard qualifies(rank: value.position, primary: primary, best: value.best, boundary: currentBoundary) else { continue }
-            let id = String(value.id.rawValue)
-            let clinched = complete && qualifies(rank: hypotheticalRanks[id],
-                primary: score.primary == Int.max ? -1 : score.primary, best: score.best == Int.max ? -1 : (average ? score.best : value.best),
-                boundary: futureBoundary)
-            states["ccc-result:\(id)"] = clinched ? .confirmed : .possible
+            let id = "ccc-result:\(value.id.rawValue)"
+            guard value.hasRecordedAttempts else { states[id] = .undetermined; continue }
+            if complete && value.best <= 0 { states[id] = .eliminated; continue }
+            if complete && average && primary <= 0 { states[id] = .undetermined; continue }
+            if value.best != value.attempts.filter({ $0 > 0 }).min(), value.best > 0 {
+                states[id] = .undetermined; continue
+            }
+            guard hasCompleteRoster else {
+                states[id] = rule?.type == "ranking" && value.best > 0 && (value.position ?? .max) <= (rule?.level ?? 0) ? .possible : .undetermined
+                continue
+            }
+            if complete, !isFinal, (value.position ?? .max) >= currentBoundary {
+                states[id] = .eliminated; continue
+            }
+            let current = Score(primary: primary > 0 ? primary : .max, best: average ? (value.best > 0 ? value.best : .max) : 0)
+            // Count ties against certainty: a boundary tie must never authorize
+            // more guaranteed entrants than there are available places.
+            if complete && score != current { states[id] = .undetermined; continue }
+            let fixedAhead = count(completedScores, before: current, includingTies: true) - (complete ? 1 : 0)
+            let startedThreats = count(pendingScores, before: current, includingTies: true) - (!complete && score <= current ? 1 : 0)
+            let unstartedThreats = count(unstartedScores, before: current, includingTies: true)
+            // Placement grows until all threatening newcomers participate;
+            // afterwards only the percentage/75% capacity can grow. These are
+            // the extrema, including floor rounding, not sampled outcomes.
+            let safeForEveryRemainingOutcome = [0, unstartedThreats, absent].allSatisfy { additional in
+                let population = started + additional
+                let boundary: Int
+                if isFinal { boundary = 3 }
+                else if rule?.type == "percent" { boundary = population * min(rule?.level ?? 0, 100) / 100 }
+                else { boundary = rule?.type == "ranking" ? rule!.level : population }
+                let capacity = isFinal ? boundary : min(boundary, population * 3 / 4)
+                return 1 + fixedAhead + startedThreats + min(additional, unstartedThreats) <= capacity
+            }
+            let eligibleNow = qualifies(rank: value.position, primary: primary, best: value.best, boundary: currentBoundary)
+                && (!average || !complete || primary > 0)
+            let threshold = rule.map { ["attemptResult", "attempt-result"].contains($0.type) } ?? false
+            let meetsThreshold = !threshold || (primary > 0 && primary < (rule?.level ?? 0))
+            if (complete || !average) && eligibleNow && meetsThreshold && safeForEveryRemainingOutcome {
+                states[id] = .guaranteed
+            } else {
+                let bestRank = 1 + count(completedScores, before: score, includingTies: false)
+                let maximumCapacity = isFinal ? 3 : min(snapshot.results.count * 3 / 4,
+                    rule?.type == "percent" ? snapshot.results.count * min(rule?.level ?? 0, 100) / 100 : (threshold ? snapshot.results.count : rule?.level ?? 0))
+                let canQualify = score.primary != .max && bestRank <= maximumCapacity && (!threshold || score.primary < (rule?.level ?? 0))
+                states[id] = eligibleNow || canQualify ? .possible : .eliminated
+            }
         }
         return states
     }

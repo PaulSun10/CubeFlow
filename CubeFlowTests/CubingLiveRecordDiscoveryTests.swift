@@ -60,6 +60,14 @@ private actor RecordDiscoveryExtras: CubingChinaLiveExtrasTransport {
         FakeCubingChinaTransport(snapshot: .init(round: bootstrap.defaultRound, results: []),
             additional: bootstrap.rounds.filter { $0.key != bootstrap.defaultRound.key }.map { .init(round: $0, results: []) })
     }
+    private func permittedProgressionKeys(_ bootstrap: CubingChinaLiveBootstrap) -> Set<CubingChinaLiveRoundKey> {
+        // The November 2 progression implementation loads at most the selected
+        // round's immediate neighbors, independently of record discovery.
+        Set(bootstrap.rounds.filter {
+            $0.eventId == bootstrap.defaultRound.eventId
+                && abs($0.roundNumber - bootstrap.defaultRound.roundNumber) <= 1
+        }.map(\.key))
+    }
     private func emit(_ round: CubingChinaLiveRound, via transport: FakeCubingChinaTransport) throws {
         let value = CubingChinaLiveDelta(round: round, upsertedResults: [], removedResultIds: [])
         let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(value)) as? [String: Any])
@@ -85,7 +93,8 @@ private actor RecordDiscoveryExtras: CubingChinaLiveExtrasTransport {
         let events = CubingChinaUnifiedLiveContent<EmptyView>.eventRecordTags(rounds: session.rounds, roundTags: tags)
         XCTAssertEqual(events["666"], "WR"); XCTAssertEqual(events["777"], "WR")
         XCTAssertEqual(session.selectedKey, bootstrap.defaultRound.key)
-        XCTAssertEqual(Set(transport.requestedKeys), [bootstrap.defaultRound.key])
+        try await wait { Set(transport.requestedKeys) == self.permittedProgressionKeys(bootstrap) }
+        XCTAssertEqual(Set(transport.requestedKeys), permittedProgressionKeys(bootstrap), "Records must not load unrelated event/round results")
         let calls = await extras.recordCalls; XCTAssertEqual(calls, 1)
         await extras.release()
         try await wait { !store.isLoading }
@@ -201,11 +210,11 @@ private actor RecordDiscoveryExtras: CubingChinaLiveExtrasTransport {
         await extras.configure(records: records.filter { !$0.belongs(to: unvisited) })
         try emit(unvisited, via: transport)
         try await wait { await extras.recordCalls > calls }
-        XCTAssertEqual(Set(transport.requestedKeys), [bootstrap.defaultRound.key], "SSE refresh must only use the competition summary")
+        XCTAssertEqual(Set(transport.requestedKeys), permittedProgressionKeys(bootstrap), "SSE records refresh must add no results beyond the bounded progression dependencies")
         let refreshed = await extras.recordCalls
         transport.disconnect()
         try await wait { await extras.recordCalls > refreshed && transport.connectionCount > 1 }
-        XCTAssertEqual(Set(transport.requestedKeys), [bootstrap.defaultRound.key], "Reconnect must not scan unvisited rounds")
+        XCTAssertEqual(Set(transport.requestedKeys), permittedProgressionKeys(bootstrap), "Reconnect must not scan unrelated rounds")
         host.view.layoutIfNeeded()
         let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
             window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)

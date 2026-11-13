@@ -40,6 +40,8 @@ nonisolated struct CubingChinaLiveRound: Hashable, Codable, Sendable, Identifiab
     let status: String
     let startedAt: String?
     let round: Rules
+    var finishedAt: String? = nil
+    var updatedAt: String? = nil
 
     struct Rules: Hashable, Codable, Sendable {
         let id: CubingChinaLiveID<CubingChinaIDKind.CompetitionRound>
@@ -53,6 +55,7 @@ nonisolated struct CubingChinaLiveRound: Hashable, Codable, Sendable, Identifiab
     struct Advancement: Hashable, Codable, Sendable { let type: String; let level: Int }
     var key: CubingChinaLiveRoundKey { .init(eventID: eventId, number: roundNumber) }
     var isFinished: Bool { status == "finished" }
+    var hasStarted: Bool { status == "live" || isFinished || startedAt != nil }
     var attemptCount: Int { ["a": 5, "m": 3, "1": 1, "2": 2, "3": 3, "5": 5][round.format] ?? 0 }
     var isValid: Bool {
         round.id == competitionRoundId && revision >= 0 && roundNumber > 0 && attemptCount > 0
@@ -94,6 +97,7 @@ nonisolated struct CubingChinaLiveResult: Hashable, Codable, Sendable, Identifia
             && attempts.count <= 100 && (competitor == nil || competitor?.id == userId)
     }
     var singleBadge: String? { CubingLiveRecordIndicators.regional(regionalSingleRecord) }
+    var hasRecordedAttempts: Bool { attempts.contains { $0 > 0 || $0 == -1 || $0 == -2 } }
     var averageBadge: String? { CubingLiveRecordIndicators.regional(regionalAverageRecord) }
 }
 
@@ -134,9 +138,26 @@ nonisolated struct CubingChinaLiveBootstrap: Hashable, Codable, Sendable {
         return Self(slug: slug, competitionID: first.competitionId, rounds: rounds)
     }
     var defaultRound: CubingChinaLiveRound {
-        rounds.first(where: { $0.status == "live" })
-            ?? rounds.filter { $0.eventId == "333" }.max { $0.roundNumber < $1.roundNumber }
-            ?? rounds[0]
+        Self.preferredRound(in: rounds)!
+    }
+
+    static func preferredRound(in rounds: [CubingChinaLiveRound]) -> CubingChinaLiveRound? {
+        func order(_ a: CubingChinaLiveRound, _ b: CubingChinaLiveRound) -> Bool {
+            let priorityA = a.status == "live" ? 0 : a.isFinished ? 1 : a.hasStarted ? 2 : 3
+            let priorityB = b.status == "live" ? 0 : b.isFinished ? 1 : b.hasStarted ? 2 : 3
+            if priorityA != priorityB { return priorityA < priorityB }
+            // ISO timestamps carry progress across events; round number orders within one event.
+            if a.eventId == b.eventId, a.roundNumber != b.roundNumber {
+                return priorityA == 3 ? a.roundNumber < b.roundNumber : a.roundNumber > b.roundNumber
+            }
+            let timeA = a.finishedAt ?? a.startedAt ?? "", timeB = b.finishedAt ?? b.startedAt ?? ""
+            if timeA != timeB, priorityA != 3 { return timeA > timeB }
+            if a.eventId != b.eventId { return a.eventId == "333" || (b.eventId != "333" && a.eventId < b.eventId) }
+            return a.id.rawValue < b.id.rawValue
+        }
+        // First reduce each event to its relevant round, then compare event progress.
+        return Dictionary(grouping: rounds, by: \.eventId).values.compactMap { $0.sorted(by: order).first }
+            .sorted(by: order).first
     }
 
     private enum CodingKeys: CodingKey { case slug, competitionID, rounds }
@@ -151,6 +172,24 @@ nonisolated struct CubingChinaLiveBootstrap: Hashable, Codable, Sendable {
             forKey: .competitionID)) else { throw CubingChinaLiveError.invalidData }
         self = validated
     }
+}
+
+/// Read-only competition metadata distinguishes ordinary rounds from dual-round rules.
+nonisolated struct CubingChinaLiveCompetitionRules: Decodable, Sendable {
+    let id: CubingChinaLiveID<CubingChinaIDKind.Competition>
+    let type: String
+    let events: [Event]
+    struct Event: Decodable, Sendable { let eventId: String; let dualRounds: Bool? }
+    func supportsIndependentAdvancement(_ event: String) -> Bool {
+        let matches = events.filter { $0.eventId == event }
+        return type == "WCA" && matches.count == 1 && matches[0].dualRounds == false
+    }
+}
+
+nonisolated struct CubingChinaLiveParticipant: Identifiable, Equatable {
+    let competitor: CubingChinaLiveResult.Competitor
+    let sourceRound: CubingChinaLiveRoundKey
+    var id: Int { competitor.id.rawValue }
 }
 
 nonisolated enum CubingChinaLiveError: Error, Equatable {
@@ -227,7 +266,7 @@ nonisolated enum CompetitionPersonalIdentity {
     }
     static func matches(signedInWCAID: String?, competitorWCAID: String?) -> Bool {
         guard let own = canonical(signedInWCAID), let other = canonical(competitorWCAID) else { return false }
-        return own == other
+        return signedInWCAID == own && competitorWCAID == other && own == other
     }
 }
 

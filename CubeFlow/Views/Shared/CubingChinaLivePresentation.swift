@@ -1,6 +1,11 @@
 import Foundation
 
 enum CubingChinaLivePresentation {
+    enum ResultsState: Equatable { case notStarted, noResults, recorded }
+    static func resultsState(_ snapshot: CubingChinaLiveSnapshot) -> ResultsState {
+        if snapshot.results.contains(where: \.hasRecordedAttempts) { return .recorded }
+        return snapshot.round.hasStarted ? .noResults : .notStarted
+    }
     static func roundName(_ round: CubingChinaLiveRound, rounds: [CubingChinaLiveRound], language: String) -> String {
         let final = rounds.filter { $0.eventId == round.eventId }.map(\.roundNumber).max()
         return PublishedCompetitionStrings.round(round.roundNumber == final ? "f" : String(round.roundNumber), language: language)
@@ -56,16 +61,34 @@ enum CubingChinaLivePresentation {
     }
 
     static func advancement(_ snapshot: CubingChinaLiveSnapshot, rounds: [CubingChinaLiveRound],
-                            nextParticipants: Set<CubingChinaLiveID<CubingChinaIDKind.User>>? = nil) -> [String: CompetitionAdvancement] {
+                            nextParticipants: Set<CubingChinaLiveID<CubingChinaIDKind.User>>? = nil,
+                            hasCompleteRoster: Bool = false, supportsIndependentAdvancement: Bool = true) -> [String: CompetitionAdvancement] {
+        assessments(snapshot, rounds: rounds, nextParticipants: nextParticipants, hasCompleteRoster: hasCompleteRoster,
+            supportsIndependentAdvancement: supportsIndependentAdvancement).compactMapValues(\.highlight)
+    }
+
+    static func assessments(_ snapshot: CubingChinaLiveSnapshot, rounds: [CubingChinaLiveRound],
+                           nextParticipants: Set<CubingChinaLiveID<CubingChinaIDKind.User>>? = nil,
+                           hasCompleteRoster: Bool, supportsIndependentAdvancement: Bool) -> [String: CubingChinaAdvancementAssessment] {
         guard rounds.contains(snapshot.round) else { return [:] }
         let later = rounds.filter { $0.eventId == snapshot.round.eventId && $0.roundNumber > snapshot.round.roundNumber }
-        if let next = later.min(by: { $0.roundNumber < $1.roundNumber }),
-           ["open", "live", "finished"].contains(next.status) {
-            guard next.roundNumber == snapshot.round.roundNumber + 1, let nextParticipants else { return [:] }
-            return Dictionary(uniqueKeysWithValues: snapshot.results.filter { nextParticipants.contains($0.userId) }
-                .map { ("ccc-result:\($0.id.rawValue)", .confirmed) })
+        if later.isEmpty, snapshot.round.isFinished, snapshot.round.round.advancementCondition == nil {
+            return Dictionary(uniqueKeysWithValues: snapshot.results.filter { $0.best > 0 && ($0.position ?? .max) <= 3 }
+                .map { ("ccc-result:\($0.id.rawValue)", .authoritative) })
         }
-        return CompetitionAdvancementCalculation.states(snapshot, isFinal: later.isEmpty && snapshot.round.round.advancementCondition == nil)
+        if snapshot.round.isFinished, later.contains(where: { $0.roundNumber == snapshot.round.roundNumber + 1 && $0.hasStarted }),
+           let nextParticipants, !nextParticipants.isEmpty {
+            return Dictionary(uniqueKeysWithValues: snapshot.results.filter { nextParticipants.contains($0.userId) }
+                .map { ("ccc-result:\($0.id.rawValue)", .authoritative) })
+        }
+        var states = supportsIndependentAdvancement ? CompetitionAdvancementCalculation.assessments(snapshot,
+            isFinal: later.isEmpty && snapshot.round.round.advancementCondition == nil, hasCompleteRoster: hasCompleteRoster) : [:]
+        if let nextParticipants, later.contains(where: { $0.roundNumber == snapshot.round.roundNumber + 1 }) {
+            for value in snapshot.results where nextParticipants.contains(value.userId) {
+                states["ccc-result:\(value.id.rawValue)"] = .authoritative
+            }
+        }
+        return states
     }
 
     static func competitor(_ values: [CubingChinaLiveResult], rounds: [CubingChinaLiveRound], language: String,

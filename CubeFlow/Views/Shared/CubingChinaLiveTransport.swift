@@ -66,12 +66,16 @@ nonisolated protocol CubingChinaLiveTransport: Sendable {
     func competitorResults(slug: String, number: Int) async throws -> [CubingChinaLiveResult]
 }
 
+nonisolated protocol CubingChinaLiveRulesTransport: Sendable {
+    func competitionRules(slug: String) async throws -> CubingChinaLiveCompetitionRules
+}
+
 nonisolated struct CubingChinaLiveConnection: Sendable {
     let frames: AsyncThrowingStream<CubingChinaSSEFrame, Error>
     let cancel: @Sendable () -> Void
 }
 
-nonisolated final class CubingChinaLiveHTTPClient: CubingChinaLiveTransport, CubingChinaLiveExtrasTransport, @unchecked Sendable {
+nonisolated final class CubingChinaLiveHTTPClient: CubingChinaLiveTransport, CubingChinaLiveExtrasTransport, CubingChinaLiveRulesTransport, @unchecked Sendable {
     static let shared = CubingChinaLiveHTTPClient()
     private let session: URLSession
     init(session: URLSession? = nil) {
@@ -85,6 +89,15 @@ nonisolated final class CubingChinaLiveHTTPClient: CubingChinaLiveTransport, Cub
     }
 
     func rounds(slug: String) async throws -> [CubingChinaLiveRound] { try await get(slug, path: "rounds") }
+    func competitionRules(slug: String) async throws -> CubingChinaLiveCompetitionRules {
+        var request = try request(slug, path: "rounds")
+        request.url = URL(string: "https://api.cubing.com/competitions/\(slug)")
+        let (data, response) = try await session.data(for: request)
+        try Task.checkCancellation()
+        guard let response = response as? HTTPURLResponse, response.statusCode == 200,
+              response.mimeType == "application/json", data.count <= 4 * 1024 * 1024 else { throw CubingChinaLiveError.invalidData }
+        return try JSONDecoder().decode(CubingChinaLiveCompetitionRules.self, from: data)
+    }
     func results(slug: String, key: CubingChinaLiveRoundKey) async throws -> CubingChinaLiveSnapshot {
         guard key.number > 0, key.eventID.range(of: #"^[a-z0-9]+$"#, options: .regularExpression) != nil else {
             throw CubingChinaLiveError.invalidData
