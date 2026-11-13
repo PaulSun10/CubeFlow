@@ -113,11 +113,7 @@ enum SolveMetrics {
     }
 
     nonisolated static func displayDate(_ date: Date, languageCode: String) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = appLocale(for: languageCode)
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+        SolveDisplayDateCache.shared.string(date, language: languageCode)
     }
 
     @MainActor

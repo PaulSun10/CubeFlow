@@ -72,18 +72,43 @@ struct SolveMoveDestinationView: View {
 
 struct SolveSelectionCheckmark: View {
     let selected: Bool
+    var size: CGFloat = 24
+    var weight: Font.Weight = .regular
+    var replacementAnimation: Animation = .default
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    var symbol: String { selected ? "checkmark.circle.fill" : "circle" }
 
-    var body: some View {
-        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-            .font(.system(size: 24, weight: .regular))
-            .foregroundStyle(selected ? Color.accentColor : Color.secondary)
-            .frame(width: 24, height: 24)
-            .accessibilityHidden(true)
+    @ViewBuilder var body: some View {
+        if #available(iOS 26.0, *), !reduceMotion {
+            image.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp)))
+                .animation(replacementAnimation, value: selected)
+        } else if #available(iOS 17.0, *), !reduceMotion {
+            image.contentTransition(.symbolEffect(.replace)).animation(replacementAnimation, value: selected)
+        } else {
+            image
+        }
+    }
+    private var image: some View {
+        Image(systemName: symbol).font(.system(size: size, weight: weight))
+            .foregroundStyle(selected ? Color.accentColor : .secondary)
+            .frame(width: size, height: size).accessibilityHidden(true)
     }
 }
 
-/// iOS 15 fallback only; newer systems use SwiftUI's native tab-bar visibility.
-struct DataLegacyTabBarVisibility: UIViewControllerRepresentable {
+struct DataTabBarVisibility: ViewModifier {
+    let hidden: Bool
+
+    @ViewBuilder func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.compatibleTabBarVisibility(hidden: hidden)
+        } else {
+            content.background { DataTabBarControllerBridge(hidden: hidden).frame(width: 0, height: 0) }
+        }
+    }
+}
+
+/// iOS 15 does not have the SwiftUI toolbar visibility preference.
+private struct DataTabBarControllerBridge: UIViewControllerRepresentable {
     let hidden: Bool
     func makeUIViewController(context: Context) -> Controller { Controller() }
     func updateUIViewController(_ controller: Controller, context: Context) {
@@ -99,11 +124,28 @@ struct DataLegacyTabBarVisibility: UIViewControllerRepresentable {
         override func didMove(toParent parent: UIViewController?) { super.didMove(toParent: parent); apply() }
         func apply() {
             guard let tab = tabBarController else { return }
-            if owner == nil { owner = tab; originalHidden = tab.tabBar.isHidden }
-            tab.tabBar.isHidden = hidden
-            tab.view.setNeedsLayout()
+            if owner !== tab { restore() }
+            if hidden {
+                if owner == nil {
+                    owner = tab
+                    originalHidden = tab.tabBar.isHidden
+                }
+                setHidden(true, on: tab)
+            } else if owner === tab {
+                setHidden(originalHidden, on: tab)
+                owner = nil
+            }
         }
-        func restore() { owner?.tabBar.isHidden = originalHidden; owner?.view.setNeedsLayout() }
+        private func setHidden(_ hidden: Bool, on tab: UITabBarController) {
+            if tab.tabBar.isHidden != hidden {
+                tab.tabBar.isHidden = hidden
+                tab.view.setNeedsLayout()
+            }
+        }
+        func restore() {
+            if let owner { setHidden(originalHidden, on: owner) }
+            owner = nil
+        }
     }
 }
 #endif

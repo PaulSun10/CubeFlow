@@ -8,9 +8,7 @@ enum SolveSessionMembership {
     static func move(ids: Set<UUID>, from sourceID: UUID, to destination: Session, context: NSManagedObjectContext) throws -> Int {
         guard destination.id != sourceID, destination.managedObjectContext === context else { throw MoveError.invalidDestination }
         guard !ids.isEmpty else { return 0 }
-        let request = Solve.fetchRequest()
-        request.predicate = NSPredicate(format: "id IN %@ AND session.id == %@", Array(ids), sourceID as CVarArg)
-        let solves = try context.fetch(request)
+        let solves = try context.fetchSolves(with: ids, in: sourceID)
         guard solves.count == ids.count else { throw MoveError.staleSelection }
         let originalSessions = solves.map(\.session)
         for solve in solves { solve.session = destination }

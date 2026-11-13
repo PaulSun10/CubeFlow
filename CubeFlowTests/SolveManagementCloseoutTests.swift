@@ -108,6 +108,42 @@ struct SolveManagementCloseoutTests {
         #expect(SolveSelectionRange.anchorAfterDirectToggle(id: b, selected: false, previous: b) == nil)
     }
 
+    @Test func indexedRangeBoundaryMatchesHistoricalScanAndReducesScrollWork() {
+        let ordered = (0..<16_000).map { _ in UUID() }
+        let positions = Dictionary(uniqueKeysWithValues: ordered.enumerated().map { ($0.element, ordered.count - $0.offset) })
+        let stale = UUID()
+        let windows = (1...24).map { offset in
+            let start = offset * 517
+            return Set(ordered[start..<(start + 15)]).union([stale])
+        }
+        var cases: [(UUID, Set<UUID>)] = [(ordered[0], []), (ordered[0], [stale])]
+        for (offset, visible) in windows.enumerated() {
+            let anchors = [ordered[0], ordered[15_999], ordered[(offset + 1) * 517], stale]
+            for anchor in anchors { cases.append((anchor, visible)) }
+        }
+        func reference(_ anchor: UUID, _ visible: Set<UUID>) -> SolveSelectionRange.Boundary? {
+            guard !visible.contains(anchor), let a = ordered.firstIndex(of: anchor) else { return nil }
+            let indices = ordered.indices.filter { visible.contains(ordered[$0]) }
+            guard let first = indices.first, let last = indices.last else { return nil }
+            if a < first { return .init(id: ordered[last], anchorIsAbove: true) }
+            if a > last { return .init(id: ordered[first], anchorIsAbove: false) }
+            return nil
+        }
+        var baseline: [Double] = [], indexed: [Double] = []
+        for _ in 0..<5 {
+            let start = ProcessInfo.processInfo.systemUptime
+            let expected = cases.map { reference($0.0, $0.1) }
+            let middle = ProcessInfo.processInfo.systemUptime
+            let actual = cases.map { SolveSelectionRange.boundary(anchor: $0.0, visibleIDs: $0.1, newestFirstPositions: positions) }
+            let end = ProcessInfo.processInfo.systemUptime
+            baseline.append((middle - start) * 1000)
+            indexed.append((end - middle) * 1000)
+            #expect(actual == expected)
+            #expect(cases.map { SolveSelectionRange.boundary(anchor: $0.0, visibleIDs: $0.1, orderedIDs: ordered.lazy) } == expected)
+        }
+        print("[DataRangeBoundary] rows=16000 requests=\(cases.count) scan_ms=\(baseline) indexed_ms=\(indexed)")
+    }
+
     @Test func persistentResultPBOutlivesAnimationButNotTheNextTimedSolve() {
         let id = UUID()
         let records = TimerPersonalBestState(solveID: id, metrics: ["best", "ao5"])

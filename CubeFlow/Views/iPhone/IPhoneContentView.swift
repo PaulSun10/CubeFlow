@@ -2,19 +2,34 @@
 import SwiftUI
 
 #if os(iOS)
+/// Construct once on first use; keep the mounted navigation identity thereafter.
+struct RetainedTabContent<Content: View>: View {
+    let isActive: Bool
+    @ViewBuilder let content: () -> Content
+    @State private var hasActivated = false
+    var body: some View {
+        Group {
+            if isActive || hasActivated { content() }
+            else { Color.clear }
+        }
+        .onAppear { if isActive { hasActivated = true } }
+        .onChange(of: isActive) { if $0 { hasActivated = true } }
+    }
+}
+
 struct IPhoneContentView: View {
     #if DEBUG
     private let marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>?
     #endif
     @State private var isDataSelectingSolves = false
+    @State private var isDataSearchAccessoryVisible = false
+    @State private var dataSearchRequestID = 0
     @State private var selectedTab: IPhoneTab = .timer
     @State private var algsSearchRequestID = 0
     @State private var exploreCompetitionRequestID = 0
     @State private var exploreCompetitionSearchRequestID = 0
     @State private var isExploreCompetitionBottomAccessoryVisible = false
-    @State private var dataSearchRequestID = 0
     @State private var isAlgsOverviewBottomAccessoryVisible = false
-    @State private var isDataBottomAccessoryVisible = false
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
     @AppStorage("algBrowseViewModeStore") private var algBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
@@ -48,12 +63,11 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.timer)
 
-            DataTabView(
-                usesSystemBottomAccessory: usesSystemTabBottomAccessory,
-                isBottomAccessoryVisible: $isDataBottomAccessoryVisible,
-                searchRequestID: $dataSearchRequestID,
-                isSelectingSolves: $isDataSelectingSolves
-            )
+            RetainedTabContent(isActive: selectedTab == .data) {
+                DataTabView(usesSystemBottomAccessory: usesSystemTabBottomAccessory,
+                    isSearchAccessoryVisible: $isDataSearchAccessoryVisible, searchRequestID: dataSearchRequestID,
+                    isSelectingSolves: $isDataSelectingSolves)
+            }
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.data", languageCode: appLanguage))
@@ -63,12 +77,12 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.data)
 
-            AlgsTabView(
+            RetainedTabContent(isActive: selectedTab == .algs) { AlgsTabView(
                 usesSystemBottomAccessory: usesSystemTabBottomAccessory,
                 isActive: selectedTab == .algs,
                 isOverviewBottomAccessoryVisible: $isAlgsOverviewBottomAccessoryVisible,
                 searchRequestID: $algsSearchRequestID
-            )
+            ) }
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.algs", languageCode: appLanguage))
@@ -78,19 +92,19 @@ struct IPhoneContentView: View {
                 }
                 .tag(IPhoneTab.algs)
 
-            ExploreView(
+            RetainedTabContent(isActive: selectedTab == .explore) { ExploreView(
                 isActive: selectedTab == .explore,
                 competitionRequestID: exploreCompetitionRequestID,
                 usesSystemBottomAccessory: usesSystemTabBottomAccessory,
                 isCompetitionBottomAccessoryVisible: $isExploreCompetitionBottomAccessoryVisible,
                 searchRequestID: $exploreCompetitionSearchRequestID
-            )
+            ) }
                 .tabItem {
                     Label(appLocalizedString("tab.explore", languageCode: appLanguage), systemImage: "binoculars")
                 }
                 .tag(IPhoneTab.explore)
 
-            SettingsTabView(isActive: selectedTab == .settings)
+            RetainedTabContent(isActive: selectedTab == .settings) { SettingsTabView(isActive: selectedTab == .settings) }
                 .tabItem {
                     Label {
                         Text(appLocalizedString("tab.settings", languageCode: appLanguage))
@@ -102,6 +116,11 @@ struct IPhoneContentView: View {
         }
         // Restore identity for every WCA consumer, even before Settings is first opened.
         .task { await WCAAuthManager.shared.restoreBrokerSessionIfNeeded() }
+        #if DEBUG
+        .background { AppFirstFrameProbe().allowsHitTesting(false).accessibilityHidden(true) }
+        .onAppear { AppExperienceTrace.mark("root_appeared") }
+        .onChange(of: selectedTab) { _ in AppExperienceTrace.mark("tab_selected") }
+        #endif
         .compatibleSoftScrollEdgeEffect()
         .compatibleTabViewBottomAccessory(isEnabled: shouldShowTabBottomAccessory) {
             tabBottomAccessoryContent
@@ -109,9 +128,12 @@ struct IPhoneContentView: View {
         .compatibleTabBarMinimizeOnScrollDown(
             isEnabled: !isDataSelectingSolves && (selectedTab == .data || selectedTab == .algs || selectedTab == .explore)
         )
-        .compatibleTabBarBackground()
+        .compatibleTabBarBackground(visible: selectedTab != .data || !usesSystemTabBottomAccessory)
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, appUsesRightToLeftLayout(for: appLanguage) ? .rightToLeft : .leftToRight)
+        .onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)) { _ in
+            registerSystemAppLanguage()
+        }
         .onAppear(perform: handleRequestedTab)
         #if DEBUG
         .onAppear { _ = CompetitionDebugStore.shared }
@@ -134,12 +156,9 @@ struct IPhoneContentView: View {
     }
 
     private var shouldShowTabBottomAccessory: Bool {
-        shouldShowDataBottomAccessory || shouldShowAlgsBottomAccessory
+        (selectedTab == .data && isDataSearchAccessoryVisible)
+            || shouldShowAlgsBottomAccessory
             || (selectedTab == .explore && isExploreCompetitionBottomAccessoryVisible)
-    }
-
-    private var shouldShowDataBottomAccessory: Bool {
-        selectedTab == .data && isDataBottomAccessoryVisible
     }
 
     private var shouldShowAlgsBottomAccessory: Bool {
@@ -150,9 +169,7 @@ struct IPhoneContentView: View {
     private var tabBottomAccessoryContent: some View {
         switch selectedTab {
         case .data:
-            DataBottomSearchBar(languageCode: appLanguage, usesContainerGlass: false) {
-                dataSearchRequestID += 1
-            }
+            DataBottomSearchBar(languageCode: appLanguage) { dataSearchRequestID += 1 }
         case .algs:
             AlgOverviewBottomBar(
                 languageCode: appLanguage,

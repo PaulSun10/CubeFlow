@@ -250,12 +250,21 @@ struct AverageListEntry: Identifiable, Sendable {
     let date: Date
     let value: Double?
     let isPersonalBest: Bool
-    let solves: [SessionSolveSample]
+    private let window: ArraySlice<SessionSolveSample>
+    nonisolated var solves: [SessionSolveSample] { Array(window) }
+
+    nonisolated init(position: Int, date: Date, value: Double?, isPersonalBest: Bool, solves: [SessionSolveSample]) {
+        self.init(position: position, date: date, value: value, isPersonalBest: isPersonalBest, window: solves[...])
+    }
+    nonisolated init(position: Int, date: Date, value: Double?, isPersonalBest: Bool, window: ArraySlice<SessionSolveSample>) {
+        self.position = position; self.date = date; self.value = value
+        self.isPersonalBest = isPersonalBest; self.window = window
+    }
 
     nonisolated var id: Int { position }
 
     nonisolated var bestSolveID: UUID? {
-        solves
+        window
             .compactMap { solve -> (UUID, Double)? in
                 guard let adjustedTime = solve.adjustedTime else { return nil }
                 return (solve.id, adjustedTime)
@@ -264,9 +273,9 @@ struct AverageListEntry: Identifiable, Sendable {
     }
 
     nonisolated var worstSolveID: UUID? {
-        let dnfs = solves.filter { $0.adjustedTime == nil }
+        let dnfs = window.filter { $0.adjustedTime == nil }
         if let firstDNF = dnfs.first { return firstDNF.id }
-        return solves
+        return window
             .compactMap { solve -> (UUID, Double)? in
                 guard let adjustedTime = solve.adjustedTime else { return nil }
                 return (solve.id, adjustedTime)
@@ -283,6 +292,8 @@ struct MetricEvaluation: Sendable {
     let currentValue: Double?
     let bestValue: Double?
     let windowValues: [Double?]
+    let bestFiniteIndex: Int?
+    var currentIsStrictlyBest = false
 }
 
 struct FenwickTree: Sendable {
@@ -380,13 +391,12 @@ enum DataTabComputation {
         }
 
         return values.enumerated().map { index, value in
-            let windowSolves = Array(solves[index..<(index + averageType.solveCount)])
             return AverageListEntry(
                 position: totalWindows - index,
                 date: solves[index].date,
                 value: value,
                 isPersonalBest: personalBestIndices.contains(index),
-                solves: windowSolves
+                window: solves[index..<(index + averageType.solveCount)]
             )
         }
     }
@@ -397,14 +407,26 @@ enum DataTabComputation {
         languageCode: String,
         timeDecimals: Int
     ) -> RecordSnapshot {
+        buildRecordSnapshotData(from: solves, notAvailable: notAvailable, languageCode: languageCode,
+            timeDecimals: timeDecimals, checkCancellation: {})
+    }
+
+    nonisolated static func buildRecordSnapshotData(
+        from solves: [SessionSolveSample],
+        notAvailable: String,
+        languageCode: String,
+        timeDecimals: Int,
+        checkCancellation: () throws -> Void
+    ) rethrows -> RecordSnapshot {
+        try checkCancellation()
         let availableMetrics = RecordAverageMetric.defaultMetrics.filter { solves.count >= $0.solveCount }
         let validTimes = solves.compactMap { $0.adjustedTime }
         let validCount = validTimes.count
         let sessionStatistics = buildSessionStatisticsSnapshot(from: solves)
 
-        let evaluations = availableMetrics.map { metric in
-            (metric, evaluateRecordMetric(metric: metric, solves: solves, includeWindowValues: true))
-        }
+        let evaluations = zip(availableMetrics, try evaluateRecordSummaries(
+            metrics: availableMetrics, solves: solves, checkCancellation: checkCancellation))
+        try checkCancellation()
 
         var currentStats: [RecordStatItem] = []
         if let currentSingle = solves.first {
@@ -451,13 +473,7 @@ enum DataTabComputation {
         }
         bestStats += evaluations.compactMap { metric, evaluation -> RecordStatItem? in
             guard let bestValue = evaluation.bestValue else { return nil }
-            let bestIndex = evaluation.windowValues.enumerated()
-                .compactMap { index, value -> (Int, Double)? in
-                    guard let value, value.isFinite else { return nil }
-                    return (index, value)
-                }
-                .min { $0.1 < $1.1 }?.0
-            let bestWindow = bestIndex.map {
+            let bestWindow = evaluation.bestFiniteIndex.map {
                 Array(solves[$0..<($0 + metric.solveCount)])
             } ?? []
             return RecordStatItem(
@@ -496,46 +512,90 @@ enum DataTabComputation {
         }
     }
 
+    private struct MetricInput {
+        let distinctValues: [Double]
+        // Fenwick ranks are one-based. Zero means a DNF or unrankable value.
+        let solveRanks: [Int]
+
+        nonisolated init(_ solves: [SessionSolveSample]) {
+            let times = solves.map(\.adjustedTime)
+            distinctValues = Set(times.lazy.compactMap { $0 }).sorted()
+            let valueToIndex = Dictionary(uniqueKeysWithValues: distinctValues.enumerated().map { ($1, $0 + 1) })
+            solveRanks = times.map { $0.flatMap { valueToIndex[$0] } ?? 0 }
+        }
+    }
+
+    nonisolated static func evaluateRecordSummaries(metrics: [RecordAverageMetric], solves: [SessionSolveSample]) -> [MetricEvaluation] {
+        evaluateRecordSummaries(metrics: metrics, solves: solves, checkCancellation: {})
+    }
+
+    nonisolated private static func evaluateRecordSummaries(
+        metrics: [RecordAverageMetric], solves: [SessionSolveSample], checkCancellation: () throws -> Void
+    ) rethrows -> [MetricEvaluation] {
+        guard !metrics.isEmpty else { return [] }
+        try checkCancellation()
+        let input = MetricInput(solves)
+        return try metrics.map {
+            try evaluateRecordMetric(metric: $0, solves: solves, includeWindowValues: false,
+                input: input, checkCancellation: checkCancellation)
+        }
+    }
+
     nonisolated static func evaluateRecordMetric(
         metric: RecordAverageMetric,
         solves: [SessionSolveSample],
         includeWindowValues: Bool
     ) -> MetricEvaluation {
+        evaluateRecordMetric(metric: metric, solves: solves, includeWindowValues: includeWindowValues,
+            input: nil, checkCancellation: {})
+    }
+
+    nonisolated private static func evaluateRecordMetric(
+        metric: RecordAverageMetric,
+        solves: [SessionSolveSample],
+        includeWindowValues: Bool,
+        input: MetricInput?,
+        checkCancellation: () throws -> Void
+    ) rethrows -> MetricEvaluation {
+    try checkCancellation()
     guard solves.count >= metric.solveCount else {
-        return MetricEvaluation(currentValue: nil, bestValue: nil, windowValues: [])
+        return MetricEvaluation(currentValue: nil, bestValue: nil, windowValues: [], bestFiniteIndex: nil)
     }
 
     let trimCount = metric.trimCount
     guard trimCount * 2 < metric.solveCount else {
-        return MetricEvaluation(currentValue: nil, bestValue: nil, windowValues: [])
+        return MetricEvaluation(currentValue: nil, bestValue: nil, windowValues: [], bestFiniteIndex: nil)
     }
 
-    let distinctValues = Array(Set(solves.compactMap { $0.adjustedTime })).sorted()
-    let valueToIndex = Dictionary(uniqueKeysWithValues: distinctValues.enumerated().map { ($1, $0) })
+    let input = input ?? MetricInput(solves)
+    let distinctValues = input.distinctValues
+    let solveRanks = input.solveRanks
     var countsTree = FenwickTree(size: distinctValues.count)
     var sumsTree = FenwickTree(size: distinctValues.count)
     var finiteCount = 0
     var finiteSum = 0.0
     var dnfCount = 0
 
-    func add(_ solve: SessionSolveSample) {
-        guard let adjusted = solve.adjustedTime, let index = valueToIndex[adjusted] else {
+    func add(_ index: Int) {
+        guard index != 0 else {
             dnfCount += 1
             return
         }
-        countsTree.add(index: index, value: 1)
-        sumsTree.add(index: index, value: adjusted)
+        let adjusted = distinctValues[index - 1]
+        countsTree.add(index: index - 1, value: 1)
+        sumsTree.add(index: index - 1, value: adjusted)
         finiteCount += 1
         finiteSum += adjusted
     }
 
-    func remove(_ solve: SessionSolveSample) {
-        guard let adjusted = solve.adjustedTime, let index = valueToIndex[adjusted] else {
+    func remove(_ index: Int) {
+        guard index != 0 else {
             dnfCount -= 1
             return
         }
-        countsTree.add(index: index, value: -1)
-        sumsTree.add(index: index, value: -adjusted)
+        let adjusted = distinctValues[index - 1]
+        countsTree.add(index: index - 1, value: -1)
+        sumsTree.add(index: index - 1, value: -adjusted)
         finiteCount -= 1
         finiteSum -= adjusted
     }
@@ -570,33 +630,38 @@ enum DataTabComputation {
         return (finiteSum - smallestTrimSum - largestTrimSum) / Double(trimmedCount)
     }
 
-    for solve in solves.prefix(metric.solveCount) {
-        add(solve)
+    for (index, rank) in solveRanks.prefix(metric.solveCount).enumerated() {
+        if index.isMultiple(of: 256) { try checkCancellation() }
+        add(rank)
     }
 
     var windowValues: [Double?] = []
+    if includeWindowValues { windowValues.reserveCapacity(solves.count - metric.solveCount + 1) }
     let firstValue = currentWindowValue()
     if includeWindowValues {
         windowValues.append(firstValue)
     }
 
     var bestValue = firstValue
-    if let current = firstValue, let currentBest = bestValue {
-        if current.isNaN {
-            bestValue = currentBest
-        } else if currentBest.isNaN || current < currentBest {
-            bestValue = current
-        }
-    }
+    var bestFiniteValue = firstValue.flatMap { $0.isFinite ? $0 : nil } ?? .infinity
+    var bestFiniteIndex: Int? = bestFiniteValue.isFinite ? 0 : nil
+    var currentIsStrictlyBest = !includeWindowValues && bestFiniteValue.isFinite
 
     if solves.count > metric.solveCount {
         for startIndex in 1...(solves.count - metric.solveCount) {
-            remove(solves[startIndex - 1])
-            add(solves[startIndex + metric.solveCount - 1])
+            if startIndex.isMultiple(of: 256) { try checkCancellation() }
+            remove(solveRanks[startIndex - 1])
+            add(solveRanks[startIndex + metric.solveCount - 1])
 
             let value = currentWindowValue()
+            if currentIsStrictlyBest, let value, let firstValue, value.isFinite, value <= firstValue {
+                currentIsStrictlyBest = false
+            }
             if includeWindowValues {
                 windowValues.append(value)
+            } else if let value, value.isFinite, value < bestFiniteValue {
+                bestFiniteIndex = startIndex
+                bestFiniteValue = value
             }
 
             switch (bestValue, value) {
@@ -618,7 +683,9 @@ enum DataTabComputation {
     return MetricEvaluation(
         currentValue: currentValue,
         bestValue: bestValue,
-        windowValues: includeWindowValues ? windowValues : []
+        windowValues: windowValues,
+        bestFiniteIndex: includeWindowValues ? nil : bestFiniteIndex,
+        currentIsStrictlyBest: currentIsStrictlyBest
     )
     }
 }

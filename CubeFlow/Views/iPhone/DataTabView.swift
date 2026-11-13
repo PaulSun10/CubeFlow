@@ -6,15 +6,25 @@ import UIKit
 #if os(iOS)
 private let sessionsWillDeleteNotification = Notification.Name("CubeFlowSessionsWillDelete")
 private let solvesDidChangeNotification = Notification.Name("CubeFlowSolvesDidChange")
+private let dataSelectionActionDuration: TimeInterval = 0.32
+
+nonisolated enum DataSearchIsolation {
+    static let isDisabled: Bool = {
+        #if DEBUG
+        ProcessInfo.processInfo.environment["CUBEFLOW_DATA_DISABLE_SEARCH"] == "1"
+        #else
+        false
+        #endif
+    }()
+}
 
 @MainActor
 struct DataTabView: View {
+    #if DEBUG
+    @Environment(\.appPerformanceProbe) private var performanceProbe
+    #endif
     @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
-
-    private let usesSystemBottomAccessory: Bool
-    @Binding private var isBottomAccessoryVisible: Bool
-    @Binding private var searchRequestID: Int
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Session.createdAt, ascending: true)],
@@ -35,7 +45,12 @@ struct DataTabView: View {
 
     @State private var selectedSegment: DataSegment = .time
     @State private var segmentTransitionDirection: Edge = .trailing
+    private let usesSystemBottomAccessory: Bool
+    @Binding private var isSearchAccessoryVisible: Bool
+    private let searchRequestID: Int
+    @Binding private var isSelectingSolves: Bool
     @State private var isSelecting = false
+    @Environment(\.accessibilityReduceMotion) private var reduceSelectionMotion
     @State private var selectedSolveIDs: Set<UUID> = []
     @State private var selectionAnchorID: UUID?
     @State private var rowFrames: [UUID: CGRect] = [:]
@@ -43,8 +58,8 @@ struct DataTabView: View {
     @State private var rangeControlFrame = CGRect.zero
     @ScaledMetric(relativeTo: .title) private var solveTimeFontSize = 28
     @State private var moveRequest: SolveMoveRequest?
-    @Binding private var isSelectingSolves: Bool
     @State private var showingSessionSheet = false
+    @State private var sessionSnapshotDeferred = false
     @State private var solveDetailSample: SessionSolveSample?
     @State private var averageDetailEntry: AverageListEntry?
     @State private var showingTrendSheet = false
@@ -70,19 +85,18 @@ struct DataTabView: View {
     @State private var isComputingRecordSnapshot = false
     @State private var isComputingAverageEntries = false
     @State private var sessionSnapshotGeneration = 0
+    @State private var snapshotReader: SessionSolveSnapshotReader?
+    @State private var sessionSnapshotTask: Task<Void, Never>?
     @State private var recordComputationGeneration = 0
+    @State private var recordComputation: (key: SessionSnapshotKey, task: Task<Void, Never>)?
     @State private var averageComputationGeneration = 0
     @State private var isShowingDeleteSelectedSolvesAlert = false
 
-    init(
-        usesSystemBottomAccessory: Bool = false,
-        isBottomAccessoryVisible: Binding<Bool> = .constant(false),
-        searchRequestID: Binding<Int> = .constant(0),
-        isSelectingSolves: Binding<Bool> = .constant(false)
-    ) {
+    init(usesSystemBottomAccessory: Bool = false, isSearchAccessoryVisible: Binding<Bool> = .constant(false), searchRequestID: Int = 0,
+         isSelectingSolves: Binding<Bool>) {
         self.usesSystemBottomAccessory = usesSystemBottomAccessory
-        _isBottomAccessoryVisible = isBottomAccessoryVisible
-        _searchRequestID = searchRequestID
+        _isSearchAccessoryVisible = isSearchAccessoryVisible
+        self.searchRequestID = searchRequestID
         _isSelectingSolves = isSelectingSolves
     }
 
@@ -129,6 +143,16 @@ struct DataTabView: View {
         )
         CompatibleNavigationContainer {
             dataContent
+            .background {
+                GeometryReader { geometry in
+                    Color.clear.preference(key: DataSelectionToolbarWidth.self, value: geometry.size.width)
+                }
+            }
+            .onPreferenceChange(DataSelectionToolbarWidth.self) { selectionToolbarWidth = $0 }
+            .modifier(DataLegacySearchInset(enabled: !usesSystemBottomAccessory, visible: canSearch && !isSelecting,
+                languageCode: appLanguage, openSearch: { isShowingSearch = true }))
+            .modifier(DataSelectionToolbar(actions: isSelecting && selectedSegment == .time
+                ? selectionActions(count: selectedSolveIDs.count) : nil))
             .navigationTitle(Text("tab.data"))
             .navigationBarTitleDisplayMode(.inline)
             .modifier(
@@ -163,11 +187,6 @@ struct DataTabView: View {
                     onResetRecordFilters: resetRecordFilters
                 )
             )
-            .toolbar {
-                ToolbarItemGroup(placement: .bottomBar) {
-                    if isSelecting && selectedSegment == .time { selectionActionBar }
-                }
-            }
             .compatibleNavigationDestination(isPresented: $isShowingSearch) {
                 if let selectedSession {
                     DataSolveSearchView(
@@ -176,8 +195,23 @@ struct DataTabView: View {
                     )
                 }
             }
+            .onAppear { updateSearchAccessoryVisibility(showsSearchAccessory) }
+            .onDisappear { isSearchAccessoryVisible = false }
+            .onChange(of: showsSearchAccessory) { updateSearchAccessoryVisibility($0) }
+            .onChange(of: searchRequestID) { _ in
+                guard usesSystemBottomAccessory, canSearch, !isSelecting else { return }
+                isShowingSearch = true
+            }
         }
-        .sheet(isPresented: $showingSessionSheet) {
+        #if DEBUG
+        .background {
+            if DataSelectionTransitionTrace.isEnabled {
+                DataSelectionTransitionTrace(selecting: isSelecting)
+                    .allowsHitTesting(false).accessibilityHidden(true)
+            }
+        }
+        #endif
+        .sheet(isPresented: $showingSessionSheet, onDismiss: resumeSessionSnapshotAfterSheet) {
             SessionManagementSheet(selectedSessionID: $selectedSessionID)
                 .compatibleLargeSheet()
         }
@@ -252,12 +286,6 @@ struct DataTabView: View {
         .safeAreaInset(edge: .bottom) {
             if selectedSegment == .average && !availableAverageTypes.isEmpty {
                 averageTypeBar
-            } else if !usesSystemBottomAccessory && shouldShowBottomAccessory {
-                DataBottomSearchBar(languageCode: appLanguage, usesContainerGlass: true) {
-                    isShowingSearch = true
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
             }
         }
         .task {
@@ -266,7 +294,7 @@ struct DataTabView: View {
         }
         .onChange(of: selectedSegment) { newValue in
             if newValue != .time {
-                isSelecting = false
+                setSelectionMode(false)
                 selectedSolveIDs.removeAll()
             }
             if newValue == .average {
@@ -276,29 +304,14 @@ struct DataTabView: View {
             if newValue == .record {
                 refreshRecordSnapshot()
             }
-            updateBottomAccessoryVisibility()
         }
-        .compatibleTabBarVisibility(hidden: isSelecting)
-        .background {
-            if #unavailable(iOS 16.0) {
-                DataLegacyTabBarVisibility(hidden: isSelecting).frame(width: 0, height: 0)
-            }
-        }
-        .onChange(of: isSelecting) { selecting in
-            isSelectingSolves = selecting
-            if !selecting {
-                selectionAnchorID = nil
-            }
-            updateBottomAccessoryVisibility()
-        }
+        .modifier(DataTabBarVisibility(hidden: isSelecting))
+        .onChange(of: isSelecting) { isSelectingSolves = $0 }
         .onChange(of: selectedSessionID) { _ in
-            isSelecting = false
+            setSelectionMode(false)
             selectedSolveIDs.removeAll()
+            refreshFilteredSessionSolves()
             resetRangeFilters()
-            refreshFilteredSessionSolves()
-        }
-        .onChange(of: selectedSessionSolveCount) { _ in
-            refreshFilteredSessionSolves()
         }
         .onChange(of: solveSortOptionRawValue) { _ in
             updateVisibleSessionSolves()
@@ -307,11 +320,11 @@ struct DataTabView: View {
             updateVisibleSessionSolves()
         }
         .onChange(of: isTimeRangeFilterEnabled) { _ in updateVisibleSessionSolves() }
-        .onChange(of: minimumTimeFilter) { _ in updateVisibleSessionSolves() }
-        .onChange(of: maximumTimeFilter) { _ in updateVisibleSessionSolves() }
+        .onChange(of: minimumTimeFilter) { _ in if isTimeRangeFilterEnabled { updateVisibleSessionSolves() } }
+        .onChange(of: maximumTimeFilter) { _ in if isTimeRangeFilterEnabled { updateVisibleSessionSolves() } }
         .onChange(of: isDateRangeFilterEnabled) { _ in updateVisibleSessionSolves() }
-        .onChange(of: startDateFilter) { _ in updateVisibleSessionSolves() }
-        .onChange(of: endDateFilter) { _ in updateVisibleSessionSolves() }
+        .onChange(of: startDateFilter) { _ in if isDateRangeFilterEnabled { updateVisibleSessionSolves() } }
+        .onChange(of: endDateFilter) { _ in if isDateRangeFilterEnabled { updateVisibleSessionSolves() } }
         .onReceive(NotificationCenter.default.publisher(for: solvesDidChangeNotification)) { _ in
             refreshFilteredSessionSolves()
         }
@@ -321,26 +334,34 @@ struct DataTabView: View {
             }
         }
         .onChange(of: appLanguage) { _ in
+            cancelRecordComputation()
             recordSnapshotKey = nil
             if selectedSegment == .record {
                 refreshRecordSnapshot()
             }
         }
         .onChange(of: solveTimeAccuracy) { _ in
+            cancelRecordComputation()
             recordSnapshotKey = nil
             if selectedSegment == .record {
                 refreshRecordSnapshot()
             }
         }
-        .onChange(of: searchRequestID) { _ in
-            guard usesSystemBottomAccessory, shouldShowBottomAccessory else { return }
-            isShowingSearch = true
-        }
-        .onAppear(perform: updateBottomAccessoryVisibility)
-        .onDisappear {
-            if usesSystemBottomAccessory {
-                isBottomAccessoryVisible = false
+        #if DEBUG
+        .onAppear {
+            performanceProbe?.dataSelect = { if $0 { beginSelecting() } else { endSelecting() } }
+            performanceProbe?.dataToggleAll = toggleAllVisibleSolves
+            performanceProbe?.dataToggleOne = { id in
+                if let solve = visibleSessionSolves.first(where: { $0.id == id }) { toggleSelection(for: solve) }
             }
+            performanceProbe?.dataSelection = { (selectedSolveIDs, Set(visibleSessionSolves.map(\.id))) }
+            performanceProbe?.dataOpenSessionSheet = { showingSessionSheet = true }
+        }
+        #endif
+        .onDisappear {
+            sessionSnapshotGeneration += 1
+            sessionSnapshotTask?.cancel()
+            cancelRecordComputation()
         }
     }
 
@@ -446,17 +467,47 @@ struct DataTabView: View {
         isDateRangeFilterEnabled
     }
 
+    private func setSelectionMode(_ selecting: Bool) {
+        isSelecting = selecting
+        if !selecting { selectionAnchorID = nil }
+    }
+
     private func beginSelecting() {
-        withAnimation(.snappy(duration: 0.2, extraBounce: 0)) {
-            isSelecting = true
-        }
+        withAnimation(selectionTransition) { setSelectionMode(true) }
     }
 
     private func endSelecting() {
-        withAnimation(.snappy(duration: 0.2, extraBounce: 0)) {
-            isSelecting = false
+        withAnimation(selectionTransition) {
+            setSelectionMode(false)
             selectedSolveIDs.removeAll()
         }
+    }
+
+    private var selectionTransition: Animation? {
+        guard !reduceSelectionMotion else { return nil }
+        if #available(iOS 17.0, *) { return .snappy(duration: 0.2, extraBounce: 0) }
+        return .easeInOut(duration: 0.2)
+    }
+
+    private var selectionActionTransition: Animation? {
+        reduceSelectionMotion ? nil : .spring(response: dataSelectionActionDuration, dampingFraction: 0.9)
+    }
+
+    private var canSearch: Bool {
+        selectedSegment == .time && !filteredSessionSolves.isEmpty && !isShowingSearch && !DataSearchIsolation.isDisabled
+    }
+
+    private var showsSearchAccessory: Bool { canSearch && !isSelecting }
+
+    private func updateSearchAccessoryVisibility(_ visible: Bool) {
+        guard usesSystemBottomAccessory, isSearchAccessoryVisible != visible else { return }
+        // The navigation toolbar owns the selection transaction. Publish the
+        // tab accessory separately rather than rebuilding both hosts in it.
+        let animation: Animation?
+        if reduceSelectionMotion { animation = nil }
+        else if #available(iOS 17.0, *) { animation = .smooth(duration: 0.22) }
+        else { animation = .easeInOut(duration: 0.22) }
+        withAnimation(animation) { isSearchAccessoryVisible = visible }
     }
 
     private var timeContent: some View {
@@ -493,16 +544,20 @@ struct DataTabView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 48)
             } else {
-                GeometryReader { proxy in
-                    List {
+                Group {
+                    let numberWidth = solveNumberColumnWidth
+                    let boundary = rangeBoundary
+                    let list = List {
                         Section(selectedSession?.name ?? "") {
                             ForEach(visibleSessionSolves) { solve in
-                                solveRow(for: solve, position: solvePositionByID[solve.id] ?? 0)
+                                solveRow(for: solve, position: solvePositionByID[solve.id] ?? 0, numberWidth: numberWidth)
                                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                                     .background {
-                                        GeometryReader { rowProxy in
-                                            Color.clear.preference(key: SolveRowFramesKey.self,
-                                                                   value: [solve.id: rowProxy.frame(in: .global)])
+                                        if tracksSelectionRange {
+                                            GeometryReader { rowProxy in
+                                                Color.clear.preference(key: SolveRowFramesKey.self,
+                                                                       value: [solve.id: rowProxy.frame(in: .global)])
+                                            }
                                         }
                                     }
                             }
@@ -510,24 +565,49 @@ struct DataTabView: View {
                     }
                     .listStyle(.insetGrouped)
                     .compatibleSoftScrollEdgeEffect()
+
+                    dataTimeListViewport(list)
+                    .background {
+                        if tracksSelectionRange {
+                            GeometryReader { proxy in
+                                Color.clear.preference(key: DataListViewportKey.self, value: proxy.frame(in: .global))
+                            }
+                        }
+                    }
+                    .onPreferenceChange(DataListViewportKey.self) { listViewport = $0 }
                     .onPreferenceChange(SolveRowFramesKey.self) { rowFrames = $0 }
                     .onPreferenceChange(SolveRangeControlFrameKey.self) { rangeControlFrame = $0 }
                     .overlay(alignment: .top) {
-                        if let boundary = rangeBoundary, !boundary.anchorIsAbove {
+                        if let boundary, !boundary.anchorIsAbove {
                             selectToHereButton(boundary).padding(.top, 8)
                         }
                     }
                     .overlay(alignment: .bottom) {
-                        if let boundary = rangeBoundary, boundary.anchorIsAbove {
+                        if let boundary, boundary.anchorIsAbove {
                             selectToHereButton(boundary).padding(.bottom, 8)
                         }
                     }
-                    .onAppear { listViewport = proxy.frame(in: .global) }
-                    .onChange(of: proxy.frame(in: .global)) { listViewport = $0 }
                 }
             }
         }
     }
+
+    @ViewBuilder
+    private func dataTimeListViewport<Content: View>(_ content: Content) -> some View {
+        if #available(iOS 26.0, *), usesSystemBottomAccessory {
+            GeometryReader { geometry in
+                // Keep the scroll surface under the bars as their safe area changes.
+                // Only the content and indicator insets should follow that safe area.
+                content
+                    .contentMargins(.bottom, geometry.safeAreaInsets.bottom, for: .scrollContent)
+                    .contentMargins(.bottom, geometry.safeAreaInsets.bottom, for: .scrollIndicators)
+                    .ignoresSafeArea(.container, edges: .bottom)
+            }
+        } else {
+            content
+        }
+    }
+
     private var segmentSelection: Binding<DataSegment> {
         Binding(
             get: { selectedSegment },
@@ -741,7 +821,7 @@ struct DataTabView: View {
         .buttonStyle(.plain)
     }
 
-    private func solveRow(for solve: SessionSolveSample, position: Int) -> some View {
+    private func solveRow(for solve: SessionSolveSample, position: Int, numberWidth: CGFloat) -> some View {
         Button {
             if isSelecting { toggleSelection(for: solve) } else { solveDetailSample = solve }
         } label: {
@@ -749,7 +829,7 @@ struct DataTabView: View {
                 Text("#\(NumeralPresentation.formatInteger(position))")
                     .font(.body).monospacedDigit().foregroundStyle(.primary)
                     .lineLimit(1)
-                    .frame(minWidth: solveNumberColumnWidth, alignment: .leading)
+                    .frame(minWidth: numberWidth, alignment: .leading)
                 VStack(alignment: .leading, spacing: 4) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals))
@@ -774,7 +854,8 @@ struct DataTabView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     if isSelecting {
-                        SolveSelectionCheckmark(selected: selectedSolveIDs.contains(solve.id))
+                        SolveSelectionCheckmark(selected: selectedSolveIDs.contains(solve.id),
+                            replacementAnimation: .easeInOut(duration: 0.20))
                     } else {
                         Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                     }
@@ -786,6 +867,7 @@ struct DataTabView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelecting && selectedSolveIDs.contains(solve.id) ? .isSelected : [])
+        .accessibilityIdentifier("data-solve-row")
     }
 
     private var solveNumberColumnWidth: CGFloat {
@@ -806,29 +888,68 @@ struct DataTabView: View {
         return solve.eventRawValue
     }
 
-    @ViewBuilder private var selectionActionBar: some View {
-        Button("common.select_all") {
-            selectedSolveIDs = Set(visibleSessionSolves.map(\.id))
-        }
-        Spacer()
-        Button(solveMoveLabel(count: selectedSolveIDs.count, languageCode: appLanguage)) {
-            guard let source = selectedSession else { return }
-            moveRequest = SolveMoveRequest(sourceID: source.id, solveIDs: selectedSolveIDs)
-        }
-        .disabled(selectedSolveIDs.isEmpty)
-        Spacer()
-        Button("common.delete", role: .destructive) { isShowingDeleteSelectedSolvesAlert = true }
-            .disabled(selectedSolveIDs.isEmpty)
+    @State private var selectionToolbarWidth: CGFloat = 0
+
+    @ScaledMetric(relativeTo: .body) private var selectionTextScale: CGFloat = 1
+
+    private func selectionActions(count: Int) -> DataSelectionToolbarActions {
+        // Selection is reconciled to the visible rows whenever the list changes.
+        let allSelected = DataSelectionButtonLayout.allSelected(selected: count, visible: visibleSessionSolves.count)
+        let hasSelection = count > 0
+        let title = appLocalizedString("common.delete", languageCode: appLanguage)
+        let all = appLocalizedString(allSelected ? "common.deselect_all" : "common.select_all", languageCode: appLanguage)
+        let move = hasSelection ? solveMoveLabel(count: count, languageCode: appLanguage) : nil
+        let layout = DataSelectionButtonLayout(availableWidth: selectionToolbarWidth, allTitle: all, moveTitle: move,
+                                               deleteTitle: title, textScale: selectionTextScale)
+        return (
+            DataSelectionToolbarAction(title: all, isDestructive: false, enabled: !visibleSessionSolves.isEmpty,
+                identifier: "data-selection-all", perform: toggleAllVisibleSolves,
+                systemImage: layout.iconActions[0] ? (allSelected ? "circle" : "checkmark.circle") : nil,
+                width: layout.actionWidths[0], height: layout.height),
+            move.map { title in DataSelectionToolbarAction(title: title, isDestructive: false, enabled: true,
+                identifier: "data-selection-move", perform: {
+                    guard !selectedSolveIDs.isEmpty, let source = selectedSession else { return }
+                    moveRequest = SolveMoveRequest(sourceID: source.id, solveIDs: selectedSolveIDs)
+                }, systemImage: layout.iconActions[1] ? "folder" : nil,
+                width: layout.actionWidths[1], height: layout.height) },
+            DataSelectionToolbarAction(title: title, isDestructive: true, enabled: hasSelection,
+                identifier: "data-selection-delete", perform: {
+                    if !selectedSolveIDs.isEmpty { isShowingDeleteSelectedSolvesAlert = true }
+                }, systemImage: layout.useTrash ? "trash" : nil, width: layout.width, height: layout.height),
+            rowWidth: max(layout.actionWidths.reduce(layout.width, +) + (hasSelection ? 2 : 1) * DataSelectionButtonLayout.spacing,
+                selectionToolbarWidth - 2 * DataSelectionButtonLayout.barMargin),
+            animation: selectionActionTransition
+        )
     }
 
+    private func toggleAllVisibleSolves() {
+        let selection = DataSelectionButtonLayout.toggledAll(
+            selected: selectedSolveIDs.count, visible: visibleSessionSolves)
+        withAnimation(selectionActionTransition) {
+            selectionAnchorID = nil
+            selectedSolveIDs = selection
+        }
+    }
+
+    private var tracksSelectionRange: Bool { isSelecting && selectionAnchorID != nil }
+
     private var rangeBoundary: SolveSelectionRange.Boundary? {
-        guard isSelecting else { return nil }
-        let ordered = visibleSessionSolves.map(\.id)
+        guard isSelecting, let selectionAnchorID else { return nil }
         let visible = SolveSelectionRange.visuallyVisibleIDs(rowFrames: rowFrames, viewport: listViewport)
-        guard let boundary = SolveSelectionRange.boundary(anchor: selectionAnchorID, visibleIDs: visible, orderedIDs: ordered) else { return nil }
+        // Local deletion can remove rows before the next snapshot replaces its ranks.
+        let usesCurrentRanks = !hasActiveSolveFilters && solvePositionByID.count == visibleSessionSolves.count
+        func endpoint(for ids: Set<UUID>) -> SolveSelectionRange.Boundary? {
+            if usesCurrentRanks {
+                return SolveSelectionRange.boundary(anchor: selectionAnchorID, visibleIDs: ids,
+                    newestFirstPositions: solvePositionByID)
+            }
+            return SolveSelectionRange.boundary(anchor: selectionAnchorID, visibleIDs: ids,
+                orderedIDs: visibleSessionSolves.lazy.map(\.id))
+        }
+        guard let boundary = endpoint(for: visible) else { return nil }
         let endpointRows = SolveSelectionRange.visuallyVisibleIDs(rowFrames: rowFrames, viewport: listViewport,
             control: rangeControlFrame, anchorIsAbove: boundary.anchorIsAbove)
-        return SolveSelectionRange.boundary(anchor: selectionAnchorID, visibleIDs: endpointRows, orderedIDs: ordered)
+        return endpoint(for: endpointRows)
     }
 
     private func selectToHereButton(_ boundary: SolveSelectionRange.Boundary) -> some View {
@@ -862,21 +983,21 @@ struct DataTabView: View {
     }
 
     private func toggleSelection(for solve: SessionSolveSample) {
-        if selectedSolveIDs.contains(solve.id) {
-            selectedSolveIDs.remove(solve.id)
-        } else {
-            selectedSolveIDs.insert(solve.id)
+        let removing = selectedSolveIDs.contains(solve.id)
+        let changesMovePresence = removing ? selectedSolveIDs.count == 1 : selectedSolveIDs.isEmpty
+        withAnimation(changesMovePresence ? selectionActionTransition : nil) {
+            if removing { selectedSolveIDs.remove(solve.id) }
+            else { selectedSolveIDs.insert(solve.id) }
+            selectionAnchorID = SolveSelectionRange.anchorAfterDirectToggle(id: solve.id, selected: !removing, previous: selectionAnchorID)
         }
-        selectionAnchorID = SolveSelectionRange.anchorAfterDirectToggle(id: solve.id, selected: selectedSolveIDs.contains(solve.id), previous: selectionAnchorID)
     }
 
     private func deleteSelectedSolves() {
         let deletedIDs = selectedSolveIDs
-        for solveID in selectedSolveIDs {
-            if let solve = fetchSolve(with: solveID) {
-                solve.comment = ""
-                modelContext.delete(solve)
-            }
+        guard let solves = try? modelContext.fetchSolves(with: deletedIDs) else { return }
+        for solve in solves {
+            solve.comment = ""
+            modelContext.delete(solve)
         }
         try? modelContext.save()
         filteredSessionSolves.removeAll { deletedIDs.contains($0.id) }
@@ -890,7 +1011,7 @@ struct DataTabView: View {
     }
 
     private func showBestSingle() {
-        solveDetailSample = sessionSolves
+        solveDetailSample = sessionSolves.lazy
             .compactMap { solve -> (SessionSolveSample, Double)? in
                 guard let value = solve.adjustedTime else { return nil }
                 return (solve, value)
@@ -899,7 +1020,7 @@ struct DataTabView: View {
     }
 
     private func showWorstSingle() {
-        solveDetailSample = sessionSolves
+        solveDetailSample = sessionSolves.lazy
             .compactMap { solve -> (SessionSolveSample, Double)? in
                 guard let value = solve.adjustedTime else { return nil }
                 return (solve, value)
@@ -998,78 +1119,76 @@ struct DataTabView: View {
     }
 
     private func refreshFilteredSessionSolves() {
+        sessionSnapshotTask?.cancel()
+        sessionSnapshotGeneration += 1
+        cancelRecordComputation()
+        averageComputationGeneration += 1
+        recordSnapshotKey = nil
+        averageEntriesKey = nil
+        if showingSessionSheet || sessionSnapshotDeferred {
+            // The sheet commits the real selection immediately. Its parent
+            // does not need to load each intermediate session behind it.
+            sessionSnapshotDeferred = true
+            isLoadingSessionSnapshot = true
+            return
+        }
+        #if DEBUG
+        performanceProbe?.dataRequests += 1
+        #endif
         guard let selectedSession else {
             filteredSessionSolves = []
             visibleSessionSolves = []
+            reconcileVisibleSelection()
             solvePositionByID = [:]
             recordSnapshotKey = nil
             isLoadingSessionSnapshot = false
-            updateBottomAccessoryVisibility()
             return
         }
 
-        let persistenceController = PersistenceController.shared
         let sessionID = selectedSession.id
-        let generation = sessionSnapshotGeneration + 1
-        sessionSnapshotGeneration = generation
+        let generation = sessionSnapshotGeneration
+        let reader = snapshotReader ?? SessionSolveSnapshotReader(viewContext: modelContext)
+        snapshotReader = reader
         isLoadingSessionSnapshot = true
-
-        Task.detached(priority: .userInitiated) {
-            let context = persistenceController.newBackgroundContext()
-            let solves = (try? context.fetchSolves(forSessionID: sessionID, ascending: false)) ?? []
-            let snapshots = solves.map { solve in
-                SessionSolveSample(
-                    id: solve.id,
-                    date: solve.date,
-                    time: solve.time,
-                    resultRaw: solve.resultRaw,
-                    scramble: solve.scramble,
-                    comment: solve.comment,
-                    eventRawValue: solve.event,
-                    inputSourceRaw: solve.inputSourceRaw
-                )
-            }
-
-            await MainActor.run {
-                guard generation == sessionSnapshotGeneration else { return }
-                filteredSessionSolves = snapshots
-                initializeRangeFiltersIfNeeded(from: snapshots)
-                updateVisibleSessionSolves()
-                isLoadingSessionSnapshot = false
-                updateBottomAccessoryVisibility()
-                syncSelectedAverageType()
-                prewarmRecordSnapshotIfNeeded()
-                ensureAverageEntriesSnapshot()
-                if selectedSegment == .record {
-                    refreshRecordSnapshot()
-                }
+        sessionSnapshotTask = Task {
+            let snapshots = (try? await reader.load(sessionID: sessionID)) ?? []
+            guard !Task.isCancelled, generation == sessionSnapshotGeneration else { return }
+            let indexWorker = Task.detached(priority: .userInitiated) { try DataSessionDerivedIndex(snapshots) }
+            let index = await withTaskCancellationHandler(operation: { try? await indexWorker.value },
+                onCancel: { indexWorker.cancel() })
+            guard !Task.isCancelled, generation == sessionSnapshotGeneration, let index else { return }
+            filteredSessionSolves = snapshots
+            #if DEBUG
+            performanceProbe?.dataCount = snapshots.count
+            #endif
+            initializeRangeFiltersIfNeeded(from: index.bounds)
+            personalBestSingleSolveIDs = index.personalBests
+            solvePositionByID = index.positions
+            updateVisibleSessionSolves()
+            isLoadingSessionSnapshot = false
+            syncSelectedAverageType()
+            prewarmRecordSnapshotIfNeeded()
+            ensureAverageEntriesSnapshot()
+            if selectedSegment == .record {
+                refreshRecordSnapshot()
             }
         }
     }
 
-    private func refreshSinglePBIDs() {
-        var bestTime: Double?
-        var recordIDs = Set<UUID>()
-
-        for solve in sessionSolves.reversed() {
-            guard let adjustedTime = solve.adjustedTime else { continue }
-            if bestTime == nil || adjustedTime < bestTime! {
-                bestTime = adjustedTime
-                recordIDs.insert(solve.id)
-            }
-        }
-
-        personalBestSingleSolveIDs = recordIDs
+    private func resumeSessionSnapshotAfterSheet() {
+        guard sessionSnapshotDeferred else { return }
+        sessionSnapshotDeferred = false
+        refreshFilteredSessionSolves()
     }
 
     private func updateVisibleSessionSolves() {
-        refreshSinglePBIDs()
-        solvePositionByID = Dictionary(
-            uniqueKeysWithValues: filteredSessionSolves.enumerated().map { index, solve in
-                (solve.id, filteredSessionSolves.count - index)
-            }
-        )
-
+        guard !sessionSnapshotDeferred else { return }
+        let sortOption = DataSolveSortOption(rawValue: solveSortOptionRawValue) ?? .newest
+        if !hasActiveSolveFilters {
+            visibleSessionSolves = filteredSessionSolves
+            reconcileVisibleSelection()
+            return
+        }
         let calendar = Calendar.current
         let dateLowerBound = calendar.startOfDay(for: min(startDateFilter, endDateFilter))
         let dateUpperDay = calendar.startOfDay(for: max(startDateFilter, endDateFilter))
@@ -1093,37 +1212,25 @@ struct DataTabView: View {
 
             return true
         }
-        let sortOption = DataSolveSortOption(rawValue: solveSortOptionRawValue) ?? .newest
-        visibleSessionSolves = matchingSolves.sorted(by: sortOption.areInIncreasingOrder)
+        visibleSessionSolves = sortOption == .newest ? matchingSolves : matchingSolves.sorted(by: sortOption.areInIncreasingOrder)
+        reconcileVisibleSelection()
+    }
+
+    private func reconcileVisibleSelection() {
+        guard !selectedSolveIDs.isEmpty || selectionAnchorID != nil else { return }
         let availableIDs = Set(visibleSessionSolves.map(\.id))
         selectedSolveIDs.formIntersection(availableIDs)
         if let anchor = selectionAnchorID, !availableIDs.contains(anchor) { selectionAnchorID = nil }
     }
 
-    private var shouldShowBottomAccessory: Bool {
-        selectedSegment == .time && !filteredSessionSolves.isEmpty && !isSelecting
-    }
-
-    private func updateBottomAccessoryVisibility() {
-        guard usesSystemBottomAccessory else { return }
-        withAnimation(.smooth(duration: 0.22)) {
-            isBottomAccessoryVisible = shouldShowBottomAccessory
+    private func initializeRangeFiltersIfNeeded(from bounds: DataSolveFilterBounds) {
+        if !isTimeRangeFilterEnabled, let times = bounds.times {
+            minimumTimeFilter = times.lowerBound
+            maximumTimeFilter = times.upperBound
         }
-    }
-
-    private func initializeRangeFiltersIfNeeded(from solves: [SessionSolveSample]) {
-        if let minimum = solves.compactMap(\.adjustedTime).min(),
-           let maximum = solves.compactMap(\.adjustedTime).max(),
-           !isTimeRangeFilterEnabled {
-            minimumTimeFilter = minimum
-            maximumTimeFilter = maximum
-        }
-
-        if let earliest = solves.map(\.date).min(),
-           let latest = solves.map(\.date).max(),
-           !isDateRangeFilterEnabled {
-            startDateFilter = earliest
-            endDateFilter = latest
+        if !isDateRangeFilterEnabled, let dates = bounds.dates {
+            startDateFilter = dates.lowerBound
+            endDateFilter = dates.upperBound
         }
     }
 
@@ -1136,7 +1243,8 @@ struct DataTabView: View {
         solveSortOptionRawValue = DataSolveSortOption.newest.rawValue
         solveResultFilterRawValue = DataSolveResultFilter.all.rawValue
         resetRangeFilters()
-        initializeRangeFiltersIfNeeded(from: filteredSessionSolves)
+        initializeRangeFiltersIfNeeded(from: DataSolveFilterBounds(filteredSessionSolves,
+            includeTimes: true, includeDates: true))
         updateVisibleSessionSolves()
     }
 
@@ -1164,8 +1272,15 @@ struct DataTabView: View {
         refreshRecordSnapshot(showLoading: false)
     }
 
+    private func cancelRecordComputation() {
+        recordComputationGeneration += 1
+        recordComputation?.task.cancel()
+        recordComputation = nil
+    }
+
     private func refreshRecordSnapshot(showLoading: Bool) {
         guard let snapshotKey = currentSessionSnapshotKey else {
+            cancelRecordComputation()
             recordSnapshot = .empty
             recordSnapshotKey = nil
             isComputingRecordSnapshot = false
@@ -1177,25 +1292,35 @@ struct DataTabView: View {
             return
         }
 
+        if let pending = recordComputation, pending.key == snapshotKey {
+            if showLoading && !isComputingRecordSnapshot {
+                isComputingRecordSnapshot = true
+                // Awaiting promotes the same prewarm worker to foreground priority.
+                Task(priority: .userInitiated) { await pending.task.value }
+            }
+            return
+        }
+
+        cancelRecordComputation()
         let samples = sessionSolves
         let notAvailable = appLocalizedString("common.not_available", languageCode: appLanguage)
         let languageCode = appLanguage
-        let generation = recordComputationGeneration + 1
-        recordComputationGeneration = generation
-        if showLoading {
-            isComputingRecordSnapshot = true
-        }
+        let generation = recordComputationGeneration
+        isComputingRecordSnapshot = showLoading
 
-        Task.detached(priority: showLoading ? .userInitiated : .utility) {
-            let snapshot = DataTabComputation.buildRecordSnapshotData(
+        let task = Task.detached(priority: showLoading ? .userInitiated : .utility) {
+            guard let snapshot = try? DataTabComputation.buildRecordSnapshotData(
                 from: samples,
                 notAvailable: notAvailable,
                 languageCode: languageCode,
-                timeDecimals: snapshotKey.timeDecimals
-            )
+                timeDecimals: snapshotKey.timeDecimals,
+                checkCancellation: { try Task.checkCancellation() }
+            ), !Task.isCancelled else { return }
 
             await MainActor.run {
                 guard generation == recordComputationGeneration else { return }
+                recordComputation = nil
+                guard currentSessionSnapshotKey == snapshotKey else { return }
                 recordSnapshot = snapshot
                 recordSnapshotKey = snapshotKey
                 if showLoading || selectedSegment == .record {
@@ -1203,6 +1328,7 @@ struct DataTabView: View {
                 }
             }
         }
+        recordComputation = (snapshotKey, task)
     }
 
 
@@ -1245,7 +1371,7 @@ struct DataTabView: View {
             )
 
             await MainActor.run {
-                guard generation == averageComputationGeneration else { return }
+                guard generation == averageComputationGeneration, currentAverageEntriesKey == snapshotKey else { return }
                 averageEntriesSnapshot = entries
                 averageEntriesKey = snapshotKey
                 isComputingAverageEntries = false
@@ -1275,6 +1401,352 @@ private struct DataTabLeadingToolbarModifier: ViewModifier {
                 }
             }
         }
+    }
+}
+
+private struct DataSelectionToolbarWidth: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
+private struct DataListViewportKey: PreferenceKey {
+    static let defaultValue = CGRect.zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
+}
+
+private struct DataLegacySearchInset: ViewModifier {
+    let enabled: Bool
+    let visible: Bool
+    let languageCode: String
+    let openSearch: () -> Void
+
+    @ViewBuilder func body(content: Content) -> some View {
+        if enabled {
+            content.safeAreaInset(edge: .bottom, spacing: 0) {
+                if visible {
+                    DataBottomSearchBar(languageCode: languageCode, searchAction: openSearch)
+                        .compatibleGlass(in: Capsule())
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 8)
+                }
+            }
+        } else {
+            content
+        }
+    }
+}
+
+private typealias DataSelectionToolbarActions = (all: DataSelectionToolbarAction, move: DataSelectionToolbarAction?, delete: DataSelectionToolbarAction, rowWidth: CGFloat, animation: Animation?)
+
+private struct DataSelectionToolbar: ViewModifier {
+    let actions: DataSelectionToolbarActions?
+
+    @ViewBuilder func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.toolbar { modernItems }
+                .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
+        } else {
+            content.toolbar {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    if let actions {
+                        actions.all
+                        Spacer()
+                        if let move = actions.move {
+                            move
+                            Spacer()
+                        }
+                        actions.delete
+                    }
+                }
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    @ToolbarContentBuilder private var modernItems: some ToolbarContent {
+        if let actions {
+            // One native toolbar item prevents UIKit from overflowing an
+            // individual action. Its own layout budgets all touch targets.
+            ToolbarItem(id: "data-selection-actions", placement: .bottomBar) {
+                HStack(spacing: 0) {
+                    actions.all
+                    Spacer(minLength: DataSelectionButtonLayout.spacing)
+                    if let move = actions.move {
+                        move.transition(.opacity)
+                        Spacer(minLength: DataSelectionButtonLayout.spacing)
+                    }
+                    DataProminentDeleteItem(action: actions.delete)
+                        .frame(width: actions.delete.width, height: actions.delete.height)
+                }
+                .frame(width: actions.rowWidth)
+                .animation(actions.animation, value: [actions.all.width, actions.move?.width ?? 0, actions.delete.width])
+                .animation(actions.animation, value: actions.delete.enabled)
+            }
+            .sharedBackgroundVisibility(.hidden)
+        }
+    }
+}
+
+@available(iOS 26.0, *)
+@MainActor
+private func updateSessionBarItem(_ item: UIBarButtonItem, enabled: Bool, in bar: UIView,
+                                  animate: (_ changes: () -> Void) -> Void) {
+    guard item.isEnabled != enabled else { return }
+    animate {
+        // SwiftUI may update the bridge outside a UIKit animation block.
+        let inherited = UIView.inheritedAnimationDuration
+        let duration = inherited > 0 ? inherited : CATransaction.animationDuration()
+        UIView.transition(with: bar, duration: duration,
+                          options: [.transitionCrossDissolve, .beginFromCurrentState, .allowUserInteraction]) {
+            item.isEnabled = enabled
+            bar.layoutIfNeeded()
+        }
+    }
+}
+
+@available(iOS 26.0, *)
+private struct DataProminentDeleteItem: UIViewRepresentable {
+    let title: String
+    let systemImage: String?
+    let enabled: Bool
+    let identifier: String
+    let usesDataEnabledTransition: Bool
+    let perform: () -> Void
+
+    init(action: DataSelectionToolbarAction) {
+        self.init(title: action.title, systemImage: action.systemImage, enabled: action.enabled,
+                  identifier: action.identifier, usesDataEnabledTransition: true, perform: action.perform)
+    }
+
+    init(title: String, systemImage: String? = nil, enabled: Bool, identifier: String,
+         usesDataEnabledTransition: Bool = false, perform: @escaping () -> Void) {
+        self.title = title
+        self.systemImage = systemImage
+        self.enabled = enabled
+        self.identifier = identifier
+        self.usesDataEnabledTransition = usesDataEnabledTransition
+        self.perform = perform
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UIToolbar {
+        let toolbar = UIToolbar()
+        toolbar.directionalLayoutMargins = .zero
+        toolbar.insetsLayoutMarginsFromSafeArea = false
+        let appearance = UIToolbarAppearance()
+        appearance.configureWithTransparentBackground()
+        toolbar.standardAppearance = appearance
+        toolbar.scrollEdgeAppearance = appearance
+        updateUIView(toolbar, context: context)
+        // Center the native item in the existing slot, without resizing its pill.
+        toolbar.items = [.flexibleSpace(), context.coordinator.item, .flexibleSpace()]
+        return toolbar
+    }
+
+    func updateUIView(_ toolbar: UIToolbar, context: Context) {
+        let coordinator = context.coordinator
+        coordinator.perform = perform
+        let item = coordinator.item
+        let itemTitle = systemImage == nil ? title : nil
+        // Reapplying unchanged bar item properties can invalidate hosted layout.
+        if item.title != itemTitle { item.title = itemTitle }
+        if coordinator.systemImage != systemImage {
+            coordinator.systemImage = systemImage
+            item.image = systemImage.flatMap { UIImage(systemName: $0) }
+        }
+        if item.accessibilityIdentifier != identifier { item.accessibilityIdentifier = identifier }
+        if item.accessibilityLabel != title { item.accessibilityLabel = title }
+        if item.isEnabled != enabled {
+            if usesDataEnabledTransition, toolbar.window != nil,
+               context.transaction.animation != nil,
+               !context.transaction.disablesAnimations,
+               !UIAccessibility.isReduceMotionEnabled {
+                // UIKit switches a bar item's enabled appearance discretely.
+                // Transition the rendered states without delaying the item update.
+                UIView.transition(with: toolbar, duration: dataSelectionActionDuration,
+                    options: [.transitionCrossDissolve, .curveEaseInOut, .beginFromCurrentState, .allowUserInteraction]) {
+                    item.isEnabled = enabled
+                }
+            } else if !usesDataEnabledTransition, toolbar.window != nil, !context.transaction.disablesAnimations,
+                      !context.environment.accessibilityReduceMotion, !UIAccessibility.isReduceMotionEnabled {
+                updateSessionBarItem(item, enabled: enabled, in: toolbar) { context.animate(changes: $0) }
+            } else {
+                item.isEnabled = enabled
+            }
+        }
+    }
+
+    final class Coordinator: NSObject {
+        var perform: (() -> Void)?
+        var systemImage: String?
+        lazy var item: UIBarButtonItem = {
+            let item = UIBarButtonItem(title: nil, style: .plain, target: self, action: #selector(tap))
+            SessionNativeActionStyle.apply(to: item, tint: .systemRed)
+            return item
+        }()
+
+        @objc private func tap() { perform?() }
+    }
+}
+
+private struct DataSelectionToolbarAction: View {
+    let title: String
+    let isDestructive: Bool
+    let enabled: Bool
+    let identifier: String
+    let perform: () -> Void
+    let systemImage: String?
+    let width: CGFloat
+    let height: CGFloat
+
+    @ViewBuilder var body: some View {
+        if #available(iOS 26.0, *) {
+            Button(role: isDestructive ? .destructive : nil, action: perform) {
+                titleContent
+                    .foregroundStyle(enabled ? Color.primary : Color.secondary)
+                    .frame(width: width, height: height)
+                    .contentShape(Capsule())
+                    .glassEffect(
+                        isDestructive && enabled
+                            ? .regular.tint(.red).interactive(true)
+                            : .regular.interactive(enabled),
+                        in: .capsule
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(!enabled)
+            .accessibilityLabel(Text(title))
+            .accessibilityIdentifier(identifier)
+        } else {
+            button
+        }
+    }
+
+    private var button: some View {
+        Button(role: isDestructive ? .destructive : nil, action: perform) {
+            titleContent
+        }
+        .disabled(!enabled)
+        .accessibilityLabel(Text(title))
+        .accessibilityIdentifier(identifier)
+    }
+
+    private var titleContent: some View {
+        ZStack {
+            if let systemImage {
+                Image(systemName: systemImage).transition(.opacity)
+            } else {
+                Text(title).lineLimit(1).id(title).transition(.opacity)
+            }
+        }
+    }
+}
+
+nonisolated struct DataSessionDerivedIndex: Sendable {
+    let positions: [UUID: Int]
+    let personalBests: Set<UUID>
+    let bounds: DataSolveFilterBounds
+
+    init(_ solves: [SessionSolveSample]) throws {
+        var positions: [UUID: Int] = [:]
+        positions.reserveCapacity(solves.count)
+        var personalBests: Set<UUID> = []
+        var best: Double?
+        var bounds = DataSolveFilterBounds()
+        for (offset, solve) in solves.reversed().enumerated() {
+            if offset.isMultiple(of: 128) { try Task.checkCancellation() }
+            positions[solve.id] = offset + 1
+            let time = solve.adjustedTime
+            if let time, best.map({ time < $0 }) ?? true {
+                personalBests.insert(solve.id)
+                best = time
+            }
+            bounds.include(time: time, date: solve.date)
+        }
+        self.positions = positions
+        self.personalBests = personalBests
+        self.bounds = bounds
+    }
+}
+
+nonisolated struct DataSolveFilterBounds: Sendable {
+    private(set) var times: ClosedRange<Double>?
+    private(set) var dates: ClosedRange<Date>?
+
+    init() {}
+
+    init(_ solves: [SessionSolveSample], includeTimes: Bool, includeDates: Bool) {
+        guard includeTimes || includeDates else { return }
+        for solve in solves {
+            include(time: includeTimes ? solve.adjustedTime : nil, date: includeDates ? solve.date : nil)
+        }
+    }
+
+    mutating func include(time: Double?, date: Date?) {
+        if let time, !time.isNaN {
+            if let times { self.times = min(times.lowerBound, time)...max(times.upperBound, time) }
+            else { times = time...time }
+        }
+        if let date {
+            if let dates { self.dates = min(dates.lowerBound, date)...max(dates.upperBound, date) }
+            else { dates = date...date }
+        }
+    }
+}
+
+struct DataSelectionButtonLayout {
+    static let spacing: CGFloat = 8
+    private static let minimumTarget: CGFloat = 44
+    private static let preferredTextInset: CGFloat = 14
+    private static let compactTextInset: CGFloat = 10
+    static let barMargin: CGFloat = 20
+
+    let useTrash: Bool
+    let iconActions: [Bool]
+    let width: CGFloat
+    let height: CGFloat
+    let actionWidths: [CGFloat]
+    let textInset: CGFloat
+
+    static func allSelected(selected: Int, visible: Int) -> Bool {
+        visible > 0 && selected == visible
+    }
+
+    static func toggledAll(selected: Int, visible: [SessionSolveSample]) -> Set<UUID> {
+        // Changes to the visible list reconcile selection before it is usable.
+        allSelected(selected: selected, visible: visible.count) ? [] : Set(visible.lazy.map(\.id))
+    }
+
+    init(availableWidth: CGFloat, allTitle: String, moveTitle: String?, deleteTitle: String, textScale: CGFloat = 1) {
+        let font = UIFont.systemFont(ofSize: 17 * textScale)
+        func measure(_ title: String) -> CGFloat {
+            ceil((title as NSString).size(withAttributes: [.font: font]).width)
+        }
+        let targetHeight = max(Self.minimumTarget, ceil(font.lineHeight) + 12)
+        let titles = [measure(allTitle), moveTitle.map(measure) ?? 0, measure(deleteTitle)]
+        let contentWidth = max(0, availableWidth - 2 * Self.barMargin)
+        // Use the whole row before sacrificing a label; protect the two
+        // leading actions before the destructive action.
+        let masks = [0, 4, 6, 7]
+        func widths(for mask: Int, inset: CGFloat) -> [CGFloat] {
+            titles.enumerated().map { index, width in
+                if index == 1 && moveTitle == nil { return 0 }
+                return mask & (1 << index) == 0 ? max(Self.minimumTarget, width + 2 * inset) : Self.minimumTarget
+            }
+        }
+        let insets = [Self.preferredTextInset, Self.compactTextInset]
+        let candidates = masks.flatMap { mask in insets.map { (mask, $0) } }
+        let (mask, inset) = candidates.first { mask, inset in
+            widths(for: mask, inset: inset).reduce(0, +) + (moveTitle == nil ? 1 : 2) * Self.spacing <= contentWidth
+        } ?? (7, Self.preferredTextInset)
+        let fitted = widths(for: mask, inset: inset)
+        textInset = inset
+        iconActions = [mask & 1 != 0, mask & 2 != 0]
+        useTrash = mask & 4 != 0
+        height = mask == 7 ? Self.minimumTarget : targetHeight
+        width = fitted[2]
+        actionWidths = Array(fitted.prefix(2))
     }
 }
 
@@ -1484,8 +1956,19 @@ private struct DataTabTrailingToolbarModifier: ViewModifier {
         if showsListControls {
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
 
-            ToolbarItem(placement: .topBarTrailing) {
-                selectionButton
+            // Replace the bar item itself so the navigation bar owns the transition.
+            if isSelecting {
+                ToolbarItem(id: "data-selection-close", placement: .topBarTrailing) {
+                    Button(action: onCloseSelection) { closeSelectionImage }
+                        .accessibilityLabel(Text("common.done"))
+                        .accessibilityIdentifier("data-selection-close")
+                }
+            } else {
+                ToolbarItem(id: "data-selection-open", placement: .topBarTrailing) {
+                    Button(action: onSelect) { selectTitle }
+                        .accessibilityLabel(Text("common.select"))
+                        .accessibilityIdentifier("data-selection-open")
+                }
             }
         }
     }
@@ -1603,24 +2086,24 @@ private struct DataTabTrailingToolbarModifier: ViewModifier {
         }
     }
 
-    @ViewBuilder
     private var selectionButton: some View {
-        if isSelecting {
-            Button {
-                onCloseSelection()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .medium))
-            }
-            .accessibilityLabel(Text("common.done"))
-        } else {
-            Button {
-                onSelect()
-            } label: {
-                Text("common.select")
-                    .font(.system(size: 16, weight: .semibold))
-            }
+        Button {
+            if isSelecting { onCloseSelection() } else { onSelect() }
+        } label: {
+            if isSelecting { closeSelectionImage } else { selectTitle }
         }
+        .accessibilityLabel(Text(isSelecting ? "common.done" : "common.select"))
+        .accessibilityIdentifier(isSelecting ? "data-selection-close" : "data-selection-open")
+    }
+
+    private var closeSelectionImage: some View {
+        Image(systemName: "xmark")
+            .font(.system(size: 16, weight: .medium))
+    }
+
+    private var selectTitle: some View {
+        Text("common.select")
+            .font(.system(size: 16, weight: .semibold))
     }
 }
 
@@ -1797,13 +2280,33 @@ private struct DataSolveRangeFilterSheet: View {
 
 struct DataBottomSearchBar: View {
     let languageCode: String
-    let usesContainerGlass: Bool
     let searchAction: () -> Void
 
+    @ViewBuilder
     var body: some View {
+        if #available(iOS 26.0, *) {
+            accessoryLabel
+        } else {
+            searchButton(compact: false)
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private struct AccessoryPlacement<Content: View>: View {
+        @Environment(\.tabViewBottomAccessoryPlacement) private var placement
+        @ViewBuilder let content: (Bool) -> Content
+        var body: some View { content(placement == .inline) }
+    }
+
+    @available(iOS 26.0, *)
+    private var accessoryLabel: some View {
+        AccessoryPlacement { compact in searchButton(compact: compact) }
+    }
+
+    private func searchButton(compact: Bool) -> some View {
         let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
 
-        Button(action: searchAction) {
+        return Button(action: searchAction) {
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 15, weight: .semibold))
@@ -1814,32 +2317,19 @@ struct DataBottomSearchBar: View {
             }
             .foregroundStyle(.secondary)
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, compact ? 0 : 12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(shape)
         }
         .buttonStyle(.plain)
-        .background(shape.fill(.black.opacity(0.001)))
+        .accessibilityLabel(Text(appLocalizedString("data.search.placeholder", languageCode: languageCode)))
+        .accessibilityIdentifier("data-bottom-search")
         .contentShape(shape)
-        .modifier(DataBottomSearchBarGlassModifier(isEnabled: usesContainerGlass, shape: shape))
-    }
-}
-
-private struct DataBottomSearchBarGlassModifier: ViewModifier {
-    let isEnabled: Bool
-    let shape: RoundedRectangle
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if isEnabled {
-            content.compatibleGlass(in: shape)
-        } else {
-            content
-        }
     }
 }
 
 private struct DataSolveSearchView: View {
+    @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
     let sessionID: UUID
     let fallbackPuzzleKey: String?
@@ -1849,6 +2339,10 @@ private struct DataSolveSearchView: View {
     @State private var searchableTextByID: [UUID: String] = [:]
     @State private var selectedSolve: SessionSolveSample?
     @State private var isLoading = true
+    @State private var loadTask: Task<Void, Never>?
+    @State private var loadGeneration = 0
+    @State private var pendingIndexSamples: [SessionSolveSample]?
+    @State private var indexTask: Task<Void, Never>?
 
     private var matchingSolves: [SessionSolveSample] {
         let tokens = normalized(query).split(whereSeparator: \.isWhitespace).map(String.init)
@@ -1869,11 +2363,12 @@ private struct DataSolveSearchView: View {
     }
 
     var body: some View {
+        let results = isLoading ? [] : matchingSolves
         Group {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if matchingSolves.isEmpty {
+            } else if results.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 30, weight: .medium))
@@ -1888,7 +2383,7 @@ private struct DataSolveSearchView: View {
                 .padding(24)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(matchingSolves) { solve in
+                List(results) { solve in
                     Button {
                         selectedSolve = solve
                     } label: {
@@ -1914,14 +2409,20 @@ private struct DataSolveSearchView: View {
         .task {
             loadSolves()
         }
+        .onDisappear {
+            loadTask?.cancel()
+            indexTask?.cancel()
+            loadGeneration += 1
+            pendingIndexSamples = nil
+        }
         .onReceive(NotificationCenter.default.publisher(for: solvesDidChangeNotification)) { _ in
             loadSolves()
         }
         .onChange(of: appLanguage) { _ in
-            searchableTextByID = makeSearchIndex(for: solves)
+            if let pendingIndexSamples { rebuildSearchIndex(for: pendingIndexSamples) }
         }
         .onChange(of: solveTimeAccuracy) { _ in
-            searchableTextByID = makeSearchIndex(for: solves)
+            if let pendingIndexSamples { rebuildSearchIndex(for: pendingIndexSamples) }
         }
     }
 
@@ -1955,75 +2456,92 @@ private struct DataSolveSearchView: View {
 
     private func loadSolves() {
         isLoading = solves.isEmpty
-        let persistenceController = PersistenceController.shared
-        let selectedSessionID = sessionID
-
-        Task.detached(priority: .userInitiated) {
-            let context = persistenceController.newBackgroundContext()
-            let fetched = (try? context.fetchSolves(forSessionID: selectedSessionID, ascending: false)) ?? []
-            let snapshots = fetched.map {
-                SessionSolveSample(
-                    id: $0.id,
-                    date: $0.date,
-                    time: $0.time,
-                    resultRaw: $0.resultRaw,
-                    scramble: $0.scramble,
-                    comment: $0.comment,
-                    eventRawValue: $0.event,
-                    inputSourceRaw: $0.inputSourceRaw
-                )
-            }
-
-            await MainActor.run {
-                solves = snapshots
-                searchableTextByID = makeSearchIndex(for: snapshots)
-                isLoading = false
-            }
+        loadTask?.cancel(); loadGeneration += 1
+        indexTask?.cancel()
+        pendingIndexSamples = nil
+        let generation = loadGeneration, reader = SessionSolveSnapshotReader(viewContext: modelContext)
+        loadTask = Task {
+            let snapshots = (try? await reader.load(sessionID: sessionID)) ?? []
+            guard !Task.isCancelled, loadGeneration == generation else { return }
+            pendingIndexSamples = snapshots
+            rebuildSearchIndex(for: snapshots)
         }
     }
 
-    private func makeSearchIndex(for solves: [SessionSolveSample]) -> [UUID: String] {
+    private func rebuildSearchIndex(for samples: [SessionSolveSample]) {
+        indexTask?.cancel()
+        let language = appLanguage, decimals = solveTimeAccuracy.decimals, generation = loadGeneration
+        indexTask = Task {
+            let worker = Task.detached(priority: .userInitiated) {
+                try DataSolveSearchIndex.make(samples, language: language, decimals: decimals)
+            }
+            let index = await withTaskCancellationHandler(operation: { try? await worker.value },
+                onCancel: { worker.cancel() })
+            guard !Task.isCancelled, generation == loadGeneration, let index else { return }
+            solves = samples
+            searchableTextByID = index
+            isLoading = false
+        }
+    }
+
+    private func normalized(_ value: String) -> String {
+        DataSolveSearchIndex.normalized(value, locale: appLocale(for: appLanguage))
+    }
+}
+
+nonisolated enum DataSolveSearchIndex {
+    static func make(_ solves: [SessionSolveSample], language: String, decimals: Int) throws -> [UUID: String] {
+        let locale = appLocale(for: language)
         let displayDateFormatter = DateFormatter()
-        displayDateFormatter.locale = appLocale(for: appLanguage)
+        displayDateFormatter.locale = locale
         displayDateFormatter.dateStyle = .medium
         displayDateFormatter.timeStyle = .short
         let isoDateFormatter = ISO8601DateFormatter()
 
-        return Dictionary(uniqueKeysWithValues: solves.map { solve in
-            (
-                solve.id,
-                searchableText(
-                    for: solve,
-                    displayDateFormatter: displayDateFormatter,
-                    isoDateFormatter: isoDateFormatter
-                )
-            )
-        })
+        let solved = appLocalizedString("common.solved", languageCode: language)
+        let dnf = appLocalizedString("common.dnf", languageCode: language)
+        var events: [String: String] = [:]
+        var index: [UUID: String] = [:]
+        index.reserveCapacity(solves.count)
+        for (offset, solve) in solves.enumerated() {
+            if offset.isMultiple(of: 64) { try Task.checkCancellation() }
+            let eventText: String
+            if let cached = events[solve.eventRawValue] {
+                eventText = cached
+            } else {
+                eventText = PuzzleEvent(rawValue: solve.eventRawValue).map {
+                    appLocalizedString($0.localizationKey, languageCode: language)
+                } ?? solve.eventRawValue
+                events[solve.eventRawValue] = eventText
+            }
+            index[solve.id] = searchableText(for: solve, displayDateFormatter: displayDateFormatter,
+                isoDateFormatter: isoDateFormatter, locale: locale, decimals: decimals,
+                solved: solved, dnf: dnf, eventText: eventText)
+        }
+        return index
     }
 
-    private func searchableText(
+    private static func searchableText(
         for solve: SessionSolveSample,
         displayDateFormatter: DateFormatter,
-        isoDateFormatter: ISO8601DateFormatter
+        isoDateFormatter: ISO8601DateFormatter, locale: Locale, decimals: Int,
+        solved: String, dnf: String, eventText: String
     ) -> String {
         let result = SolveResult(rawValue: solve.resultRaw) ?? .solved
         let resultText: String
         switch result {
         case .solved:
-            resultText = appLocalizedString("common.solved", languageCode: appLanguage)
+            resultText = solved
         case .plusTwo:
             resultText = "+2"
         case .dnf:
-            resultText = appLocalizedString("common.dnf", languageCode: appLanguage)
+            resultText = dnf
         }
 
-        let eventText = PuzzleEvent(rawValue: solve.eventRawValue).map {
-            appLocalizedString($0.localizationKey, languageCode: appLanguage)
-        } ?? solve.eventRawValue
         let isoDate = isoDateFormatter.string(from: solve.date)
         let rawSeconds = String(format: "%.3f", solve.time)
         return normalized([
-            SolveMetrics.displayTime(for: solve, decimals: solveTimeAccuracy.decimals),
+            SolveMetrics.displayTime(for: solve, decimals: decimals),
             rawSeconds,
             solve.comment,
             solve.scramble,
@@ -2032,12 +2550,12 @@ private struct DataSolveSearchView: View {
             resultText,
             solve.eventRawValue,
             eventText
-        ].joined(separator: " "))
+        ].joined(separator: " "), locale: locale)
     }
 
-    private func normalized(_ value: String) -> String {
+    static func normalized(_ value: String, locale: Locale) -> String {
         value
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: appLocale(for: appLanguage))
+            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: locale)
             .lowercased()
     }
 }
@@ -2340,16 +2858,41 @@ private struct RecordHistorySheet: View {
 }
 
 #if DEBUG
+@MainActor final class SolveNotesTestProbe {
+    var edit: ((String) -> Void)?
+    var done: (() -> Void)?
+    var isFocused: (() -> Bool)?
+}
+private struct SolveNotesTestProbeKey: EnvironmentKey {
+    static let defaultValue: SolveNotesTestProbe? = nil
+}
+private extension EnvironmentValues {
+    var solveNotesTestProbe: SolveNotesTestProbe? {
+        get { self[SolveNotesTestProbeKey.self] }
+        set { self[SolveNotesTestProbeKey.self] = newValue }
+    }
+}
 enum SolveDetailAcceptance {
-    static func view(for solve: Solve) -> some View {
+    static func view(for solve: Solve, notesProbe: SolveNotesTestProbe? = nil) -> some View {
         SolveDetailSheet(sample: SessionSolveSample(id: solve.id, date: solve.date, time: solve.time,
             resultRaw: solve.resultRaw, scramble: solve.scramble, comment: solve.comment,
             eventRawValue: solve.event, inputSourceRaw: solve.inputSourceRaw), position: nil, fallbackPuzzleKey: nil)
+            .environment(\.solveNotesTestProbe, notesProbe)
     }
 }
 #endif
 
+private struct SolveNotesScrollDismissal: ViewModifier {
+    @ViewBuilder func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) { content.scrollDismissesKeyboard(.interactively) }
+        else { content }
+    }
+}
+
 private struct SolveDetailSheet: View {
+    #if DEBUG
+    @Environment(\.solveNotesTestProbe) private var notesProbe
+    #endif
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var modelContext
     @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
@@ -2359,6 +2902,8 @@ private struct SolveDetailSheet: View {
     @AppStorage("appLanguage") private var appLanguage: String = "en"
     @State private var showingScrambleDetail = false
     @State private var isShowingDeleteSolveAlert = false
+    @FocusState private var notesAreFocused: Bool
+    @State private var selectedPenalty: SolveResult
     @State private var commentText: String
     @State private var sharedSolveImage: SharedImageItem?
     @State private var isRenderingShareImage = false
@@ -2373,6 +2918,7 @@ private struct SolveDetailSheet: View {
         self.position = position
         self.fallbackPuzzleKey = fallbackPuzzleKey
         _commentText = State(initialValue: sample.comment)
+        _selectedPenalty = State(initialValue: SolveResult(rawValue: sample.resultRaw) ?? .solved)
     }
 
     private var navigationTitle: String {
@@ -2444,10 +2990,15 @@ private struct SolveDetailSheet: View {
                 }
                 .padding(20)
             }
+            .modifier(SolveNotesScrollDismissal())
             .compatibleSoftScrollEdgeEffect()
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("common.done", action: finishEditingNotes)
+                }
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         showingShareOptions = true
@@ -2493,6 +3044,13 @@ private struct SolveDetailSheet: View {
             .sheet(item: $sharedSolveImage) { item in
                 SystemShareSheet(items: [item.image])
             }
+            #if DEBUG
+            .onAppear {
+                notesProbe?.edit = { commentText = $0; notesAreFocused = true }
+                notesProbe?.done = finishEditingNotes
+                notesProbe?.isFocused = { notesAreFocused }
+            }
+            #endif
             .task { loadReconstruction() }
             .onDisappear(perform: saveComment)
             .alert("delete.solve.title", isPresented: $isShowingDeleteSolveAlert) {
@@ -2595,8 +3153,10 @@ private struct SolveDetailSheet: View {
                 TextField("solve.comment.placeholder", text: $commentText, axis: .vertical)
                     .lineLimit(3...6)
                     .textFieldStyle(.roundedBorder)
+                    .focused($notesAreFocused)
             } else {
                 TextEditor(text: $commentText)
+                    .focused($notesAreFocused)
                     .frame(minHeight: 88)
                     .overlay {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -2628,6 +3188,7 @@ private struct SolveDetailSheet: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
+            finishEditingNotes()
             if shouldShowScrambleDetail {
                 showingScrambleDetail = true
             }
@@ -2636,32 +3197,13 @@ private struct SolveDetailSheet: View {
 
     private var actionSection: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 10) {
-                Button("common.dnf") {
-                    updateResult(.dnf)
-                }
-                .compatibleProminentButtonFromIOS16(tint: .blue)
+            SolvePenaltySelector(selected: selectedPenalty, language: appLanguage, select: updateResult)
+                .frame(maxWidth: .infinity)
 
-                Button("+2") {
-                    updateResult(.plusTwo)
-                }
-                .compatibleProminentButtonFromIOS16(tint: .blue)
-
-                Button("common.solved") {
-                    updateResult(.solved)
-                }
-                .compatibleProminentButtonFromIOS16(tint: .blue)
-            }
-            .controlSize(.large)
-
-            Button {
-                isShowingDeleteSolveAlert = true
-            } label: {
-                Text("common.delete")
-                    .frame(maxWidth: .infinity)
-            }
-            .compatibleProminentButtonFromIOS16(tint: .red)
-            .controlSize(.large)
+            SmartCubeNativeAction(title: appLocalizedString("common.delete", languageCode: appLanguage),
+                tint: .systemRed, enabled: true, identifier: "solve-detail-delete",
+                perform: { isShowingDeleteSolveAlert = true }, isLarge: true)
+                .frame(height: 50)
         }
     }
 
@@ -2671,6 +3213,8 @@ private struct SolveDetailSheet: View {
             return
         }
 
+        selectedPenalty = result
+        notesAreFocused = false
         solve.result = result
         solve.comment = normalizedComment
         try? modelContext.save()
@@ -2680,6 +3224,11 @@ private struct SolveDetailSheet: View {
 
     private var normalizedComment: String {
         commentText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func finishEditingNotes() {
+        notesAreFocused = false
+        saveComment()
     }
 
     private func saveComment() {
@@ -3004,6 +3553,10 @@ private struct SessionManagementToolbarConfigurator: UIViewControllerRepresentab
 
     func updateUIViewController(_ viewController: UIViewController, context: Context) {
         context.coordinator.configuration = self
+        if #available(iOS 26.0, *),
+           context.coordinator.updateRenameIfMounted(in: viewController, context: context) {
+            return
+        }
         DispatchQueue.main.async {
             context.coordinator.apply(to: viewController)
         }
@@ -3026,9 +3579,29 @@ private struct SessionManagementToolbarConfigurator: UIViewControllerRepresentab
 
         var configuration: SessionManagementToolbarConfigurator
         private var appliedState: ToolbarState?
+        private weak var installedRename: UIBarButtonItem?
 
         init(configuration: SessionManagementToolbarConfigurator) {
             self.configuration = configuration
+        }
+
+        @available(iOS 26.0, *)
+        func updateRenameIfMounted(in viewController: UIViewController, context: Context) -> Bool {
+            guard configuration.isEditing, appliedState?.isEditing == true,
+                  appliedState?.languageCode == configuration.languageCode,
+                  let bar = viewController.navigationController?.navigationBar,
+                  let rename = installedRename,
+                  bar.topItem?.rightBarButtonItems?.contains(where: { $0 === rename }) == true else { return false }
+            let enabled = configuration.canRename
+            appliedState = ToolbarState(isEditing: true, canRename: enabled, languageCode: configuration.languageCode)
+            guard rename.isEnabled != enabled else { return true }
+            if bar.window != nil, !context.transaction.disablesAnimations,
+               !context.environment.accessibilityReduceMotion, !UIAccessibility.isReduceMotionEnabled {
+                updateSessionBarItem(rename, enabled: enabled, in: bar) { context.animate(changes: $0) }
+            } else {
+                rename.isEnabled = enabled
+            }
+            return true
         }
 
         func apply(to viewController: UIViewController) {
@@ -3053,7 +3626,9 @@ private struct SessionManagementToolbarConfigurator: UIViewControllerRepresentab
                     action: #selector(renameTapped)
                 )
                 secondaryItem.isEnabled = configuration.canRename
+                installedRename = secondaryItem
             } else {
+                installedRename = nil
                 secondaryItem = UIBarButtonItem(
                     image: UIImage(systemName: "plus"),
                     style: .plain,
@@ -3070,11 +3645,26 @@ private struct SessionManagementToolbarConfigurator: UIViewControllerRepresentab
             )
             SessionNativeActionStyle.apply(to: primaryItem, tint: .systemBlue)
 
+            if #available(iOS 26.0, *),
+               let bar = viewController.navigationController?.navigationBar, bar.topItem === navigationItem {
+                // The app can choose a direction independently of the system language.
+                let direction: UISemanticContentAttribute = appUsesRightToLeftLayout(for: state.languageCode)
+                    ? .forceRightToLeft : .forceLeftToRight
+                if bar.semanticContentAttribute != direction { bar.semanticContentAttribute = direction }
+            }
+            if #available(iOS 27.2, *) {
+                navigationItem.titleAlignment = state.isEditing ? .leading : .center
+            } else if #available(iOS 26.0, *) {
+                // This sheet has no back button, search controller or center items.
+                // Keep the native inline title in both modes rather than replacing it with a titleView.
+                navigationItem.style = state.isEditing ? .editor : .navigator
+            }
             navigationItem.setRightBarButtonItems([primaryItem, secondaryItem], animated: shouldAnimate)
         }
 
         func clear(from viewController: UIViewController) {
             appliedState = nil
+            installedRename = nil
             navigationItem(for: viewController)?.setRightBarButtonItems(nil, animated: false)
         }
 
@@ -3124,6 +3714,9 @@ private struct SessionDeletionRequest: Identifiable {
 }
 
 private struct SessionManagementSheet: View {
+    #if DEBUG
+    @Environment(\.appPerformanceProbe) private var performanceProbe
+    #endif
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var modelContext
     @AppStorage("appLanguage") private var appLanguage: String = "en"
@@ -3147,7 +3740,13 @@ private struct SessionManagementSheet: View {
     @State private var deleteProgressCurrent = 0
     @State private var deleteProgressTotal = 1
     @State private var pendingSessionDeletion: SessionDeletionRequest?
+    @State private var solveCounts: [UUID: Int] = [:]
     private let animation = Animation.spring(response: 0.3, dampingFraction: 0.86)
+
+    private var sessionNavigationTitle: Text {
+        if #available(iOS 26.0, *) { return Text("common.session") }
+        return isEditing ? Text("") : Text("common.session")
+    }
 
     var body: some View {
         CompatibleNavigationContainer {
@@ -3155,7 +3754,7 @@ private struct SessionManagementSheet: View {
                 if isDeletingSessions {
                     Color.clear
                 } else {
-                    List {
+                    sessionListViewport(List {
                         ForEach(sessions) { session in
                             sessionRow(session)
                             .contentShape(Rectangle())
@@ -3197,10 +3796,11 @@ private struct SessionManagementSheet: View {
                         }
                     }
                     .compatibleSoftScrollEdgeEffect()
-                    .listStyle(.plain)
+                    .listStyle(.plain))
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(sessionNavigationTitle)
             .animation(animation, value: isEditing)
             .animation(animation, value: selectedSessionIDs)
             .animation(animation, value: selectedSessionID)
@@ -3225,11 +3825,12 @@ private struct SessionManagementSheet: View {
                 }
 
                 ToolbarItem(placement: .principal) {
-                    Text("common.session")
-                        .font(.system(size: 17, weight: .semibold))
-                        .frame(maxWidth: .infinity, alignment: isEditing ? .leading : .center)
-                        .padding(.leading, isEditing ? 8 : 0)
-                        .animation(animation, value: isEditing)
+                    if #unavailable(iOS 26.0), isEditing {
+                        Text("common.session")
+                            .font(.system(size: 17, weight: .semibold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 8)
+                    }
                 }
 
             }
@@ -3284,6 +3885,27 @@ private struct SessionManagementSheet: View {
             .onAppear {
                 isShowingDeselectAllLabel = allSessionsSelected
                 selectAllButtonTextOpacity = 1
+                #if DEBUG
+                performanceProbe?.dataChooseSession = { id in
+                    if let session = sessions.first(where: { $0.id == id }) { selectSession(session) }
+                }
+                performanceProbe?.dataCloseSessionSheet = { dismiss() }
+                performanceProbe?.dataSessionSelection = { selectedSessionID }
+                #endif
+            }
+            #if DEBUG
+            .onDisappear {
+                performanceProbe?.dataChooseSession = nil
+                performanceProbe?.dataCloseSessionSheet = nil
+                performanceProbe?.dataSessionSelection = nil
+            }
+            #endif
+            .task(id: sessions.map(\.id)) {
+                let ids = sessions.map(\.id)
+                let reader = SessionSolveSnapshotReader(viewContext: modelContext)
+                if let counts = try? await reader.counts(sessionIDs: ids), !Task.isCancelled {
+                    solveCounts = counts
+                }
             }
             .onChange(of: allSessionsSelected) { newValue in
                 animateSelectAllButtonLabel(to: newValue)
@@ -3333,7 +3955,7 @@ private struct SessionManagementSheet: View {
             Spacer()
 
             AnimatedSessionSolveCountText(
-                text: sessionSolveCountText(session.solveCount),
+                text: solveCounts[session.id].map(sessionSolveCountText) ?? "…",
                 phase: solveCountPhase
             )
 
@@ -3347,10 +3969,7 @@ private struct SessionManagementSheet: View {
     private func sessionSelectionIndicator(for session: Session) -> some View {
         if isEditing {
             let isSelected = selectedSessionIDs.contains(session.id)
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(isSelected ? .blue : .secondary)
-                .animation(animation, value: isSelected)
+            SolveSelectionCheckmark(selected: isSelected, size: 20, weight: .semibold)
                 .transition(
                     .asymmetric(
                         insertion: .move(edge: .leading).combined(with: .opacity),
@@ -3366,6 +3985,21 @@ private struct SessionManagementSheet: View {
             isSelected: selectedSessionID == session.id.uuidString
         )
         .frame(width: 18, alignment: .trailing)
+    }
+
+    @ViewBuilder
+    private func sessionListViewport<Content: View>(_ list: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            GeometryReader { geometry in
+                // Keep the scroll surface beneath the glass; inset only the rows and indicators.
+                list
+                    .contentMargins(.bottom, geometry.safeAreaInsets.bottom, for: .scrollContent)
+                    .contentMargins(.bottom, geometry.safeAreaInsets.bottom, for: .scrollIndicators)
+                    .ignoresSafeArea(.container, edges: .bottom)
+            }
+        } else {
+            list
+        }
     }
 
     private var bottomEditBar: some View {
@@ -3393,24 +4027,40 @@ private struct SessionManagementSheet: View {
 
             Spacer()
 
-            Button {
-                startDeletingSelectedSessions()
-            } label: {
-                Text("common.delete")
-                    .font(.system(size: 17, weight: .semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .compatibleTintedGlassFromIOS16(.red, in: Capsule())
-            }
-            .tint(.red)
-            .buttonStyle(.plain)
-            .disabled(selectedSessionIDs.isEmpty || isDeletingSessions)
-            .opacity(selectedSessionIDs.isEmpty || isDeletingSessions ? 0.48 : 1)
+            sessionDeleteButton
         }
         .padding(.horizontal, 18)
         .padding(.top, 8)
         .padding(.bottom, -8)
         .transition(.opacity)
+    }
+
+    private var sessionDeleteLabel: some View {
+        Text("common.delete")
+            .font(.system(size: 17, weight: .semibold))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+    }
+
+    @ViewBuilder
+    private var sessionDeleteButton: some View {
+        let enabled = !selectedSessionIDs.isEmpty && !isDeletingSessions
+        if #available(iOS 26.0, *) {
+            // Let the existing label and padding size the slot, not the embedded toolbar.
+            sessionDeleteLabel.hidden().accessibilityHidden(true)
+                .overlay {
+                    DataProminentDeleteItem(title: appLocalizedString("common.delete", languageCode: appLanguage),
+                        enabled: enabled, identifier: "sessions-edit-delete", perform: startDeletingSelectedSessions)
+                }
+        } else {
+            Button(action: startDeletingSelectedSessions) {
+                sessionDeleteLabel.compatibleTintedGlassFromIOS16(.red, in: Capsule())
+            }
+            .tint(.red)
+            .buttonStyle(.plain)
+            .disabled(!enabled)
+            .opacity(enabled ? 1 : 0.48)
+        }
     }
 
     private func sessionSolveCountText(_ count: Int) -> String {
@@ -3681,60 +4331,48 @@ private struct AnimatedSessionSolveCountText: View {
     }
 }
 
-private struct TimeTrendSheet: View {
+struct TimeTrendSheet: View {
     @Environment(\.solveTimeAccuracy) private var solveTimeAccuracy
-    let solves: [SessionSolveSample]
     let appLanguage: String
 
     @State private var trendMode: TrendMode = .histogram
-    @State private var selectedDate: Date?
+    @State private var lineHistory: SessionPerformanceHistory?
     @State private var selectedHistogramX: Double?
 
-    private var solvePoints: [SolvePoint] {
-        solves
-            .sorted { $0.date < $1.date }
-            .compactMap { solve in
-                guard let adjusted = SolveMetrics.adjustedTime(for: solve) else { return nil }
-                return SolvePoint(id: solve.id, date: solve.date, time: adjusted)
-            }
+    private let trend: SessionSolveTrend
+    private let solves: [SessionSolveSample]
+    private let histogramDomain: ClosedRange<Double>
+    private let best: Double
+    private let mean: Double
+    private let median: Double
+
+    init(solves: [SessionSolveSample], appLanguage: String, initialMode: TrendMode = .histogram) {
+        self.appLanguage = appLanguage
+        self.solves = solves
+        let snapshot = SessionSolveTrend(solves: solves)
+        trend = snapshot
+        let values = snapshot.points.map(\.time)
+        histogramDomain = (snapshot.bins.first?.lower ?? 0)...(snapshot.bins.last?.upper ?? 1)
+        let sorted = values.sorted()
+        best = sorted.first ?? 0
+        mean = values.isEmpty ? 0 : values.reduce(0, +) / Double(values.count)
+        median = sorted.isEmpty ? 0 : sorted.count.isMultiple(of: 2)
+            ? (sorted[sorted.count / 2 - 1] + sorted[sorted.count / 2]) / 2 : sorted[sorted.count / 2]
+        _trendMode = State(initialValue: initialMode)
     }
 
-    private var histogramBins: [HistogramBin] {
-        let values = solvePoints.map(\.time)
-        guard let minValue = values.min(), let maxValue = values.max() else { return [] }
+    private var solvePoints: [SessionSolveTrend.Point] { trend.points }
+    private var histogramBins: [SessionSolveTrend.Bin] { trend.bins }
 
-        let lower = floor(minValue)
-        let upper = ceil(maxValue)
-        let width = max(0.5, (upper - lower) / 8.0)
-
-        var bins: [HistogramBin] = []
-        var start = lower
-        while start <= upper {
-            let end = start + width
-            let count = values.filter { value in
-                value >= start && (value < end || (end >= upper && value <= end))
-            }.count
-            bins.append(HistogramBin(lower: start, upper: end, count: count))
-            start += width
-        }
-        return bins
-    }
-
-    private var nearestSelectedPoint: SolvePoint? {
-        guard let selectedDate else { return nil }
-        return solvePoints.min {
-            abs($0.date.timeIntervalSince(selectedDate)) < abs($1.date.timeIntervalSince(selectedDate))
-        }
-    }
-
-    private var selectedHistogramBin: HistogramBin? {
+    private var selectedHistogramBin: SessionSolveTrend.Bin? {
         guard let selectedHistogramX else { return nil }
         return histogramBins.first { selectedHistogramX >= $0.lower && selectedHistogramX < $0.upper }
     }
 
     var body: some View {
         CompatibleNavigationContainer {
-            VStack(spacing: 14) {
+            ScrollView {
+            VStack(spacing: 20) {
                 Picker("data.trend.mode", selection: $trendMode) {
                     Text("data.trend.histogram").tag(TrendMode.histogram)
                     Text("data.trend.graph").tag(TrendMode.graph)
@@ -3743,74 +4381,86 @@ private struct TimeTrendSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
 
-                if solvePoints.isEmpty {
+                if trendMode == .graph && !solves.isEmpty {
+                    lineChart
+                } else if solvePoints.isEmpty {
                     Text("data.no_solves")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 } else {
-                    Group {
-                        if trendMode == .histogram {
-                            histogramChart
-                        } else {
-                            lineChart
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
+                    chartSummary
+                    HStack(spacing: 0) {
+                        statistic("common.best", value: best)
+                        Divider()
+                        statistic("data.trend.mean", value: mean)
+                        Divider()
+                        statistic("data.trend.median", value: median)
+                    }.frame(height: 52)
+                    histogramChart
+                    .padding(.top, 6)
+                    .padding(.bottom, 12)
+                    Text(String(format: appLocalizedString("data.trend.solve_count", languageCode: appLanguage), solvePoints.count))
+                        .font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            .padding(20)
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24))
+            .padding(16)
+            .frame(maxWidth: 760)
+            .frame(maxWidth: .infinity)
+            }
+            .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle(appLocalizedString("data.trend.title", languageCode: appLanguage))
             .navigationBarTitleDisplayMode(.inline)
         }
     }
 
+    private func statistic(_ key: String, value: Double) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(appLocalizedString(key, languageCode: appLanguage)).font(.caption).foregroundStyle(.secondary)
+            Text(SolveMetrics.formatTime(value, decimals: solveTimeAccuracy.decimals))
+                .font(.subheadline.weight(.semibold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.75)
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(.leading, key == "common.best" ? 0 : 16)
+    }
+
+    private var chartSummary: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if let bin = selectedHistogramBin {
+                Text("\(SolveMetrics.formatTime(bin.lower, decimals: solveTimeAccuracy.decimals)) - \(SolveMetrics.formatTime(bin.upper, decimals: solveTimeAccuracy.decimals))")
+                    .font(.title3.weight(.semibold)).monospacedDigit()
+                Text(String(format: appLocalizedString("data.trend.solve_count", languageCode: appLanguage), bin.count))
+                    .font(.caption).foregroundStyle(.secondary)
+            } else {
+                Text(SolveMetrics.formatTime(median, decimals: solveTimeAccuracy.decimals))
+                    .font(.system(size: 34, weight: .semibold, design: .rounded)).monospacedDigit()
+                Text(appLocalizedString("data.trend.median", languageCode: appLanguage))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
     @ViewBuilder
     private var lineChart: some View {
         if #available(iOS 16.0, *) {
-            if #available(iOS 17.0, *) {
-                lineChartContent
-                    .chartXSelection(value: $selectedDate)
+            if let lineHistory {
+                SessionPerformanceLineChart(history: lineHistory, language: appLanguage)
             } else {
-                lineChartContent
+                ProgressView().frame(maxWidth: .infinity, minHeight: 242)
+                    .task {
+                        let worker = Task.detached(priority: .userInitiated) { [solves] in
+                            try SessionPerformanceHistory(solves)
+                        }
+                        let snapshot = await withTaskCancellationHandler(operation: { try? await worker.value },
+                            onCancel: { worker.cancel() })
+                        if !Task.isCancelled { lineHistory = snapshot }
+                    }
             }
         } else {
             chartUnavailableView
         }
-    }
-
-    @available(iOS 16.0, *)
-    private var lineChartContent: some View {
-        Chart(solvePoints) { point in
-            LineMark(
-                x: .value("Date", point.date),
-                y: .value("Time", point.time)
-            )
-            .interpolationMethod(.catmullRom)
-            .foregroundStyle(.blue)
-
-            PointMark(
-                x: .value("Date", point.date),
-                y: .value("Time", point.time)
-            )
-            .foregroundStyle(.blue)
-
-            if let selected = nearestSelectedPoint {
-                RuleMark(x: .value("Selected Date", selected.date))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .annotation(position: .top) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(SolveMetrics.formatTime(selected.time, decimals: solveTimeAccuracy.decimals))
-                                .font(.system(size: 12, weight: .semibold))
-                            Text(SolveMetrics.displayDate(selected.date, languageCode: appLanguage))
-                                .font(.system(size: 10, weight: .medium))
-                        }
-                        .padding(8)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    }
-            }
-        }
-        .frame(height: 330)
     }
 
     @ViewBuilder
@@ -3829,32 +4479,40 @@ private struct TimeTrendSheet: View {
 
     @available(iOS 16.0, *)
     private var histogramChartContent: some View {
-        Chart(histogramBins) { bin in
+        let selected = selectedHistogramBin
+        return Chart {
+            ForEach(histogramBins) { bin in
             RectangleMark(
-                xStart: .value("Start", bin.lower),
-                xEnd: .value("End", bin.upper),
+                xStart: .value("Start", bin.lower + (bin.upper - bin.lower) * 0.025),
+                xEnd: .value("End", bin.upper - (bin.upper - bin.lower) * 0.025),
                 yStart: .value("Zero", 0),
                 yEnd: .value("Count", bin.count)
             )
-            .foregroundStyle(.blue.gradient)
+            .foregroundStyle(Color.accentColor.opacity(selected == nil || selected?.id == bin.id ? 0.85 : 0.25))
+            .cornerRadius(5)
+            }
 
-            if let bin = selectedHistogramBin {
+            if let bin = selected {
                 let center = (bin.lower + bin.upper) / 2
                 RuleMark(x: .value("Selected Bin", center))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .annotation(position: .top) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("\(SolveMetrics.formatTime(bin.lower, decimals: solveTimeAccuracy.decimals)) - \(SolveMetrics.formatTime(bin.upper, decimals: solveTimeAccuracy.decimals))")
-                                .font(.system(size: 12, weight: .semibold))
-                            Text(NumeralPresentation.formatInteger(bin.count))
-                                .font(.system(size: 10, weight: .medium))
-                        }
-                        .padding(8)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    }
+                    .foregroundStyle(.secondary.opacity(0.35))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
             }
         }
-        .frame(height: 330)
+        .chartYAxis {
+            AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine().foregroundStyle(Color.secondary.opacity(0.12))
+                AxisValueLabel { if let count = value.as(Int.self) { Text(NumeralPresentation.formatInteger(count)).font(.caption2) } }
+            }
+        }
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisValueLabel { if let seconds = value.as(Double.self) { Text(SolveMetrics.formatTime(seconds, decimals: 1)).font(.caption2).monospacedDigit() } }
+            }
+        }
+        .chartXScale(domain: histogramDomain)
+        .chartYScale(domain: 0...max(1, (histogramBins.map(\.count).max() ?? 0) + 1))
+        .frame(height: 260)
     }
 
     private var chartUnavailableView: some View {
@@ -3872,21 +4530,7 @@ private struct TimeTrendSheet: View {
     }
 }
 
-private struct SolvePoint: Identifiable {
-    let id: UUID
-    let date: Date
-    let time: Double
-}
-
-private struct HistogramBin: Identifiable {
-    let lower: Double
-    let upper: Double
-    let count: Int
-
-    var id: Double { lower }
-}
-
-private enum TrendMode {
+enum TrendMode: String, CaseIterable {
     case histogram
     case graph
 }

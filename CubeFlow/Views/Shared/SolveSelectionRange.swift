@@ -24,12 +24,37 @@ nonisolated enum SolveSelectionRange {
         let anchorIsAbove: Bool
     }
 
-    static func boundary(anchor: UUID?, visibleIDs: Set<UUID>, orderedIDs: [UUID]) -> Boundary? {
-        guard let anchor, !visibleIDs.contains(anchor), let a = orderedIDs.firstIndex(of: anchor) else { return nil }
-        let indices = orderedIDs.indices.filter { visibleIDs.contains(orderedIDs[$0]) }
-        guard let first = indices.first, let last = indices.last else { return nil }
-        if a < first { return Boundary(id: orderedIDs[last], anchorIsAbove: true) }
-        if a > last { return Boundary(id: orderedIDs[first], anchorIsAbove: false) }
+    static func boundary(anchor: UUID?, visibleIDs: Set<UUID>, orderedIDs: some Sequence<UUID>) -> Boundary? {
+        guard let anchor, !visibleIDs.isEmpty, !visibleIDs.contains(anchor) else { return nil }
+        var anchorIndex: Int?
+        var first: (Int, UUID)?
+        var last: (Int, UUID)?
+        for (index, id) in orderedIDs.enumerated() {
+            if id == anchor, anchorIndex == nil { anchorIndex = index }
+            if visibleIDs.contains(id) {
+                if first == nil { first = (index, id) }
+                last = (index, id)
+            }
+        }
+        guard let a = anchorIndex, let first, let last else { return nil }
+        if a < first.0 { return Boundary(id: last.1, anchorIsAbove: true) }
+        if a > last.0 { return Boundary(id: first.1, anchorIsAbove: false) }
+        return nil
+    }
+
+    /// Display numbers descend in the unfiltered newest-first list.
+    static func boundary(anchor: UUID?, visibleIDs: Set<UUID>, newestFirstPositions: [UUID: Int]) -> Boundary? {
+        guard let anchor, !visibleIDs.contains(anchor), let a = newestFirstPositions[anchor] else { return nil }
+        var first: (Int, UUID)?
+        var last: (Int, UUID)?
+        for id in visibleIDs {
+            guard let position = newestFirstPositions[id] else { continue }
+            if first.map({ position > $0.0 }) ?? true { first = (position, id) }
+            if last.map({ position < $0.0 }) ?? true { last = (position, id) }
+        }
+        guard let first, let last else { return nil }
+        if a > first.0 { return Boundary(id: last.1, anchorIsAbove: true) }
+        if a < last.0 { return Boundary(id: first.1, anchorIsAbove: false) }
         return nil
     }
 

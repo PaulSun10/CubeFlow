@@ -255,10 +255,10 @@ extension View {
     }
 
     @ViewBuilder
-    func compatibleTabBarBackground() -> some View {
+    func compatibleTabBarBackground(visible: Bool = true) -> some View {
         if #available(iOS 16.0, *) {
             self
-                .toolbarBackground(.visible, for: .tabBar)
+                .toolbarBackground(visible ? .visible : .hidden, for: .tabBar)
                 .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         } else {
             self

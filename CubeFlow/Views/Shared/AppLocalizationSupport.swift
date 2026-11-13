@@ -92,8 +92,24 @@ nonisolated func appLanguageOptions() -> [AppLanguageOption] {
 }
 
 nonisolated func currentAppLanguageCode() -> String {
-    let stored = UserDefaults.standard.string(forKey: "appLanguage") ?? "en"
-    return stored.isEmpty ? "en" : stored
+    let stored = UserDefaults.standard.string(forKey: "appLanguage") ?? systemAppLanguageCode()
+    return stored.isEmpty ? systemAppLanguageCode() : stored
+}
+
+// Absence of a persisted override means Follow System. Registering a fallback
+// updates existing AppStorage readers without persisting a second language key.
+nonisolated func systemAppLanguageCode(preferred: [String] = Locale.preferredLanguages) -> String {
+    Bundle.preferredLocalizations(from: appLanguageOptions().map(\.id), forPreferences: preferred).first ?? "en"
+}
+
+nonisolated func registerSystemAppLanguage(in defaults: UserDefaults = .standard,
+                                         preferred: [String] = Locale.preferredLanguages) {
+    defaults.register(defaults: ["appLanguage": systemAppLanguageCode(preferred: preferred)])
+}
+
+nonisolated func followsSystemAppLanguage(in defaults: UserDefaults = .standard,
+                                         domain: String = Bundle.main.bundleIdentifier ?? "CubeFlow") -> Bool {
+    defaults.persistentDomain(forName: domain)?["appLanguage"] == nil
 }
 
 nonisolated func appLanguageDisplayKey(for languageCode: String) -> String {

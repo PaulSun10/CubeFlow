@@ -7,6 +7,9 @@ final class PersistenceController: @unchecked Sendable {
     nonisolated let container: NSPersistentContainer
 
     nonisolated init(inMemory: Bool = false) {
+        #if DEBUG && os(iOS)
+        AppExperienceTrace.mark("persistence_begin")
+        #endif
         container = NSPersistentContainer(name: "CubeFlow", managedObjectModel: Self.managedObjectModel)
 
         for description in container.persistentStoreDescriptions {
@@ -26,6 +29,9 @@ final class PersistenceController: @unchecked Sendable {
 
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        #if DEBUG && os(iOS)
+        AppExperienceTrace.mark("persistence_ready")
+        #endif
     }
 
     nonisolated func newBackgroundContext() -> NSManagedObjectContext {
@@ -139,6 +145,25 @@ extension NSManagedObjectContext {
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         return try fetch(request).first
+    }
+
+    nonisolated func fetchSolves(with ids: Set<UUID>, in sessionID: UUID? = nil) throws -> [Solve] {
+        guard !ids.isEmpty else { return [] }
+        let ids = Array(ids)
+        var solves: [Solve] = []
+        solves.reserveCapacity(ids.count)
+        // Bound each IN predicate rather than issuing one request per solve.
+        for start in stride(from: 0, to: ids.count, by: 256) {
+            let batch = ids[start..<min(start + 256, ids.count)].map { $0 as NSUUID }
+            let request = Solve.fetchRequest()
+            if let sessionID {
+                request.predicate = NSPredicate(format: "id IN %@ AND session.id == %@", batch, sessionID as CVarArg)
+            } else {
+                request.predicate = NSPredicate(format: "id IN %@", batch)
+            }
+            solves.append(contentsOf: try fetch(request))
+        }
+        return solves
     }
 
     nonisolated func fetchSession(with id: UUID) throws -> Session? {
