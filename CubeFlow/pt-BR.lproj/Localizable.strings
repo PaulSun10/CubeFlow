@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "Alinhamento";
 "algs.direction" = "Direção";
 "settings.font_downloading" = "Baixando";
+"timer.inspection.exit" = "Sair";
+"timer.inspection.exit_accessibility" = "Sair da inspeção";

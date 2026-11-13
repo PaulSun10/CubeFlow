@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "Căn chỉnh";
 "algs.direction" = "Hướng";
 "settings.font_downloading" = "Đang tải xuống";
+"timer.inspection.exit" = "Thoát";
+"timer.inspection.exit_accessibility" = "Thoát khỏi bước quan sát";

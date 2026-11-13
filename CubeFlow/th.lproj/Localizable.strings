@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "การจัดแนว";
 "algs.direction" = "ทิศทาง";
 "settings.font_downloading" = "กำลังดาวน์โหลด";
+"timer.inspection.exit" = "ออก";
+"timer.inspection.exit_accessibility" = "ออกจากการตรวจสอบ";

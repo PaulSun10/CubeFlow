@@ -72,6 +72,9 @@
 "live.status.open" = "Open";
 "live.status.live" = "Live";
 "live.status.finished" = "Finished";
+"live.not_started" = "Not Started";
+"live.no_results_yet" = "No Results Yet";
+"live.guaranteed_participants" = "Guaranteed advancers · local preview, no recorded results";
 "live.count" = "%d / %d recorded";
 "live.viewers" = "%d online";
 "live.updated" = "Updated";

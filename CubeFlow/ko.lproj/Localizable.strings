@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "정렬";
 "algs.direction" = "방향";
 "settings.font_downloading" = "다운로드 중";
+"timer.inspection.exit" = "나가기";
+"timer.inspection.exit_accessibility" = "인스펙션 종료";

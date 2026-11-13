@@ -72,6 +72,9 @@
 "live.status.open" = "開放";
 "live.status.live" = "進行中";
 "live.status.finished" = "已結束";
+"live.not_started" = "尚未開始";
+"live.no_results_yet" = "暫無成績";
+"live.guaranteed_participants" = "確定晉級選手 · 本機預覽，尚無成績";
 "live.count" = "已錄入 %d / %d";
 "live.viewers" = "%d 人在線";
 "live.updated" = "更新於";

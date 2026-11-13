@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "संरेखण";
 "algs.direction" = "दिशा";
 "settings.font_downloading" = "डाउनलोड हो रहा है";
+"timer.inspection.exit" = "बाहर निकलें";
+"timer.inspection.exit_accessibility" = "निरीक्षण से बाहर निकलें";

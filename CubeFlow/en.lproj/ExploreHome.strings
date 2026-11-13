@@ -35,3 +35,7 @@
 "explore.about_live" = "About Recent Records";
 "explore.events_tied" = "%d events · %d competitions";
 "explore.earlier_years" = "Earlier Years";
+"explore.noteworthy_competitions" = "Worth a Look";
+"explore.reason_championship" = "Official championship";
+"explore.reason_world_record" = "Recent world record";
+"explore.reason_event_count" = "%d scheduled events";

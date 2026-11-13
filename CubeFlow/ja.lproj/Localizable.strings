@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "位置合わせ";
 "algs.direction" = "方向";
 "settings.font_downloading" = "ダウンロード中";
+"timer.inspection.exit" = "終了";
+"timer.inspection.exit_accessibility" = "インスペクションを終了";

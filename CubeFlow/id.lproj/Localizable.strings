@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "Penyelarasan";
 "algs.direction" = "Arah";
 "settings.font_downloading" = "Mengunduh";
+"timer.inspection.exit" = "Keluar";
+"timer.inspection.exit_accessibility" = "Keluar dari inspeksi";

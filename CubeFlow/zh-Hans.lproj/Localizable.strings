@@ -2194,3 +2194,86 @@
 "smart_cube.manage.forget_message" = "从 CubeFlow 移除此设备及其偏好设置，历史成绩会保留。";
 
 "smart_cube.manage.disconnected" = "未连接";
+
+"settings.language_system" = "跟随系统";
+"wca.region.multiple" = "多个国家";
+"wca.region.Asia" = "亚洲";
+"wca.region.Europe" = "欧洲";
+"wca.region.Africa" = "非洲";
+"wca.region.Americas" = "美洲";
+"wca.region.North America" = "北美洲";
+"wca.region.Oceania" = "大洋洲";
+"wca.region.South America" = "南美洲";
+"wca.region.World" = "世界";
+"wca.competitions.recorded_results" = "已有官方成绩";
+"solve.penalty.none" = "无惩罚";
+"timer.battle.choose_event" = "选择项目";
+
+// Manual time interpretation and optional inline keypad
+"manual.settings" = "手动输入";
+"manual.input_interface" = "输入界面";
+"manual.interface.keyboard" = "默认键盘";
+"manual.interface.keypad" = "内嵌数字键盘";
+"manual.interpretation" = "时间解读";
+"manual.interpretation.fixed" = "固定格式";
+"manual.interpretation.smart" = "智能";
+"manual.fixed_format" = "固定格式";
+"manual.smart_default" = "智能默认精度";
+"manual.precision.2" = "百分之一秒";
+"manual.precision.3" = "毫秒";
+"manual.compatibility" = "固定格式 / X 保留原有按秒输入方式。显式 . 和 : 始终优先。";
+"manual.invalid" = "输入未完成或时间字段超出范围。";
+"manual.raw_input" = "原始时间输入";
+"manual.preview" = "将保存的时间";
+"manual.use_alternative" = "使用另一时间解读";
+"manual.decimal" = "小数点";
+"manual.colon" = "分钟分隔符";
+"manual.clear" = "清除";
+"manual.delete" = "删除";
+
+"manual.enter_time" = "输入时间";
+
+"data.trend.solve_count" = "%d 次成绩";
+
+/* Performance, Battle and sharing */
+"battle.input" = "计时输入";
+"battle.input.touch" = "触控计时";
+"battle.input.manual" = "手动输入";
+"battle.input.smartCube" = "智能魔方";
+"battle.ready" = "就绪";
+"battle.scrambling" = "打乱中";
+"navigation.target" = "目标打乱";
+"navigation.scramble_placeholder" = "输入三阶打乱";
+"navigation.scramble_title" = "打乱导航";
+"navigation.enter_target" = "输入目标打乱，从魔方当前状态导航。";
+"navigation.reached" = "已到达目标";
+"navigation.shortest" = "已证明最短路径（HTM）";
+"navigation.verified" = "已验证路径 · 尚未证明最短";
+"navigation.unavailable" = "暂无已验证路径";
+"share.report" = "比赛报告";
+"share.highlight" = "成绩亮点";
+"share.preview" = "图片预览";
+"share.result" = "成绩";
+"share.save_image" = "保存图片";
+"share.saved" = "图片已保存到照片";
+"share.share" = "分享";
+"share.solve.1" = "第一次还原";
+"share.solve.2" = "第二次还原";
+"share.solve.3" = "第三次还原";
+"share.solve.4" = "第四次还原";
+"share.solve.5" = "第五次还原";
+"data.trend.mean" = "均值";
+"data.trend.median" = "中位数";
+"battle.handicap" = "让秒";
+
+"share.report_too_long" = "这份报告太长，无法导出为一张清晰图片。没有省略任何成绩。";
+"data.trend.solve_range" = "最快至最慢成绩";
+"data.trend.raw_solves" = "单次成绩";
+"data.trend.record" = "个人最佳";
+"data.trend.range_note" = "范围保留最快和最慢成绩。选择任意解次可查看准确成绩。";
+"data.trend.previous_solve" = "上一解";
+"data.trend.next_solve" = "下一解";
+
+"smart_cube.guidance.checkpoint_unmatched" = "未匹配到打乱检查点";
+"timer.inspection.exit" = "退出";
+"timer.inspection.exit_accessibility" = "退出观察";

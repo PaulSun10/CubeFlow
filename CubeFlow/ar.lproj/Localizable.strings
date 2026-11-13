@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "المحاذاة";
 "algs.direction" = "الاتجاه";
 "settings.font_downloading" = "جارٍ التنزيل";
+"timer.inspection.exit" = "خروج";
+"timer.inspection.exit_accessibility" = "إنهاء المعاينة";

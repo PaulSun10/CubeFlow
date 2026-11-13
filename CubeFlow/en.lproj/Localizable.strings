@@ -2233,3 +2233,86 @@
 "smart_cube.manage.forget_message" = "Remove this device and its preferences from CubeFlow. Historical solves are kept.";
 
 "smart_cube.manage.disconnected" = "Not connected";
+
+"settings.language_system" = "Follow System";
+"wca.region.multiple" = "Multiple Countries";
+"wca.region.Asia" = "Asia";
+"wca.region.Europe" = "Europe";
+"wca.region.Africa" = "Africa";
+"wca.region.Americas" = "Americas";
+"wca.region.North America" = "North America";
+"wca.region.Oceania" = "Oceania";
+"wca.region.South America" = "South America";
+"wca.region.World" = "World";
+"wca.competitions.recorded_results" = "Official results recorded";
+"solve.penalty.none" = "No Penalty";
+"timer.battle.choose_event" = "Choose Event";
+
+// Manual time interpretation and optional inline keypad
+"manual.settings" = "Manual Input";
+"manual.input_interface" = "Input Interface";
+"manual.interface.keyboard" = "Default Keyboard";
+"manual.interface.keypad" = "Inline Keypad";
+"manual.interpretation" = "Time Interpretation";
+"manual.interpretation.fixed" = "Fixed";
+"manual.interpretation.smart" = "Smart";
+"manual.fixed_format" = "Fixed Format";
+"manual.smart_default" = "Smart Default";
+"manual.precision.2" = "Hundredths";
+"manual.precision.3" = "Milliseconds";
+"manual.compatibility" = "Fixed / X keeps the original seconds-input workflow. Explicit . and : always take priority.";
+"manual.invalid" = "Input is incomplete or a time field is out of range.";
+"manual.raw_input" = "Raw time input";
+"manual.preview" = "Time to save";
+"manual.use_alternative" = "Use alternative time";
+"manual.decimal" = "Decimal point";
+"manual.colon" = "Minute separator";
+"manual.clear" = "Clear";
+"manual.delete" = "Delete";
+
+"manual.enter_time" = "Enter time";
+
+"data.trend.solve_count" = "%d solves";
+
+/* Performance, Battle and sharing */
+"battle.input" = "Timer Input";
+"battle.input.touch" = "Touch Timer";
+"battle.input.manual" = "Manual Input";
+"battle.input.smartCube" = "Smart Cube";
+"battle.ready" = "Ready";
+"battle.scrambling" = "Scrambling";
+"navigation.target" = "Target scramble";
+"navigation.scramble_placeholder" = "Enter a 3×3 scramble";
+"navigation.scramble_title" = "Scramble Navigation";
+"navigation.enter_target" = "Enter a target scramble to navigate from your cube’s current state.";
+"navigation.reached" = "Target reached";
+"navigation.shortest" = "Proven shortest route (HTM)";
+"navigation.verified" = "Verified route · shortest not proven";
+"navigation.unavailable" = "No verified route available";
+"share.report" = "Competition Report";
+"share.highlight" = "Result Highlight";
+"share.preview" = "Image preview";
+"share.result" = "Result";
+"share.save_image" = "Save Image";
+"share.saved" = "Image saved to Photos";
+"share.share" = "Share";
+"share.solve.1" = "First Solve";
+"share.solve.2" = "Second Solve";
+"share.solve.3" = "Third Solve";
+"share.solve.4" = "Fourth Solve";
+"share.solve.5" = "Fifth Solve";
+"data.trend.mean" = "Mean";
+"data.trend.median" = "Median";
+"battle.handicap" = "Handicap";
+
+"share.report_too_long" = "This report is too long to export as one readable image. No results were omitted.";
+"data.trend.solve_range" = "Fastest to slowest solves";
+"data.trend.raw_solves" = "Individual solves";
+"data.trend.record" = "Personal best";
+"data.trend.range_note" = "Ranges keep the fastest and slowest solves. Select any solve to see its exact result.";
+"data.trend.previous_solve" = "Previous solve";
+"data.trend.next_solve" = "Next solve";
+
+"smart_cube.guidance.checkpoint_unmatched" = "No matching scramble checkpoint";
+"timer.inspection.exit" = "Exit";
+"timer.inspection.exit_accessibility" = "Exit Inspection";

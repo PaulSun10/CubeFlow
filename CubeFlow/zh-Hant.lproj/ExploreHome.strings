@@ -35,3 +35,7 @@
 "explore.about_live" = "關於近期紀錄";
 "explore.events_tied" = "%d 個項目 · %d 場比賽";
 "explore.earlier_years" = "更早年份";
+"explore.noteworthy_competitions" = "值得關注";
+"explore.reason_championship" = "官方錦標賽";
+"explore.reason_world_record" = "近期世界紀錄";
+"explore.reason_event_count" = "安排了 %d 個項目";

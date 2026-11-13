@@ -35,3 +35,7 @@
 "explore.about_live" = "关于近期纪录";
 "explore.events_tied" = "%d 个项目 · %d 场比赛";
 "explore.earlier_years" = "更早年份";
+"explore.noteworthy_competitions" = "值得关注";
+"explore.reason_championship" = "官方锦标赛";
+"explore.reason_world_record" = "近期世界纪录";
+"explore.reason_event_count" = "安排了 %d 个项目";

@@ -2117,3 +2117,5 @@
 "algs.execution_alignment" = "Hizalama";
 "algs.direction" = "Yön";
 "settings.font_downloading" = "İndiriliyor";
+"timer.inspection.exit" = "Çık";
+"timer.inspection.exit_accessibility" = "İncelemeden çık";

@@ -72,6 +72,9 @@
 "live.status.open" = "开放";
 "live.status.live" = "进行中";
 "live.status.finished" = "已结束";
+"live.not_started" = "尚未开始";
+"live.no_results_yet" = "暂无成绩";
+"live.guaranteed_participants" = "确定晋级选手 · 本机预览，尚无成绩";
 "live.count" = "已录入 %d / %d";
 "live.viewers" = "%d 人在线";
 "live.updated" = "更新于";
