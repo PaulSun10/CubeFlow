@@ -237,6 +237,8 @@
 "settings.detail" = "详情";
 "settings.language_toggle" = "中文";
 "settings.language_label" = "语言";
+"feature_badge.accessibility.new" = "新功能";
+"feature_badge.accessibility.beta" = "测试版功能";
 "settings.language_en" = "英语";
 "settings.language_zh" = "中文";
 "settings.language_zh_hant" = "繁体中文";

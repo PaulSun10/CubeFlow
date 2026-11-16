@@ -237,6 +237,8 @@
 "settings.detail" = "विवरण";
 "settings.language_toggle" = "चीनी";
 "settings.language_label" = "भाषा";
+"feature_badge.accessibility.new" = "नई सुविधा";
+"feature_badge.accessibility.beta" = "बीटा सुविधा";
 "settings.language_system" = "सिस्टम की डिफ़ॉल्ट भाषा";
 "settings.language_en" = "अंग्रेज़ी";
 "settings.language_zh" = "सरल चीनी";

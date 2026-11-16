@@ -237,6 +237,8 @@
 "settings.detail" = "詳細";
 "settings.language_toggle" = "中国語";
 "settings.language_label" = "言語";
+"feature_badge.accessibility.new" = "新機能";
+"feature_badge.accessibility.beta" = "ベータ機能";
 "settings.language_system" = "システムの言語";
 "settings.language_en" = "English";
 "settings.language_zh" = "简体中文";

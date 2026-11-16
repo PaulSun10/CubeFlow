@@ -200,6 +200,19 @@ struct ConnectedDeviceStatusRows: View {
     }
 }
 
+struct ConnectedDevicesSettingsLink: View {
+    var body: some View {
+        NavigationLink {
+            ConnectedDevicesView()
+        } label: {
+            HStack {
+                FeatureBadgeTitle(title: Text("connected_devices.title"), placement: .connectedDevices)
+                Spacer()
+            }
+        }
+    }
+}
+
 struct ConnectedDevicesView: View {
     @ObservedObject private var smartCube = SmartCubeBluetoothManager.shared
     @ObservedObject private var smartTimer = GANTimerBluetoothManager.shared
@@ -218,7 +231,8 @@ struct ConnectedDevicesView: View {
                         battery: smartCube.isConnected ? smartCube.batteryLevel : nil,
                         cubeSize: smartCube.isConnected ? smartCube.puzzleSize : nil,
                         model: smartCube.connectionDeviceID.flatMap { savedCubes.device($0)?.modelName },
-                        cubeColor: smartCube.connectionDeviceID.flatMap { savedCubes.device($0)?.iconColor?.color } ?? .accentColor
+                        cubeColor: smartCube.connectionDeviceID.flatMap { savedCubes.device($0)?.iconColor?.color } ?? .accentColor,
+                        featureBadge: .smartCube
                     )
                 }
                 NavigationLink {
@@ -228,7 +242,8 @@ struct ConnectedDevicesView: View {
                         "connected_devices.smart_timer",
                         name: smartTimer.isConnected ? smartTimer.deviceName : nil,
                         status: LocalizedStringKey(smartTimer.statusLocalizedKey),
-                        battery: smartTimer.isConnected ? smartTimer.batteryLevel : nil
+                        battery: smartTimer.isConnected ? smartTimer.batteryLevel : nil,
+                        featureBadge: .smartTimer
                     )
                 }
             }
@@ -250,26 +265,21 @@ struct ConnectedDevicesView: View {
         battery: Int?,
         cubeSize: Int? = nil,
         model: String? = nil,
-        cubeColor: Color = .accentColor
+        cubeColor: Color = .accentColor,
+        featureBadge: FeatureBadgePlacement
     ) -> some View {
         HStack(spacing: 12) {
             if let cubeSize, let glyph = CompetitionEventIconFont.glyph(for: cubeSize == 2 ? "222" : "333") {
                 CompetitionEventGlyph(glyph: glyph, eventName: cubeSize == 2 ? "2x2" : "3x3", size: 20, color: cubeColor)
             }
             VStack(alignment: .leading, spacing: 3) {
+                FeatureBadgeTitle(title: Text(title), placement: featureBadge)
+                    .font(.body)
                 if let name, !name.isEmpty {
-                    Text(name).font(.body)
+                    Text(name).font(.caption).foregroundStyle(.secondary)
                     if let model {
-                        Text(model)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text(title)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Text(model).font(.caption).foregroundStyle(.secondary)
                     }
-                } else {
-                    Text(title).font(.body)
                 }
                 Text(status)
                     .font(.footnote)
@@ -280,6 +290,24 @@ struct ConnectedDevicesView: View {
         }
     }
 }
+
+#if DEBUG
+struct ConnectedDevicesBadge_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            NavigationView { List { ConnectedDevicesSettingsLink() }.listStyle(.insetGrouped) }
+            NavigationView { ConnectedDevicesView() }.preferredColorScheme(.light)
+            NavigationView { ConnectedDevicesView() }
+                .preferredColorScheme(.dark)
+                .environment(\.locale, Locale(identifier: "zh-Hans"))
+            NavigationView { ConnectedDevicesView() }
+                .environment(\.locale, Locale(identifier: "ar"))
+                .environment(\.layoutDirection, .rightToLeft)
+                .dynamicTypeSize(.accessibility2)
+        }
+    }
+}
+#endif
 
 private func smartCubeConnectionStatusKey(_ state: SmartCubeConnectionState) -> LocalizedStringKey {
     switch state {

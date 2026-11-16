@@ -237,6 +237,8 @@
 "settings.detail" = "Ayrıntılar";
 "settings.language_toggle" = "Çince";
 "settings.language_label" = "Dil";
+"feature_badge.accessibility.new" = "Yeni özellik";
+"feature_badge.accessibility.beta" = "Beta özellik";
 "settings.language_system" = "Sistem Varsayılanı";
 "settings.language_en" = "İngilizce";
 "settings.language_zh" = "Çince";

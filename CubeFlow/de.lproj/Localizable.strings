@@ -237,6 +237,8 @@
 "settings.detail" = "Details";
 "settings.language_toggle" = "Chinesisch";
 "settings.language_label" = "Sprache";
+"feature_badge.accessibility.new" = "Neue Funktion";
+"feature_badge.accessibility.beta" = "Betafunktion";
 "settings.language_system" = "Systemstandard";
 "settings.language_en" = "Englisch";
 "settings.language_zh" = "Vereinfachtes Chinesisch";

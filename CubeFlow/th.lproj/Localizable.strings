@@ -237,6 +237,8 @@
 "settings.detail" = "รายละเอียด";
 "settings.language_toggle" = "จีน";
 "settings.language_label" = "ภาษา";
+"feature_badge.accessibility.new" = "ฟีเจอร์ใหม่";
+"feature_badge.accessibility.beta" = "ฟีเจอร์เบต้า";
 "settings.language_system" = "ค่าเริ่มต้นของระบบ";
 "settings.language_en" = "ภาษาอังกฤษ";
 "settings.language_zh" = "ภาษาจีนตัวย่อ";

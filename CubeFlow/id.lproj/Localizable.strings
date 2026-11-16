@@ -237,6 +237,8 @@
 "settings.detail" = "Detail";
 "settings.language_toggle" = "Bahasa Mandarin";
 "settings.language_label" = "Bahasa";
+"feature_badge.accessibility.new" = "Fitur baru";
+"feature_badge.accessibility.beta" = "Fitur beta";
 "settings.language_system" = "Bawaan Sistem";
 "settings.language_en" = "Inggris";
 "settings.language_zh" = "Bahasa Mandarin";

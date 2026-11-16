@@ -2,6 +2,8 @@
 
 The native switch is in **Settings > Timer**. Its footer explains that it prevents automatic locking while using Timer or Battle. It shares the existing `@AppStorage` / UserDefaults architecture. A missing value means on, with no migration; an explicit off survives relaunch.
 
+The row shows a blue NEW badge only in marketing version 0.16.1. See [Feature Badge V1](feature-badges.md); badge visibility does not affect the switch or its preference.
+
 ## Ownership and lifecycle
 
 The iPhone scene root contributes only when its selected tab is Timer and its scene phase is active. Layouts, input methods, timing phases and Battle rounds do not control the idle timer. Presenting a Timer-owned sheet does not unregister the scene; the registration belongs to the mounted root.

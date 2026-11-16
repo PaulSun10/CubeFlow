@@ -541,7 +541,7 @@ private extension SettingsTabView {
                     )
                 }
 
-                Toggle("settings.keep_screen_awake", isOn: $keepScreenAwake)
+                KeepScreenAwakeSettingsToggle(isOn: $keepScreenAwake)
             } header: {
                 Text("settings.section.timer")
             } footer: {
@@ -549,11 +549,7 @@ private extension SettingsTabView {
             }
 
             Section {
-                NavigationLink {
-                    ConnectedDevicesView()
-                } label: {
-                    settingsNavigationLabel(titleKey: "connected_devices.title")
-                }
+                ConnectedDevicesSettingsLink()
             } header: {
                 Text("connected_devices.section")
             } footer: {
