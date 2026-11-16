@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "Đang tải xuống";
 "timer.inspection.exit" = "Thoát";
 "timer.inspection.exit_accessibility" = "Thoát khỏi bước quan sát";
+"battle.waiting_for_opponent" = "Đang chờ đối thủ hoàn thành…";

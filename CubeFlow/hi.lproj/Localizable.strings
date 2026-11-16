@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "डाउनलोड हो रहा है";
 "timer.inspection.exit" = "बाहर निकलें";
 "timer.inspection.exit_accessibility" = "निरीक्षण से बाहर निकलें";
+"battle.waiting_for_opponent" = "प्रतिद्वंद्वी के पूरा करने की प्रतीक्षा है…";

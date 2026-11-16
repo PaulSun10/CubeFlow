@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "กำลังดาวน์โหลด";
 "timer.inspection.exit" = "ออก";
 "timer.inspection.exit_accessibility" = "ออกจากการตรวจสอบ";
+"battle.waiting_for_opponent" = "กำลังรอให้คู่แข่งเล่นจบ…";

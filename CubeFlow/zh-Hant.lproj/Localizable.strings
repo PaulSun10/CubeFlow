@@ -2277,3 +2277,4 @@
 "smart_cube.guidance.checkpoint_unmatched" = "未配對到打亂檢查點";
 "timer.inspection.exit" = "退出";
 "timer.inspection.exit_accessibility" = "退出觀察";
+"battle.waiting_for_opponent" = "正在等待對手完成…";

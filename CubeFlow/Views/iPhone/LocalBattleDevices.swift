@@ -34,6 +34,11 @@ struct LocalBattleConfiguration: Equatable {
 @MainActor final class LocalBattleDevices: ObservableObject {
     @Published private(set) var configurations: [LocalBattlePlayer: LocalBattleConfiguration] = [:]
     @Published private(set) var ready: Set<LocalBattlePlayer> = []
+    struct Guidance {
+        let progress: SmartCubeScrambleProgress
+        let recovery: SmartCubeRecoveryPlan?
+    }
+    @Published private(set) var guidance: [LocalBattlePlayer: Guidance] = [:]
     var start: ((LocalBattlePlayer, Date) -> Bool)?
     var finish: ((LocalBattlePlayer, Date) -> Void)?
     var invalidate: ((LocalBattlePlayer) -> Void)?
@@ -42,8 +47,11 @@ struct LocalBattleConfiguration: Equatable {
     private struct Target {
         let assignment: UUID
         let text: String
-        let progress: SmartCubeScrambleProgress
+        var progress: SmartCubeScrambleProgress
+        let identity: SmartCubeRecoveryPlanIdentity
     }
+    private var guidanceControllers: [LocalBattlePlayer: SmartCubeGuidanceController] = [:]
+    private var guidanceObservers: [LocalBattlePlayer: AnyCancellable] = [:]
     private var targets: [LocalBattlePlayer: Target] = [:]
     private var bindings: [LocalBattlePlayer: UUID] = [:]
     private var subscriptions: [LocalBattlePlayer: Set<AnyCancellable>] = [:]
@@ -71,6 +79,7 @@ struct LocalBattleConfiguration: Equatable {
     func setEnabled(_ value: Bool) {
         guard enabled != value else { return }
         enabled = value; subscriptions = [:]; bindings = [:]; ready = []; started = []; finished = []
+        guidance = [:]; guidanceControllers.values.forEach { $0.cancel() }
         timerRun = nil
         timerWasRunning = false
         timerEligibleSince = .now
@@ -82,12 +91,17 @@ struct LocalBattleConfiguration: Equatable {
         let size = event == .twoByTwo ? 2 : 3
         let supported = [.twoByTwo, .threeByThree, .threeByThreeOH, .threeByThreeBLD].contains(event)
         if let target = targets[player], target.assignment == assignment, target.text == text,
-           supported, target.progress.puzzleSize == size { refreshReadiness(player); return }
+           supported, target.progress.puzzleSize == size { return }
+        if targets[player] == nil, assignment == nil { return }
+        guidanceControllers[player]?.cancel()
+        guidance[player] = nil
         setReady(false, player: player)
         if supported, let text, let assignment, let progress = SmartCubeScrambleProgress(scramble: text, puzzleSize: size) {
-            targets[player] = Target(assignment: assignment, text: text, progress: progress)
+            targets[player] = Target(assignment: assignment, text: text, progress: progress,
+                identity: .init(scrambleEpochID: assignment, stateVersion: 0))
         } else { targets[player] = nil }
         refreshReadiness(player)
+        updateGuidance(player)
     }
     func complete(_ player: LocalBattlePlayer) { finished.insert(player); roundHasStarted = true }
     func nextRound() { started = []; finished = []; roundHasStarted = false; LocalBattlePlayer.allCases.forEach(refreshReadiness) }
@@ -138,6 +152,8 @@ struct LocalBattleConfiguration: Equatable {
 
     private func bind(_ player: LocalBattlePlayer) {
         subscriptions[player] = nil; setReady(false, player: player)
+        guidanceControllers[player]?.cancel()
+        guidance[player] = nil
         let binding = UUID(); bindings[player] = binding
         guard enabled, configuration(player).input == .smartCube,
               let id = configuration(player).deviceID, let session = manager.session(for: id) else { return }
@@ -148,15 +164,17 @@ struct LocalBattleConfiguration: Equatable {
             self.receive(event, player: player, session: session)
         }.store(in: &tokens)
         Publishers.CombineLatest3(session.$connectionState, session.$connectionAttemptID, session.$connectionPolicyResolvedAttemptID)
-            .receive(on: DispatchQueue.main).sink { [weak self] state, attempt, resolved in
-                guard let self, self.bindings[player] == binding else { return }
+            .receive(on: DispatchQueue.main).sink { [weak self, weak session] state, attempt, resolved in
+                guard let self, let session, self.bindings[player] == binding else { return }
                 // Do not lose a brief disconnect/policy transition by reading
                 // only the session's newer state after this queued delivery.
                 if state != .connected || attempt != resolved || !session.isReadyForMoveObservation { self.interrupt(player) }
                 self.refreshReadiness(player)
+                self.updateGuidance(player)
             }.store(in: &tokens)
         subscriptions[player] = tokens
         refreshReadiness(player)
+        updateGuidance(player)
     }
     private func refreshReadiness(_ player: LocalBattlePlayer) {
         guard enabled, configuration(player).input == .smartCube,
@@ -173,6 +191,7 @@ struct LocalBattleConfiguration: Equatable {
         switch event {
         case .boundary:
             interrupt(player); refreshReadiness(player)
+            updateGuidance(player)
         case .move(let update):
             let bothSmart = LocalBattlePlayer.allCases.allSatisfy { configuration($0).input == .smartCube }
             let mayStart = ready.contains(player) && (!bothSmart || roundHasStarted || ready.count == 2)
@@ -181,15 +200,68 @@ struct LocalBattleConfiguration: Equatable {
             if !started.contains(player), !finished.contains(player), mayStart, start?(player, update.move.localTimestamp) == true {
                 started.insert(player)
                 roundHasStarted = true
+                guidanceControllers[player]?.cancel()
+                guidance[player] = nil
             }
             if started.contains(player), !finished.contains(player), update.isSolved {
                 finished.insert(player); finish?(player, update.move.localTimestamp)
+                return // Completion already rebinds guidance to the new displayed target.
             }
-            if !started.contains(player) { refreshReadiness(player) }
+            if !started.contains(player) || finished.contains(player) {
+                refreshReadiness(player)
+                updateGuidance(player, move: update.move.move)
+            }
         }
+    }
+
+    private func updateGuidance(_ player: LocalBattlePlayer, move: String? = nil) {
+        guard enabled, !started.contains(player) || finished.contains(player),
+              var target = targets[player], let session = session(for: player),
+              session.isReadyForMoveObservation, let facelets = session.facelets else {
+            guidanceControllers[player]?.cancel()
+            guidance[player] = nil
+            return
+        }
+        _ = target.progress.update(with: facelets, canonicalMove: move)
+        targets[player] = target
+        let recovery = target.progress.guaranteedRecoveryPlan(identity: target.identity, sourceFacelets: facelets)
+        guidance[player] = Guidance(progress: target.progress, recovery: recovery)
+        guard target.progress.puzzleSize == 3, !target.progress.isComplete,
+              target.progress.isDeviated || target.progress.needsGuidanceSearch else {
+            guidanceControllers[player]?.cancel()
+            return
+        }
+        let controller: SmartCubeGuidanceController
+        if let existing = guidanceControllers[player] { controller = existing }
+        else {
+            controller = SmartCubeGuidanceController()
+            guidanceControllers[player] = controller
+            guidanceObservers[player] = controller.$publication.compactMap { $0 }.sink { [weak self] publication in
+                self?.adopt(publication, for: player)
+            }
+        }
+        controller.submit(.init(identity: target.identity, sourceFacelets: facelets,
+            targetFacelets: target.progress.targetFacelets, generation: target.progress.replanGeneration,
+            knownPath: recovery?.executableMoves(originalTokens: target.progress.tokens),
+            deviceID: configuration(player).deviceID, canonicalSequence: session.canonicalSequence))
+    }
+
+    private func adopt(_ publication: SmartCubeGuidanceController.Publication, for player: LocalBattlePlayer) {
+        guard enabled, !started.contains(player) || finished.contains(player),
+              var target = targets[player], let session = session(for: player), session.isReadyForMoveObservation,
+              let facelets = session.facelets, publication.request.canonicalSequence == session.canonicalSequence,
+              let progress = publication.progress(identity: target.identity, facelets: facelets,
+                target: target.progress.targetFacelets, generation: target.progress.replanGeneration,
+                trusted: true, eligible: !target.progress.isComplete,
+                deviceID: configuration(player).deviceID) else { return }
+        target.progress = progress
+        targets[player] = target
+        guidance[player] = Guidance(progress: progress, recovery: nil)
     }
     private func interrupt(_ player: LocalBattlePlayer) {
         setReady(false, player: player)
+        guidanceControllers[player]?.cancel()
+        guidance[player] = nil
         if started.contains(player), !finished.contains(player) {
             started.remove(player); invalidate?(player)
         }

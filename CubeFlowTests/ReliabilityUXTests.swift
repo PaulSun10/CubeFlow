@@ -5,28 +5,39 @@ import CoreData
 @testable import CubeFlow
 
 @MainActor final class LocalBattleReliabilityTests: XCTestCase {
-    func testPerPlayerAssignmentsAdvanceOnlyAfterCompletion() throws {
-        var state = LocalBattleScrambleState()
-        let a = state.request(.first, event: .threeByThree), b = state.request(.second, event: .threeByThree)
-        XCTAssertTrue(state.receive("R U", for: a)); XCTAssertTrue(state.receive("F D", for: b))
-        XCTAssertEqual(state.displayed[.first]?.text, "R U")
-        XCTAssertTrue(state.begin(.first, event: .threeByThree))
-        XCTAssertTrue(state.begin(.second, event: .threeByThree))
-        XCTAssertEqual(state.finish(.first)?.text, "R U")
-        let next = state.request(.first, event: .threeByThree)
-        XCTAssertEqual(state.displayed[.first]?.text, "R U", "Keep prior text while replacement is pending")
-        XCTAssertFalse(state.begin(.first, event: .threeByThree), "Never reuse a consumed scramble")
-        XCTAssertEqual(state.active[.second]?.text, "F D")
-        XCTAssertTrue(state.receive("B L", for: next))
-        XCTAssertEqual(state.displayed[.second]?.request, b)
-        XCTAssertEqual(state.finish(.second)?.text, "F D")
-        XCTAssertNil(state.finish(.second), "No double advancement")
+    func testSharedAssignmentsAndBarrierInEitherCompletionOrder() throws {
+        for first in LocalBattlePlayer.allCases {
+            let second: LocalBattlePlayer = first == .first ? .second : .first
+            var state = LocalBattleScrambleState()
+            let current = try XCTUnwrap(state.request(event: .threeByThree))
+            XCTAssertNil(state.request(event: .threeByThree))
+            XCTAssertTrue(state.receive("R U", for: current))
+            XCTAssertEqual(state.displayed[first], state.displayed[second])
+            let next = try XCTUnwrap(state.request(event: .threeByThree, ahead: true))
+            XCTAssertNil(state.request(event: .threeByThree, ahead: true))
+            XCTAssertTrue(state.receive("B L", for: next))
+            XCTAssertTrue(state.begin(first, event: .threeByThree))
+            XCTAssertEqual(state.finish(first)?.request, current)
+            XCTAssertEqual(state.displayed[first]?.request, next)
+            XCTAssertEqual(state.displayed[second]?.request, current)
+            XCTAssertFalse(state.begin(first, event: .threeByThree))
+            XCTAssertNil(state.finish(first))
+            XCTAssertNil(state.request(event: .threeByThree, ahead: true))
+            XCTAssertTrue(state.begin(second, event: .threeByThree))
+            XCTAssertEqual(state.finish(second)?.request, current)
+            XCTAssertEqual(state.displayed[first], state.displayed[second])
+            XCTAssertEqual(state.round, 1)
+            XCTAssertFalse(state.begin(first, event: .threeByThree, startedAt: .distantPast))
+            XCTAssertTrue(state.begin(first, event: .threeByThree))
+            XCTAssertEqual(state.finish(first)?.request, next)
+        }
     }
 
-    func testSwitchResetAndOutOfOrderRequestsCannotLeakBetweenPlayers() {
+    func testMatchResetInvalidatesOutstandingGenerationAndOldStarts() throws {
         var state = LocalBattleScrambleState()
-        let old = state.request(.first, event: .threeByThree)
-        let new = state.request(.first, event: .pyraminx)
+        let old = try XCTUnwrap(state.request(event: .threeByThree))
+        state = LocalBattleScrambleState()
+        let new = try XCTUnwrap(state.request(event: .pyraminx))
         XCTAssertFalse(state.receive("R U", for: old))
         XCTAssertTrue(state.receive("R U r'", for: new))
         XCTAssertFalse(state.begin(.first, event: .threeByThree))
@@ -35,15 +46,15 @@ import CoreData
         XCTAssertFalse(state.receive("R U r'", for: new))
     }
 
-    func testGenerationFailureIsNotAnAssignmentAndStaleFailuresCannotEraseNewContent() {
+    func testGenerationFailureIsNotAnAssignmentAndStaleFailuresCannotEraseNewContent() throws {
         var state = LocalBattleScrambleState()
-        let old = state.request(.first, event: .threeByThree)
+        let old = try XCTUnwrap(state.request(event: .threeByThree))
         state.fail("Unavailable", for: old)
         XCTAssertNil(state.displayed[.first]); XCTAssertFalse(state.begin(.first, event: .threeByThree))
-        let new = state.request(.first, event: .threeByThree)
+        let new = try XCTUnwrap(state.request(event: .threeByThree))
         XCTAssertTrue(state.receive("R U", for: new))
         state.fail("Unavailable", for: old)
-        XCTAssertEqual(state.displayed[.first]?.text, "R U"); XCTAssertNil(state.failures[.first])
+        XCTAssertEqual(state.displayed[.first]?.text, "R U"); XCTAssertNil(state.failure(for: .first))
     }
 
     func testContactIsImmediateAndCancellationIsTerminal() {
@@ -85,10 +96,11 @@ import CoreData
         try await wait { probe.mode != nil }
         for mode in [LocalBattleMode.headToHead, .sideBySide] {
             pending.removeAll(); probe.mode?(mode)
-            try await wait { pending.filter { $0.1 == "battle" }.count == 2 }
-            let requests = pending.filter { $0.1 == "battle" }; pending.removeAll()
-            for (index, request) in requests.enumerated() { request.2(.init(context: request.0, scrambles: [index == 0 ? "R U" : "F D"])) }
+            try await wait { pending.filter { $0.1 == "battle" }.count == 1 }
+            let request = try XCTUnwrap(pending.first { $0.1 == "battle" }); pending.removeAll()
+            request.2(.init(context: request.0, scrambles: ["R U"]))
             try await wait { probe.snapshot?().scrambles.displayed.count == 2 }
+            XCTAssertEqual(probe.snapshot?().scrambles.displayed[.first], probe.snapshot?().scrambles.displayed[.second])
             window.layoutIfNeeded()
             func contacts(_ view: UIView) -> [BattleContactSurface.ContactView] {
                 (view as? BattleContactSurface.ContactView).map { [$0] } ?? view.subviews.flatMap(contacts)
@@ -119,13 +131,21 @@ import CoreData
             try await Task.sleep(nanoseconds: 20_000_000)
             probe.release?(.second)
             XCTAssertGreaterThan(try XCTUnwrap(probe.snapshot?().secondStart), firstStart)
+            let next = try XCTUnwrap(pending.first { $0.1 == "battle" })
+            next.2(.init(context: next.0, scrambles: ["B L"]))
             let second = probe.snapshot?().scrambles.active[.second]
             probe.release?(.first)
             XCTAssertEqual(pending.filter { $0.1 == "battle" }.count, 1)
             XCTAssertEqual(probe.snapshot?().scrambles.active[.second], second)
             XCTAssertEqual(probe.snapshot?().scrambles.completed[.first]?.text, "R U")
+            XCTAssertEqual(probe.snapshot?().scrambles.displayed[.first]?.text, "B L")
+            XCTAssertEqual(probe.snapshot?().scrambles.displayed[.second]?.text, "R U")
+            probe.press?(.first); probe.release?(.first)
+            XCTAssertNil(probe.snapshot?().firstStart)
             probe.release?(.second)
-            XCTAssertEqual(pending.filter { $0.1 == "battle" }.count, 2)
+            XCTAssertEqual(pending.filter { $0.1 == "battle" }.count, 1)
+            XCTAssertEqual(probe.snapshot?().scrambles.completed[.second], second)
+            XCTAssertEqual(probe.snapshot?().scrambles.displayed[.first], probe.snapshot?().scrambles.displayed[.second])
         }
     }
     private func wait(_ condition: () -> Bool) async throws {

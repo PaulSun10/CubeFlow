@@ -2316,3 +2316,4 @@
 "smart_cube.guidance.checkpoint_unmatched" = "No matching scramble checkpoint";
 "timer.inspection.exit" = "Exit";
 "timer.inspection.exit_accessibility" = "Exit Inspection";
+"battle.waiting_for_opponent" = "Waiting for your opponent to finish…";

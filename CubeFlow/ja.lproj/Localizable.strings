@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "ダウンロード中";
 "timer.inspection.exit" = "終了";
 "timer.inspection.exit_accessibility" = "インスペクションを終了";
+"battle.waiting_for_opponent" = "対戦相手の終了を待っています…";

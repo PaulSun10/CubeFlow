@@ -1,6 +1,24 @@
 import SwiftUI
 
 #if os(iOS)
+struct LocalBattleWaitingFeedback {
+    private var rejectedManualRounds: [LocalBattlePlayer: UUID] = [:]
+
+    mutating func recordManualSubmission(for player: LocalBattlePlayer, blockedRound: UUID?) {
+        rejectedManualRounds[player] = blockedRound
+    }
+
+    func isVisible(for player: LocalBattlePlayer, input: LocalBattleInput,
+                   ready: Bool, blockedRound: UUID?) -> Bool {
+        guard let blockedRound else { return false }
+        switch input {
+        case .smartCube: return ready
+        case .manual: return rejectedManualRounds[player] == blockedRound
+        case .touch, .smartTimer: return false
+        }
+    }
+}
+
 enum LocalBattleMode: String, CaseIterable, Identifiable {
     case solo
     case headToHead
@@ -115,13 +133,14 @@ struct LocalBattleContent: View {
     @ObservedObject var devices = LocalBattleDevices()
     var onConfigure: ((LocalBattlePlayer, LocalBattleConfiguration) -> Void)? = nil
     var onManual: ((LocalBattlePlayer, String) -> Bool)? = nil
-    var isRoundComplete = false
+    var blockedRound: (LocalBattlePlayer) -> UUID? = { _ in nil }
     var canEditHandicap = true
 
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var selectingEventFor: LocalBattlePlayer?
     @State private var configuringPlayers: Set<LocalBattlePlayer> = []
     @State private var manualEntries: [LocalBattlePlayer: String] = [:]
+    @State private var waitingFeedback = LocalBattleWaitingFeedback()
     @State private var connectingPlayer: LocalBattlePlayer?
     @State private var showingSmartTimer = false
     #if DEBUG
@@ -316,8 +335,23 @@ struct LocalBattleContent: View {
 
                 TimerFittingScrambleText(text: scramble(for: player), maximumFontSize: 19,
                     design: .default, style: .system(weight: .regular, isItalic: false)) { fontSize in
-                    Text(scramble(for: player)).font(.system(size: fontSize, weight: .medium))
-                        .foregroundStyle(scrambleTextStyle).multilineTextAlignment(.center)
+                    Group {
+                        if let guidance = devices.guidance[player], !isRunning(player) {
+                            SmartCubeScrambleProgressView(scramble: scramble(for: player),
+                                tokens: guidance.progress.tokens, completedTokenIndices: guidance.progress.completedTokenIndices,
+                                highlightedTokenIndex: guidance.progress.currentMoveTokenIndex,
+                                recoveryPlan: guidance.recovery, recoveryDisplay: .inline,
+                                highlightAnimation: .instant, behavior: .trail, transition: .instant,
+                                fontDesign: .default, fontStyle: .system(weight: .medium, isItalic: false), fontSize: fontSize,
+                                foregroundStyle: scrambleTextStyle, highlightBackgroundStyle: AnyShapeStyle(Color.accentColor),
+                                highlightForegroundStyle: AnyShapeStyle(Color.white), showsLiveProgress: true,
+                                showsStateOnlyProgress: guidance.progress.puzzleSize == 2,
+                                isStateOnlyOffPath: guidance.progress.isDeviated)
+                        } else {
+                            Text(scramble(for: player)).font(.system(size: fontSize, weight: .medium))
+                                .foregroundStyle(scrambleTextStyle).multilineTextAlignment(.center)
+                        }
+                    }
                         .frame(maxWidth: .infinity).fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(width: max(0, proxy.size.width - 32), height: max(0, scrambleBottom - scrambleTop))
@@ -333,7 +367,6 @@ struct LocalBattleContent: View {
                                 .font(.system(size: 32, weight: .medium, design: .rounded).monospacedDigit())
                                 .submitLabel(.done).onSubmit { saveManual(player) }
                             Button("timer.typing_save") { saveManual(player) }.frame(minWidth: 44, minHeight: 44)
-                                .disabled(roundTime(for: player) != nil && !isRoundComplete)
                         }.padding(.horizontal, 16)
                     } else {
                         Text(formatDisplayedTime(displayedTime(for: player)))
@@ -355,12 +388,15 @@ struct LocalBattleContent: View {
                 VStack(spacing: 4) {
                     if configuration.input == .smartCube {
                         if devices.ready.contains(player) {
-                            Label("battle.ready", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                            Label(LocalizedStringKey(showsWaitingMessage(for: player) ? "battle.waiting_for_opponent" : "battle.ready"),
+                                  systemImage: "checkmark.circle.fill").foregroundStyle(.green)
                         } else if devices.session(for: player) == nil {
                             Image(systemName: "bolt.horizontal.circle")
                                 .foregroundStyle(.secondary)
                                 .accessibilityLabel(Text("smart_cube.status.disconnected"))
                         }
+                    } else if showsWaitingMessage(for: player) {
+                        Text("battle.waiting_for_opponent").foregroundStyle(.secondary)
                     } else if configuration.input != .touch {
                         Text(LocalizedStringKey(configuration.input.key))
                             .foregroundStyle(.secondary)
@@ -380,7 +416,15 @@ struct LocalBattleContent: View {
     }
 
     private func saveManual(_ player: LocalBattlePlayer) {
-        if onManual?(player, manualEntries[player] ?? "") == true { manualEntries[player] = "" }
+        let blocked = blockedRound(player)
+        let accepted = onManual?(player, manualEntries[player] ?? "") == true
+        waitingFeedback.recordManualSubmission(for: player, blockedRound: accepted ? nil : blocked)
+        if accepted { manualEntries[player] = "" }
+    }
+
+    private func showsWaitingMessage(for player: LocalBattlePlayer) -> Bool {
+        waitingFeedback.isVisible(for: player, input: devices.configuration(player).input,
+            ready: devices.ready.contains(player), blockedRound: blockedRound(player))
     }
 
     @ViewBuilder

@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "Mengunduh";
 "timer.inspection.exit" = "Keluar";
 "timer.inspection.exit_accessibility" = "Keluar dari inspeksi";
+"battle.waiting_for_opponent" = "Menunggu lawan menyelesaikan giliran…";

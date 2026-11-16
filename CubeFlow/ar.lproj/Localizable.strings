@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "جارٍ التنزيل";
 "timer.inspection.exit" = "خروج";
 "timer.inspection.exit_accessibility" = "إنهاء المعاينة";
+"battle.waiting_for_opponent" = "في انتظار أن ينتهي خصمك…";

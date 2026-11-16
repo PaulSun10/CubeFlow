@@ -30,8 +30,10 @@ import CoreData
             requests.append(context.event); complete(.init(context: context, scrambles: ["R U"]))
             if reason == "battle" {
                 textOnlyDeliveries += 1
-                XCTAssertFalse(probe.snapshot?().scrambles.requests.values.contains { $0.event == context.event } ?? true,
-                    "Text-only Battle delivery must not wait on Cards diagram rendering")
+                if probe.snapshot?().scrambles.hasRoundActivity == false {
+                    XCTAssertEqual(probe.snapshot?().scrambles.displayed[.first]?.request.event, context.event,
+                        "Text-only Battle delivery must not wait on Cards diagram rendering")
+                }
             }
         }
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
@@ -67,7 +69,6 @@ import CoreData
                     return view.bounds.width > 0 && window.hitTest(point, with: nil) === view
                 }
             }
-            let original = probe.snapshot?().scrambles.displayed[.first]
             for event in [PuzzleEvent.pyraminx, .fourByFourFast, .threeByThreeFM, .threeByThreeBLD] {
                 probe.selectorOpen?(.second)
                 XCTAssertEqual(probe.selectorSnapshot?() ?? nil, .second)
@@ -77,7 +78,7 @@ import CoreData
                 XCTAssertEqual(probe.selectorSnapshot?() ?? nil, .second)
                 XCTAssertEqual(probe.snapshot?().scrambles.displayed[.second]?.request.event, event)
                 XCTAssertEqual(requests.last, event)
-                XCTAssertEqual(probe.snapshot?().scrambles.displayed[.first], original)
+                XCTAssertEqual(probe.snapshot?().scrambles.displayed[.first], probe.snapshot?().scrambles.displayed[.second])
                 probe.selectorDismiss?()
             }
             for _ in 0..<5 {
@@ -117,11 +118,11 @@ import CoreData
             probe.cancel?(.second)
             try await Task.sleep(nanoseconds: 30_000_000)
             probe.selectorOpen?(.second)
-            XCTAssertEqual(probe.selectorSnapshot?() ?? nil, .second, "Idle player can select without pausing opponent")
+            XCTAssertNil(probe.selectorSnapshot?() ?? nil, "The shared event cannot change while either player is solving")
             XCTAssertNotNil(probe.snapshot?().firstStart)
             probe.selectorDismiss?(); probe.release?(.first)
         }
-        XCTAssertGreaterThanOrEqual(textOnlyDeliveries, 12)
+        XCTAssertGreaterThanOrEqual(textOnlyDeliveries, 10)
     }
     private func contacts(_ view: UIView) -> [BattleContactSurface.ContactView] {
         (view as? BattleContactSurface.ContactView).map { [$0] } ?? view.subviews.flatMap(contacts)

@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "Pobieranie";
 "timer.inspection.exit" = "Wyjdź";
 "timer.inspection.exit_accessibility" = "Zakończ inspekcję";
+"battle.waiting_for_opponent" = "Oczekiwanie na ukończenie przez przeciwnika…";

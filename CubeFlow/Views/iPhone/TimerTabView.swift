@@ -1409,7 +1409,7 @@ struct TimerTabView: View {
                     timerTextStyle: timerTextStyle,
                     scrambleTextStyle: scrambleTextStyle,
                     formatDisplayedTime: formatDisplayedTime,
-                    canSelectEvent: { !localBattleIsRunning($0) && !localBattleIsPressing($0) },
+                    canSelectEvent: { _ in canChangeLocalBattleEvent },
                     onExit: { setLocalBattleMode(.solo) },
                     onSelectEvent: setLocalBattleEvent,
                     onSelectHandicap: setLocalBattleHandicap,
@@ -1417,12 +1417,12 @@ struct TimerTabView: View {
                     onReleasePlayer: releaseLocalBattleTimer,
                     onCancelPlayer: { setLocalBattlePressing(false, for: $0) },
                     devices: localBattleDevices,
-                    onConfigure: { player, configuration in
-                        localBattleDevices.setConfiguration(configuration, for: player)
-                        if configuration.input == .smartTimer { ganTimer.prepareIfNeeded() }
-                    },
+                    onConfigure: setLocalBattleConfiguration,
                     onManual: submitLocalBattleManual,
-                    isRoundComplete: didScoreCurrentLocalBattleRound,
+                    blockedRound: { player in
+                        guard localBattleScrambles.waitingForOpponent(player) else { return nil }
+                        return localBattleScrambles.completed[player]?.request.id
+                    },
                     canEditHandicap: canEditLocalBattleHandicap
                 )
             }
@@ -1591,8 +1591,10 @@ struct TimerTabView: View {
                 battleProbe?.press = pressLocalBattleTimer
                 battleProbe?.release = releaseLocalBattleTimer
                 battleProbe?.cancel = { setLocalBattlePressing(false, for: $0) }
-                battleProbe?.configure = { localBattleDevices.setConfiguration($1, for: $0) }
+                battleProbe?.configure = setLocalBattleConfiguration
                 battleProbe?.manual = submitLocalBattleManual
+                battleProbe?.hardwareState = localBattleDevices.receiveSmartTimerState
+                battleProbe?.hardwareCompletion = localBattleDevices.receiveSmartTimerCompletion
                 battleProbe?.snapshot = {
                     .init(scrambles: localBattleScrambles, firstStart: localBattleFirstStartDate,
                           secondStart: localBattleSecondStartDate, firstPressing: isLocalBattleFirstPressing,
@@ -1873,7 +1875,6 @@ struct TimerTabView: View {
             if let marketingPreviewConfiguration {
                 marketingPreviewConfiguration.wrappedValue.event = newEvent
                 generateNewScramble()
-                if localBattleMode != .solo { resetLocalBattleScrambles() }
                 return
             }
             #endif
@@ -1886,7 +1887,6 @@ struct TimerTabView: View {
                 generateNewScramble()
             }
             restoredSmartCubeEvent = nil
-            if localBattleMode != .solo { resetLocalBattleScrambles() }
         }
         .onChange(of: timerArrangement) { _ in
             floatingScrambleFrame = nil
@@ -3359,9 +3359,11 @@ struct TimerTabView: View {
             resetLocalBattleScores()
             localBattleScrambles = LocalBattleScrambleState()
         } else {
+            localBattleDevices.setEnabled(false)
+            localBattleScrambles = LocalBattleScrambleState()
             if mode != .nearby {
                 configureLocalBattleDevices()
-            } else { localBattleDevices.setEnabled(false) }
+            }
             if localBattleMode == .solo {
                 if usesSmartCubeInput { resetSmartCubeTimerState() }
                 isTypingFieldFocused = false
@@ -3403,18 +3405,16 @@ struct TimerTabView: View {
             stopLocalBattleTimer(for: player, stoppedAt: solve.stoppedAt, hardwareSeconds: solve.seconds)
         }
         localBattleDevices.invalidate = cancelLocalBattlePlayer
-        for player in LocalBattlePlayer.allCases {
-            if let assignment = localBattleScrambles.displayed[player], localBattleScrambles.requests[player] == nil {
-                localBattleDevices.setTarget(assignment.text, event: assignment.request.event,
-                    assignment: assignment.request.id, for: player)
-            }
-            if !didScoreCurrentLocalBattleRound, localBattleRoundTime(for: player) != nil { localBattleDevices.complete(player) }
+        synchronizeLocalBattleTargets()
+        for player in LocalBattlePlayer.allCases where localBattleScrambles.waitingForOpponent(player) {
+            localBattleDevices.complete(player)
         }
     }
 
     private func resetLocalBattleScrambles() {
         localBattleScrambles = LocalBattleScrambleState()
-        for player in LocalBattlePlayer.allCases { requestLocalBattleScramble(for: player) }
+        synchronizeLocalBattleTargets()
+        requestLocalBattleScramble()
     }
 
     private func resetLocalBattleEvents() {
@@ -3424,28 +3424,48 @@ struct TimerTabView: View {
     }
 
     private func localBattleScramble(for player: LocalBattlePlayer) -> String {
-        localBattleScrambles.failures[player] ?? localBattleScrambles.displayed[player]?.text ?? "…"
+        localBattleScrambles.failure(for: player) ?? localBattleScrambles.displayed[player]?.text ?? "…"
     }
 
-    private func requestLocalBattleScramble(for player: LocalBattlePlayer) {
-        let event = localBattleEvent(for: player)
-        let request = localBattleScrambles.request(player, event: event)
-        localBattleDevices.setTarget(nil, event: event, assignment: nil, for: player)
+    private func synchronizeLocalBattleTargets() {
+        let displayed = localBattleScrambles.displayed
+        for player in LocalBattlePlayer.allCases {
+            let assignment = displayed[player]
+            localBattleDevices.setTarget(assignment?.text, event: localBattleEvent(for: player),
+                assignment: assignment?.request.id, for: player)
+        }
+    }
+
+    private func requestLocalBattleScramble(ahead: Bool = false) {
+        let event = localBattleFirstEvent
+        guard let request = localBattleScrambles.request(event: event, ahead: ahead) else { return }
         let context = TimerScrambleGenerationContext(sessionID: nil, event: event,
             multiBlindCount: mblindScrambleCount,
             unavailableMessage: appLocalizedString("timer.scramble_unavailable", languageCode: appLanguage))
         generateTimerScramble(for: context, reason: "battle", prepareDiagram: false) { payload in
-            guard localBattleEvent(for: player) == event,
-                  payload.context == context else { return }
+            guard payload.context == context else { return }
             let text = payload.scrambles.joined(separator: "\n")
             guard !text.isEmpty, !text.hasPrefix(context.unavailableMessage) else {
                 localBattleScrambles.fail(context.unavailableMessage, for: request)
                 return
             }
             if localBattleScrambles.receive(text, for: request) {
-                localBattleDevices.setTarget(text, event: event, assignment: request.id, for: player)
+                synchronizeLocalBattleTargets()
+                prefetchLocalBattleForManualInput()
             }
         }
+    }
+
+    private func prefetchLocalBattleForManualInput() {
+        if LocalBattlePlayer.allCases.contains(where: { localBattleDevices.configuration($0).input == .manual }) {
+            requestLocalBattleScramble(ahead: true)
+        }
+    }
+
+    private func setLocalBattleConfiguration(_ player: LocalBattlePlayer, _ configuration: LocalBattleConfiguration) {
+        localBattleDevices.setConfiguration(configuration, for: player)
+        if configuration.input == .smartTimer { ganTimer.prepareIfNeeded() }
+        if configuration.input == .manual { prefetchLocalBattleForManualInput() }
     }
 
     private func localBattleEvent(for player: LocalBattlePlayer) -> PuzzleEvent {
@@ -3457,20 +3477,16 @@ struct TimerTabView: View {
         }
     }
 
-    private func setLocalBattleEvent(for player: LocalBattlePlayer, event: PuzzleEvent) {
-        guard !localBattleIsRunning(player),
-              !localBattleIsPressing(player),
-              localBattleEvent(for: player) != event
-        else { return }
+    private var canChangeLocalBattleEvent: Bool {
+        !localBattleScrambles.hasRoundActivity && !isLocalBattleFirstPressing && !isLocalBattleSecondPressing
+    }
 
-        switch player {
-        case .first:
-            localBattleFirstEvent = event
-        case .second:
-            localBattleSecondEvent = event
-        }
-        reconcileLocalBattleCube(for: player, event: event)
-        requestLocalBattleScramble(for: player)
+    private func setLocalBattleEvent(for player: LocalBattlePlayer, event: PuzzleEvent) {
+        guard canChangeLocalBattleEvent, localBattleEvent(for: player) != event else { return }
+        localBattleFirstEvent = event
+        localBattleSecondEvent = event
+        for player in LocalBattlePlayer.allCases { reconcileLocalBattleCube(for: player, event: event) }
+        resetLocalBattleScrambles()
     }
 
     private func reconcileLocalBattleCube(for player: LocalBattlePlayer, event: PuzzleEvent) {
@@ -3550,8 +3566,12 @@ struct TimerTabView: View {
 
     private func pressLocalBattleTimer(for player: LocalBattlePlayer) {
         guard localBattleDevices.configuration(player).input == .touch else { return }
+        guard !localBattleIsRunning(player),
+              localBattleScrambles.canBegin(player, event: localBattleEvent(for: player)) else {
+            if !localBattleScrambles.waitingForOpponent(player) { requestLocalBattleScramble() }
+            return
+        }
         prepareNextLocalBattleRoundIfNeeded()
-        guard !localBattleIsRunning(player), localBattleRoundTime(for: player) == nil else { return }
         setLocalBattlePressing(true, for: player)
         triggerReadyHaptic()
     }
@@ -3575,8 +3595,9 @@ struct TimerTabView: View {
     }
 
     @discardableResult private func startLocalBattleTimer(for player: LocalBattlePlayer, startedAt: Date = .now) -> Bool {
+        guard localBattleScrambles.begin(player, event: localBattleEvent(for: player), startedAt: startedAt) else { return false }
         prepareNextLocalBattleRoundIfNeeded()
-        guard localBattleScrambles.begin(player, event: localBattleEvent(for: player)) else { return false }
+        requestLocalBattleScramble(ahead: true)
 
         switch player {
         case .first:
@@ -3595,7 +3616,8 @@ struct TimerTabView: View {
     }
 
     private func stopLocalBattleTimer(for player: LocalBattlePlayer, stoppedAt: Date = .now, hardwareSeconds: Double? = nil) {
-        guard localBattleIsRunning(player), localBattleScrambles.finish(player) != nil else { return }
+        let start = player == .first ? localBattleFirstStartDate : localBattleSecondStartDate
+        guard localBattleIsRunning(player), let start, stoppedAt >= start, localBattleScrambles.finish(player) != nil else { return }
         switch player {
         case .first:
             if let localBattleFirstStartDate {
@@ -3617,10 +3639,7 @@ struct TimerTabView: View {
             isLocalBattleSecondPressing = false
         }
 
-        scoreLocalBattleRoundIfReady()
-        requestLocalBattleScramble(for: player)
-        localBattleDevices.complete(player)
-        if didScoreCurrentLocalBattleRound { localBattleDevices.nextRound() }
+        advanceLocalBattlePreparation(for: player)
 
         if !isLocalBattleFirstRunning && !isLocalBattleSecondRunning {
             invalidateLocalBattleTimer()
@@ -3656,16 +3675,33 @@ struct TimerTabView: View {
 
     private func submitLocalBattleManual(_ player: LocalBattlePlayer, _ raw: String) -> Bool {
         guard localBattleDevices.configuration(player).input == .manual, !localBattleIsRunning(player) else { return false }
-        prepareNextLocalBattleRoundIfNeeded()
-        guard localBattleRoundTime(for: player) == nil,
+        guard !localBattleScrambles.waitingForOpponent(player) else { return false }
+        guard localBattleScrambles.canBegin(player, event: localBattleEvent(for: player)) else {
+            requestLocalBattleScramble()
+            return false
+        }
+        guard
               let value = ManualTimeParser.candidates(raw, mode: .fixed, format: localBattleDevices.configuration(player).format).first?.seconds,
-              value > 0, localBattleScrambles.begin(player, event: localBattleEvent(for: player)),
-              localBattleScrambles.finish(player) != nil else { return false }
+              value > 0, localBattleScrambles.begin(player, event: localBattleEvent(for: player)) else { return false }
+        prepareNextLocalBattleRoundIfNeeded()
+        guard localBattleScrambles.finish(player) != nil else { return false }
         if player == .first { localBattleFirstElapsed = value; localBattleFirstRoundTime = value; localBattleFirstDisplayTime = localBattleHandicap.adjusted(value, for: .first) }
         else { localBattleSecondElapsed = value; localBattleSecondRoundTime = value; localBattleSecondDisplayTime = localBattleHandicap.adjusted(value, for: .second) }
-        localBattleDevices.complete(player); scoreLocalBattleRoundIfReady(); requestLocalBattleScramble(for: player)
-        if didScoreCurrentLocalBattleRound { localBattleDevices.nextRound() }
+        advanceLocalBattlePreparation(for: player)
         return true
+    }
+
+    private func advanceLocalBattlePreparation(for player: LocalBattlePlayer) {
+        localBattleDevices.complete(player)
+        scoreLocalBattleRoundIfReady()
+        synchronizeLocalBattleTargets()
+        if didScoreCurrentLocalBattleRound {
+            localBattleDevices.nextRound()
+            requestLocalBattleScramble()
+            prefetchLocalBattleForManualInput()
+        } else {
+            requestLocalBattleScramble(ahead: true)
+        }
     }
 
     private func resetLocalBattleScores() {

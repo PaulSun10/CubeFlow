@@ -2119,3 +2119,4 @@
 "settings.font_downloading" = "İndiriliyor";
 "timer.inspection.exit" = "Çık";
 "timer.inspection.exit_accessibility" = "İncelemeden çık";
+"battle.waiting_for_opponent" = "Rakibinin bitirmesi bekleniyor…";

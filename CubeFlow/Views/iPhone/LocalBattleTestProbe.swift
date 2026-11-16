@@ -11,6 +11,8 @@ import SwiftUI
     var snapshot: (() -> Snapshot)?
     var configure: ((LocalBattlePlayer, LocalBattleConfiguration) -> Void)?
     var manual: ((LocalBattlePlayer, String) -> Bool)?
+    var hardwareState: ((GANTimerConnectionState, Date?) -> Void)?
+    var hardwareCompletion: ((GANTimerCompletedSolve) -> Void)?
     var selectorOpen: ((LocalBattlePlayer) -> Void)?
     var selectorDismiss: (() -> Void)?
     var selectorChoose: ((PuzzleEvent) -> Void)?
