@@ -2,7 +2,7 @@
 
 The native switch is in **Settings > Timer**. Its footer explains that it prevents automatic locking while using Timer or Battle. It shares the existing `@AppStorage` / UserDefaults architecture. A missing value means on, with no migration; an explicit off survives relaunch.
 
-The row shows a blue NEW badge only in marketing version 0.16.1. See [Feature Badge V1](feature-badges.md); badge visibility does not affect the switch or its preference.
+The row shows a blue NEW badge through bug-fix, maintenance and performance updates. The developer will remove it when replacing the previous NEW placements with the next feature batch. See [Feature Badge V1](feature-badges.md); the badge does not affect the switch or its preference.
 
 ## Ownership and lifecycle
 

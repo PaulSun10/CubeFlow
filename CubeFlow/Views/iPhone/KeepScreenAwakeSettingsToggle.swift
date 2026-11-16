@@ -3,17 +3,17 @@ import SwiftUI
 #if os(iOS)
 struct KeepScreenAwakeSettingsToggle: View {
     @Binding var isOn: Bool
-    @Environment(\.featureBadgeMarketingVersion) private var marketingVersion
+    var badge: FeatureBadgeKind? = .new
 
     var body: some View {
         Toggle(isOn: $isOn) {
             label
         }
-        .accessibilityLabel(label.accessibilityTitle(marketingVersion: marketingVersion))
+        .accessibilityLabel(label.accessibilityTitle)
     }
 
     private var label: FeatureBadgeTitle {
-        FeatureBadgeTitle(title: Text("settings.keep_screen_awake"), placement: .keepScreenAwake)
+        FeatureBadgeTitle(title: Text("settings.keep_screen_awake"), kind: badge)
     }
 }
 
@@ -25,14 +25,14 @@ struct KeepScreenAwakeSettingsToggle_Previews: PreviewProvider {
             row().preferredColorScheme(.dark).environment(\.locale, Locale(identifier: "zh-Hans"))
             row().environment(\.locale, Locale(identifier: "de")).dynamicTypeSize(.accessibility2)
             row().environment(\.locale, Locale(identifier: "ar")).environment(\.layoutDirection, .rightToLeft)
-            row(version: "0.16.2")
+            row(badge: nil)
         }
     }
 
-    private static func row(version: String = "0.16.1") -> some View {
+    private static func row(badge: FeatureBadgeKind? = .new) -> some View {
         List {
             Section {
-                KeepScreenAwakeSettingsToggle(isOn: .constant(true))
+                KeepScreenAwakeSettingsToggle(isOn: .constant(true), badge: badge)
             } header: {
                 Text("settings.section.timer")
             } footer: {
@@ -40,7 +40,6 @@ struct KeepScreenAwakeSettingsToggle_Previews: PreviewProvider {
             }
         }
         .listStyle(.insetGrouped)
-        .environment(\.featureBadgeMarketingVersion, version)
     }
 }
 #endif

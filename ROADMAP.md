@@ -122,10 +122,10 @@ Keep customization strong but Automatic/default behavior useful without configur
 
 - **First launch (planned):** Introduce CubeFlow and its major capabilities through a lightweight native experience. Do not require sign-in or device setup just to learn or start using the app.
 - **What's New (planned):** Highlight relevant features after updates. Consider version-aware presentation rather than showing it after every build, and revisiting previous introductions from Settings.
-- **Feature Badge V1 (implemented):** Blue NEW is on Settings > Timer > Keep Screen Awake for marketing version 0.16.1. Purple BETA is on Settings > Connected Devices and its Smart Cube and Smart Timer feature entries, not on individual devices.
+- **Feature Badge V1 (implemented):** Blue NEW is on Settings > Timer > Keep Screen Awake. Purple BETA is on Settings > Connected Devices and its Smart Cube and Smart Timer feature entries, not on individual devices.
 - **Contextual discovery (exploratory):** TipKit or comparable lightweight tips where they genuinely help. Consider a shared feature-discovery model or registry only after the surface and lifecycle requirements are clear.
 
-**Feature Badge V1:** Native noninteractive tinted regular Liquid Glass on iOS 26+, with matching Soft Fill on iOS 15–25. Visible NEW/BETA labels remain uppercase English; spoken status is localized. NEW expires when the bundle marketing version no longer matches the feature's introduction, independent of build number. BETA remains until the developer removes it. See the [V1 closeout](docs/feature-badges.md) for the approved palette and verification. Onboarding, What's New and contextual discovery remain separate.
+**Feature Badge V1:** Native noninteractive tinted regular Liquid Glass on iOS 26+, with matching Soft Fill on iOS 15–25. Visible NEW/BETA labels remain uppercase English; spoken status is localized. NEW stays through bug-fix, maintenance and performance updates. When a release introduces the next batch of features requiring NEW, the developer replaces the previous NEW placements manually. BETA stays until explicitly removed. Neither badge expires automatically. See the [V1 closeout](docs/feature-badges.md). Onboarding, What's New and contextual discovery remain separate.
 
 ### Competition Data Resilience
 

@@ -206,7 +206,7 @@ struct ConnectedDevicesSettingsLink: View {
             ConnectedDevicesView()
         } label: {
             HStack {
-                FeatureBadgeTitle(title: Text("connected_devices.title"), placement: .connectedDevices)
+                FeatureBadgeTitle(title: Text("connected_devices.title"), kind: .beta)
                 Spacer()
             }
         }
@@ -232,7 +232,7 @@ struct ConnectedDevicesView: View {
                         cubeSize: smartCube.isConnected ? smartCube.puzzleSize : nil,
                         model: smartCube.connectionDeviceID.flatMap { savedCubes.device($0)?.modelName },
                         cubeColor: smartCube.connectionDeviceID.flatMap { savedCubes.device($0)?.iconColor?.color } ?? .accentColor,
-                        featureBadge: .smartCube
+                        featureBadge: .beta
                     )
                 }
                 NavigationLink {
@@ -243,7 +243,7 @@ struct ConnectedDevicesView: View {
                         name: smartTimer.isConnected ? smartTimer.deviceName : nil,
                         status: LocalizedStringKey(smartTimer.statusLocalizedKey),
                         battery: smartTimer.isConnected ? smartTimer.batteryLevel : nil,
-                        featureBadge: .smartTimer
+                        featureBadge: .beta
                     )
                 }
             }
@@ -266,14 +266,14 @@ struct ConnectedDevicesView: View {
         cubeSize: Int? = nil,
         model: String? = nil,
         cubeColor: Color = .accentColor,
-        featureBadge: FeatureBadgePlacement
+        featureBadge: FeatureBadgeKind
     ) -> some View {
         HStack(spacing: 12) {
             if let cubeSize, let glyph = CompetitionEventIconFont.glyph(for: cubeSize == 2 ? "222" : "333") {
                 CompetitionEventGlyph(glyph: glyph, eventName: cubeSize == 2 ? "2x2" : "3x3", size: 20, color: cubeColor)
             }
             VStack(alignment: .leading, spacing: 3) {
-                FeatureBadgeTitle(title: Text(title), placement: featureBadge)
+                FeatureBadgeTitle(title: Text(title), kind: featureBadge)
                     .font(.body)
                 if let name, !name.isEmpty {
                     Text(name).font(.caption).foregroundStyle(.secondary)

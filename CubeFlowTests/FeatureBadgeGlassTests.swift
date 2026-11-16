@@ -5,30 +5,14 @@ import XCTest
 @testable import CubeFlow
 
 @MainActor final class FeatureBadgeGlassTests: XCTestCase {
-    func testNewLifecycleUsesMarketingVersionNotBuild() {
-        let status = FeatureBadgePlacement.keepScreenAwake.status
-        XCTAssertEqual(status, .new(introducedIn: "0.16.1"))
-        for build in ["1", "2", "100"] {
-            let version = FeatureBadgeMarketingVersion.read(from: [
-                "CFBundleShortVersionString": "0.16.1", "CFBundleVersion": build
-            ])
-            XCTAssertEqual(status.kind(marketingVersion: version), .new)
-        }
-        for version in ["0.16.0", "0.16.2", "0.17.0", "1.0.0", "", "0.16", "0.16.1-beta", "0..1", " 0.16.1", "0.16.+1", "0.16.999999999999999999999"] {
-            XCTAssertNil(status.kind(marketingVersion: version), version)
-        }
-        XCTAssertNil(status.kind(marketingVersion: FeatureBadgeMarketingVersion.read(from: ["CFBundleVersion": "0.16.1"])))
-        XCTAssertNil(status.kind(marketingVersion: FeatureBadgeMarketingVersion.read(from: ["CFBundleShortVersionString": 16])))
-    }
-
-    func testExactlyThreeBetaPlacementsDoNotExpire() {
-        let beta = FeatureBadgePlacement.allCases.filter { $0.status == .beta }
-        XCTAssertEqual(beta, [.connectedDevices, .smartCube, .smartTimer])
-        for placement in beta {
-            for version in [nil, "broken", "0.0.1", "0.16.1", "1.0.0"] {
-                XCTAssertEqual(placement.status.kind(marketingVersion: version), .beta)
-            }
-        }
+    func testDeveloperPlacementControlsSpokenStatus() {
+        let title = Text("settings.keep_screen_awake")
+        XCTAssertEqual(KeepScreenAwakeSettingsToggle(isOn: .constant(true)).badge, .new)
+        XCTAssertEqual(FeatureBadgeTitle(title: title, kind: nil).accessibilityTitle, title)
+        XCTAssertEqual(FeatureBadgeTitle(title: title, kind: .new).accessibilityTitle,
+                       Text("\(title), \(Text("feature_badge.accessibility.new"))"))
+        XCTAssertEqual(FeatureBadgeTitle(title: title, kind: .beta).accessibilityTitle,
+                       Text("\(title), \(Text("feature_badge.accessibility.beta"))"))
     }
 
     func testUniversalLabelsAndLocalizedAccessibilityDescriptions() throws {
@@ -72,17 +56,21 @@ import XCTest
         defer { window.isHidden = true; window.rootViewController = nil }
         for (theme, style, scheme) in [("light", UIUserInterfaceStyle.light, ColorScheme.light), ("dark", .dark, .dark)] {
             window.overrideUserInterfaceStyle = style
-            for (page, version, showDevices, newCount, betaCount) in [
-                ("settings", "0.16.1", false, 1, 1),
-                ("devices", "0.16.1", true, 0, 2),
-                ("settings-after-update", "0.16.2", false, 0, 1)
+            for (page, showDevices, removeNewPlacement, newCount, betaCount) in [
+                ("settings", false, false, 1, 1),
+                ("devices", true, false, 0, 2),
+                ("settings-without-placement", false, true, 0, 1)
             ] {
                 let content = Group {
                     if showDevices { ConnectedDevicesView() }
                     else {
                         List {
                             Section {
-                                KeepScreenAwakeSettingsToggle(isOn: .constant(true))
+                                if removeNewPlacement {
+                                    KeepScreenAwakeSettingsToggle(isOn: .constant(true), badge: nil)
+                                } else {
+                                    KeepScreenAwakeSettingsToggle(isOn: .constant(true))
+                                }
                             } header: {
                                 Text("settings.section.timer")
                             } footer: {
@@ -99,7 +87,6 @@ import XCTest
                     .preferredColorScheme(scheme)
                     .environment(\.locale, Locale(identifier: "en"))
                     .environment(\.dynamicTypeSize, .large)
-                    .environment(\.featureBadgeMarketingVersion, version)
                 window.rootViewController = UIHostingController(rootView: root)
                 window.makeKeyAndVisible()
                 window.layoutIfNeeded()

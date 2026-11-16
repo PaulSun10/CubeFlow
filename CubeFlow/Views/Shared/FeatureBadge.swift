@@ -68,75 +68,19 @@ struct FeatureBadge: View {
     }
 }
 
-enum FeatureBadgeStatus: Equatable {
-    case new(introducedIn: String)
-    case beta
-
-    func kind(marketingVersion: String?) -> FeatureBadgeKind? {
-        switch self {
-        case .new(let introducedIn):
-            guard let introduction = Self.versionComponents(introducedIn),
-                  let current = Self.versionComponents(marketingVersion), current == introduction else { return nil }
-            return .new
-        case .beta:
-            return .beta
-        }
-    }
-
-    private static func versionComponents(_ version: String?) -> [Int]? {
-        guard let version else { return nil }
-        let parts = version.split(separator: ".", omittingEmptySubsequences: false)
-        guard parts.count == 3 else { return nil }
-        let digits = parts.compactMap { part -> Int? in
-            guard !part.isEmpty, part.utf8.allSatisfy({ (48...57).contains($0) }) else { return nil }
-            return Int(part)
-        }
-        return digits.count == parts.count ? digits : nil
-    }
-}
-
-enum FeatureBadgePlacement: CaseIterable {
-    case keepScreenAwake, connectedDevices, smartCube, smartTimer
-
-    var status: FeatureBadgeStatus {
-        switch self {
-        case .keepScreenAwake: return .new(introducedIn: "0.16.1")
-        case .connectedDevices, .smartCube, .smartTimer: return .beta
-        }
-    }
-}
-
-enum FeatureBadgeMarketingVersion {
-    static func read(from info: [String: Any]?) -> String? {
-        info?["CFBundleShortVersionString"] as? String
-    }
-}
-
-private struct FeatureBadgeMarketingVersionKey: EnvironmentKey {
-    static let defaultValue = FeatureBadgeMarketingVersion.read(from: Bundle.main.infoDictionary)
-}
-
-extension EnvironmentValues {
-    var featureBadgeMarketingVersion: String? {
-        get { self[FeatureBadgeMarketingVersionKey.self] }
-        set { self[FeatureBadgeMarketingVersionKey.self] = newValue }
-    }
-}
-
 struct FeatureBadgeTitle: View {
     let title: Text
-    let placement: FeatureBadgePlacement
+    let kind: FeatureBadgeKind?
     @Environment(\.dynamicTypeSize) private var typeSize
-    @Environment(\.featureBadgeMarketingVersion) private var marketingVersion
 
-    func accessibilityTitle(marketingVersion: String?) -> Text {
-        guard let kind = placement.status.kind(marketingVersion: marketingVersion) else { return title }
+    var accessibilityTitle: Text {
+        guard let kind else { return title }
         return Text("\(title), \(Text(kind.accessibilityKey))")
     }
 
     var body: some View {
         Group {
-            if let kind = placement.status.kind(marketingVersion: marketingVersion) {
+            if let kind {
                 if typeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: 3) { title; badge(kind) }
                 } else {
@@ -147,7 +91,7 @@ struct FeatureBadgeTitle: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityTitle(marketingVersion: marketingVersion))
+        .accessibilityLabel(accessibilityTitle)
     }
 
     private func badge(_ kind: FeatureBadgeKind) -> some View { FeatureBadge(kind: kind).accessibilityHidden(true) }
