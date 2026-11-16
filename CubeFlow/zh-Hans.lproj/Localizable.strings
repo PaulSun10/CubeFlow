@@ -304,6 +304,8 @@
 "settings.app_icon_gray" = "灰色";
 "settings.app_icon_light_gray" = "浅灰";
 "settings.section.timer" = "计时";
+"settings.keep_screen_awake" = "保持屏幕常亮";
+"settings.keep_screen_awake_description" = "使用计时器或对战时防止屏幕自动锁定。";
 "settings.wca_title" = "WCA";
 "settings.wca_loading_profile" = "正在加载 WCA 个人资料…";
 "settings.wca_signed_out" = "未登录";

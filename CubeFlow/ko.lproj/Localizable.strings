@@ -305,6 +305,8 @@
 "settings.app_icon_light_gray" = "밝은 회색";
 "settings.section.timer" = "측정";
 "settings.wca_title" = "WCA";
+"settings.keep_screen_awake" = "화면 켜짐 유지";
+"settings.keep_screen_awake_description" = "타이머나 배틀을 사용하는 동안 화면이 자동으로 잠기지 않도록 합니다.";
 "settings.wca_signed_out" = "로그인 안 됨";
 "settings.wca_connected" = "연결됨";
 "settings.wca_not_connected" = "연결 안 됨";

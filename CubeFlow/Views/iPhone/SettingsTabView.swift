@@ -126,6 +126,7 @@ struct SettingsTabView: View {
     @AppStorage("averageTextAppearanceData") private var averageTextAppearanceData: Data?
     @AppStorage("wcaInspectionEnabled") private var wcaInspectionEnabled: Bool = false
     @AppStorage("ganInspectionStartsOnPress") private var ganInspectionStartsOnPress: Bool = false
+    @AppStorage(ScreenAwakePreference.key) private var keepScreenAwake = ScreenAwakePreference.defaultValue
     @AppStorage("ganShowResultPopup") private var ganShowResultPopup: Bool = true
     @AppStorage("ganResultInputMode") private var ganResultInputMode: String = GANResultInputMode.manual.rawValue
     @AppStorage("inspectionAlertVoiceMode") private var inspectionAlertVoiceMode: String = InspectionAlertVoiceMode.off.rawValue
@@ -540,8 +541,11 @@ private extension SettingsTabView {
                 }
 
             } header: {
+                Toggle("settings.keep_screen_awake", isOn: $keepScreenAwake)
                 Text("settings.section.timer")
             }
+            } footer: {
+                Text("settings.keep_screen_awake_description")
 
             Section {
                 NavigationLink {

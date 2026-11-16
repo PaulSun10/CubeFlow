@@ -305,6 +305,8 @@
 "settings.app_icon_light_gray" = "ライトグレー";
 "settings.section.timer" = "計時";
 "settings.wca_title" = "WCA";
+"settings.keep_screen_awake" = "画面をオンのままにする";
+"settings.keep_screen_awake_description" = "タイマーや対戦の使用中に画面が自動でロックされないようにします。";
 "settings.wca_signed_out" = "未サインイン";
 "settings.wca_connected" = "接続済み";
 "settings.wca_not_connected" = "未接続";

@@ -305,6 +305,8 @@
 "settings.app_icon_light_gray" = "สีเทาอ่อน";
 "settings.section.timer" = "การจับเวลา";
 "settings.wca_title" = "WCA";
+"settings.keep_screen_awake" = "เปิดหน้าจอไว้";
+"settings.keep_screen_awake_description" = "ป้องกันการล็อกหน้าจออัตโนมัติขณะใช้ตัวจับเวลาหรือโหมดแข่งขัน";
 "settings.wca_signed_out" = "ไม่ได้ลงชื่อเข้าใช้";
 "settings.wca_connected" = "เชื่อมต่อแล้ว";
 "settings.wca_not_connected" = "ไม่ได้เชื่อมต่อ";

@@ -146,7 +146,7 @@ struct CubeFlowApp: App {
             if UIDevice.current.userInterfaceIdiom == .pad {
                 IPadContentView()
             } else {
-                IPhoneContentView()
+                IPhoneContentView(screenAwakeCoordinator: .shared)
             }
             #elseif os(macOS)
             MacContentView()

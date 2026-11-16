@@ -304,6 +304,8 @@
 "settings.app_icon_gray" = "Gray";
 "settings.app_icon_light_gray" = "Light Gray";
 "settings.section.timer" = "Timing";
+"settings.keep_screen_awake" = "Keep Screen Awake";
+"settings.keep_screen_awake_description" = "Prevent the screen from automatically locking while using Timer or Battle.";
 "settings.wca_title" = "WCA";
 "settings.wca_loading_profile" = "Loading WCA Profile…";
 "settings.wca_signed_out" = "Not signed in";

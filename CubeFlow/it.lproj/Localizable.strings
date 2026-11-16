@@ -305,6 +305,8 @@
 "settings.app_icon_light_gray" = "Grigio chiaro";
 "settings.section.timer" = "Cronometraggio";
 "settings.wca_title" = "WCA";
+"settings.keep_screen_awake" = "Mantieni lo schermo attivo";
+"settings.keep_screen_awake_description" = "Impedisce il blocco automatico dello schermo durante l’uso del timer o della modalità Sfida.";
 "settings.wca_signed_out" = "Accesso non effettuato";
 "settings.wca_connected" = "Connesso";
 "settings.wca_not_connected" = "Non connesso";

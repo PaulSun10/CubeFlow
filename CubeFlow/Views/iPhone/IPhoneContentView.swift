@@ -18,6 +18,7 @@ struct RetainedTabContent<Content: View>: View {
 }
 
 struct IPhoneContentView: View {
+    private let screenAwakeCoordinator: ScreenAwakeCoordinator?
     #if DEBUG
     private let marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>?
     #endif
@@ -35,8 +36,14 @@ struct IPhoneContentView: View {
     @AppStorage("algBrowseViewModeStore") private var algBrowseViewModeStore: String = AlgBrowseViewMode.list.rawValue
 
     #if DEBUG
-    init(marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>? = nil) {
+    init(marketingPreviewConfiguration: Binding<MarketingTimerPreviewConfiguration>? = nil,
+         screenAwakeCoordinator: ScreenAwakeCoordinator? = nil) {
         self.marketingPreviewConfiguration = marketingPreviewConfiguration
+        self.screenAwakeCoordinator = screenAwakeCoordinator
+    }
+    #else
+    init(screenAwakeCoordinator: ScreenAwakeCoordinator? = nil) {
+        self.screenAwakeCoordinator = screenAwakeCoordinator
     }
     #endif
 
@@ -144,6 +151,7 @@ struct IPhoneContentView: View {
         .onChange(of: isDataSelectingSolves) { selecting in
             if !selecting { handleRequestedTab() }
         }
+        .modifier(ScreenAwakeRootPolicy(timerSelected: selectedTab == .timer, coordinator: screenAwakeCoordinator))
     }
 
     @ViewBuilder
@@ -216,6 +224,19 @@ struct IPhoneContentView: View {
         guard let requested = IPhoneTab(rawValue: requestedIPhoneTab) else { return }
         selectedTab = requested
         requestedIPhoneTab = ""
+    }
+}
+
+private struct ScreenAwakeRootPolicy: ViewModifier {
+    let timerSelected: Bool
+    let coordinator: ScreenAwakeCoordinator?
+
+    func body(content: Content) -> some View {
+        if let coordinator {
+            content.modifier(ScreenAwakeScenePolicy(timerSelected: timerSelected, coordinator: coordinator))
+        } else {
+            content
+        }
     }
 }
 

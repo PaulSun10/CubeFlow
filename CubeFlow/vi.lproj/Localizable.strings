@@ -305,6 +305,8 @@
 "settings.app_icon_light_gray" = "Xám nhạt";
 "settings.section.timer" = "Đo thời gian";
 "settings.wca_title" = "WCA";
+"settings.keep_screen_awake" = "Giữ màn hình luôn bật";
+"settings.keep_screen_awake_description" = "Ngăn màn hình tự động khóa khi dùng bộ đếm giờ hoặc chế độ đối kháng.";
 "settings.wca_signed_out" = "Chưa đăng nhập";
 "settings.wca_connected" = "Đã kết nối";
 "settings.wca_not_connected" = "Chưa kết nối";

@@ -305,6 +305,8 @@
 "settings.app_icon_light_gray" = "Светло-серый";
 "settings.section.timer" = "Хронометраж";
 "settings.wca_title" = "WCA";
+"settings.keep_screen_awake" = "Не выключать экран";
+"settings.keep_screen_awake_description" = "Предотвращает автоматическую блокировку экрана при использовании таймера или режима битвы.";
 "settings.wca_signed_out" = "Не авторизован";
 "settings.wca_connected" = "Подключено";
 "settings.wca_not_connected" = "Не подключен";

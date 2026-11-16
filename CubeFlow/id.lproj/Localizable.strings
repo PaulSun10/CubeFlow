@@ -305,6 +305,8 @@
 "settings.app_icon_light_gray" = "Abu-abu Terang";
 "settings.section.timer" = "Pengukuran Waktu";
 "settings.wca_title" = "WCA";
+"settings.keep_screen_awake" = "Jaga Layar Tetap Aktif";
+"settings.keep_screen_awake_description" = "Cegah layar terkunci otomatis saat menggunakan Timer atau Battle.";
 "settings.wca_signed_out" = "Belum masuk";
 "settings.wca_connected" = "Terhubung";
 "settings.wca_not_connected" = "Tidak Terhubung";
