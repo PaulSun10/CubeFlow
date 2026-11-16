@@ -4,6 +4,12 @@ This is CubeFlow's durable product and engineering planning reference, reconcile
 
 **2026-11-13 status:** See the [development closeout after 0.15.0](docs/development-closeout-nov13.md) for the latest implementation and physical acceptance. Inspection Exit (including the final circular control), Smart Cube inspection re-entry, and Data/Sessions UI fixes are accepted. Competition Filter rapid reopen and WeiPo 2x2 physical verification are intentionally deferred. Older investigation and acceptance notes below are historical where superseded by that closeout.
 
+**v0.16.1 closeout:** WCA Broker presents sign-in when safe recovery is exhausted and retries recoverable operations without changing the Broker contract. The reported physical WCA failure could not be reproduced or verified. Shared-scramble Battle received physical testing; its final presentation limits waiting feedback to a ready Smart Cube or an explicitly blocked manual submission. See the [WCA and Battle closeout](docs/wca-recovery-battle-nov16.md) for verification boundaries.
+
+**Timer and Battle:** [Keep Screen Awake](docs/keep-screen-awake.md) is implemented in Settings and defaults to on. It applies only while an eligible iPhone scene is active. Physical auto-lock acceptance is pending.
+
+**Language:** [System Default](docs/system-language.md) uses the native app language when there is no saved in-app override. Existing explicit choices are preserved. Physical iOS language-setting acceptance is pending.
+
 ## Product Boundaries And Planning Status
 
 **Implemented/accepted foundation:** Timer customization, numeral presentation, Data/provenance, Explore home and focused Competition/Rankings/Records/Recent Records destinations. Smart Cube Phases 0-2 retain checkpoint `1844425d` and the physical evidence below; current Phase 3-6 foundations are described in the current status section. Do not rebuild accepted UI, event-icon alignment or device behavior.
@@ -57,6 +63,8 @@ Keep customization strong but Automatic/default behavior useful without configur
 - Preserve the current browser's Large Title, context/subtitle/count, Map, Filter and full list. A future Explore layer leads into this destination, not a cluttered replacement.
 - Keep WCIF/WCA Live dashboard planning above and existing accepted Competition UI intact.
 
+**Competition Map (exploratory):** Audit the existing Map, markers and clustering, zoom behavior, competition statuses, list/filter coordination and preview cards before choosing changes. Consider date/region/event filters and nearby discovery alongside measured loading and rendering costs. Preserve working map behavior; these are candidates, not a list of confirmed defects.
+
 ## P1 - Reliability And Release Readiness
 
 ### Data Tab Navigation Stability
@@ -104,9 +112,20 @@ Keep customization strong but Automatic/default behavior useful without configur
 - Set measurable idle CPU and tab-switch latency targets.
 - Known cold-launch debt: initial scramble plus diagram can take roughly three seconds to become ready. Profile later; do not mask it by compromising timing correctness.
 
-### Discoverability
+### Settings And Appearance Discoverability
 
-**Planned:** a contextual TipKit pass to reveal useful features naturally after entry, not an intrusive onboarding maze. Exact tips and rollout remain open.
+**Direction, not finalized information architecture:** Review category hierarchy, grouping and ordering so important customization is easier to find. Improve setting descriptions and previews. Consider searching both setting names and descriptions. Keep native iOS presentation and interaction.
+
+**Interactive Timer editor (proposed):** Start with a representative Timer preview and use subtle gray outlines to indicate editable elements. Tapping an element should open its corresponding controls and show changes live, then return to the full preview. Explore focusing or enlarging the selected element to make space for editing. Audit existing property ownership before design; offer font, size, weight and color only where supported. Consider retaining conventional settings as an alternative. Layout, presentation and transitions are open; prefer native controls and animations.
+
+### Onboarding And Feature Discovery
+
+- **First launch (planned):** Introduce CubeFlow and its major capabilities through a lightweight native experience. Do not require sign-in or device setup just to learn or start using the app.
+- **What's New (planned):** Highlight relevant features after updates. Consider version-aware presentation rather than showing it after every build, and revisiting previous introductions from Settings.
+- **Feature badges (planned, design deferred):** NEW identifies recently introduced features, including on appropriate non-Settings surfaces; BETA identifies individual features explicitly designated experimental. Do not classify existing features without a decision.
+- **Contextual discovery (exploratory):** TipKit or comparable lightweight tips where they genuinely help. Consider a shared feature-discovery model or registry only after the surface and lifecycle requirements are clear.
+
+**NEW/BETA visual task explicitly deferred:** The current reference is the compact label at the bottom-right of the Xcode Beta icon: a filled rounded rectangle (not a full capsule), small refined uppercase NEW/BETA typography, and one visual language for both labels across light and dark appearances without changing native row heights. The saturated blue NEW/yellow BETA combination was rejected. Palette, type, size, radius, localization, placement, Accent Color relationship and NEW dismissal/expiry rules remain undecided. No component or feature labels are authorized; resume design discussion separately.
 
 ### Competition Data Resilience
 
@@ -237,6 +256,25 @@ Use a stable skeleton with one contextual hero and very limited promotion of exc
 - **Rankings & Records:** existing focused views and filters/navigation are implemented and preserved, including Recent Records. Official WCA records and provisional live records are distinct. Deeper historical progression/charts require actual source/coverage review, not relabelling a current record list as a complete history.
 - **Public Stats:** discovery-oriented large-number facts can lead to full leaderboards/details. Candidates: most competitions, official solves, podiums, wins, countries, competitions by year, competition streaks, consecutive home-country competitions and longest competitive career. These are public WCA-derived stats, distinct from personal Data.
 
+### WCA Profile Depth And Presentation
+
+**Confirmed requirement:** Offer Cards and List presentations of the same WCA Profile information and actions. Share data loading and business logic, preserve navigation, and support localization, Dynamic Type, RTL and accessibility. Consider a native switch and saving the selection. Switch placement, card arrangement and transitions are open; conceptual mockups are not specifications.
+
+**Expansion candidates:** Audit the existing public profile, competitions and results before adding anything. Consider a personal competition map, Championship Podiums, medals, historical WR/CR/NR, PB progression, and deeper event, career and geographic participation. Identify what already exists and extend it rather than duplicating current data or routes. Historical rankings, championship podiums and derived career statistics need verified source coverage first.
+
+### Fellow Cubers And Competition Statistics
+
+These are desired profile statistics, inspired by CubingChina. They measure shared attendance, not personal encounters or friendships. Define a consistent attendance rule from authoritative data before deriving counts.
+
+- **Cubers Met:** Unique competitors who share at least one competition with the selected competitor. Explore NR/CR/WR rankings for this metric only if coverage and computation make them defensible.
+- **Fellow Cubers / Most Shared Competitions:** Rank competitors by shared count; show name, region, first and most recent shared competition and date, with links to WCA Profile. Consider viewing all shared competitions with a selected competitor, plus search, sorting, filtering and pagination.
+- **Seen Cubers:** Distribution of unique competitors who shared exactly one, two, three or more competitions.
+- **Visited Provinces / Visited Regions:** Competition counts by normalized subdivision and by country or region.
+
+**Exploratory additions:** New fellow competitors per competition; cumulative Cubers Met; fellow cubers by region; largest competition attended; most-visited city; competition calendar or heatmap; consecutive months with participation; event participation and official solve counts.
+
+**Gate before implementation:** Audit data sources and architecture. Do not assume WCA API endpoints return these statistics. Assess cross-competition aggregation, identity deduplication, coverage of historical datasets, geographic normalization, caching and whether server-side precomputation is warranted. This is not backend work authorization.
+
 ### Weekly And Community
 
 **Weekly (planned)** is CubeFlow-native participation/leaderboards under Explore, never mixed into the official WCA Competition list. It can launch the existing Timer with Weekly session/attempt/progress context, not become a permanent Timer layout mode. Use Apple-native capabilities where useful; backend-owned Weekly state remains separate from client execution.
@@ -265,9 +303,11 @@ One Reconstruction concept supports manual entry, video/memory analysis, recreat
 
 ### Current Local Behavior Must Remain Available
 
-**Implemented:** Head-to-Head and Side-by-Side are local two-person Timer experiences with continuous cumulative wins. A solve pair has its own ready/start/finish lifecycle, but there is no fixed match length, set format, or automatic match ending. Players can independently use touch, manual entry, a Smart Cube or a supported Bluetooth timer, with separate event and handicap settings. Side-by-Side means same-device landscape split-screen, not networking. See the [mixed-input Battle closeout](docs/performance-battle-sharing-nov03.md).
+**Implemented:** Head-to-Head and Side-by-Side are local two-person Timer experiences with continuous cumulative wins. A solve pair has its own ready/start/finish lifecycle, but there is no fixed match length, set format, or automatic match ending. Players independently choose touch, manual entry, a Smart Cube or a supported Bluetooth timer; the event and scramble are shared. Each finisher can prepare one round ahead, but neither can start that round until both complete the current one. Handicap remains per player. Side-by-Side means same-device landscape split-screen, not networking. See the [shared-round closeout](docs/wca-recovery-battle-nov16.md).
 
 "Free Play" is a useful future name for these semantics, not an instruction to rename current UI. Preserve this simple default when optionally adding richer rules.
+
+**Future Battle history:** Preserve the existing local flow while exploring an explicit match history and the opt-in save/share boundaries below. This is not automatic persistence of an opponent's results.
 
 ### Orthogonal Dimensions
 
