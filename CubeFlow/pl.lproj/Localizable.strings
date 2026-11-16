@@ -305,9 +305,9 @@
 "settings.app_icon_gray" = "Szary";
 "settings.app_icon_light_gray" = "Jasnoszary";
 "settings.section.timer" = "Pomiar czasu";
-"settings.wca_title" = "WCA";
 "settings.keep_screen_awake" = "Utrzymuj ekran włączony";
 "settings.keep_screen_awake_description" = "Zapobiega automatycznemu blokowaniu ekranu podczas korzystania ze stopera lub trybu pojedynku.";
+"settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Nie zalogowano";
 "settings.wca_connected" = "Połączono";
 "settings.wca_not_connected" = "Brak połączenia";

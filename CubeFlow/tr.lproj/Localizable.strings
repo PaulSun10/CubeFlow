@@ -305,9 +305,9 @@
 "settings.app_icon_gray" = "Gri";
 "settings.app_icon_light_gray" = "Açık Gri";
 "settings.section.timer" = "Süre Ölçümü";
-"settings.wca_title" = "WCA";
 "settings.keep_screen_awake" = "Ekranı Açık Tut";
 "settings.keep_screen_awake_description" = "Zamanlayıcı veya düello modunu kullanırken ekranın otomatik olarak kilitlenmesini önler.";
+"settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Oturum açılmadı";
 "settings.wca_connected" = "Bağlandı";
 "settings.wca_not_connected" = "Bağlı Değil";

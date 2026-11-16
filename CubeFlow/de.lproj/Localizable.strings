@@ -305,9 +305,9 @@
 "settings.app_icon_gray" = "Grau";
 "settings.app_icon_light_gray" = "Hellgrau";
 "settings.section.timer" = "Zeitmessung";
-"settings.wca_title" = "WCA";
 "settings.keep_screen_awake" = "Bildschirm aktiv halten";
 "settings.keep_screen_awake_description" = "Verhindert, dass der Bildschirm bei der Nutzung von Timer oder Duell automatisch gesperrt wird.";
+"settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Nicht angemeldet";
 "settings.wca_connected" = "Verbunden";
 "settings.wca_not_connected" = "Nicht verbunden";

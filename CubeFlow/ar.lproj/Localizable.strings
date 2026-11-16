@@ -305,9 +305,9 @@
 "settings.app_icon_gray" = "رمادي";
 "settings.app_icon_light_gray" = "رمادي فاتح";
 "settings.section.timer" = "التوقيت";
-"settings.wca_title" = "WCA";
 "settings.keep_screen_awake" = "إبقاء الشاشة نشطة";
 "settings.keep_screen_awake_description" = "منع قفل الشاشة تلقائيًا أثناء استخدام المؤقت أو التحدي.";
+"settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "لم يتم تسجيل الدخول";
 "settings.wca_connected" = "متصل";
 "settings.wca_not_connected" = "غير متصل";

@@ -305,9 +305,9 @@
 "settings.app_icon_gray" = "Gris";
 "settings.app_icon_light_gray" = "Gris claro";
 "settings.section.timer" = "Cronometraje";
-"settings.wca_title" = "WCA";
 "settings.keep_screen_awake" = "Mantener la pantalla activa";
 "settings.keep_screen_awake_description" = "Evita que la pantalla se bloquee automáticamente al usar el cronómetro o el modo de batalla.";
+"settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Sin sesión iniciada";
 "settings.wca_connected" = "Conectado";
 "settings.wca_not_connected" = "No conectado";

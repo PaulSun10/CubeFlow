@@ -305,9 +305,9 @@
 "settings.app_icon_gray" = "धूसर";
 "settings.app_icon_light_gray" = "हल्का भूरा";
 "settings.section.timer" = "समय मापन";
-"settings.wca_title" = "WCA";
 "settings.keep_screen_awake" = "स्क्रीन चालू रखें";
 "settings.keep_screen_awake_description" = "टाइमर या मुकाबले का उपयोग करते समय स्क्रीन को अपने आप लॉक होने से रोकें।";
+"settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "साइन इन नहीं है";
 "settings.wca_connected" = "जुड़ा हुआ";
 "settings.wca_not_connected" = "कनेक्टेड नहीं";

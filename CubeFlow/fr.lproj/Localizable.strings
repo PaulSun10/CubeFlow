@@ -305,9 +305,9 @@
 "settings.app_icon_gray" = "Gris";
 "settings.app_icon_light_gray" = "Gris clair";
 "settings.section.timer" = "Chronométrage";
-"settings.wca_title" = "WCA";
 "settings.keep_screen_awake" = "Garder l’écran actif";
 "settings.keep_screen_awake_description" = "Empêche le verrouillage automatique de l’écran pendant l’utilisation du chronomètre ou du mode duel.";
+"settings.wca_title" = "WCA";
 "settings.wca_signed_out" = "Non connecté";
 "settings.wca_connected" = "Connecté";
 "settings.wca_not_connected" = "Non connecté";
