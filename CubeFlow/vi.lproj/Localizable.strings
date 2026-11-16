@@ -237,6 +237,7 @@
 "settings.detail" = "Chi tiết";
 "settings.language_toggle" = "Tiếng Trung";
 "settings.language_label" = "Ngôn ngữ";
+"settings.language_system" = "Mặc định của hệ thống";
 "settings.language_en" = "Tiếng Anh";
 "settings.language_zh" = "Tiếng Trung";
 "settings.language_zh_hant" = "Tiếng Trung phồn thể";

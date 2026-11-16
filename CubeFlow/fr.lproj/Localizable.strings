@@ -237,6 +237,7 @@
 "settings.detail" = "Détails";
 "settings.language_toggle" = "Chinois";
 "settings.language_label" = "Langue";
+"settings.language_system" = "Langue du système";
 "settings.language_en" = "Anglais";
 "settings.language_zh" = "Chinois simplifié";
 "settings.language_zh_hant" = "Chinois traditionnel";

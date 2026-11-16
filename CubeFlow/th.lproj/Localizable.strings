@@ -237,6 +237,7 @@
 "settings.detail" = "รายละเอียด";
 "settings.language_toggle" = "จีน";
 "settings.language_label" = "ภาษา";
+"settings.language_system" = "ค่าเริ่มต้นของระบบ";
 "settings.language_en" = "ภาษาอังกฤษ";
 "settings.language_zh" = "ภาษาจีนตัวย่อ";
 "settings.language_zh_hant" = "ภาษาจีนตัวเต็ม";

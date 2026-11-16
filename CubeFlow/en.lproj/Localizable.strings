@@ -2236,7 +2236,7 @@
 
 "smart_cube.manage.disconnected" = "Not connected";
 
-"settings.language_system" = "Follow System";
+"settings.language_system" = "System Default";
 "wca.region.multiple" = "Multiple Countries";
 "wca.region.Asia" = "Asia";
 "wca.region.Europe" = "Europe";

@@ -118,6 +118,7 @@ struct SettingsTabView: View {
     private var solves: FetchedResults<Solve>
 
     @AppStorage("appLanguage") private var appLanguage: String = "en"
+    @State private var selectedLanguageID = appLanguageSelectionID()
     @AppStorage("selectedSessionID") private var selectedSessionID: String = ""
     @AppStorage("timerBackgroundAppearanceData") private var timerBackgroundAppearanceData: Data?
     @AppStorage("competitionsBackgroundAppearanceData") private var competitionsBackgroundAppearanceData: Data?
@@ -219,11 +220,11 @@ struct SettingsTabView: View {
     }
 
     private var currentLanguageOption: AppLanguageOption {
-        if followsSystemAppLanguage() {
+        if selectedLanguageID == "system" {
             return AppLanguageOption(id: "system", displayNameKey: "settings.language_system",
                 nativeName: appLocalizedString("settings.language_system", languageCode: appLanguage))
         }
-        return appLanguageOptions().first(where: { $0.id == appLanguage }) ?? appLanguageOptions()[0]
+        return appLanguageOptions().first(where: { $0.id == selectedLanguageID }) ?? appLanguageOptions()[0]
     }
 
     private var selectedSession: Session? {
@@ -739,14 +740,15 @@ private extension SettingsTabView {
 
             Menu {
                 Button {
-                    UserDefaults.standard.removeObject(forKey: "appLanguage")
-                    registerSystemAppLanguage()
+                    selectAppLanguage("system")
+                    selectedLanguageID = "system"
                 } label: {
-                    Text("settings.language_system")
+                    Text(appLocalizedString("settings.language_system", languageCode: appLanguage))
                 }
                 ForEach(appLanguageOptions()) { language in
                     Button {
-                        appLanguage = language.id
+                        selectAppLanguage(language.id)
+                        selectedLanguageID = language.id
                     } label: {
                         Text(verbatim: language.nativeName)
                         Text(appLocalizedString(language.displayNameKey, languageCode: appLanguage))
@@ -763,6 +765,9 @@ private extension SettingsTabView {
             }
             .tint(.primary)
         }
+        .onAppear { selectedLanguageID = appLanguageSelectionID() }
+        .onChange(of: isActive) { if $0 { selectedLanguageID = appLanguageSelectionID() } }
+        .onChange(of: appLanguage) { _ in selectedLanguageID = appLanguageSelectionID() }
     }
 
     var appIconListRow: some View {

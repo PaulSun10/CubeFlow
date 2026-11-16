@@ -237,6 +237,7 @@
 "settings.detail" = "詳細";
 "settings.language_toggle" = "中国語";
 "settings.language_label" = "言語";
+"settings.language_system" = "システムの言語";
 "settings.language_en" = "English";
 "settings.language_zh" = "简体中文";
 "settings.language_zh_hant" = "繁體中文";

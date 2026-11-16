@@ -237,6 +237,7 @@
 "settings.detail" = "상세 정보";
 "settings.language_toggle" = "중국어";
 "settings.language_label" = "언어";
+"settings.language_system" = "시스템 기본값";
 "settings.language_en" = "영어";
 "settings.language_zh" = "중국어(간체)";
 "settings.language_zh_hant" = "중국어(번체)";

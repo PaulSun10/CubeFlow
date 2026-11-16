@@ -237,6 +237,7 @@
 "settings.detail" = "Detail";
 "settings.language_toggle" = "Bahasa Mandarin";
 "settings.language_label" = "Bahasa";
+"settings.language_system" = "Bawaan Sistem";
 "settings.language_en" = "Inggris";
 "settings.language_zh" = "Bahasa Mandarin";
 "settings.language_zh_hant" = "Tionghoa Tradisional";

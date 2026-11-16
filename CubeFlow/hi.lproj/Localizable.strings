@@ -237,6 +237,7 @@
 "settings.detail" = "विवरण";
 "settings.language_toggle" = "चीनी";
 "settings.language_label" = "भाषा";
+"settings.language_system" = "सिस्टम की डिफ़ॉल्ट भाषा";
 "settings.language_en" = "अंग्रेज़ी";
 "settings.language_zh" = "सरल चीनी";
 "settings.language_zh_hant" = "पारंपरिक चीनी";

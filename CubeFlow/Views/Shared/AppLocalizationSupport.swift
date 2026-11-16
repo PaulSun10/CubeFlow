@@ -96,20 +96,40 @@ nonisolated func currentAppLanguageCode() -> String {
     return stored.isEmpty ? systemAppLanguageCode() : stored
 }
 
-// Absence of a persisted override means Follow System. Registering a fallback
-// updates existing AppStorage readers without persisting a second language key.
-nonisolated func systemAppLanguageCode(preferred: [String] = Locale.preferredLanguages) -> String {
-    Bundle.preferredLocalizations(from: appLanguageOptions().map(\.id), forPreferences: preferred).first ?? "en"
+nonisolated func systemAppLanguageCode(preferred: [String]? = nil, bundlePreferred: [String]? = nil) -> String {
+    let supported = appLanguageOptions().map(\.id)
+    // Unlike Locale.preferredLanguages alone, the main bundle reflects the
+    // effective app language, including iOS's native per-app override.
+    let effective = bundlePreferred ?? (preferred == nil ? Bundle.main.preferredLocalizations : [])
+    if let localization = effective.first(where: { supported.contains($0) }) { return localization }
+    return Bundle.preferredLocalizations(from: supported, forPreferences: preferred ?? Locale.preferredLanguages).first ?? "en"
 }
 
+// The registration domain supplies the effective fallback to existing AppStorage
+// readers. Only an in-app override belongs in the persistent domain.
 nonisolated func registerSystemAppLanguage(in defaults: UserDefaults = .standard,
-                                         preferred: [String] = Locale.preferredLanguages) {
-    defaults.register(defaults: ["appLanguage": systemAppLanguageCode(preferred: preferred)])
+                                         preferred: [String]? = nil, bundlePreferred: [String]? = nil) {
+    defaults.register(defaults: ["appLanguage": systemAppLanguageCode(preferred: preferred, bundlePreferred: bundlePreferred)])
 }
 
 nonisolated func followsSystemAppLanguage(in defaults: UserDefaults = .standard,
                                          domain: String = Bundle.main.bundleIdentifier ?? "CubeFlow") -> Bool {
-    defaults.persistentDomain(forName: domain)?["appLanguage"] == nil
+    appLanguageSelectionID(in: defaults, domain: domain) == "system"
+}
+
+nonisolated func appLanguageSelectionID(in defaults: UserDefaults = .standard,
+                                       domain: String = Bundle.main.bundleIdentifier ?? "CubeFlow") -> String {
+    defaults.persistentDomain(forName: domain)?["appLanguage"] as? String ?? "system"
+}
+
+nonisolated func selectAppLanguage(_ id: String, in defaults: UserDefaults = .standard,
+                                  preferred: [String]? = nil, bundlePreferred: [String]? = nil) {
+    if id == "system" {
+        registerSystemAppLanguage(in: defaults, preferred: preferred, bundlePreferred: bundlePreferred)
+        defaults.removeObject(forKey: "appLanguage")
+    } else if appLanguageOptions().contains(where: { $0.id == id }) {
+        defaults.set(id, forKey: "appLanguage")
+    }
 }
 
 nonisolated func appLanguageDisplayKey(for languageCode: String) -> String {
