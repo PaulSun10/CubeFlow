@@ -700,7 +700,8 @@ private extension SettingsTabView {
                             ProgressView()
                                 .controlSize(.small)
                         }
-                        Text("settings.wca_refresh_profile")
+                        Text(wcaAuth.brokerPresentation?.requiresReauthentication == true
+                             ? LocalizedStringKey("settings.wca_sign_in") : LocalizedStringKey("settings.wca_refresh_profile"))
                     }
                 }
                 .disabled(wcaAuth.isSigningIn)

@@ -27,6 +27,9 @@ final class WCAAuthManager: NSObject, ObservableObject {
 
     func signIn() async throws { try await requiredBroker().signIn() }
     func refreshProfile() async throws { try await requiredBroker().refreshProfile() }
+    func recoverBrokerSessionIfNeeded() async throws {
+        try await requiredBroker().coordinator.recoverIfNeeded()
+    }
     func authorizedRequest(for url: URL) async throws -> URLRequest {
         try await requiredBroker().authorizedRequest(for: url)
     }

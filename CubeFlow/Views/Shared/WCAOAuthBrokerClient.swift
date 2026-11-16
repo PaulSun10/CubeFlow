@@ -51,7 +51,7 @@ nonisolated struct WCAOAuthBrokerClient: Sendable {
     }
 
     nonisolated enum TransportFailure: Equatable, Sendable {
-        case timedOut, connectionFailure, cancelled, unexpected
+        case timedOut, offline, connectionFailure, cancelled, unexpected
         case urlError(Int)
     }
 
@@ -265,7 +265,8 @@ nonisolated struct WCAOAuthBrokerClient: Sendable {
             switch urlError.code {
             case .cancelled: throw Failure.transport(.cancelled)
             case .timedOut: throw Failure.transport(.timedOut)
-            case .cannotFindHost, .cannotConnectToHost, .notConnectedToInternet, .networkConnectionLost, .dnsLookupFailed:
+            case .notConnectedToInternet: throw Failure.transport(.offline)
+            case .cannotFindHost, .cannotConnectToHost, .networkConnectionLost, .dnsLookupFailed:
                 throw Failure.transport(.connectionFailure)
             default: throw Failure.transport(.urlError(urlError.code.rawValue))
             }

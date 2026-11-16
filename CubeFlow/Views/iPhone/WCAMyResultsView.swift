@@ -1494,16 +1494,31 @@ final class WCAMyCompetitionsViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     private var brokerSubscription: AnyCancellable?
     private var displayedBrokerRevision: UInt64?
+    private var observedPendingRecovery = false
+    @Published private(set) var recoveryGeneration = 0
+    private let auth: WCAAuthManager
+    private let recover: @MainActor () async throws -> Void
     private let fetch: @MainActor () async throws -> WCAMyCompetitionsPage
-    init(fetch: @escaping @MainActor () async throws -> WCAMyCompetitionsPage = {
-        try await WCAMyCompetitionsService.fetchMyCompetitions(authManager: WCAAuthManager.shared)
-    }) {
-        self.fetch = fetch
-        let owner = WCAAuthManager.shared
+    init(auth: WCAAuthManager? = nil, fetch: (@MainActor () async throws -> WCAMyCompetitionsPage)? = nil) {
+        let owner = auth ?? WCAAuthManager.shared
+        self.auth = owner
+        self.fetch = fetch ?? { try await WCAMyCompetitionsService.fetchMyCompetitions(authManager: owner) }
+        if fetch == nil { recover = { try await owner.recoverBrokerSessionIfNeeded() } }
+        else { recover = {} }
         displayedBrokerRevision = owner.brokerPublicationRevision
-        brokerSubscription = owner.$brokerPresentation.sink { [weak self, weak owner] _ in
-            guard let self, let owner, self.displayedBrokerRevision != owner.brokerPublicationRevision else { return }
+        brokerSubscription = owner.$brokerPresentation.sink { [weak self, weak owner] status in
+            guard let self, let owner else { return }
+            if self.displayedBrokerRevision == owner.brokerPublicationRevision {
+                if status?.refresh == .recoveryPending && status?.requiresReauthentication == false {
+                    self.observedPendingRecovery = true
+                } else if status?.refresh == .idle && self.observedPendingRecovery {
+                    self.observedPendingRecovery = false
+                    if self.errorMessage != nil && !self.isLoading { self.recoveryGeneration += 1 }
+                }
+                return
+            }
             self.displayedBrokerRevision = owner.brokerPublicationRevision
+            self.observedPendingRecovery = false
             self.pageRequest = UUID()
             self.page = nil
             self.localizedNames = [:]
@@ -1521,11 +1536,11 @@ final class WCAMyCompetitionsViewModel: ObservableObject {
         if participationOwner != canonicalID { participatedCompetitionIDs = [] }
         participationOwner = canonicalID
         guard let wcaID = canonicalID else { return }
-        let revision = WCAAuthManager.shared.brokerPublicationRevision
+        let revision = auth.brokerPublicationRevision
         do {
             let results = try await profiles.page(wcaID, language: "en", force: force)
             guard participationRequest == request, !Task.isCancelled,
-                  WCAAuthManager.shared.brokerPublicationRevision == revision else { return }
+                  auth.brokerPublicationRevision == revision else { return }
             participatedCompetitionIDs = WCAOfficialParticipation.competitionIDs(page: results, wcaID: wcaID)
         } catch {
             // No authoritative evidence means no checkmark, never registration/date inference.
@@ -1549,17 +1564,20 @@ final class WCAMyCompetitionsViewModel: ObservableObject {
         }
         defer { if pageRequest == request { isLoading = false } }
 
-        let brokerRevision = WCAAuthManager.shared.brokerPublicationRevision
+        let brokerRevision = auth.brokerPublicationRevision
         let language = currentAppLanguageCode()
         func ownsPublication() -> Bool {
             pageRequest == request && !Task.isCancelled
-                && WCAAuthManager.shared.brokerPublicationRevision == brokerRevision
+                && auth.brokerPublicationRevision == brokerRevision
                 && currentAppLanguageCode() == language
         }
         do {
             let fetched: WCAMyCompetitionsPage
             if let cachedPage { fetched = cachedPage }
-            else { fetched = try await (fetchPage ?? fetch)() }
+            else {
+                if forceRefresh && fetchPage == nil { try await recover() }
+                fetched = try await (fetchPage ?? fetch)()
+            }
             guard ownsPublication() else { return }
             let names = await resolveNames(Self.nameReferences(fetched), language)
             guard ownsPublication() else { return }
@@ -1569,7 +1587,7 @@ final class WCAMyCompetitionsViewModel: ObservableObject {
         } catch {
             guard ownsPublication() else { return }
             if brokerRevision != nil {
-                let status = WCAAuthManager.shared.brokerPresentation
+                let status = auth.brokerPresentation
                 if status?.phase == .storageBlocked || status?.phase == .needsLogin || status?.refresh == .recoveryPending || status?.refresh == .uncertain {
                     errorMessage = status?.message
                 } else {
@@ -1598,6 +1616,7 @@ struct WCAMyCompetitionsView: View {
     @AppStorage("requestedIPhoneTab") private var requestedIPhoneTab: String = ""
     @Environment(\.openURL) private var openURL
     @StateObject private var viewModel: WCAMyCompetitionsViewModel
+    @ObservedObject private var auth = WCAAuthManager.shared
     @State private var isUpcomingExpanded = true
     @State private var isPastExpanded = false
 
@@ -1628,7 +1647,7 @@ struct WCAMyCompetitionsView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(Text(appLocalizedString("settings.wca_my_competitions", languageCode: appLanguage)))
         .navigationBarTitleDisplayMode(.large)
-        .task(id: "\(profile?.wcaId ?? "")|\(appLanguage)") {
+        .task(id: "\(profile?.wcaId ?? "")|\(appLanguage)|\(viewModel.recoveryGeneration)") {
             await viewModel.load()
             guard !Task.isCancelled else { return }
             await viewModel.loadParticipation(wcaID: profile?.wcaId)
@@ -1880,11 +1899,17 @@ struct WCAMyCompetitionsView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            Button("wca.results_retry") {
+            Button(auth.brokerPresentation?.requiresReauthentication == true
+                   ? LocalizedStringKey("settings.wca_sign_in") : LocalizedStringKey("wca.results_retry")) {
                 Task {
-                    await viewModel.load(forceRefresh: true)
+                    if auth.brokerPresentation?.requiresReauthentication == true {
+                        try? await auth.performBrokerAccountAction()
+                    } else {
+                        await viewModel.load(forceRefresh: true)
+                    }
                 }
             }
+            .disabled(auth.isSigningIn)
             .buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity)

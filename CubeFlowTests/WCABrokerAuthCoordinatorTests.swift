@@ -317,6 +317,27 @@ final class WCABrokerAuthCoordinatorTests: XCTestCase {
         try await second.restore()
         await expect(.recoveryRequired) { try await second.refresh() }
         XCTAssertEqual(h.client.refreshKeys.count, 2)
+        XCTAssertTrue(second.requiresReauthentication)
+    }
+
+    func testOfflineLeavesOneSendForRecoveryAndCoalescesWithAuthenticatedRequest() async throws {
+        let h = try await restored()
+        h.client.refreshBody = { _, _ in throw WCAOAuthBrokerClient.Failure.transport(.offline) }
+        await expect(.recoveryRequired) { try await h.owner.refresh() }
+        XCTAssertEqual(h.client.refreshKeys.count, 1)
+        XCTAssertFalse(h.owner.requiresReauthentication)
+        let gate = CoordinatorGate<WCAOAuthBrokerClient.RefreshResponse>()
+        h.client.refreshBody = { _, _ in try await gate.wait() }
+        let manual = Task { try await h.owner.recoverIfNeeded() }
+        let automatic = Task { try await h.owner.recoverIfNeeded() }
+        try await until { gate.waiting }
+        gate.succeed(try CoordinatorFixture.refresh())
+        _ = try await (manual.value, automatic.value)
+        XCTAssertEqual(h.client.refreshKeys.count, 2)
+        XCTAssertEqual(Set(h.client.refreshKeys).count, 1)
+        XCTAssertEqual(h.owner.refreshStatus, .idle)
+        let credential = try await h.owner.accessCredential()
+        XCTAssertEqual(credential.generation, try h.store.saved()?.tokenGeneration)
     }
 
     func testLegacyV2PendingRecordWithoutBudgetFailsClosedOnRestart() async throws {
@@ -392,6 +413,7 @@ final class WCABrokerAuthCoordinatorTests: XCTestCase {
         XCTAssertEqual(h.client.refreshKeys.count, 1)
         XCTAssertEqual(h.owner.refreshStatus, .uncertain)
         XCTAssertEqual(try h.store.saved()?.pendingRefresh?.recoveryState, .uncertain)
+        XCTAssertTrue(h.owner.requiresReauthentication)
     }
 
     func testGeneric502And503PreserveSessionWithBoundedRecoveryNotConfirmedUncertain() async throws {
@@ -704,6 +726,11 @@ final class WCABrokerAuthCoordinatorTests: XCTestCase {
         await expect(.staleOperation) { try await h.owner.refresh() }
         XCTAssertTrue(try h.store.saved()?.sessionID == CoordinatorFixture.id)
         XCTAssertEqual(try h.store.saved()?.tokenGeneration, 1)
+        XCTAssertEqual(h.owner.refreshStatus, .recoveryPending)
+        XCTAssertFalse(h.owner.requiresReauthentication)
+        await expect(.staleOperation) { try await h.owner.recoverIfNeeded() }
+        XCTAssertTrue(h.owner.requiresReauthentication)
+        XCTAssertEqual(Set(h.client.refreshKeys).count, 1)
     }
 
     func testSafeDescriptionsAndErrorsNeverExposeCredentialsOrURLs() async throws {

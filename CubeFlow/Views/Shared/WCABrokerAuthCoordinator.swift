@@ -94,6 +94,16 @@ final class WCABrokerAuthCoordinator: ObservableObject, WCABrokerCoordinatorReda
     @Published private(set) var lastFailure: Failure?
     @Published private(set) var isLoadingProfile = false
     var hasPersistedSession: Bool { session != nil }
+    var requiresReauthentication: Bool {
+        guard let session else { return false }
+        return !valid(session.brokerSessionExpiresAt) || session.pendingRefresh?.recoveryState == .uncertain
+            || (session.pendingRefresh.map { $0.recoveryState == .recoveryPending && $0.dispatchCount >= 2 } ?? false)
+    }
+    var automaticRetryDeadline: TimeInterval? {
+        guard state != .storageBlocked, !requiresReauthentication,
+              let pending = session?.pendingRefresh, pending.recoveryState == .recoveryPending else { return nil }
+        return pending.retryNotBefore.map(Double.init)
+    }
     /// Cache lookup is permitted only after session restoration/creation, never from a defaults-only identity.
     var profileCacheSessionID: String? {
         guard let session, valid(session.brokerSessionExpiresAt) else { return nil }
@@ -251,8 +261,18 @@ final class WCABrokerAuthCoordinator: ObservableObject, WCABrokerCoordinatorReda
     }
 
     func retryProfile() async throws {
+        guard state == .ready || state == .profilePending || state == .needsLogin else { throw Failure.busy }
         guard let session else { throw Failure.noSession }
         try await acquireProfile(revision: sessionRevision, sessionID: session.sessionID)
+    }
+
+    /// User, connectivity and foreground recovery share the persisted operation and its budget.
+    @discardableResult func recoverIfNeeded() async throws -> Bool {
+        guard let session, state == .ready || state == .profilePending || state == .needsLogin else { return false }
+        guard !requiresReauthentication else { throw Failure.recoveryRequired }
+        guard session.pendingRefresh != nil || !valid(session.wcaAccessTokenExpiresAt) else { return false }
+        try await refresh()
+        return true
     }
 
     func refresh() async throws {
@@ -378,7 +398,11 @@ final class WCABrokerAuthCoordinator: ObservableObject, WCABrokerCoordinatorReda
             }
             try owns(revision, sessionID: sessionID)
             guard let latest = session, latest.pendingRefresh?.id == pending.id,
-                  latest.pendingRefresh?.recoveryState != .uncertain, response.sessionID == sessionID else {
+                  latest.pendingRefresh?.recoveryState != .uncertain else {
+                throw Failure.staleOperation
+            }
+            guard response.sessionID == sessionID else {
+                try await retainRecovery(latest, pending: pending, revision: revision)
                 throw Failure.staleOperation
             }
             if response.tokenGeneration < latest.tokenGeneration {
@@ -437,6 +461,7 @@ final class WCABrokerAuthCoordinator: ObservableObject, WCABrokerCoordinatorReda
 
     private func acquireProfile(revision: UInt64, sessionID: String) async throws {
         try owns(revision, sessionID: sessionID)
+        guard !requiresReauthentication else { throw Failure.recoveryRequired }
         guard let profile else { profileReady = true; presentSession(); return }
         if let flight = profileFlight, flight.revision == revision { return try await flight.task.value }
         let task = Task { @MainActor [weak self] in
@@ -612,7 +637,7 @@ final class WCABrokerAuthCoordinator: ObservableObject, WCABrokerCoordinatorReda
         case .broker(401, _, _, _): return (.sessionInvalid, true, true, false, nil)
         case .broker(let status, _, _, let retry), .http(let status, let retry):
             return (.recoveryRequired, false, false, status == 429 ? retry != nil : [502, 503].contains(status), retry)
-        case .transport(.cancelled): return (.recoveryRequired, false, false, false, nil)
+        case .transport(.offline), .transport(.cancelled): return (.recoveryRequired, false, false, false, nil)
         case .transport, .malformedResponse, .redirectRejected: return (.recoveryRequired, false, false, true, nil)
         case .invalidRequest: return (.recoveryRequired, false, false, false, nil)
         }

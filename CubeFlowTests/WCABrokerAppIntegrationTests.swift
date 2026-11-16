@@ -327,8 +327,58 @@ import XCTest
         await h.manager.restoreBrokerSessionIfNeeded()
         _ = try await h.manager.authenticatedData(for: AppFixture.mine)
         XCTAssertEqual(h.manager.brokerPresentation?.refresh, .uncertain)
+        XCTAssertTrue(h.manager.brokerPresentation?.requiresReauthentication == true)
         XCTAssertEqual(h.client.refreshCount, 0)
         XCTAssertEqual(h.browser.starts, 0)
+    }
+
+    func testManualProfileRefreshRecoversPendingOperationBeforeFetchingProfile() async throws {
+        let h = AppHarness()
+        h.store.record = try AppFixture.session(recovery: .recoveryPending)
+        let key = try XCTUnwrap(h.store.record?.pendingRefresh?.id)
+        await h.manager.restoreBrokerSessionIfNeeded()
+        try await h.manager.performBrokerAccountAction()
+        XCTAssertEqual(h.client.refreshKeys, [key])
+        XCTAssertEqual(h.manager.brokerPresentation?.refresh, .idle)
+        XCTAssertEqual(h.manager.profile?.name, "Mock Cuber")
+        XCTAssertEqual(h.browser.starts, 0)
+    }
+
+    #if os(iOS)
+    func testLifecycleRecoveryMakesFailedMyCompetitionsReloadableWithoutNewLogin() async throws {
+        let h = AppHarness()
+        try await login(h)
+        let model = WCAMyCompetitionsViewModel(auth: h.manager)
+        h.http.rejectOld = true
+        h.client.refreshFailure = .transport(.offline)
+        await model.load(resolveNames: { _, _ in [:] })
+        XCTAssertNil(model.page)
+        XCTAssertTrue(model.errorMessage?.contains("Recovery") == true)
+        let revision = h.manager.brokerPublicationRevision
+        h.client.refreshFailure = nil
+        await h.integration.recoverFromLifecycleEvent()
+        XCTAssertEqual(model.recoveryGeneration, 1, "Mounted view reloads when the failed request becomes recoverable")
+        XCTAssertEqual(h.manager.brokerPublicationRevision, revision)
+        await model.load(resolveNames: { _, _ in [:] })
+        XCTAssertNotNil(model.page)
+        XCTAssertNil(model.errorMessage)
+        XCTAssertEqual(h.client.refreshCount, 2)
+        XCTAssertEqual(Set(h.client.refreshKeys).count, 1)
+        XCTAssertEqual(h.browser.starts, 1)
+    }
+    #endif
+
+    func testExhaustedRecoveryOffersReauthenticationWithoutAnotherDispatch() async throws {
+        let h = AppHarness()
+        try await login(h)
+        h.client.refreshFailure = .http(status: 503, retryAfterSeconds: nil)
+        await expectFailure { try await h.integration.coordinator.refresh() }
+        XCTAssertTrue(h.manager.brokerPresentation?.requiresReauthentication == true)
+        XCTAssertEqual(h.manager.brokerPresentation?.message, "Please sign in again to continue.")
+        XCTAssertEqual(h.manager.profile?.name, "Mock Cuber")
+        await h.integration.recoverFromLifecycleEvent()
+        XCTAssertEqual(h.client.refreshCount, 2)
+        XCTAssertEqual(h.browser.starts, 1)
     }
 
     func testUnconfiguredMockFailsClosedWithoutAnotherProvider() async throws {
@@ -741,6 +791,8 @@ nonisolated private enum AppFixture {
     var completeCount = 0, refreshCount = 0, logoutCount = 0
     var sessionID = AppFixture.id
     var refreshGate: AppGate?
+    var refreshKeys: [UUID] = []
+    var refreshFailure: WCAOAuthBrokerClient.Failure?
     @MainActor func start(_ request: WCAOAuthBrokerClient.StartRequest) async throws -> WCAOAuthBrokerClient.StartResponse {
         starts.append(request)
         var c = URLComponents(string: "https://www.worldcubeassociation.org/oauth/authorize")!
@@ -754,7 +806,9 @@ nonisolated private enum AppFixture {
     }
     @MainActor func refresh(sessionToken: WCAOAuthBrokerClient.BrokerSessionToken, idempotencyKey: UUID) async throws -> WCAOAuthBrokerClient.RefreshResponse {
         refreshCount += 1
+        refreshKeys.append(idempotencyKey)
         try await refreshGate?.wait()
+        if let refreshFailure { throw refreshFailure }
         return try AppFixture.decode(WCAOAuthBrokerClient.RefreshResponse.self, ["session_id": sessionID,
             "wca_access_token": "fixture-new-access", "wca_access_token_expires_at": 12_000, "server_time": 10_000, "token_generation": 2])
     }
@@ -803,7 +857,14 @@ nonisolated private enum AppFixture {
         if isProfile { try await profileGate?.wait() }
         if !isProfile && request.value(forHTTPHeaderField: "Authorization") == "Bearer fixture-access" { try await oldRequestGate?.wait() }
         let status = (isProfile && failProfile) ? 503 : (always401 || (rejectOld && request.value(forHTTPHeaderField: "Authorization") == "Bearer fixture-access") ? 401 : 200)
-        let data = try JSONSerialization.data(withJSONObject: isProfile ? ["me": ["name": name, "wca_id": "2000TEST01"]] : ["competitions": []])
+        let body: [String: Any]
+        if isProfile { body = ["me": ["name": name, "wca_id": "2000TEST01"]] }
+        else {
+            let empty: [String] = []
+            body = ["future_competitions": empty, "past_competitions": empty, "bookmarked_competitions": empty,
+                    "registrations_by_competition": [String: String]()]
+        }
+        let data = try JSONSerialization.data(withJSONObject: body)
         return (data, HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
     }
 }

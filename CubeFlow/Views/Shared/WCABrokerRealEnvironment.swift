@@ -21,7 +21,7 @@ import Foundation
             store: WCABrokerSessionStore(keychain: WCABrokerSystemKeychain()), browser: browser,
             clock: WCABrokerCoordinatorSystemClock(), attempt: { try WCABrokerOAuthAttempt() },
             request: { try await api.data(for: $0) }, diagnostics: diagnostics,
-            restoreProfile: true, profileCache: WCABrokerProfileCache(defaults: .standard))
+            restoreProfile: true, profileCache: WCABrokerProfileCache(defaults: .standard), observeRecoveryEvents: true)
     }
     static func makeIntegration() -> WCABrokerAppIntegration {
         let values = dependencies()

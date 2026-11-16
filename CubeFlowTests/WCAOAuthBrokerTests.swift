@@ -340,7 +340,7 @@ final class WCAOAuthBrokerTests: XCTestCase {
     func testTransportFailuresAreDistinguishedAndSanitized() async throws {
         let failures: [(Error, Client.TransportFailure)] = [
             (URLError(.timedOut, userInfo: [NSURLErrorFailingURLStringErrorKey: "https://fixture.invalid/?ticket=sensitive"]), .timedOut),
-            (URLError(.cannotConnectToHost), .connectionFailure), (URLError(.notConnectedToInternet), .connectionFailure),
+            (URLError(.cannotConnectToHost), .connectionFailure), (URLError(.notConnectedToInternet), .offline),
             (URLError(.cancelled), .cancelled), (CancellationError(), .cancelled),
             (URLError(.secureConnectionFailed), .urlError(URLError.Code.secureConnectionFailed.rawValue)),
             (NSError(domain: "fixture-sensitive-domain", code: 1, userInfo: [NSLocalizedDescriptionKey: "fixture-sensitive-message"]), .unexpected)

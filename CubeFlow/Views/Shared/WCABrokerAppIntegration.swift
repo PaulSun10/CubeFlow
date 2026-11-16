@@ -14,6 +14,7 @@ nonisolated enum WCAAuthenticationConfiguration {
 }
 
 import Combine
+import Network
 #if canImport(UIKit)
 import AuthenticationServices
 import UIKit
@@ -30,6 +31,7 @@ import UIKit
     var diagnostics: (@MainActor (WCABrokerAuthCoordinator.DiagnosticEvent) -> Void)? = nil
     var restoreProfile = false
     var profileCache: WCABrokerProfileCache? = nil
+    var observeRecoveryEvents = false
 }
 #if DEBUG
 typealias WCABrokerMockDependencies = WCABrokerAppDependencies
@@ -72,12 +74,14 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
     let refresh: WCABrokerAuthCoordinator.RefreshStatus
     let hasSession: Bool
     var loadingProfile = false
+    var requiresReauthentication = false
 
     var busy: Bool {
         loadingProfile || [.restoring, .starting, .authorizing, .completing, .persistingCredentials].contains(phase)
     }
     /// No redundant signed-in row, and no failure notice while initial acquisition is pending.
     var notice: String? {
+        if requiresReauthentication && phase != .storageBlocked && !busy { return message }
         if (phase == .ready && refresh == .idle) || loadingProfile || phase == .restoring { return nil }
         return message
     }
@@ -87,8 +91,10 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
     var showsProfileLoading: Bool { loadingProfile || phase == .restoring }
     var message: String {
         if phase == .storageBlocked { return "Sign-in storage is unavailable or could not be updated. Please try again." }
-        if phase == .needsLogin || refresh == .uncertain { return "Please sign in again to continue." }
-        if refresh == .recoveryPending { return "The connection is unavailable. Recovery is pending." }
+        if requiresReauthentication || refresh == .uncertain || (phase == .needsLogin && !hasSession) {
+            return "Please sign in again to continue."
+        }
+        if refresh == .recoveryPending || phase == .needsLogin { return "The connection is unavailable. Recovery is pending." }
         switch phase {
         case .signedOut: return "Not signed in"
         case .restoring: return "Restoring sign-in…"
@@ -115,6 +121,11 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
     private let request: @Sendable (URLRequest) async throws -> (Data, URLResponse)
     private let restoreProfile: Bool
     private let profileCache: WCABrokerProfileCache?
+    private let clock: any WCABrokerCoordinatorClock
+    private let observeRecoveryEvents: Bool
+    private var pathMonitor: NWPathMonitor?
+    private var networkAvailable: Bool?
+    private var scheduledRecovery: (revision: UInt64, deadline: TimeInterval, task: Task<Void, Never>)?
     private var subscriptions: Set<AnyCancellable> = []
     private var phase: WCABrokerAuthCoordinator.State = .signedOut
     private var refresh: WCABrokerAuthCoordinator.RefreshStatus = .idle
@@ -135,6 +146,8 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
         request = dependencies.request
         restoreProfile = dependencies.restoreProfile
         profileCache = dependencies.profileCache
+        clock = dependencies.clock
+        observeRecoveryEvents = dependencies.observeRecoveryEvents
         provider.acquire = { [weak self] in
             guard let self else { throw WCABrokerAuthCoordinator.Failure.staleOperation }
             try await self.acquireProfile()
@@ -143,13 +156,14 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
             guard let self else { return }
             self.phase = value
             if self.stagedProfile?.revision != self.coordinator.sessionRevision { self.stagedProfile = nil }
-            if value == .ready || value == .profilePending, let id = self.coordinator.profileCacheSessionID {
+            if self.canShowProfile(in: value), let id = self.coordinator.profileCacheSessionID {
                 if let staged = self.stagedProfile {
                     if value == .ready { self.profileCache?.save(staged.profile, sessionID: id) }
                 } else if let cached = self.profileCache?.load(sessionID: id) {
                     self.stagedProfile = (self.coordinator.sessionRevision, cached)
                 }
             }
+            self.updateScheduledRecovery()
             self.onChange?()
         }.store(in: &subscriptions)
         coordinator.$isLoadingProfile.sink { [weak self] value in
@@ -158,25 +172,33 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
         }.store(in: &subscriptions)
         coordinator.$lastFailure.sink { [weak self] value in
             self?.profileFailure = value
+            self?.updateScheduledRecovery()
             self?.onChange?()
         }.store(in: &subscriptions)
         if restoreProfile { phase = .restoring }
         coordinator.$refreshStatus.sink { [weak self] value in
             self?.refresh = value
+            self?.updateScheduledRecovery()
             self?.onChange?()
         }.store(in: &subscriptions)
     }
 
     var presentation: WCABrokerAccountPresentation {
         .init(phase: phase, refresh: refresh, hasSession: coordinator.hasPersistedSession,
-              loadingProfile: profileLoading || (restoreProfile && restoreFlight != nil && phase == .profilePending && profileFailure == nil))
+              loadingProfile: profileLoading || (restoreProfile && restoreFlight != nil && phase == .profilePending && profileFailure == nil),
+              requiresReauthentication: coordinator.requiresReauthentication)
     }
     var profile: WCAUserProfile? {
-        guard stagedProfile?.revision == coordinator.sessionRevision, phase == .ready || phase == .profilePending else { return nil }
+        guard stagedProfile?.revision == coordinator.sessionRevision, canShowProfile(in: phase) else { return nil }
         return stagedProfile?.profile
     }
 
+    private func canShowProfile(in phase: WCABrokerAuthCoordinator.State) -> Bool {
+        phase == .ready || phase == .profilePending || (phase == .needsLogin && !coordinator.requiresReauthentication)
+    }
+
     func restoreOnce(force: Bool = false) async throws {
+        startRecoveryObservation()
         if let restoreFlight { return try await restoreFlight.value }
         if restored && !force { return }
         let epoch = lifecycleEpoch
@@ -184,8 +206,9 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
             guard lifecycleEpoch == epoch, !Task.isCancelled else { throw WCABrokerAuthCoordinator.Failure.staleOperation }
             try await coordinator.restore()
             // Cached identity is hydrated by the session publication before any network acquisition.
-            if restoreProfile, coordinator.hasPersistedSession, coordinator.state != .storageBlocked {
-                try await coordinator.retryProfile()
+            if restoreProfile, coordinator.hasPersistedSession, coordinator.state != .storageBlocked,
+               !coordinator.requiresReauthentication {
+                try await refreshProfile()
             }
         }
         restoreFlight = task
@@ -202,15 +225,70 @@ nonisolated struct WCABrokerAccountPresentation: Equatable {
         guard [.signedOut, .ready, .profilePending, .needsLogin].contains(phase) else { throw WCABrokerAuthCoordinator.Failure.busy }
         supersedeRestoration()
         logoutPending = false
+        startRecoveryObservation()
         try await coordinator.login()
     }
-    func refreshProfile() async throws { try await coordinator.retryProfile() }
+    func refreshProfile() async throws {
+        let revision = coordinator.sessionRevision
+        try await coordinator.recoverIfNeeded()
+        guard revision == coordinator.sessionRevision else { throw WCABrokerAuthCoordinator.Failure.staleOperation }
+        try await coordinator.retryProfile()
+    }
+
+    func recoverFromLifecycleEvent() async {
+        guard networkAvailable != false else { return }
+        let revision = coordinator.sessionRevision
+        guard let recovered = try? await coordinator.recoverIfNeeded(), revision == coordinator.sessionRevision,
+              recovered || (phase == .profilePending && profileFailure == .profileUnavailable) else { return }
+        try? await coordinator.retryProfile()
+    }
+
+    private func startRecoveryObservation() {
+        guard observeRecoveryEvents, pathMonitor == nil else { return }
+        let monitor = NWPathMonitor()
+        pathMonitor = monitor
+        monitor.pathUpdateHandler = { [weak self] path in
+            let available = path.status == .satisfied
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let wasAvailable = self.networkAvailable
+                self.networkAvailable = available
+                if available && wasAvailable != true { await self.recoverFromLifecycleEvent() }
+            }
+        }
+        monitor.start(queue: DispatchQueue(label: "CubeFlow.WCABrokerConnectivity"))
+        #if canImport(UIKit)
+        NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in await self?.recoverFromLifecycleEvent() }
+            }.store(in: &subscriptions)
+        #endif
+    }
+
+    private func updateScheduledRecovery() {
+        guard observeRecoveryEvents else { return }
+        let revision = coordinator.sessionRevision
+        let deadline = coordinator.automaticRetryDeadline
+        if let scheduledRecovery, scheduledRecovery.revision == revision, scheduledRecovery.deadline == deadline { return }
+        scheduledRecovery?.task.cancel()
+        scheduledRecovery = nil
+        guard let deadline else { return }
+        scheduledRecovery = (revision, deadline, Task { @MainActor [weak self, clock] in
+            do { try await clock.wait(until: deadline) } catch { return }
+            guard !Task.isCancelled, let self, self.coordinator.sessionRevision == revision else { return }
+            self.scheduledRecovery = nil
+            await self.recoverFromLifecycleEvent()
+        })
+    }
+
     func accountAction() async throws {
         if phase == .storageBlocked {
             if logoutPending { try await logout() }
             else if coordinator.canRetryPersistence { try await coordinator.retryPersistence() }
             else { try await restoreOnce(force: true) }
-        } else if phase == .signedOut || phase == .needsLogin || refresh == .uncertain { try await signIn() }
+        } else if phase == .signedOut || (phase == .needsLogin && !coordinator.hasPersistedSession)
+                    || coordinator.requiresReauthentication { try await signIn() }
         else { try await refreshProfile() }
     }
 
