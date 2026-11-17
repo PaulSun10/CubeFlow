@@ -106,6 +106,8 @@ Keep customization strong but Automatic/default behavior useful without configur
 
 **Why it matters:** Previous hangs were reduced substantially, but sustained High Energy Impact still affects battery life and confidence during competitions.
 
+- Post-v0.16.1: reduced chart history computation, repeated Algs progress decoding, 2×2 guidance checkpoint work, and WCA profile HTML parsing. See the [benchmarks and closeout](docs/post-0161-performance.md) for scope and verification.
+- Measure large multi-session SQLite workloads, first scramble readiness, and real-device rendering/idle energy before changing persistence or background scheduling.
 - Re-profile tab switching and idle behavior on device.
 - Eliminate remaining repeated main-thread view recomputation.
 - Confirm no Core Data context is retained or disposed from the wrong executor.

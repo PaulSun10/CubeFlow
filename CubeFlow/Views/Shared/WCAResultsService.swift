@@ -619,6 +619,12 @@ actor WCAResultsSupplementalStore {
 }
 
 private enum WCAResultsHTMLParser {
+    private nonisolated static let resultCells = try! NSRegularExpression(
+        pattern: #"<td class="([^"]*)"[^>]*>(.*?)</td>"#, options: [.dotMatchesLineSeparators, .caseInsensitive])
+    private nonisolated static let lineBreak = try! NSRegularExpression(pattern: #"<br\s*/?>"#)
+    private nonisolated static let tag = try! NSRegularExpression(pattern: #"<[^>]+>"#)
+    private nonisolated static let whitespace = try! NSRegularExpression(pattern: #"\s+"#)
+
     nonisolated static func parse(html: String, requestedLanguageCode: String) throws -> WCAPersonResultsPage {
         let summary = try parseSummary(from: html)
         let previousIdentityText = parsePreviousIdentityText(from: html)
@@ -801,28 +807,24 @@ private enum WCAResultsHTMLParser {
             guard groups.count >= 2 else { return nil }
             let rowClass = groups[0]
             let rowHTML = groups[1]
-            let cells = captures(in: rowHTML, pattern: #"<td class="([^"]*)"[^>]*>(.*?)</td>"#)
+            let cells = captures(in: rowHTML, using: resultCells)
             guard cells.count >= 7 else { return nil }
 
             let competitionCellHTML = cells[0].count > 1 ? cells[0][1] : ""
-            let competitionNameCandidate = cleanHTML(competitionCellHTML)
-            let competitionPathCandidate = firstCapture(in: competitionCellHTML, pattern: #"href="([^"]+)""#)
-
-            if let competitionName = emptyToNil(competitionNameCandidate) {
+            if let competitionName = emptyToNil(cleanHTML(competitionCellHTML)) {
                 currentCompetitionName = competitionName
-                currentCompetitionPath = competitionPathCandidate
+                currentCompetitionPath = firstCapture(in: competitionCellHTML, pattern: #"href="([^"]+)""#)
             }
 
             guard let resolvedCompetitionName = currentCompetitionName else {
                 return nil
             }
 
-            let values = cells.map { groups in
-                cleanHTML(groups.count > 1 ? groups[1] : "")
+            func cellText(_ index: Int) -> String {
+                let groups = cells[index]
+                return cleanHTML(groups.count > 1 ? groups[1] : "")
             }
-
-            let solveCells = Array(cells.dropFirst(7))
-            let solveValues = solveCells.enumerated().compactMap { solveIndex, groups -> WCAAttemptResult? in
+            let solveValues = cells.dropFirst(7).enumerated().compactMap { solveIndex, groups -> WCAAttemptResult? in
                 let className = groups.first ?? ""
                 let value = cleanHTML(groups.count > 1 ? groups[1] : "")
                 guard !value.isEmpty else { return nil }
@@ -832,20 +834,17 @@ private enum WCAResultsHTMLParser {
                     isTrimmed: className.contains("trimmed")
                 )
             }
-            let roundName = values.count > 1 ? values[1] : ""
-            let place = values.count > 2 ? emptyToNil(values[2]) : nil
-            let single = values.count > 3 ? emptyToNil(values[3]) : nil
-            let average = values.count > 5 ? emptyToNil(values[5]) : nil
+            let roundName = cellText(1)
 
             return WCACompetitionResult(
-                id: "\(eventCode)-\(index)-\(resolvedCompetitionName)-\(values[1])",
+                id: "\(eventCode)-\(index)-\(resolvedCompetitionName)-\(roundName)",
                 competitionName: resolvedCompetitionName,
                 competitionPath: currentCompetitionPath,
                 countryISO2: nil,
                 roundName: roundName,
-                place: place,
-                single: single,
-                average: average,
+                place: emptyToNil(cellText(2)),
+                single: emptyToNil(cellText(3)),
+                average: emptyToNil(cellText(5)),
                 podiumPlace: podiumPlace(from: rowClass),
                 singleEmphasis: WCAResultEmphasis.from(cssClass: cells[3].first ?? ""),
                 averageEmphasis: WCAResultEmphasis.from(cssClass: cells[5].first ?? ""),
@@ -872,7 +871,10 @@ private enum WCAResultsHTMLParser {
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators, .caseInsensitive]) else {
             return []
         }
+        return captures(in: text, using: regex)
+    }
 
+    private nonisolated static func captures(in text: String, using regex: NSRegularExpression) -> [[String]] {
         let nsRange = NSRange(text.startIndex..., in: text)
         return regex.matches(in: text, options: [], range: nsRange).map { match in
             (1 ..< match.numberOfRanges).compactMap { index -> String? in
@@ -890,11 +892,17 @@ private enum WCAResultsHTMLParser {
 
     fileprivate nonisolated static func cleanHTML(_ html: String) -> String {
         var cleaned = html
-        cleaned = cleaned.replacingOccurrences(of: #"<br\s*/?>"#, with: " ", options: .regularExpression)
-        cleaned = cleaned.replacingOccurrences(of: #"<[^>]+>"#, with: " ", options: .regularExpression)
-        cleaned = decodeHTMLEntities(in: cleaned)
-        cleaned = cleaned.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+        if cleaned.utf8.contains(60) { // '<'
+            cleaned = replacingMatches(lineBreak, in: cleaned)
+            cleaned = replacingMatches(tag, in: cleaned)
+        }
+        if cleaned.utf8.contains(38) { cleaned = decodeHTMLEntities(in: cleaned) } // '&'
+        cleaned = replacingMatches(whitespace, in: cleaned)
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private nonisolated static func replacingMatches(_ regex: NSRegularExpression, in text: String) -> String {
+        regex.stringByReplacingMatches(in: text, range: NSRange(text.startIndex..., in: text), withTemplate: " ")
     }
 
     private nonisolated static func decodeHTMLEntities(in text: String) -> String {

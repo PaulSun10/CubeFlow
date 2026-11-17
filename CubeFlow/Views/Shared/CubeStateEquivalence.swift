@@ -38,29 +38,39 @@ nonisolated enum CubeStateEquivalence {
     static func twoByTwoCheckpointKey(_ facelets: String) -> [UInt8]? {
         let indices = facelets.utf8.compactMap { faceCodes[$0] }
         guard indices.count == 24, facelets.utf8.count == 24 else { return nil }
-        var best: [UInt8]?
+        var best: (pose: [Int], colors: [UInt8])?
         for colors in colorFrames {
-            guard let pose = inverseRotations.first(where: {
-                colors[Int(indices[$0[urf.0]])] == 0 &&
-                colors[Int(indices[$0[urf.1]])] == 1 &&
-                colors[Int(indices[$0[urf.2]])] == 2
+            guard let rotation = inverseRotations.first(where: {
+                colors[Int(indices[$0.urF.0])] == 0 &&
+                colors[Int(indices[$0.urF.1])] == 1 &&
+                colors[Int(indices[$0.urF.2])] == 2
             }) else { continue }
-            let normalized = pose.map { colors[Int(indices[$0])] }
-            if best.map({ normalized.lexicographicallyPrecedes($0) }) ?? true { best = normalized }
+            let pose = rotation.stickers
+            if let current = best {
+                // Compare normalized stickers as needed; materialize only the winning key.
+                for index in indices.indices {
+                    let candidate = colors[Int(indices[pose[index]])]
+                    let previous = current.colors[Int(indices[current.pose[index]])]
+                    if candidate == previous { continue }
+                    if candidate < previous { best = (pose, colors) }
+                    break
+                }
+            } else {
+                best = (pose, colors)
+            }
         }
-        return best
+        return best.map { winner in winner.pose.map { winner.colors[Int(indices[$0])] } }
     }
 
     private static let faceCodes = Dictionary(uniqueKeysWithValues:
         "URFDLB".utf8.enumerated().map { ($0.element, UInt8($0.offset)) })
     private static let colorFrames = rotations.map { frame in (0..<6).map { UInt8(frame[$0 * 4] / 4) } }
-    private static let inverseRotations = rotations.map { frame in
+    private static let inverseRotations = rotations.map { frame -> (stickers: [Int], urF: (Int, Int, Int)) in
         var inverse = frame
         for (i, j) in frame.enumerated() { inverse[j] = i }
-        return inverse
+        // U, R and F stickers on the same corner in CubeSurface.
+        return (inverse, (inverse[3], inverse[4], inverse[9]))
     }
-    // Indices of the U, R and F stickers on the same corner in CubeSurface.
-    private static let urf = (3, 4, 9)
 
     // The solved pattern's color-frame and body-pose actions close over the
     // same 24 proper rotations. Keep the full matcher for arbitrary targets.

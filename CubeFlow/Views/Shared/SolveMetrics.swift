@@ -1,6 +1,8 @@
 import Foundation
 
 enum SolveMetrics {
+    typealias AverageRank = (value: Double, isDNF: Bool)
+
     nonisolated static func formatTime(
         _ seconds: Double,
         decimals: Int,
@@ -189,23 +191,27 @@ enum SolveMetrics {
         guard !adjustedTimes.isEmpty else { return nil }
         guard trimmingCount >= 0, trimmingCount * 2 < adjustedTimes.count else { return nil }
 
-        let ranked = adjustedTimes
-            .map { adjusted -> (Double, Bool) in
-                if let adjusted {
-                    return (adjusted, false)
-                }
-                return (Double.greatestFiniteMagnitude, true)
-            }
-            .sorted { $0.0 < $1.0 }
+        var ranked = adjustedTimes.map(averageRank)
+        return averageValue(ranking: &ranked, trimmingCount: trimmingCount)
+    }
 
+    nonisolated static func averageRank(_ adjusted: Double?) -> AverageRank {
+        if let adjusted { return (adjusted, false) }
+        return (Double.greatestFiniteMagnitude, true)
+    }
+
+    /// Sort in place so rolling-window callers can reuse their scratch storage.
+    nonisolated static func averageValue(ranking ranked: inout [AverageRank], trimmingCount: Int) -> Double? {
+        guard trimmingCount >= 0, trimmingCount * 2 < ranked.count else { return nil }
+        ranked.sort { $0.value < $1.value }
         let trimmed = ranked.dropFirst(trimmingCount).dropLast(trimmingCount)
         guard !trimmed.isEmpty else { return nil }
 
-        if trimmed.contains(where: \.1) {
+        if trimmed.contains(where: \.isDNF) {
             return Double.nan
         }
 
-        let total = trimmed.reduce(0) { $0 + $1.0 }
+        let total = trimmed.reduce(0) { $0 + $1.value }
         return total / Double(trimmed.count)
     }
 }

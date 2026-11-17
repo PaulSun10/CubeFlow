@@ -37,14 +37,26 @@ nonisolated struct SessionPerformanceHistory: Sendable {
         var rows: [Observation] = []
         rows.reserveCapacity(ordered.count)
         var best = Double.infinity, slowest = 0.0, segment = 0, ao12Segment = 0, dnf = 0, plusTwo = 0
+        var recent = Array(repeating: SolveMetrics.averageRank(nil), count: 12)
+        var scratch: [SolveMetrics.AverageRank] = []
+        scratch.reserveCapacity(recent.count)
         for index in ordered.indices {
             if index.isMultiple(of: 64) { try Task.checkCancellation() }
             let sample = ordered[index]
             let penalty = SolveResult(rawValue: sample.resultRaw) ?? .solved
-            let time = sample.adjustedTime.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
+            let adjusted: Double? = switch penalty {
+            case .solved: sample.time
+            case .plusTwo: sample.time + 2
+            case .dnf: nil
+            }
+            let time = adjusted.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
+            recent[index % recent.count] = SolveMetrics.averageRank(adjusted)
             func average(_ count: Int) -> Double? {
                 guard index + 1 >= count else { return nil }
-                return SolveMetrics.averageValue(from: Array(ordered[(index + 1 - count)...index]), trimmingCount: 1)
+                scratch.removeAll(keepingCapacity: true)
+                // Keep the reference input order for equal values and exceptional times.
+                for offset in (index + 1 - count)...index { scratch.append(recent[offset % recent.count]) }
+                return SolveMetrics.averageValue(ranking: &scratch, trimmingCount: 1)
             }
             let a5 = average(5), a12 = average(12)
             if a5?.isFinite != true { segment += 1 }

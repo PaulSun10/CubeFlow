@@ -1266,6 +1266,18 @@ func learnedCaseMap(from storage: String) -> [String: Set<String>] {
     }
 }
 
+@MainActor
+private enum LearnedCaseReadCache {
+    private static var entry: (storage: String, map: [String: Set<String>])?
+
+    static func map(for storage: String) -> [String: Set<String>] {
+        if let entry, entry.storage == storage { return entry.map }
+        let map = learnedCaseMap(from: storage)
+        entry = (storage, map)
+        return map
+    }
+}
+
 func learnedCaseStorage(from map: [String: Set<String>]) -> String {
     let raw = map.reduce(into: [String: [String]]()) { partialResult, entry in
         partialResult[entry.key] = entry.value.sorted()
@@ -1280,7 +1292,7 @@ func learnedCaseStorage(from map: [String: Set<String>]) -> String {
 }
 
 func isAlgCaseLearned(setID: String, caseID: String, storage: String) -> Bool {
-    AlgCanonicalCases.learned(setID: setID, caseID: caseID, map: learnedCaseMap(from: storage))
+    AlgCanonicalCases.learned(setID: setID, caseID: caseID, map: LearnedCaseReadCache.map(for: storage))
 }
 
 func updatedLearnedCaseStorage(storage: String, setID: String, caseID: String, learned: Bool) -> String {
@@ -1295,14 +1307,14 @@ func updatedLearnedCaseStorageForAll(storage: String, setID: String, caseIDs: [S
 
 func learnedCaseCount(setID: String, storage: String) -> Int {
     guard let set = AlgLibrarySet(itemID: setID), let payload = AlgLibraryLoader.loadRaw(set) else {
-        return learnedCaseMap(from: storage)[normalizedAlgSetID(setID), default: []].count
+        return LearnedCaseReadCache.map(for: storage)[normalizedAlgSetID(setID), default: []].count
     }
     let ids = ((set == .sq1PBL || set == .sq1EP) ? AlgLibraryLoader.load(set)?.cases : payload.cases)?.map(\.id) ?? []
     return learnedCaseCount(setID: setID, caseIDs: ids, storage: storage)
 }
 
 func learnedCaseCount(setID: String, caseIDs: [String], storage: String) -> Int {
-    let map = learnedCaseMap(from: storage)
+    let map = LearnedCaseReadCache.map(for: storage)
     return Set(caseIDs).filter { AlgCanonicalCases.learned(setID: setID, caseID: $0, map: map) }.count
 }
 
